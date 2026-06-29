@@ -1,0 +1,36 @@
+{
+  "name": "schema-node-core",
+  "version": "1.0.0",
+  "description": "TypeScript schema execution framework — mirrors C# SchemaNode.Core. Language-agnostic core for declarative schema definition via @Meta decorators, property composition, and extensible schema families.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "schema",
+    "metadata",
+    "declarative",
+    "typescript",
+    "property-composition"
+  ],
+  "files": [
+    "dist"
+  ],
+  "author": "kurapica125@outlook.com",
+  "license": "MIT",
+  "dependencies": {
+    "bignumber.js": "^9.3.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
