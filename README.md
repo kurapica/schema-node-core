@@ -1,4 +1,4 @@
-# schema-node-core
+# schema-node-core (not done yet)
 
 `schema-node-core` is the language-independent semantic core of the SchemaNode ecosystem, implemented in TypeScript.
 
