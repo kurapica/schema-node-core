@@ -9,44 +9,11 @@
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
 
-/** Cache for stackable flags — lazy from constructor metadata. */
-const _stackableCache = new Map<Function, boolean>();
-
-/** Cache for alias names. */
-const _aliasCache = new Map<Function, string | undefined>();
-
 function derivePropertyName(ctor: Function): string {
   let name = ctor.name;
   if (name.endsWith('Property')) name = name.slice(0, -8);
   if (name.length === 0) return name;
   return name[0].toLowerCase() + name.slice(1);
-}
-
-/** Read @Meta(Stackable) from constructor metadata — string-based, no circular import. */
-function resolveStackable(ctor: Function): boolean {
-  const META_KEY = Symbol.for('schema-node:meta');
-  const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
-  if (!entries) return false;
-  for (const entry of entries) {
-    if (entry.property.name === 'stackable') {
-      return entry.property.getValue<boolean>() ?? false;
-    }
-  }
-  return false;
-}
-
-/** Read @Meta(Alias) from constructor metadata — string-based, no circular import. */
-function resolveAlias(ctor: Function): string | undefined {
-  const META_KEY = Symbol.for('schema-node:meta');
-  const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
-  if (!entries) return undefined;
-  for (const entry of entries) {
-    if (entry.property.name === 'alias') {
-      const raw = entry.property.getValue<string>();
-      return raw === null || raw === undefined ? undefined : String(raw);
-    }
-  }
-  return undefined;
 }
 
 /**
@@ -87,7 +54,7 @@ export abstract class Property<T> implements IProperty {
     const ctor = this.constructor as Function;
     let n = _nameCache.get(ctor);
     if (!n) {
-      n = resolveAlias(ctor) ?? derivePropertyName(ctor);
+      n = (ctor as unknown as Record<string, string>).alias ?? derivePropertyName(ctor);
       _nameCache.set(ctor, n);
     }
     return n;
@@ -95,12 +62,7 @@ export abstract class Property<T> implements IProperty {
 
   get stackable(): boolean {
     const ctor = this.constructor as Function;
-    let s = _stackableCache.get(ctor);
-    if (s === undefined) {
-      s = resolveStackable(ctor);
-      _stackableCache.set(ctor, s);
-    }
-    return s;
+    return (ctor as unknown as Record<string, boolean>).stackable ?? false;
   }
 
   get hasValue(): boolean {
