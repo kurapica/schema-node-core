@@ -1,18 +1,20 @@
 // =============================================================================
 // IProperty & Property<T> — core property value holder
 // Mirrors C# SchemaNode.Core/Property/Property.cs
+//
+// NOTE: Does NOT import Stackable/Alias to avoid circular dependency.
+//       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
 
-/** Cache for stackable flags from @Meta(Stackable). */
+/** Cache for stackable flags — lazy from constructor metadata. */
 const _stackableCache = new Map<Function, boolean>();
 
-/**
- * Derive the canonical property name from a class name.
- * Convention: strip trailing "Property", convert PascalCase → camelCase.
- */
+/** Cache for alias names. */
+const _aliasCache = new Map<Function, string | undefined>();
+
 function derivePropertyName(ctor: Function): string {
   let name = ctor.name;
   if (name.endsWith('Property')) name = name.slice(0, -8);
@@ -20,7 +22,7 @@ function derivePropertyName(ctor: Function): string {
   return name[0].toLowerCase() + name.slice(1);
 }
 
-/** Lazily read Stackable flag from a property class's own @Meta(Stackable) metadata. */
+/** Read @Meta(Stackable) from constructor metadata — string-based, no circular import. */
 function resolveStackable(ctor: Function): boolean {
   const META_KEY = Symbol.for('schema-node:meta');
   const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
@@ -31,6 +33,20 @@ function resolveStackable(ctor: Function): boolean {
     }
   }
   return false;
+}
+
+/** Read @Meta(Alias) from constructor metadata — string-based, no circular import. */
+function resolveAlias(ctor: Function): string | undefined {
+  const META_KEY = Symbol.for('schema-node:meta');
+  const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
+  if (!entries) return undefined;
+  for (const entry of entries) {
+    if (entry.property.name === 'alias') {
+      const raw = entry.property.getValue<string>();
+      return raw === null || raw === undefined ? undefined : String(raw);
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -54,6 +70,9 @@ export interface IProperty {
 
   /** Get the typed value. If matchType is true, returns undefined on type mismatch. */
   getValue<T>(matchType?: boolean): T | undefined;
+
+  /** Apply the property to the target, or register the target */
+  apply(target: object, field?: string | symbol): void;
 }
 
 /**
@@ -68,7 +87,7 @@ export abstract class Property<T> implements IProperty {
     const ctor = this.constructor as Function;
     let n = _nameCache.get(ctor);
     if (!n) {
-      n = derivePropertyName(ctor);
+      n = resolveAlias(ctor) ?? derivePropertyName(ctor);
       _nameCache.set(ctor, n);
     }
     return n;
@@ -102,4 +121,7 @@ export abstract class Property<T> implements IProperty {
     if (!this._hasValue) return undefined;
     return this._value as unknown as TV;
   }
+
+  // do nothing by default, subclasses can override to apply the property to the target
+  apply(target: object, field?: string | symbol): void {}
 }

@@ -18,8 +18,7 @@ interface MetaEntry {
 
 /** Resolve the canonical constructor for storing metadata. */
 function getConstructor(target: object): Function {
-  if (typeof target === 'function') return target;
-  return target.constructor;
+  return typeof target === 'function' ? target : target.constructor;
 }
 
 function ensureConstructorStore(ctor: Function): MetaEntry[] {
@@ -52,12 +51,9 @@ export function Meta(
       prop.setValue(value);
     } else {
       // Check if propCtor has @Meta(Default) on itself
-      const entries = getMetaEntriesRaw(propCtor);
-      for (const e of entries) {
-        if (e.property instanceof Default && e.property.hasValue) {
-          prop.setValue(e.property.getValue());
-          break;
-        }
+      const defaultProp = getMetaProperty(propCtor, Default) as Default | undefined;
+      if (defaultProp?.hasValue) {
+        prop.setValue(defaultProp.getValue());
       }
     }
     if (prop.hasValue === false) return; // Don't store empty metadata
@@ -151,7 +147,8 @@ export function getMetaProperty<T extends IProperty>(
 }
 
 /**
- * Get Meta properties filtered by ForSchema kind.
+ * Get Meta properties filtered by ForSchema kind. 
+ * @TODO: wrong, need check the schema kind registerion
  */
 export function getMetaPropertiesForSchema<T extends IProperty>(
   ctor: Function,
