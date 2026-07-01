@@ -1,5 +1,5 @@
 // =============================================================================
-// Static — prevent relation modification of this property
+// Mirrors C# SchemaNode.Core/Property/Core/Static.cs
 // =============================================================================
 
 import { Property } from '../property';

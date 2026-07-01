@@ -1,5 +1,5 @@
 // =============================================================================
-// Attach — attach properties from another schema kind to this one
+// Mirrors C# SchemaNode.Core/Property/Core/Attach.cs
 // =============================================================================
 
 import { Property } from '../property';
@@ -10,6 +10,9 @@ import { ReadOnly } from '../common/readOnly';
 import { SchemaType } from './schemaType';
 import { OfSchema, PropertyValueType, Static } from '../..';
 
+/**
+ * Attach the properties of a schema kind to the struct type
+ */
 @Meta(ForSchema, SCHEMA_KIND_STRUCT)
 @Meta(ReadOnly, true)
 @Meta(Static, true)

@@ -1,6 +1,5 @@
 // =============================================================================
-// Stackable — whether duplicate properties from different sources stack
-// Default: false (override). Set to true for constraint stacking (e.g., Valid).
+// Mirrors C# SchemaNode.Core/Property/Core/Stackable.cs
 // =============================================================================
 
 import { Property } from '../property';

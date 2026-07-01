@@ -1,5 +1,5 @@
 // =============================================================================
-// Index properties — PrimaryIndex, UniqueIndex, Index
+// Mirrors C# SchemaNode.Core/Property/Core/Indexes.cs
 // =============================================================================
 
 import { Meta } from '../../attribute/meta';
