@@ -9,13 +9,6 @@
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
 
-function derivePropertyName(ctor: Function): string {
-  let name = ctor.name;
-  if (name.endsWith('Property')) name = name.slice(0, -8);
-  if (name.length === 0) return name;
-  return name[0].toLowerCase() + name.slice(1);
-}
-
 /**
  * Base interface for all property instances attached to a schema.
  */
@@ -38,8 +31,14 @@ export interface IProperty {
   /** Get the typed value. If matchType is true, returns undefined on type mismatch. */
   getValue<T>(matchType?: boolean): T | undefined;
 
+  /** Combine the value of another property into this one. */
+  combine(other: IProperty): boolean;
+
+  /** Compare this property to another for equality, used for stackable properties. */
+  equal(other: IProperty): boolean;
+
   /** Apply the property to the target, or register the target */
-  apply(target: object, field?: string | symbol): void;
+  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
 }
 
 /**
@@ -84,6 +83,30 @@ export abstract class Property<T> implements IProperty {
     return this._value as unknown as TV;
   }
 
+  combine(other: IProperty): boolean {
+    if (this.constructor !== other.constructor) return false;
+    if (this.hasValue || !other.hasValue) return false;
+    this.setValue(other.getValue());
+    return true;
+  }
+
+  equal(other: IProperty): boolean {
+    if (this.constructor !== other.constructor) return false;
+    if (this.hasValue !== other.hasValue) return false;
+    return !this.hasValue || this.getValue() === other.getValue();
+  }
+
   // do nothing by default, subclasses can override to apply the property to the target
-  apply(target: object, field?: string | symbol): void {}
+  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 }
+
+// #region Utility
+
+function derivePropertyName(ctor: Function): string {
+  let name = ctor.name;
+  if (name.endsWith('Property')) name = name.slice(0, -8);
+  if (name.length === 0) return name;
+  return name[0].toLowerCase() + name.slice(1);
+}
+
+// #endregion

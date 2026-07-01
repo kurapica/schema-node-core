@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKindRecord, NodeSchemaKindRecord, SchemaType, Attach, PrimaryIndex } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, Attach, PrimaryIndex } from '../property/index';
 import { ExtensibleSchema } from './extensibleSchema';
 import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE } from '../utility/constant';
 
@@ -23,7 +23,7 @@ export interface CompatibleSchema {
   type: string;
 }
 
-@Meta(SchemaKindRecord, [SCHEMA_KIND_NODE, 0])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE, 0])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE)
 export class NodeSchema extends ExtensibleSchema {

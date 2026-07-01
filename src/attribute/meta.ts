@@ -72,6 +72,7 @@ export function Meta(
     }
 
     ensureConstructorStore(ctor).push({ property: metaProp });
+    metaProp.apply(target, _propertyKey, descriptorOrIndex);
   }) as ClassDecorator & PropertyDecorator & ParameterDecorator & MethodDecorator;
 }
 

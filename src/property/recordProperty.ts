@@ -46,10 +46,3 @@ export function getRecordedValues(propCtor: Function): IOrderProperty[] {
   if (!map) return [];
   return [...map.values()].sort((a, b) => a.order - b.order);
 }
-
-/**
- * Clear the recorded values registry (for testing).
- */
-export function _clearRecordedValues(): void {
-  _recordedValues.clear();
-}

@@ -10,8 +10,7 @@ import { Property } from '../property';
  * Mirrors C# SchemaNode.Core/Property/Core/Stackable.cs
  */
 export class Stackable extends Property<boolean> {
-    apply(target: object, field?: string | symbol): void {
-        if (this.hasValue)
-            (target as unknown as Record<string, boolean>).stackable = this.getValue<boolean>()!;
+    apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
+        (target as unknown as Record<string, boolean>).stackable = true;
     }
 }

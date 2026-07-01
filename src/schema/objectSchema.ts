@@ -19,3 +19,15 @@ export class ObjectSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.object`)
 export class ObjectProperty extends Property<ObjectSchema> {}
+
+
+function generateScalarSchema(target: object, runtime: SchemaRuntime): void {
+  const schemaTypeProp = getMetaProperty(target as Function, SchemaType);
+  if (!schemaTypeProp?.hasValue) return;
+  const fullName = schemaTypeProp.getValue<string>()!;
+  const lastDot = fullName.lastIndexOf('.');
+  const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
+  const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
+  const node = new NodeSchema(nm, '', ns);
+  runtime.saveSchema(node);
+}

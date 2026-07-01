@@ -18,7 +18,7 @@ export { RecordProperty, getRecordedValues } from './recordProperty';
 // ── Core properties ───────────────────────────────────────────────────────
 export {
   ForSchema, OfSchema, SchemaType, NodeType, SchemaGenerator,
-  Generics, Attach, Append, Record, ClrEquivalent, OverrideType,
+  Generics, Attach, Append, Record, OverrideType,
   PropertyValueType, Stackable, Static, Alias,
   PrimaryIndex, UniqueIndex, Index,
 } from './core/index';
@@ -48,6 +48,6 @@ export {
 
 // ── Record properties ─────────────────────────────────────────────────────
 export {
-  SchemaKindRecord, NodeSchemaKindRecord, ValueSchemaKindRecord,
-  RelationKindRecord, ErrorCode,
+  SchemaKind, NodeSchemaKind, ValueSchemaKind,
+  RelationKind, ErrorCode,
 } from './record/index';

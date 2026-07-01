@@ -1,5 +1,5 @@
-export { SchemaKindRecord } from './schemaKind';
-export { NodeSchemaKindRecord } from './nodeSchemaKind';
-export { ValueSchemaKindRecord } from './valueSchemaKind';
-export { RelationKindRecord } from './relationKind';
+export { SchemaKind } from './schemaKind';
+export { NodeSchemaKind} from './nodeSchemaKind';
+export { ValueSchemaKind } from './valueSchemaKind';
+export { RelationKind } from './relationKind';
 export { ErrorCode } from './errorCode';

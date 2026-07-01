@@ -5,195 +5,227 @@
 // Manages:
 //   - Namespace tree of registered schemas
 //   - Schema kind registry with generator callbacks
-//   - Scanning of @Meta(OfSchema, ...) decorated classes
+//   - Scanning of @Meta(SchemaType, ...) decorated classes
 //
-// Different schema families extend this (e.g., AppSchemaRuntime adds saveAppSchema).
+// Notice: There is no need to create an instance of SchemaRuntime, it is a singleton and all methods are static.
 // =============================================================================
 
-import { NodeSchema } from '../schema/nodeSchema';
-import { NamespaceSchema } from '../schema/namespaceSchema';
+import { NodeSchema, SchemaLoadState } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
-import { ForSchema, OfSchema, SchemaType, SchemaGenerator } from '../property/index';
+import { ForSchema, OfSchema, SchemaGenerator, Append } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
-import { SCHEMA_KIND_NAMESPACE } from '../utility/constant';
+import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { SchemaKind } from '../property/record/schemaKind';
 
 // ── Schema Kind Configuration ─────────────────────────────────────────────
 
-/**
- * Configuration for a registered schema kind.
- * When a decorated class has @Meta(OfSchema, kind), the generator is invoked.
- */
-export interface SchemaKindConfig {
-  /** Generator callback — builds NodeSchema with extensions and calls runtime.saveSchema(). */
-  generator?: (target: object, runtime: SchemaRuntime) => void;
+/** The schema kind holder */
+let _schemaKindHolder = new Map<string, Function>();
 
-  /** Property constructors available for this schema kind. */
-  properties?: (new () => IProperty)[];
+/** The schema kind properties */
+let _schemaKindProperties = new Map<string, (() => IProperty)[]>();
+
+/** The node schema generators */
+let _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
+
+/**
+ * Get the properties associated with a specific schema kind.
+ * @param kind The schema kind
+ * @returns An array of property factory functions
+ */
+export function* getSchemaKindProperties(kind: string): Generator<() => IProperty> {
+  for (const prop of _schemaKindProperties.get(kind) ?? []) {
+    yield prop;
+  }
 }
 
-// ── SchemaRuntime ─────────────────────────────────────────────────────────
+// ── Schema Registration (NodeSchema family) ────────────────────────────
 
-export class SchemaRuntime {
-  /** Root namespace — holds all registered schemas in a tree. */
-  readonly rootNamespace = new NodeSchema('', SCHEMA_KIND_NAMESPACE, '');
+/** The type declared with schema type, the schema kind is also declare with node schema,
+ * So we use this to track all
+ */
+let _schemaTypeRegistry = new Map<Function, string>();
 
-  /** Registered schema kinds: kind → config. */
-  private _kindRegistry = new Map<string, SchemaKindConfig>();
+/** Root namespace — holds all registered schemas in a tree. */
+let rootNamespace = new NodeSchema('', SCHEMA_KIND_NAMESPACE, '');
 
-  /** Schema lookups by full name for fast access. */
-  private _schemaIndex = new Map<string, NodeSchema>();
+/** Schema lookups by full name for fast access. */
+let _schemaIndex = new Map<string, NodeSchema>();
 
-  // ── Schema Kind Registration ──────────────────────────────────────────
+/**
+ * Register the schema type for a class constructor
+ * @param typeCtor The type constructor
+ * @param type The schema type
+ */
+export function registerSchemaType(typeCtor: Function, type: string): void {
+  _schemaTypeRegistry.set(typeCtor, type);
+}
 
-  /**
-   * Register a schema kind with its generator.
-   * Called during system initialization to set up "struct", "function", "enum", etc.
-   */
-  registerSchemaKind(kind: string, config: SchemaKindConfig): void {
-    this._kindRegistry.set(kind, config);
-  }
+/**
+ * Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
+ */
+export function initSchemaRuntime(): void {
+  // schema kind & generator & properties
+  _schemaTypeRegistry.forEach((type, ctor) => {
+    // schema kinds
+    const schemaKind = getMetaProperty(ctor, SchemaKind);
+    if (schemaKind?.hasValue) {
+      const kind = schemaKind.getValue<string>()!;
+      _schemaKindHolder.set(kind, ctor);
 
-  /** Get the config for a registered schema kind. */
-  getSchemaKind(kind: string): SchemaKindConfig | undefined {
-    return this._kindRegistry.get(kind);
-  }
+      // generator check
+      const generator = getMetaProperty(ctor, SchemaGenerator);
+      if (generator?.hasValue) {
+        _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
+      }
 
-  /** Get all registered schema kinds. */
-  getSchemaKinds(): ReadonlyMap<string, SchemaKindConfig> {
-    return this._kindRegistry;
-  }
-
-  // ── Schema Registration (NodeSchema family) ────────────────────────────
-
-  /**
-   * Save a NodeSchema into the namespace tree.
-   * This is THE public API for schema registration — mirrors C# SchemaRuntime.SaveSystemSchema().
-   *
-   * Two usage forms:
-   *   A. Decorator form: @Meta(OfSchema, "struct") class Foo {} → generator calls this
-   *   B. Direct API form: runtime.saveSchema(new StructSchema("myField", "myapp"))
-   */
-  saveSchema(schema: NodeSchema): void {
-    const ns = schema.namespace ?? '';
-    this._registerInNamespace(ns, schema);
-    this._schemaIndex.set(schema.fullName, schema);
-  }
-
-  /** Register a schema by its full name string. */
-  registerSchema(fullName: string, schema: NodeSchema): void {
-    const lastDot = fullName.lastIndexOf('.');
-    const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
-    const name = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
-    schema.namespace = ns;
-    schema.name = name;
-    this.saveSchema(schema);
-  }
-
-  /** Look up a schema by full name. */
-  getSchema(fullName: string): NodeSchema | undefined {
-    // Fast path: direct index
-    const cached = this._schemaIndex.get(fullName);
-    if (cached) return cached;
-
-    // Slow path: walk namespace tree
-    return this._findInNamespace(fullName);
-  }
-
-  // ── Decorated Class Scanning ───────────────────────────────────────────
-
-  /**
-   * Scan a decorated class/function and invoke the appropriate generator.
-   * Called by: system startup scanning all @Meta(OfSchema, ...) targets.
-   *
-   * Flow:
-   *   1. Read @Meta(OfSchema) → get the kind string
-   *   2. Look up kind in _kindRegistry → get generator
-   *   3. Invoke generator(target, this)
-   *   4. Generator internally calls this.saveSchema()
-   */
-  scanDecoratedClass(target: object): void {
-    const ofSchema = getMetaProperty(target as Function, OfSchema);
-    if (!ofSchema?.hasValue) return;
-
-    const kinds = ofSchema.getValue<string[]>() ?? [];
-    for (const kind of kinds) {
-      const config = this._kindRegistry.get(kind);
-      if (config?.generator) {
-        config.generator(target, this);
+      // append properties to the schema kind registry
+      const appendProperties = getMetaProperty(ctor, Append);
+      if (appendProperties?.hasValue) {
+        let existed = _schemaKindProperties.get(kind) ?? [];
+        existed.push(...appendProperties.getValue<(() => IProperty)[]>()!);
+        _schemaKindProperties.set(kind, Array.from(new Set(existed)));
       }
     }
-  }
 
-  /**
-   * Scan multiple decorated targets (e.g., all exported classes from a module).
-   */
-  scanDecoratedClasses(targets: object[]): void {
-    for (const target of targets) {
-      this.scanDecoratedClass(target);
-    }
-  }
-
-  // ── Internal ───────────────────────────────────────────────────────────
-
-  /** Walk a dotted path into the namespace tree, creating nodes as needed. */
-  private _registerInNamespace(ns: string, schema: NodeSchema): void {
-    if (!ns) {
-      this.rootNamespace.schemas ??= [];
-      this.rootNamespace.schemas.push(schema);
-      return;
-    }
-
-    const parts = ns.split('.');
-    let current = this.rootNamespace;
-
-    for (const part of parts) {
-      current.schemas ??= [];
-      let child = current.schemas.find(
-        (s) => s.name === part && s.kind === SCHEMA_KIND_NAMESPACE,
-      );
-
-      if (!child) {
-        child = new NodeSchema(part, SCHEMA_KIND_NAMESPACE, current.fullName);
-        current.schemas.push(child);
+    // properties for schema kind
+    const forSchema = getMetaProperty(ctor, ForSchema);
+    if (forSchema?.hasValue) {
+      const kinds = forSchema.getValue<string[]>() ?? [];
+      for (const kind of kinds) {
+        let existed = _schemaKindProperties.get(kind) ?? [];
+        if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
+        existed.push(ctor as unknown as () => IProperty);
+        _schemaKindProperties.set(kind, existed);
       }
-      current = child;
     }
+  });
 
+  // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
+  _schemaTypeRegistry.forEach((type, ctor) => {
+    const ofSchema = getMetaProperty(ctor, OfSchema);
+    const kind = ofSchema?.hasValue ? ofSchema.getValue<string>()! : SCHEMA_KIND_STRUCT;
+    const generator = _schemaGenerators.get(kind);
+    if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
+
+    // Split the schema type into namespace and name
+    type = type.toLocaleLowerCase();
+    const lastDot = type.lastIndexOf('.');
+    const ns = lastDot >= 0 ? type.substring(0, lastDot) : '';
+    const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
+    
+    // Call the generator to create the NodeSchema and register it
+    generator(ns, name, ctor);
+  });
+}
+
+/**
+ * Save a NodeSchema into the namespace tree.
+ * This is THE public API for schema registration — mirrors C# SchemaRuntime.SaveSystemSchema().
+ */
+export function saveSchema(schema: NodeSchema, loadStage: SchemaLoadState = SchemaLoadState.None): void {
+  const ns = schema.namespace ?? '';
+
+  // Set the load state flags for the schema
+  _setLoadState(schema, loadStage);
+
+  _registerInNamespace(ns, schema);
+  _schemaIndex.set(schema.fullName, schema);
+}
+
+/** Look up a schema by full name. */
+export function getSchema(fullName: string): NodeSchema | undefined {
+  fullName = fullName.toLowerCase();
+  return _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
+}
+
+/** Delete a schema by full name. */
+export function deleteSchema(fullName: string): boolean {
+  fullName = fullName.toLowerCase();
+  if (_deleteFromNamespace(fullName))
+    return _schemaIndex.delete(fullName);
+  return false;
+}
+
+// ── Internal ───────────────────────────────────────────────────────────
+
+/** Set the load state flags for a schema and its children. */
+function _setLoadState(schema: NodeSchema, loadStage: SchemaLoadState): void {
+  schema.loadState ??= loadStage;
+  schema.loadState |= loadStage;
+
+  if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas) {
+    for (const child of schema.schemas) {
+      _setLoadState(child, loadStage);
+    }
+  }
+}
+
+/** Walk a dotted path into the namespace tree, creating nodes as needed. */
+function _registerInNamespace(ns: string, schema: NodeSchema): void {
+  if (!ns) {
+    rootNamespace.schemas ??= [];
+    rootNamespace.schemas.push(schema);
+    return;
+  }
+
+  const parts = ns.split('.');
+  let current = rootNamespace;
+
+  for (const part of parts) {
     current.schemas ??= [];
+    let child = current.schemas.find((s) => s.name === part);
+    if (child && child.kind !== SCHEMA_KIND_NAMESPACE) {
+      throw new Error(`Schema conflict: ${child.fullName} is not a namespace`);
+    }
+
+    if (!child) {
+      child = new NodeSchema(part, SCHEMA_KIND_NAMESPACE, current.fullName);
+      current.schemas.push(child);
+    }
+    current = child;
+  }
+
+  current.schemas ??= [];
+  const idx = current.schemas.findIndex((s) => s.name === schema.name);
+  if (idx >= 0) {
+    if (current.schemas[idx].kind !== schema.kind)
+      throw new Error(`Schema conflict: ${current.schemas[idx].fullName} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
+    current.schemas[idx] = schema; // replace existing
+  } else {
     current.schemas.push(schema);
   }
-
-  /** Walk the namespace tree by dotted path. */
-  private _findInNamespace(path: string): NodeSchema | undefined {
-    const parts = path.split('.');
-    let current: NodeSchema | undefined = this.rootNamespace;
-
-    for (const part of parts) {
-      if (!current?.schemas) return undefined;
-      current = current.schemas.find((s) => s.name === part);
-    }
-    return current;
-  }
-
-  /** Get all schemas from a namespace. */
-  getNamespaceSchemas(namespace: string): NodeSchema[] {
-    const ns = this._findInNamespace(namespace);
-    if (ns instanceof NodeSchema && ns.kind === SCHEMA_KIND_NAMESPACE) {
-      // Return all schemas in this namespace (not just direct children)
-      return ns.schemas ?? [];
-    }
-    return [];
-  }
 }
 
-// ── Runtime Interfaces ────────────────────────────────────────────────────
+/** Walk a dotted path into the namespace tree, deleting a node if it exists. */
+function _deleteFromNamespace(path: string): boolean {
+  const parts = path.split('.');
+  let current: NodeSchema | undefined = rootNamespace;
+  let parent: NodeSchema | undefined = undefined;
 
-/**
- * A stage handler participates in the runtime lifecycle.
- */
-export interface IRuntimeStageHandler {
-  onServiceInitialization?(runtime: SchemaRuntime): void;
-  onSystemSchemaLoaded?(runtime: SchemaRuntime): void;
-  onActivating?(runtime: SchemaRuntime): Promise<void>;
-  onActivated?(runtime: SchemaRuntime): Promise<void>;
+  for (const part of parts) {
+    if (!current?.schemas) return false;
+    parent = current;
+    current = current.schemas.find((s) => s.name === part);
+    if (!current) return false;
+  }
+
+  if (!parent?.schemas) return false;
+  const idx = parent.schemas.findIndex((s) => s.name === current.name);
+  if (idx < 0) return false;
+
+  parent.schemas.splice(idx, 1);
+  return true;
+}
+
+/** Walk the namespace tree by dotted path. */
+function _findInNamespace(path: string): NodeSchema | undefined {
+  const parts = path.split('.');
+  let current: NodeSchema | undefined = rootNamespace;
+
+  for (const part of parts) {
+    if (!current?.schemas) return undefined;
+    current = current.schemas.find((s) => s.name === part);
+  }
+  return current;
 }
