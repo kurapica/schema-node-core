@@ -12,13 +12,13 @@ export type { IConstraintProperty } from './constraintProperty';
 export type { IOrderProperty } from './orderProperty';
 export { OrderProperty } from './orderProperty';
 export { FuncCallProperty } from './funcCallProperty';
-export type { FuncCall, CallArg } from './funcCallProperty';
+export type { FuncCall } from './funcCallProperty';
 export { RecordProperty, getRecordedValues } from './recordProperty';
 
 // ── Core properties ───────────────────────────────────────────────────────
 export {
-  ForSchema, OfSchema, SchemaType, NodeType, SchemaGenerator,
-  Generics, Attach, Append, Record, OverrideType,
+  ForSchema, OfSchema, SchemaType, SchemaGenerator,
+  Generics, Attach, Append, OverrideType,
   PropertyValueType, Stackable, Static, Alias,
   PrimaryIndex, UniqueIndex, Index,
 } from './core/index';
@@ -27,7 +27,7 @@ export type { GenericParameter } from './core/generics';
 // ── Common properties ─────────────────────────────────────────────────────
 export {
   Default, Display, Visible, InVisible, ReadOnly, Disable,
-  DisplayOnly, Immutable, Error, Suggest, EntrySource, Unpack, StackUpLimit,
+  DisplayOnly, Immutable, ErrorMessage, StringSuggest, IntSuggest, EntrySource, Unpack, StackUpLimit,
 } from './common/index';
 
 // ── Constraint properties ─────────────────────────────────────────────────

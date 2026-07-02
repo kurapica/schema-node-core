@@ -62,6 +62,15 @@ export function registerSchemaType(typeCtor: Function, type: string): void {
 }
 
 /**
+ * Gets the schema type for a class constructor
+ * @param typeCtor The type constructor or instance
+ * @returns The schema type or undefined if not registered
+ */
+export function getSchemaType(typeCtor: object): string | undefined {
+  return _schemaTypeRegistry.get(typeof typeCtor === 'function' ? typeCtor : (typeCtor as any).constructor);
+}
+
+/**
  * Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
  */
 export function initSchemaRuntime(): void {

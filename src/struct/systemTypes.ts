@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType } from '../property/index';
+import { Generics, OfSchema, SchemaType } from '../property/index';
 import {
   SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRING, SCHEMA_KIND_INT,
   NS_SYSTEM_STRING, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_INT,
@@ -27,11 +27,37 @@ export class SystemLocaleTran {
 @Meta(OfSchema, SCHEMA_KIND_STRUCT)
 @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
 export class SystemLocaleString {
+  /** The key */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   key!: string;
 
-  @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING) // trans array
-  trans!: string;
+  /** The translations */
+  @Meta(SchemaType, `${NS_SYSTEM_LOCALE_TRAN}s`) // trans array
+  trans!: SystemLocaleTran[];
+
+  /** Concat the other locale string */
+  concat(other: SystemLocaleString): SystemLocaleString {
+    if (other == null) return this;
+    this.key = this.key == null || this.key.length === 0 ? other.key : this.key;
+  
+    // Combine trans
+    if (this.trans == null || this.trans.length === 0)
+        this.trans = other.trans;
+    else if (other.trans != null && other.trans.length > 0)
+    {
+        for (let tran of this.trans)
+        {
+            let inOther = other.trans.find(t => t.lang === tran.lang);
+            if (inOther != null)
+                tran.tran = inOther.tran == null || inOther.tran.trim() === '' ? tran.tran : inOther.tran;
+        }
+        var otherOnly = other.trans.filter(t => !this.trans.some(a => a.lang === t.lang));
+        if (otherOnly.length > 0)
+            this.trans = this.trans.concat(otherOnly);
+    }
+
+    return this;
+  }
 }
 
 @Meta(OfSchema, SCHEMA_KIND_STRUCT)
@@ -42,6 +68,23 @@ export class SystemRangeDate {
 
   @Meta(SchemaType, NS_SYSTEM_DATE)
   stop!: string;
+}
+
+/** The entry struct */
+@Meta(OfSchema, SCHEMA_KIND_STRUCT)
+@Meta(SchemaType, 'system.entry')
+@Meta(Generics, [{ name: 'T' }])
+export class SystemEntry<T> {
+  /** The value of the entry */
+  @Meta(SchemaType, "T")
+  value!: T;
+
+  /** Localized label for the entry */
+  @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
+  label!: SystemLocaleString;
+
+  /** Has children entries */
+  hasChildren: boolean = false;
 }
 
 // ── Scalar Types ───────────────────────────────────────────────────────────

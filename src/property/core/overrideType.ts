@@ -9,10 +9,9 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPER
 
 /**
  * OverrideType is a property that allows overriding the field type with a different schema name.
- * It is decorated with metadata to specify its schema kind and associated properties.
  */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
+@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(Visible, false)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.OverrideType`)
 @Meta(PropertyValueType, `{NS_SYSTEM_SCHEMA_NODE}.valuetype`)

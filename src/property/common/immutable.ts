@@ -10,7 +10,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STR
 /**
  * The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. 
  */
-@Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
+@Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.immutable`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.Immutable`)
 export class Immutable extends Property<boolean> {}

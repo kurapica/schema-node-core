@@ -2,7 +2,7 @@
 // Mirrors C# SchemaNode.Core/Property/Common/Error.cs
 // =============================================================================
 
-import { Property } from '../property';
+import { IProperty, Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { OfSchema, ForSchema, SchemaType } from '../index';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_DECIMAL, NS_SYSTEM_SCHEMA_PROPERTY_COMMON } from '../../utility/constant';
@@ -13,5 +13,17 @@ import { SystemLocaleString } from '../..';
  */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_DECIMAL])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.error`)
-export class Error extends Property<SystemLocaleString> {}
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.ErrorMessage`)
+export class ErrorMessage extends Property<SystemLocaleString> {
+    combine(other: IProperty): boolean {
+        let otherUnit = other.getValue<SystemLocaleString>();
+        if (!otherUnit) return false;
+        if (!this.hasValue)
+        {
+            this.setValue(otherUnit);
+            return true;
+        }
+        this.setValue(this.getValue<SystemLocaleString>()!.concat(otherUnit));
+        return true;
+    }
+}

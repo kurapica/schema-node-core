@@ -10,6 +10,6 @@ import { Property } from '../property';
  */
 export class Stackable extends Property<boolean> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        (target as unknown as Record<string, boolean>).stackable = true;
+        (target as unknown as Record<string, boolean>).stackable = this.getValue<boolean>() ?? false;
     }
 }

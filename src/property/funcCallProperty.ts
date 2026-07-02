@@ -3,17 +3,9 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
+import { CallArg } from '../schema/functionSchema';
 import { Property } from './property';
 import type { IProperty } from './property';
-
-/**
- * A single argument in a function call.
- * If prefixed with '$', value is a source reference path.
- */
-export interface CallArg {
-  /** The argument value, or a source path (starting with $). */
-  value: unknown;
-}
 
 /**
  * Represents a deferred function call: func(args...).
@@ -21,6 +13,7 @@ export interface CallArg {
 export interface FuncCall {
   /** Fully qualified function schema name. */
   func: string;
+  
   /** Call arguments. */
   args: CallArg[];
 }

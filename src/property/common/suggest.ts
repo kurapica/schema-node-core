@@ -4,10 +4,26 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType } from '../index';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_ENTRY } from '../../utility/constant';
+import { OfSchema, SchemaType, PropertyValueType, ForSchema, Alias } from '../index';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_ENTRY, SCHEMA_KIND_STRING, NS_SYSTEM_LIST, SCHEMA_KIND_INT, NS_SYSTEM_STRING, NS_SYSTEM_INT } from '../../utility/constant';
+import { SystemEntry } from '../../struct/systemTypes';
 
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.suggest`)
+/**
+ * Declare a property that suggests a list of entries for a string property.
+ */
+@Meta(Alias, 'suggest')
+@Meta(ForSchema, [SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(PropertyValueType, NS_SYSTEM_ENTRY)
-export class Suggest extends Property<string> {}
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.stringsuggest`)
+@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY}<${NS_SYSTEM_STRING}>>`)
+export class StringSuggest extends Property<SystemEntry<string>[]> {}
+
+/**
+ * Declare a property that suggests a list of entries for an integer property.
+ */
+@Meta(Alias, 'suggest')
+@Meta(ForSchema, [SCHEMA_KIND_INT])
+@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.intsuggest`)
+@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY}<${NS_SYSTEM_INT}>>`)
+export class IntSuggest extends Property<SystemEntry<number>[]> {}

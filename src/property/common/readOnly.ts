@@ -12,5 +12,5 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPER
  */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.readonly`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.ReadOnly`)
 export class ReadOnly extends Property<boolean> {}

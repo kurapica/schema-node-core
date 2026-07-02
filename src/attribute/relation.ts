@@ -17,16 +17,7 @@
 
 import { RelationStage } from '../enum/relationStage';
 import type { IProperty } from '../property/property';
-
-// ── CallArg ────────────────────────────────────────────────────────────────
-
-/** A single argument in a relation function call. */
-export interface CallArg {
-  /** Source access path (starts with $), or undefined for literal value. */
-  source?: string;
-  /** Literal value — used when source is undefined. */
-  value?: unknown;
-}
+import { CallArg } from '../schema/functionSchema';
 
 // ── IRelationProcess (execution body) ──────────────────────────────────────
 

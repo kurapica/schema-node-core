@@ -12,5 +12,5 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STR
  */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.stackuplimit`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.StackUpLimit`)
 export class StackUpLimit extends Property<boolean> {}

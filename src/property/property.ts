@@ -19,6 +19,9 @@ export interface IProperty {
   /** Whether duplicates from different sources stack (accumulate) vs override. */
   readonly stackable: boolean;
 
+  /** Whether the property is static, which means the property value cannot be modified by relation system. */
+  readonly static: boolean;
+
   /** Whether the property carries a non-empty value. */
   readonly hasValue: boolean;
 
@@ -62,6 +65,11 @@ export abstract class Property<T> implements IProperty {
   get stackable(): boolean {
     const ctor = this.constructor as Function;
     return (ctor as unknown as Record<string, boolean>).stackable ?? false;
+  }
+
+  get static(): boolean {
+    const ctor = this.constructor as Function;
+    return (ctor as unknown as Record<string, boolean>).static ?? false;
   }
 
   get hasValue(): boolean {
