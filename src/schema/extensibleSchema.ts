@@ -70,12 +70,12 @@ export abstract class ExtensibleSchema implements IPropertyOwner {
   setProperty(property: IProperty): IPropertyOwner {
     if (!property.hasValue) return this;
     this.extensions ??= {};
-    if (property.stackable && this.extensions[property.name] !== undefined) {
+    if (property.stackable) {
       const existing = this.extensions[property.name];
-      if (Array.isArray(existing)) {
+      if (existing && Array.isArray(existing)) {
         existing.push(property.getValue());
       } else {
-        this.extensions[property.name] = [existing, property.getValue()];
+        this.extensions[property.name] = [property.getValue()];
       }
     }
     else
