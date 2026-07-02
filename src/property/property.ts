@@ -53,13 +53,7 @@ export abstract class Property<T> implements IProperty {
   protected _hasValue = false;
 
   get name(): string {
-    const ctor = this.constructor as Function;
-    let n = _nameCache.get(ctor);
-    if (!n) {
-      n = (ctor as unknown as Record<string, string>).alias ?? derivePropertyName(ctor);
-      _nameCache.set(ctor, n);
-    }
-    return n;
+    return getPropertyName(this.constructor as new () => IProperty);
   }
 
   get stackable(): boolean {
@@ -108,13 +102,24 @@ export abstract class Property<T> implements IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 }
 
-// #region Utility
-
-function derivePropertyName(ctor: Function): string {
-  let name = ctor.name;
-  if (name.endsWith('Property')) name = name.slice(0, -8);
-  if (name.length === 0) return name;
-  return name[0].toLowerCase() + name.slice(1);
+export interface ITypeRefProperty extends IProperty {
+  /** Return the referenced type name for type-reference resolution. */
+  getRefTypes(): string[];
 }
 
-// #endregion
+/** Get the property name of the property constructor. */
+export function getPropertyName(ctor: new () => IProperty): string {
+  let n = _nameCache.get(ctor);
+  if (!n) {
+    n = (ctor as unknown as Record<string, string>).alias;
+    if (!n)
+    {
+      let name = ctor.name;
+      if (name.endsWith('Property')) name = name.slice(0, -8);
+      if (name.length === 0) return name;
+      n = name[0].toLowerCase() + name.slice(1);
+    }
+    _nameCache.set(ctor, n);
+  }
+  return n;
+}

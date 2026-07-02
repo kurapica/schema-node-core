@@ -3,6 +3,23 @@
 // =============================================================================
 
 import type { DataNode } from '../node/dataNode';
+import { NodeType, ValueType } from './type';
+
+/** The node reference interface */
+export interface INodeReference {
+  getReferenceTypes(): NodeType[];
+}
+
+/** The node error interface */
+export interface INodeError {
+  error?: string;
+}
+
+/** The value type access interface */
+export interface IValueTypeAccess {
+  /** Gets the access value type */
+  getAccessValueType(path: string): ValueType | undefined;
+}
 
 /** Objects that provide path-based value access. */
 export interface IValueAccess {

@@ -4,14 +4,15 @@
 // getProperties<T>() handles stackable (array) values
 // =============================================================================
 
-import type { IProperty } from '../property/property';
+import { getPropertyName, type IProperty } from '../property/property';
 import { getMetaProperty } from '../attribute/meta';
-import { SchemaKindRecord } from '../property/record/schemaKind';
+import { SchemaKind } from '../property/record/schemaKind';
+import { Attach, IPropertyOwner } from '../property';
 
-export abstract class ExtensibleSchema {
-  /** The schema kind string, derived from @Meta(SchemaKind) on the subclass. */
+export abstract class ExtensibleSchema implements IPropertyOwner {
+  /** The schema kind string, derived from @Meta(SchemaKind | Attach) on the subclass. */
   get schemaKind(): string | undefined {
-    return getMetaProperty(this.constructor, SchemaKindRecord)?.getValue<string>();
+    return getMetaProperty(this.constructor, SchemaKind)?.getValue<string>() ?? getMetaProperty(this.constructor, Attach)?.getValue<string>();
   }
 
   /** Error status string. */
@@ -28,11 +29,17 @@ export abstract class ExtensibleSchema {
    * and wraps the raw value into a new property instance.
    */
   getProperty(propCtor: new () => IProperty): IProperty | undefined {
+    const key = getPropertyName(propCtor);
+    const raw = key ? this.extensions?.[key] : undefined;
+    if (raw === undefined || raw === null || raw === "") return undefined;
     const temp = new propCtor();
-    const key = temp.name;
-    const raw = this.extensions?.[key];
-    if (raw === undefined) return undefined;
-    temp.setValue(raw);
+    if (temp.stackable && Array.isArray(raw)) {
+      // For stackable properties, we can return the first value as a single property instance.
+      if (raw.length === 0) return undefined;
+      temp.setValue(raw[0]);
+    } else {
+      temp.setValue(raw);
+    }
     return temp;
   }
 
@@ -42,11 +49,11 @@ export abstract class ExtensibleSchema {
    * becomes its own property instance. For non-stackable, returns a single-item array.
    */
   getProperties(propCtor: new () => IProperty): IProperty[] {
+    const key = getPropertyName(propCtor);
+    const raw = key ? this.extensions?.[key] : undefined;
+    if (raw === undefined || raw === null || raw === "") return [];
     const temp = new propCtor();
-    const key = temp.name;
-    const raw = this.extensions?.[key];
-    if (raw === undefined) return [];
-    if (Array.isArray(raw)) {
+    if (temp.stackable && Array.isArray(raw)) {
       return raw.map((v) => {
         const p = new propCtor();
         p.setValue(v);
@@ -60,10 +67,22 @@ export abstract class ExtensibleSchema {
   /**
    * Store a property into the extensions dictionary by its name.
    */
-  setProperty(property: IProperty): void {
-    if (!property.hasValue) return;
+  setProperty(property: IProperty): IPropertyOwner {
+    if (!property.hasValue) return this;
     this.extensions ??= {};
-    this.extensions[property.name] = property.getValue();
+    if (property.stackable && this.extensions[property.name] !== undefined) {
+      const existing = this.extensions[property.name];
+      if (Array.isArray(existing)) {
+        existing.push(property.getValue());
+      } else {
+        this.extensions[property.name] = [existing, property.getValue()];
+      }
+    }
+    else
+    {
+      this.extensions[property.name] = property.getValue();
+    }
+    return this;
   }
 
   // ── combineExtensions ──────────────────────────────────────────────────
@@ -89,6 +108,19 @@ export abstract class ExtensibleSchema {
       } else {
         this.extensions[key] = value;
       }
+    }
+  }
+
+  private _overrideProperty(prop : IProperty): void {
+    this.extensions = null;
+    this.setProperty(prop);
+  }
+
+  private _overrideProperties(props : IProperty[]): void {
+    if (props.length === 0) return;
+    this.extensions = null;
+    for (const prop of props) {
+      this.setProperty(prop);
     }
   }
 }

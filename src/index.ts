@@ -6,14 +6,11 @@
 export * from './utility/constant';
 
 // ── Enums ──────────────────────────────────────────────────────────────────
-export * from './enum/schemaKind';
 export * from './enum/expType';
 export * from './enum/relationStage';
 export * from './enum/enumValueType';
 export * from './enum/logicType';
 export * from './enum/arithmeticType';
-export * from './enum/valueSchemaKind';
-export * from './enum/nodeSchemaKind';
 export * from './enum/functionFlags';
 export * from './enum/runtimeStage';
 export * from './enum/schemaLoadState';
@@ -23,7 +20,7 @@ export * from './property/index';
 
 // ── Attribute System ───────────────────────────────────────────────────────
 export { Meta, getMetaProperty, getMetaProperties, getMetaPropertiesForSchema } from './attribute/meta';
-export type { IRelationProcess, Call, Assign, CallArg } from './attribute/relation';
+export type { IRelationProcess, Call, Assign } from './attribute/relation';
 export { Relation, RelationAssign, getRelationEntries, createCall, createAssign } from './attribute/relation';
 
 // ── Schema Types ───────────────────────────────────────────────────────────
@@ -32,7 +29,7 @@ export { NodeSchema, SchemaLoadState } from './schema/nodeSchema';
 export type { CompatibleSchema } from './schema/nodeSchema';
 export { ObjectSchema, ObjectProperty } from './schema/objectSchema';
 export { StructSchema, StructProperty } from './schema/structSchema';
-export type { StructFieldSchema, StructRelationSchema, StructUnionValidation } from './schema/structSchema';
+export type { StructFieldSchema, StructUnionValidation } from './schema/structSchema';
 export { ArraySchema, ArrayProperty } from './schema/arraySchema';
 export type { DataIndex } from './schema/arraySchema';
 export { EnumSchema, EnumProperty } from './schema/enumSchema';
@@ -51,9 +48,15 @@ export { DateSchema } from './schema/scalar/dateSchema';
 export type { INodeSchemaProvider, IEnumSchemaProvider, IFunctionSchemaProvider } from './schema/provider/schemaProvider';
 
 // ── Runtime ────────────────────────────────────────────────────────────────
-export { SchemaRuntime } from './runtime/schemaRuntime';
-export type { SchemaKindConfig, IRuntimeStageHandler } from './runtime/schemaRuntime';
 export type { IValueAccess } from './runtime/interfaces';
+
+// ── Runtime Types ──────────────────────────────────────────────────────────
+export {
+  NodeType, ValueType, FunctionType, StructType, ArrayType, EnumType,
+  NamespaceType, PropertyType, RelationType, GenericType, ScalarType,
+  BoolType, IntType, DecimalType, StringType, DateType, ObjectType,
+} from './runtime/type/index';
+export type { StructFieldType } from './runtime/type/index';
 
 // ── Node ───────────────────────────────────────────────────────────────────
 export { DataNode } from './node/dataNode';
@@ -61,13 +64,6 @@ export { ScalarNode, AnyNode, BoolNode, StringNode, IntNode, NumericNode, DateNo
 export { StructNode } from './node/structNode';
 export { ArrayNode } from './node/arrayNode';
 export { EnumNode } from './node/enumNode';
-
-// ── Generator ──────────────────────────────────────────────────────────────
-export { generateStructSchema, registerStructGenerator } from './generator/structGenerator';
-export { generateFunctionSchema, registerFunctionGenerator } from './generator/functionGenerator';
-export { generateEnumSchema, registerEnumGenerator } from './generator/enumGenerator';
-export { generatePropertySchema, registerPropertyGenerator } from './generator/propertyGenerator';
-export { generateScalarSchema, registerScalarGenerators } from './generator/scalarGenerator';
 
 // ── Service ────────────────────────────────────────────────────────────────
 export { createSchemaRuntime, scanModules, activateRuntime } from './service/service';

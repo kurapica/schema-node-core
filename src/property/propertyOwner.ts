@@ -17,7 +17,7 @@ export interface IPropertyOwner {
   getProperties(propCtor: new () => IProperty): IProperty[];
 
   /** Store a property on this owner. */
-  setProperty(property: IProperty): void;
+  setProperty(property: IProperty): IPropertyOwner;
 }
 
 /**

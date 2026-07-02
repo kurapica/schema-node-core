@@ -12,12 +12,13 @@
 
 import { NodeSchema, SchemaLoadState } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append } from '../property/index';
+import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
+import { NamespaceType, NodeType } from './type';
 
-// ── Schema Kind Configuration ─────────────────────────────────────────────
+// #region ── Schema Kind Configuration ─────────────────────────────────────────────
 
 /** The schema kind holder */
 let _schemaKindHolder = new Map<string, Function>();
@@ -39,18 +40,20 @@ export function* getSchemaKindProperties(kind: string): Generator<() => IPropert
   }
 }
 
-// ── Schema Registration (NodeSchema family) ────────────────────────────
+// #endregion
+
+// #region ── Schema Registration (NodeSchema family) ────────────────────────────
 
 /** The type declared with schema type, the schema kind is also declare with node schema,
  * So we use this to track all
  */
-let _schemaTypeRegistry = new Map<Function, string>();
+const _schemaTypeRegistry = new Map<Function, string>();
 
 /** Root namespace — holds all registered schemas in a tree. */
-let rootNamespace = new NodeSchema('', SCHEMA_KIND_NAMESPACE, '');
+const rootNamespace = new NodeSchema('', SCHEMA_KIND_NAMESPACE, '');
 
 /** Schema lookups by full name for fast access. */
-let _schemaIndex = new Map<string, NodeSchema>();
+const _schemaIndex = new Map<string, NodeSchema>();
 
 /**
  * Register the schema type for a class constructor
@@ -68,64 +71,6 @@ export function registerSchemaType(typeCtor: Function, type: string): void {
  */
 export function getSchemaType(typeCtor: object): string | undefined {
   return _schemaTypeRegistry.get(typeof typeCtor === 'function' ? typeCtor : (typeCtor as any).constructor);
-}
-
-/**
- * Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
- */
-export function initSchemaRuntime(): void {
-  // schema kind & generator & properties
-  _schemaTypeRegistry.forEach((type, ctor) => {
-    // schema kinds
-    const schemaKind = getMetaProperty(ctor, SchemaKind);
-    if (schemaKind?.hasValue) {
-      const kind = schemaKind.getValue<string>()!;
-      _schemaKindHolder.set(kind, ctor);
-
-      // generator check
-      const generator = getMetaProperty(ctor, SchemaGenerator);
-      if (generator?.hasValue) {
-        _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
-      }
-
-      // append properties to the schema kind registry
-      const appendProperties = getMetaProperty(ctor, Append);
-      if (appendProperties?.hasValue) {
-        let existed = _schemaKindProperties.get(kind) ?? [];
-        existed.push(...appendProperties.getValue<(() => IProperty)[]>()!);
-        _schemaKindProperties.set(kind, Array.from(new Set(existed)));
-      }
-    }
-
-    // properties for schema kind
-    const forSchema = getMetaProperty(ctor, ForSchema);
-    if (forSchema?.hasValue) {
-      const kinds = forSchema.getValue<string[]>() ?? [];
-      for (const kind of kinds) {
-        let existed = _schemaKindProperties.get(kind) ?? [];
-        if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
-        existed.push(ctor as unknown as () => IProperty);
-        _schemaKindProperties.set(kind, existed);
-      }
-    }
-  });
-
-  // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
-  _schemaTypeRegistry.forEach((type, ctor) => {
-    const ofSchema = getMetaProperty(ctor, OfSchema);
-    const kind = ofSchema?.hasValue ? ofSchema.getValue<string>()! : SCHEMA_KIND_STRUCT;
-    const generator = _schemaGenerators.get(kind);
-    if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
-
-    // Split the schema type into namespace and name
-    type = type.toLocaleLowerCase();
-    const lastDot = type.lastIndexOf('.');
-    const ns = lastDot >= 0 ? type.substring(0, lastDot) : '';
-    const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
-    
-    // Call the generator to create the NodeSchema and register it
-    generator(ns, name, ctor);
-  });
 }
 
 /**
@@ -156,7 +101,7 @@ export function deleteSchema(fullName: string): boolean {
   return false;
 }
 
-// ── Internal ───────────────────────────────────────────────────────────
+// #region ── Internal ──
 
 /** Set the load state flags for a schema and its children. */
 function _setLoadState(schema: NodeSchema, loadStage: SchemaLoadState): void {
@@ -238,3 +183,89 @@ function _findInNamespace(path: string): NodeSchema | undefined {
   }
   return current;
 }
+
+// #endregion
+
+// #endregion
+
+// #region ── Node Schema Type Generation ───────────────────────────────────────────
+
+/** Get the runtime node type by name with generics settings if provided */
+export function getNodeType(name: string, generics?: GenericParameter[], genericParams?: NodeType[]): NodeType | undefined {
+  
+}
+
+// #region ── Internal ──
+
+async function _loadNodeType(type: NodeType, path?: string, reload?: boolean) : Promise<NodeType | undefined> {
+}
+
+async function _loadNodeSchema(ns: NamespaceType | undefined, name: string, reload?: boolean): Promise<NodeSchema | undefined> {
+
+}
+
+// #endregion
+
+// #endregion
+
+// #region ── Schema Runtime Setup ─────────────────────────────────────────────
+
+/**
+ * Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
+ */
+export function initSchemaRuntime(): void {
+  // schema kind & generator & properties
+  _schemaTypeRegistry.forEach((type, ctor) => {
+    // schema kinds
+    const schemaKind = getMetaProperty(ctor, SchemaKind);
+    if (schemaKind?.hasValue) {
+      const kind = schemaKind.getValue<string>()!;
+      _schemaKindHolder.set(kind, ctor);
+
+      // generator check
+      const generator = getMetaProperty(ctor, SchemaGenerator);
+      if (generator?.hasValue) {
+        _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
+      }
+
+      // append properties to the schema kind registry
+      const appendProperties = getMetaProperty(ctor, Append);
+      if (appendProperties?.hasValue) {
+        let existed = _schemaKindProperties.get(kind) ?? [];
+        existed.push(...appendProperties.getValue<(() => IProperty)[]>()!);
+        _schemaKindProperties.set(kind, Array.from(new Set(existed)));
+      }
+    }
+
+    // properties for schema kind
+    const forSchema = getMetaProperty(ctor, ForSchema);
+    if (forSchema?.hasValue) {
+      const kinds = forSchema.getValue<string[]>() ?? [];
+      for (const kind of kinds) {
+        let existed = _schemaKindProperties.get(kind) ?? [];
+        if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
+        existed.push(ctor as unknown as () => IProperty);
+        _schemaKindProperties.set(kind, existed);
+      }
+    }
+  });
+
+  // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
+  _schemaTypeRegistry.forEach((type, ctor) => {
+    const ofSchema = getMetaProperty(ctor, OfSchema);
+    const kind = ofSchema?.hasValue ? ofSchema.getValue<string>()! : SCHEMA_KIND_STRUCT;
+    const generator = _schemaGenerators.get(kind);
+    if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
+
+    // Split the schema type into namespace and name
+    type = type.toLocaleLowerCase();
+    const lastDot = type.lastIndexOf('.');
+    const ns = lastDot >= 0 ? type.substring(0, lastDot) : '';
+    const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
+    
+    // Call the generator to create the NodeSchema and register it
+    generator(ns, name, ctor);
+  });
+}
+
+// #endregion
