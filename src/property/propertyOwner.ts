@@ -4,6 +4,7 @@
 // =============================================================================
 
 import { getSchemaKindProperties } from '../runtime/schemaRuntime';
+import { isNull } from '../utility/toolset';
 import { getPropertyName, type IProperty } from './property';
 
 /**
@@ -14,7 +15,7 @@ import { getPropertyName, type IProperty } from './property';
 export function getProperty(owner: Record<string, unknown>, propCtor: new () => IProperty): IProperty | undefined {
   const key = getPropertyName(propCtor);
   const raw = key ? owner?.[key] : undefined;
-  if (raw === undefined || raw === null || raw === "") return undefined;
+  if (isNull(raw)) return undefined;
 
   const temp = new propCtor();
   if (temp.stackable && Array.isArray(raw)) {
@@ -42,7 +43,7 @@ export function getProperties(owner: Record<string, unknown>, ...propCtors: (new
 
     const key = getPropertyName(ctor);
     const raw = key ? owner?.[key] : undefined;
-    if (raw === undefined || raw === null || raw === "") continue;
+    if (isNull(raw)) continue;
 
     const temp = new ctor();
     if (temp.stackable && Array.isArray(raw)) {
@@ -66,7 +67,7 @@ export function getProperties(owner: Record<string, unknown>, ...propCtors: (new
  */
 export function setProperty(owner: Record<string, unknown>, property: IProperty): Record<string, unknown> {
   if (!owner || !property.hasValue) return owner;
-  if (property.stackable && owner[property.name] !== undefined) {
+  if (property.stackable && !isNull(owner[property.name])) {
     const existing = owner[property.name];
     if (Array.isArray(existing)) {
       existing.push(property.getValue());

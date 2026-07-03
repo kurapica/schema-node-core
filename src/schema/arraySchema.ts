@@ -3,10 +3,10 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKindRecord, NodeSchemaKindRecord, ValueSchemaKindRecord, SchemaType, Attach, Append, ForSchema, OfSchema, PropertyValueType } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, PropertyValueType } from '../property/index';
 import { Property } from '../property/property';
 import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
-import type { StructRelationSchema } from './structSchema';
+import { Relations } from './relationSchema';
 
 export interface DataIndex {
   name: string;
@@ -14,18 +14,15 @@ export interface DataIndex {
   isUnique?: boolean;
 }
 
-@Meta(SchemaKindRecord, [SCHEMA_KIND_ARRAY, 10])
-@Meta(NodeSchemaKindRecord, [SCHEMA_KIND_ARRAY, 10])
-@Meta(ValueSchemaKindRecord, [SCHEMA_KIND_ARRAY, 10])
+@Meta(SchemaKind, [SCHEMA_KIND_ARRAY, 10])
+@Meta(NodeSchemaKind, [SCHEMA_KIND_ARRAY, 10])
+@Meta(ValueSchemaKind, [SCHEMA_KIND_ARRAY, 10])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Meta(Attach, SCHEMA_KIND_ARRAY)
+@Meta(Append, [Relations])
 export class ArraySchema {
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.elementtype`)
   element: string = '';
-  single?: boolean;
-  primary?: string[];
-  indexes?: DataIndex[];
-  relations?: StructRelationSchema[];
-  atomic?: boolean;
 }
 
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
