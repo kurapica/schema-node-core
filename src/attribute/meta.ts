@@ -8,6 +8,7 @@
 // =============================================================================
 
 import type { IProperty } from '../property/property';
+import { ForSchema } from '../property/core/forSchema';
 import { Default } from '../property/common/default';
 
 const META_KEY = Symbol('schema-node:meta');
@@ -165,5 +166,3 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
     return kinds?.includes(kind) ?? false;
   });
 }
-
-import { ForSchema } from '../property/core/forSchema';

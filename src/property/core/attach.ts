@@ -13,7 +13,7 @@ import { OfSchema, PropertyValueType, Static } from '../..';
 /**
  * Attach the properties of a schema kind to the struct type
  */
-@Meta(ForSchema, SCHEMA_KIND_STRUCT)
+@Meta(ForSchema, [SCHEMA_KIND_STRUCT])
 @Meta(ReadOnly, true)
 @Meta(Static, true)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.attach`)

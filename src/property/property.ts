@@ -25,9 +25,6 @@ export interface IProperty {
   /** Whether the property carries a non-empty value. */
   readonly hasValue: boolean;
 
-  /** The TypeScript constructor used as a type token (≈ C# Type). */
-  readonly type: Function;
-
   /** Set the raw value onto this property instance. */
   setValue<T>(value: T): void;
 
@@ -68,10 +65,6 @@ export abstract class Property<T> implements IProperty {
 
   get hasValue(): boolean {
     return this._hasValue;
-  }
-
-  get type(): Function {
-    return this.constructor;
   }
 
   /** Override in subclasses for custom coercion. */

@@ -24,7 +24,7 @@ import { NamespaceType, NodeType } from './type';
 let _schemaKindHolder = new Map<string, Function>();
 
 /** The schema kind properties */
-let _schemaKindProperties = new Map<string, (() => IProperty)[]>();
+let _schemaKindProperties = new Map<string, (new () => IProperty)[]>();
 
 /** The node schema generators */
 let _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
@@ -34,10 +34,10 @@ let _schemaGenerators = new Map<string, (namespace: string, name: string, target
  * @param kind The schema kind
  * @returns An array of property factory functions
  */
-export function* getSchemaKindProperties(kind: string): Generator<() => IProperty> {
-  for (const prop of _schemaKindProperties.get(kind) ?? []) {
-    yield prop;
-  }
+export function getSchemaKindProperties(kind: string): (new () => IProperty)[] {
+  const props = _schemaKindProperties.get(kind);
+  if (!props) return [];
+  return [...props]; // Return a copy to avoid external mutation
 }
 
 // #endregion
@@ -232,7 +232,7 @@ export function initSchemaRuntime(): void {
       const appendProperties = getMetaProperty(ctor, Append);
       if (appendProperties?.hasValue) {
         let existed = _schemaKindProperties.get(kind) ?? [];
-        existed.push(...appendProperties.getValue<(() => IProperty)[]>()!);
+        existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
         _schemaKindProperties.set(kind, Array.from(new Set(existed)));
       }
     }
@@ -244,7 +244,7 @@ export function initSchemaRuntime(): void {
       for (const kind of kinds) {
         let existed = _schemaKindProperties.get(kind) ?? [];
         if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
-        existed.push(ctor as unknown as () => IProperty);
+        existed.push(ctor as unknown as new () => IProperty);
         _schemaKindProperties.set(kind, existed);
       }
     }
