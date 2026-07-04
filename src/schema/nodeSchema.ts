@@ -4,18 +4,15 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, SchemaType, Attach, PrimaryIndex } from '../property/index';
-import { ExtensibleSchema } from './extensibleSchema';
+import { SchemaKind, SchemaType, Attach, PrimaryIndex } from '../property/index';
 import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE } from '../utility/constant';
 
 /** Load state flags for tracking schema sources. */
 export enum SchemaLoadState {
   None = 0,
-  Server = 1,
-  Custom = 2,
-  Frontend = 4,
-  System = 8,
-  Remote = 16,
+  System = 1,
+  Server = 2,
+  Remote = 4,
 }
 
 /** A compatible type declaration (for type coercion). */
@@ -26,7 +23,7 @@ export interface CompatibleSchema {
 @Meta(SchemaKind, [SCHEMA_KIND_NODE, 0])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE)
-export class NodeSchema extends ExtensibleSchema {
+export class NodeSchema {
   @Meta(PrimaryIndex, 0)
   namespace?: string;
 
