@@ -2,17 +2,31 @@
 // PropertySchema — extension data under "property" key
 // =============================================================================
 
-import { Meta } from '../attribute/meta';
+import { Meta, getMetaProperty } from '../attribute/meta';
 import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator } from '../property/index';
-import { Property } from '../property/property';
+import { Property, type IProperty } from '../property/property';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
 
+/** Pure data interface. */
+export interface PropertySchema {
+  property: string;
+  valueType?: string;
+  depends?: string[];
+  forSchemas?: string[];
+  forValues?: string[];
+  constraint?: boolean;
+  typeref?: boolean;
+  relationOnly?: boolean;
+  convert?: boolean;
+}
+
+/** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, 12])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_PROPERTY, 12])
 @Meta(SchemaGenerator, generatePropertySchema)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
 @Meta(Attach, SCHEMA_KIND_PROPERTY)
-export class PropertySchema {
+class PropertySchemaMeta implements PropertySchema {
   property: string = '';
   valueType?: string;
   depends?: string[];
@@ -37,9 +51,9 @@ export function generatePropertySchema(namespace: string, name: string, target: 
   const lastDot = fullName.lastIndexOf('.');
   const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
   const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
-  const propData = new PropertySchema();
-  const temp = new (target as new () => IProperty)();
-  propData.property = temp.name;
+  const propData: PropertySchema = {
+    property: new (target as new () => IProperty)().name,
+  };
   const forSchemaProp = getMetaProperty(target as Function, ForSchema);
   if (forSchemaProp?.hasValue) propData.forSchemas = forSchemaProp.getValue<string[]>();
   const proto = (target as { prototype?: Record<string, unknown> }).prototype;

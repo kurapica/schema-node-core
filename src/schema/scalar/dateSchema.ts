@@ -1,6 +1,6 @@
 import { ScalarSchema } from './scalarSchema';
 
-export class DateSchema extends ScalarSchema {
+export interface DateSchema extends ScalarSchema {
   lowLimit?: string;
   upLimit?: string;
 }

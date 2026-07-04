@@ -3,16 +3,22 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKindRecord, NodeSchemaKindRecord, SchemaType, Attach, ForSchema, OfSchema } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, Attach, ForSchema, OfSchema } from '../property/index';
 import { Property } from '../property/property';
 import { NodeSchema } from './nodeSchema';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_NS, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
 
-@Meta(SchemaKindRecord, [SCHEMA_KIND_NAMESPACE, 1])
-@Meta(NodeSchemaKindRecord, [SCHEMA_KIND_NAMESPACE, 1])
+/** Pure data interface. */
+export interface NamespaceSchema {
+  schemas: NodeSchema[];
+}
+
+/** Meta registration class (NOT exported). */
+@Meta(SchemaKind, [SCHEMA_KIND_NAMESPACE, 1])
+@Meta(NodeSchemaKind, [SCHEMA_KIND_NAMESPACE, 1])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NS}.schema`)
 @Meta(Attach, SCHEMA_KIND_NAMESPACE)
-export class NamespaceSchema {
+class NamespaceSchemaMeta implements NamespaceSchema {
   schemas: NodeSchema[] = [];
 }
 

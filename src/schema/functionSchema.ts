@@ -11,11 +11,24 @@ import type { GenericParameter } from '../property/core/generics';
 export interface FunctionArgumentInfo { name: string; type: string; optional?: boolean; }
 export interface FunctionExpression { type: string; func?: string; args?: FunctionExpression[]; value?: unknown; }
 
+/** Pure data interface. */
+export interface FunctionSchema {
+  return: string;
+  args: FunctionArgumentInfo[];
+  exps: FunctionExpression[];
+  generic?: GenericParameter[];
+  converter?: boolean;
+  server?: boolean;
+  nocache?: boolean;
+  sideEffect?: boolean;
+}
+
+/** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, 11])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, 11])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Meta(Attach, SCHEMA_KIND_FUNCTION)
-export class FunctionSchema {
+class FunctionSchemaMeta implements FunctionSchema {
   return: string = '';
   args: FunctionArgumentInfo[] = [];
   exps: FunctionExpression[] = [];
@@ -72,13 +85,15 @@ export function generateFunctionSchema(target: object, runtime: SchemaRuntime): 
     const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
     const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
 
-    const funcData = new FunctionSchema();
-    funcData.return = getMethodMeta(metaStore, methodName, Return)?.getValue<string>() ?? '';
-    funcData.converter = getMethodMeta(metaStore, methodName, Converter)?.getValue<boolean>() ?? false;
-    funcData.server = getMethodMeta(metaStore, methodName, ServerOnly)?.getValue<boolean>() ?? false;
-    funcData.nocache = getMethodMeta(metaStore, methodName, NoCache)?.getValue<boolean>() ?? false;
-    funcData.generic = (getMethodMeta(metaStore, methodName, Generics)?.getValue()) as GenericParameter[] | undefined;
-    funcData.args = extractMethodArgs(metaStore, methodName);
+    const funcData: FunctionSchema = {
+      return: getMethodMeta(metaStore, methodName, Return)?.getValue<string>() ?? '',
+      converter: getMethodMeta(metaStore, methodName, Converter)?.getValue<boolean>() ?? false,
+      server: getMethodMeta(metaStore, methodName, ServerOnly)?.getValue<boolean>() ?? false,
+      nocache: getMethodMeta(metaStore, methodName, NoCache)?.getValue<boolean>() ?? false,
+      generic: (getMethodMeta(metaStore, methodName, Generics)?.getValue()) as GenericParameter[] | undefined,
+      args: extractMethodArgs(metaStore, methodName),
+      exps: [],
+    };
 
     const node = new NodeSchema(nm, SCHEMA_KIND_FUNCTION, ns);
     node.extensions = { func: funcData };

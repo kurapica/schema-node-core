@@ -1,7 +1,4 @@
-// =============================================================================
-// ScalarSchema — base for scalar type extension data
-// =============================================================================
-
-export class ScalarSchema {
+// Base scalar interface (not a standalone schema kind — extended by specific scalars)
+export interface ScalarSchema {
   base?: string;
 }

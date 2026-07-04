@@ -14,13 +14,19 @@ export interface DataIndex {
   isUnique?: boolean;
 }
 
+/** Pure data interface. */
+export interface ArraySchema {
+  element: string;
+}
+
+/** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, 10])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_ARRAY, 10])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_ARRAY, 10])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Meta(Attach, SCHEMA_KIND_ARRAY)
 @Meta(Append, [Relations])
-export class ArraySchema {
+class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.elementtype`)
   element: string = '';
 }

@@ -1,6 +1,6 @@
 import { ScalarSchema } from './scalarSchema';
 
-export class DecimalSchema extends ScalarSchema {
+export interface DecimalSchema extends ScalarSchema {
   lowLimit?: number;
   upLimit?: number;
 }

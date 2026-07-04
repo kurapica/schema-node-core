@@ -4,15 +4,35 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
+import { SchemaLoadState } from '../enum/schemaLoadState';
 import { SchemaKind, SchemaType, Attach, PrimaryIndex } from '../property/index';
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE } from '../utility/constant';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NS } from '../utility/constant';
 
-/** Load state flags for tracking schema sources. */
-export enum SchemaLoadState {
-  None = 0,
-  System = 1,
-  Server = 2,
-  Remote = 4,
+/** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
+export interface NodeSchema {
+  /** The namespace which includes the schema */
+  namespace?: string;
+
+  /** The schema name */
+  name: string;
+
+  /** The schema kind */
+  kind: string;
+
+  /** Sub-schemas — only for namespace schemas. */
+  schemas?: NodeSchema[];
+
+  /** Compatible type names for coercion. */
+  compatibles?: CompatibleSchema[];
+
+  /** Schemas that reference (use) this one. */
+  usedBy?: string[];
+
+  /** Load state tracking. */
+  loadState?: SchemaLoadState;
+
+  /** The error status */
+  error?: string;
 }
 
 /** A compatible type declaration (for type coercion). */
@@ -23,14 +43,15 @@ export interface CompatibleSchema {
 @Meta(SchemaKind, [SCHEMA_KIND_NODE, 0])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE)
-export class NodeSchema {
+export class NodeSchemaMeta implements NodeSchema {
   @Meta(PrimaryIndex, 0)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NS}.type`)
   namespace?: string;
 
   @Meta(PrimaryIndex, 1)
   name: string = '';
 
-  @Meta(SchemaType, 'system.string')
+  @Meta(SchemaType, NS_SYSTEM_STRING)
   kind: string = '';
 
   /** Sub-schemas — only for namespace schemas. */
@@ -48,12 +69,5 @@ export class NodeSchema {
   /** Full qualified name: namespace.name. */
   get fullName(): string {
     return this.namespace ? `${this.namespace}.${this.name}` : this.name;
-  }
-
-  constructor(name?: string, kind?: string, namespace?: string) {
-    super();
-    this.name = name ?? '';
-    this.kind = kind ?? '';
-    this.namespace = namespace;
   }
 }

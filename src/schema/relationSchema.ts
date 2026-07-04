@@ -7,10 +7,19 @@ import { SchemaKind, SchemaType, Attach, ForSchema, OfSchema } from '../property
 import { Property } from '../property/property';
 import { SCHEMA_KIND_RELATION, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
 
+/** Pure data interface. */
+export interface RelationSchema {
+  target: string;
+  property: string;
+  stage: number;
+  kind: string;
+}
+
+/** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_RELATION, 13])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.schema`)
 @Meta(Attach, SCHEMA_KIND_RELATION)
-export class RelationSchema {
+class RelationSchemaMeta implements RelationSchema {
   target: string = '';
   property: string = '';
   stage: number = 0;
