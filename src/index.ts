@@ -75,7 +75,4 @@ export { registerSystemSchemas } from './function/systemSchemas';
 
 // ── Struct & System Types ──────────────────────────────────────────────────
 export { systemStructTypes, systemScalarTypes } from './struct/systemTypes';
-export {
-  SystemLocaleTran, SystemLocaleString, SystemRangeDate,
-  SystemIdentifier, SystemYear, SystemGuid,
-} from './struct/systemTypes';
+export * from './struct/systemTypes';

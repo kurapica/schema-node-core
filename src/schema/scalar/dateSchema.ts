@@ -10,7 +10,7 @@ import { NodeSchema } from '../nodeSchema';
 
 /** The date schema */
 export interface DateSchema {
-  /** THe base schema type */
+  /** The base schema type */
   base?: string;
 }
 
@@ -21,7 +21,7 @@ export interface DateSchema {
 @Meta(RuntimeNodeType, DateType)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Meta(SchemaGenerator, generateDateSchema)
-class DataSchemaMeta {
+class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;
 }
