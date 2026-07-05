@@ -12,7 +12,7 @@ import { getPropertyName, type IProperty } from './property';
  * Derives the property name from the constructor, looks up in extensions, 
  * and wraps the raw value into a new property instance.
  */
-export function getProperty(owner: Record<string, unknown>, propCtor: new () => IProperty): IProperty | undefined {
+export function getProperty(owner: any, propCtor: new () => IProperty): IProperty | undefined {
   const key = getPropertyName(propCtor);
   const raw = key ? owner?.[key] : undefined;
   if (isNull(raw)) return undefined;
@@ -31,7 +31,7 @@ export function getProperty(owner: Record<string, unknown>, propCtor: new () => 
 /**
  * Get all properties with given property types.
  */
-export function getProperties(owner: Record<string, unknown>, ...propCtors: (new () => IProperty)[]): IProperty[] {
+export function getProperties(owner: any, ...propCtors: (new () => IProperty)[]): IProperty[] {
   if (owner === null) return [];
   
   const seen = new Set<Function>();
@@ -65,7 +65,7 @@ export function getProperties(owner: Record<string, unknown>, ...propCtors: (new
 /**
  * Store a property into the extensions dictionary by its name.
  */
-export function setProperty(owner: Record<string, unknown>, property: IProperty): Record<string, unknown> {
+export function setProperty(owner: any, property: IProperty): any {
   if (!owner || !property.hasValue) return owner;
   if (property.stackable && !isNull(owner[property.name])) {
     const existing = owner[property.name];
@@ -83,7 +83,7 @@ export function setProperty(owner: Record<string, unknown>, property: IProperty)
 }
 
 /** Sets the value of a property */
-export function setPropertyValue(owner: Record<string, unknown>, propCtor: new () => IProperty, value: unknown): Record<string, unknown> {
+export function setPropertyValue(owner: any, propCtor: new () => IProperty, value: unknown): any {
   const prop = new propCtor();
   prop.setValue(value);
   return setProperty(owner, prop);
@@ -96,7 +96,7 @@ export function setPropertyValue(owner: Record<string, unknown>, propCtor: new (
  * @param other The other property owner
  * @param kind The schema kind
  */
-export function combineProperties(owner: Record<string, unknown>, other: Record<string, unknown> | undefined, kind: string): Record<string, unknown> {
+export function combineProperties(owner: any, other: any | undefined, kind: string): any {
   if (!kind || !other) return owner;
 
   for (const propCtor of getSchemaKindProperties(kind)) {

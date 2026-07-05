@@ -1,12 +1,12 @@
 // =============================================================================
-// NodeSchema — the core schema container node
 // Mirrors C# SchemaNode.Core/Schema/NodeSchema.cs
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
-import { SchemaKind, SchemaType, Attach, PrimaryIndex } from '../property/index';
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NS } from '../utility/constant';
+import { Base } from '../property/core/base';
+import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid } from '../property/index';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE } from '../utility/constant';
 
 /** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
 export interface NodeSchema {
@@ -40,19 +40,27 @@ export interface CompatibleSchema {
   type: string;
 }
 
-@Meta(SchemaKind, [SCHEMA_KIND_NODE, 0])
+/**
+ * The meta definition of the node schema
+ */
+@Meta(SchemaKind, [SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_NODE])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE)
-export class NodeSchemaMeta implements NodeSchema {
+class NodeSchemaMeta implements NodeSchema {
   @Meta(PrimaryIndex, 0)
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NS}.type`)
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
   namespace?: string;
 
   @Meta(PrimaryIndex, 1)
+  @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
   name: string = '';
 
-  @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
   kind: string = '';
+
+  /** The error status */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_ERROR)
+  error?: string;
 
   /** Sub-schemas — only for namespace schemas. */
   schemas?: NodeSchema[];
@@ -65,9 +73,19 @@ export class NodeSchemaMeta implements NodeSchema {
 
   /** Load state tracking. */
   loadState?: SchemaLoadState;
-
-  /** Full qualified name: namespace.name. */
-  get fullName(): string {
-    return this.namespace ? `${this.namespace}.${this.name}` : this.name;
-  }
 }
+
+/** Represents the namespace type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+@Meta(Base, NS_SYSTEM_STRING)
+@Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
+@Meta(EntrySource, { func: `${NS_SYSTEM_SCHEMA_REFLECT}.gettypes`, args: [ { source: NODE_SELF } ] })
+class AnyTypeMeta {}
+
+/** Represents the value type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, args: [ { source: NODE_SELF }] } )
+class ValueTypeMeta {}

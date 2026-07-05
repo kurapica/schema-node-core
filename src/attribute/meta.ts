@@ -112,13 +112,13 @@ function* walkChain(ctor: Function): Generator<MetaEntry> {
  */
 export function getMetaProperties<T extends IProperty>(
   ctor: Function,
-  propCtor: new () => T,
+  propCtor?: new () => T,
   field?: string | symbol,
 ): T[] {
   const results: T[] = [];
   for (const entry of walkChain(ctor)) {
     const p = entry.property;
-    if (!(p instanceof propCtor)) continue;
+    if (propCtor != null && !(p instanceof propCtor)) continue;
     if (field !== undefined) {
       const mp = p as IProperty & { _memberKey?: string | symbol };
       if (mp._memberKey !== field) continue;
@@ -153,9 +153,9 @@ export function getMetaProperty<T extends IProperty>(
  * @TODO: wrong, need check the schema kind registerion
  */
 export function getMetaPropertiesForSchema<T extends IProperty>(
-  ctor: Function,
-  propCtor: new () => T,
   kind: string,
+  ctor: Function,
+  propCtor?: new () => T,
 ): T[] {
   return getMetaProperties(ctor, propCtor).filter((p) => {
     // Check if the property's own class has @Meta(ForSchema, [kind])

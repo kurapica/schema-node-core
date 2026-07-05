@@ -96,14 +96,18 @@ export const NS_SYSTEM_ENTRY = 'system.entry';
 export const NS_SYSTEM_SCHEMA = 'system.schema';
 export const NS_SYSTEM_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA}.kind`;
 export const NS_SYSTEM_SCHEMA_NODE = `${NS_SYSTEM_SCHEMA}.node`;
+export const NS_SYSTEM_SCHEMA_NODE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.type`;
+export const NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.valuetype`;
 export const NS_SYSTEM_SCHEMA_NODE_VALUE_KIND = `${NS_SYSTEM_SCHEMA}.node.valuekind`;
-export const NS_SYSTEM_SCHEMA_NS = `${NS_SYSTEM_SCHEMA}.namespace`;
+export const NS_SYSTEM_SCHEMA_NAMESPACE = `${NS_SYSTEM_SCHEMA}.namespace`;
+export const NS_SYSTEM_SCHEMA_NAMESPACE_TYPE = `${NS_SYSTEM_SCHEMA_NAMESPACE}.type`;
 export const NS_SYSTEM_SCHEMA_OBJECT = `${NS_SYSTEM_SCHEMA}.object`;
 export const NS_SYSTEM_SCHEMA_BOOL = `${NS_SYSTEM_SCHEMA}.bool`;
 export const NS_SYSTEM_SCHEMA_INT = `${NS_SYSTEM_SCHEMA}.int`;
 export const NS_SYSTEM_SCHEMA_DECIMAL = `${NS_SYSTEM_SCHEMA}.decimal`;
 export const NS_SYSTEM_SCHEMA_STRING = `${NS_SYSTEM_SCHEMA}.string`;
 export const NS_SYSTEM_SCHEMA_DATE = `${NS_SYSTEM_SCHEMA}.date`;
+export const NS_SYSTEM_SCHEMA_DATE_TYPE = `${NS_SYSTEM_SCHEMA_DATE}.type`;
 export const NS_SYSTEM_SCHEMA_ENUM = `${NS_SYSTEM_SCHEMA}.enum`;
 export const NS_SYSTEM_SCHEMA_STRUCT = `${NS_SYSTEM_SCHEMA}.struct`;
 export const NS_SYSTEM_SCHEMA_STRUCT_FIELD = `${NS_SYSTEM_SCHEMA_STRUCT}.field`;
@@ -132,6 +136,17 @@ export const NS_SYSTEM_STR = 'system.str';
 export const NS_SYSTEM_SCHEMA_REFLECT = `${NS_SYSTEM_SCHEMA}.reflect`;
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC = `${NS_SYSTEM_SCHEMA}.func`;
 
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`;
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`;
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE = `${NS_SYSTEM_SCHEMA_REFLECT}.isarrayele`;
+export const NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES = `${NS_SYSTEM_SCHEMA_REFLECT}.getsubentries`;
+
+
+export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`;
+export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_ARGS = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withargs`;
+
+export const NS_SYSTEM_LOGIC_EQ = `${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.eq)}`;
+
 // ── Expression Priority ────────────────────────────────────────────────────
 
 export const EXP_INTRINSIC_PRIORITY = 100;
@@ -145,3 +160,4 @@ export const EXP_DATA_SOURCE_PRIORITY = 60;
 export const LANGUAGE_MAX_LEN = 8;
 export const PRIMARY_KEY_MAX_LEN = 128;
 export const ENTITY_PRIMARY_KEY_MAX_LEN = 128;
+
