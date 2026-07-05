@@ -1,11 +1,12 @@
 import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
+import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveSchema } from '../../runtime/schemaRuntime';
 import { DateType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
 import { NodeSchema } from '../nodeSchema';
 
 /** The date schema */
@@ -54,6 +55,7 @@ function generateDateSchema(namespace: string, name: string, ctor: Function)
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_DATE };
   const dateSchema : DateSchema = {};
 
+  setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_DATE, ctor).forEach(p => setProperty(dateSchema, p));
   setPropertyValue(nodeSchema, DateProperty, dateSchema);

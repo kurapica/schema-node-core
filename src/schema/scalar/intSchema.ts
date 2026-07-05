@@ -1,11 +1,12 @@
 import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
+import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveSchema } from '../../runtime/schemaRuntime';
 import { IntType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_INT_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_INT, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_INT, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
 import { NodeSchema } from '../nodeSchema';
 
 /** The int schema */
@@ -49,11 +50,11 @@ export class IntProperty extends Property<IntSchema>
 }
 
 /** Generate the date schema */
-function generateIntSchema(namespace: string, name: string, ctor: Function)
-{
+function generateIntSchema(namespace: string, name: string, ctor: Function) {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_INT };
   const IntSchema : IntSchema = {};
 
+  setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_INT, ctor).forEach(p => setProperty(IntSchema, p));
   setPropertyValue(nodeSchema, IntProperty, IntSchema);

@@ -1,11 +1,12 @@
 import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
+import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, ValueSchemaKind, Visible } from '../../property';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveSchema } from '../../runtime/schemaRuntime';
 import { DecimalType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
 import { NodeSchema } from '../nodeSchema';
 
 /** The decimal schema */
@@ -54,6 +55,7 @@ function generateDecimalSchema(namespace: string, name: string, ctor: Function)
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_DECIMAL };
   const decimalSchema : DecimalSchema = {};
 
+  setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_DECIMAL, ctor).forEach(p => setProperty(decimalSchema, p));
   setPropertyValue(nodeSchema, DecimalProperty, decimalSchema);

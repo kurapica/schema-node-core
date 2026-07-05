@@ -1,5 +1,5 @@
 import { Meta } from "../attribute/meta";
-import { OfSchema, SchemaType } from "../property";
+import { OfSchema, Require, SchemaType } from "../property";
 import { SCHEMA_KIND_STRUCT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_TRAN } from "../utility/constant";
 import { LocaleTran } from "./localeTran";
 
@@ -9,7 +9,7 @@ export interface LocaleString {
     key: string;
 
     /** The translations */
-    trans: LocaleTran[];
+    trans?: LocaleTran[];
 }
 
   /** Concat the other locale string */
@@ -40,10 +40,10 @@ export function concatLocaleString(left: LocaleString, right: LocaleString): Loc
 class LocaleStringMeta {
   /** The key */
   @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(Require, true)
   key!: string;
 
   /** The translations */
   @Meta(SchemaType, `${NS_SYSTEM_LOCALE_TRAN}s`) // trans array
-  trans!: LocaleTran[];
-
+  trans?: LocaleTran[];
 }

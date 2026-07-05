@@ -1,3 +1,9 @@
+/** Gets the combine name */
+export function combinePaths(...names: string[])
+{
+  return names.filter(n => !isEmpty(n)).join('.')
+}
+
 /**
  * is null
  */
@@ -20,7 +26,6 @@ export function isEmpty(value: any)
   }
   return false
 }
-
 
 /**
  * Debounce function

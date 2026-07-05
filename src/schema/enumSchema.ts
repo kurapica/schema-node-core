@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { Meta, getMetaProperty } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
@@ -12,7 +12,11 @@ import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { EnumType } from '../runtime/type';
 import { PrimaryIndex, Require, UpLimitString } from '../property/constraint';
 import { Relation } from '../attribute/relation';
-import { combineProperties } from '../property/propertyOwner';
+import { combineProperties, setPropertyValue } from '../property/propertyOwner';
+import { NodeSchema } from './nodeSchema';
+import { FromEnum } from '../property/core/fromEnum';
+import { combinePaths } from '../utility/toolset';
+import { saveSchema } from '../runtime/schemaRuntime';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -123,54 +127,54 @@ export class EnumProperty extends Property<EnumSchema> {
       return true;
     }
 
+    // combine cascade
     if (selfSchema.cascade?.length && otherSchema.cascade?.length)
     {
       for (let i = 0; i < Math.min(selfSchema.cascade.length, otherSchema.cascade.length); i++)
-      {
-        const c = selfSchema.cascade[i];
-        const o = otherSchema.cascade[i];
-        selfSchema.cascade[i] = concatLocaleString(c, o);
-      }
+        selfSchema.cascade[i] = concatLocaleString(selfSchema.cascade[i], otherSchema.cascade[i]);
     }
 
+    // combine enum values
     for (let i = 0; i < Math.min(selfSchema.values.length, otherSchema.values.length); i++)
-    {
       combineProperties(selfSchema.values[i], otherSchema.values[i], SCHEMA_KIND_ENUM_VALUE);
-    }
 
+    // combine properties
     combineProperties(selfSchema, otherSchema, SCHEMA_KIND_ENUM);
     this.setValue(selfSchema);
     return true;
   }
 }
 
-function generateEnumSchema(namespace: string, name: string, enumDefine: object): void {
-  const schemaTypeProp = getMetaProperty(target as Function, SchemaType);
-  if (!schemaTypeProp?.hasValue) return;
-  const fullName = schemaTypeProp.getValue<string>()!;
-  const lastDot = fullName.lastIndexOf('.');
-  const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
-  const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
-  const enumData: EnumSchema = {
-    values: buildEnumValues(target),
-    type: EnumValueType.String,
-  };
-  enumData.type = inferEnumType(enumData.values);
-  const node = new NodeSchema(nm, SCHEMA_KIND_ENUM, ns);
-  node.extensions = { enum: enumData };
-  runtime.saveSchema(node);
+function generateEnumSchema(namespace: string, name: string, ctor: Function) {
+  const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_ENUM }
+
+  const enumSchema : EnumSchema = { type: EnumValueType.String, values: [] }
+
+  const forEnum = getMetaProperty(ctor, FromEnum)?.getValue();
+  const enumName = combinePaths(namespace, name);
+  if (forEnum)
+  {
+    enumSchema.values = buildEnumValues(enumName, forEnum);
+  }
+  else
+  {
+    // record
+    const values = getRecordedValues(ctor);
+    enumSchema.values = values.map(v => (setPropertyValue({ value: v.getValue<string>()! }, Display, { key: `${enumName}.${v.getValue<string>()!}`})));
+  }
+  if (!enumSchema.values?.length) return;
+  enumSchema.type = inferEnumType(enumSchema.values);
+  setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
+  setPropertyValue(nodeSchema, EnumProperty, enumSchema);
+  saveSchema(nodeSchema);
 }
 
-
-export function registerEnumGenerator(runtime: SchemaRuntime): void {
-  runtime.registerSchemaKind(SCHEMA_KIND_ENUM, { generator: generateEnumSchema });
-}
-
-function buildEnumValues(target: object): EnumValueSchema[] {
+function buildEnumValues(enumName: string, target: object): EnumValueSchema[] {
   const values: EnumValueSchema[] = [];
   for (const key of Object.getOwnPropertyNames(target).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name')) {
     const val = (target as Record<string, unknown>)[key];
-    if (typeof val === 'string' || typeof val === 'number') values.push({ value: String(val) });
+    if (typeof val === 'string' || typeof val === 'number') 
+      values.push(setPropertyValue({ value: String(val) }, Display, { key: `${enumName}.${key}` }));
   }
   return values;
 }
