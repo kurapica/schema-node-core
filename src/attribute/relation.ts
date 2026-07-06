@@ -97,6 +97,13 @@ export function Relation(
   ...args: string[]
 ): ClassDecorator {
   return ((target: object) => {
+    let rtar : string | undefined
+    if (func.startsWith('$'))
+    {
+      rtar = func;
+      func = args.splice(0, 1)[0];
+    }
+
     const callArgs: CallArg[] = args.map((a) => {
       if (typeof a === 'string' && a.startsWith('$') && !a.startsWith('$$')) {
         return { source: a };
@@ -105,6 +112,7 @@ export function Relation(
     });
     ensureStore(target as Function).push({
       propertyClass: propClass,
+      target: rtar,
       process: createCall(func, callArgs),
       stage: RelationStage.Load | RelationStage.Input,
     });

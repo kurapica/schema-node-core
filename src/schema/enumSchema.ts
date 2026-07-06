@@ -5,18 +5,19 @@
 import { Meta, getMetaProperty } from '../attribute/meta';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display } from '../property/index';
 import { IProperty, Property } from '../property/property';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ } from '../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
 import { concatLocaleString, LocaleString } from '../struct';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { EnumType } from '../runtime/type';
-import { PrimaryIndex, Require, UpLimitString } from '../property/constraint';
+import { PrimaryIndex, Require, UpLimitString, Valid } from '../property/constraint';
 import { Relation } from '../attribute/relation';
 import { combineProperties, setPropertyValue } from '../property/propertyOwner';
 import { NodeSchema } from './nodeSchema';
 import { FromEnum } from '../property/core/fromEnum';
 import { combinePaths } from '../utility/toolset';
 import { saveSchema } from '../runtime/schemaRuntime';
+import { Base } from '../property/core/base';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -144,6 +145,13 @@ export class EnumProperty extends Property<EnumSchema> {
     return true;
   }
 }
+
+/** Represents the enum value type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_ENUM }] } )
+class StringTypeMeta {}
 
 function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_ENUM }

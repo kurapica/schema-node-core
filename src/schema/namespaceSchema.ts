@@ -15,7 +15,7 @@ import { Base } from '../property/core/base';
 @Meta(RuntimeNodeType, NamespaceType)
 class NamespaceSchemaMeta {}
 
-/** Represents the value type */
+/** Represents the namespace type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
