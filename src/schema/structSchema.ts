@@ -3,15 +3,18 @@
 // StructProperty is the Property<StructSchema> bridge for getProperty/getProperties
 // =============================================================================
 
-import { Meta, getMetaProperty } from '../attribute/meta';
+import { Meta, getMetaProperties, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, PropertyValueType, SchemaGenerator, EntrySource, Require } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, EntrySource, Require, Display } from '../property/index';
 import { IProperty, Property } from '../property/property';
-import { combineProperties } from '../property/propertyOwner';
+import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
+import { saveSchema } from '../runtime/schemaRuntime';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRING, SCHEMA_KIND_ORDER_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES, RELATION_OWNER, NODE_SELF, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES, RELATION_OWNER, NODE_SELF, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG } from '../utility/constant';
+import { combinePaths } from '../utility/toolset';
 import { CallArg } from './functionSchema';
+import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
 
 /** A single field definition within a struct. */
@@ -175,31 +178,28 @@ export class StructProperty extends Property<StructSchema> {
   }
 }
 
+export function generateStructSchema(namespace: string, name: string, ctor: Function) {
+  const structName = combinePaths(namespace, name);
 
-export function generateStructSchema(name: string, target: object): void {
-  const schemaTypeProp = getMetaProperty(target as Function, SchemaType);
-  if (!schemaTypeProp?.hasValue) return;
-  const fullName = schemaTypeProp.getValue<string>()!;
-  const lastDot = fullName.lastIndexOf('.');
-  const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
-  const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
-  const structData: StructSchema = { fields: buildStructFields(target) };
-  const node = new NodeSchema(nm, SCHEMA_KIND_STRUCT, ns);
-  node.extensions = { struct: structData };
-  saveSchema(node);
-}
-
-function buildStructFields(target: object): StructFieldSchema[] {
-  const fields: StructFieldSchema[] = [];
-  const proto = (target as { prototype?: object }).prototype;
-  if (!proto) return fields;
+  const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRUCT };
+  const structSchema: StructSchema = { fields : [] };
+  
+  const proto = (ctor as { prototype?: object }).prototype;
+  if (!proto) return;
   const metaStore = (proto as Record<symbol, Array<{ property: { _memberKey?: string } }>>)[Symbol.for('schema-node:meta')];
-  if (!metaStore) return fields;
-  let seqno = 0;
+  if (!metaStore) return;
   for (const entry of metaStore) {
     const p = entry.property;
     if (!p._memberKey || !(entry.property instanceof SchemaType)) continue;
-    fields.push({ name: p._memberKey, type: (entry.property as SchemaType).getValue<string>()!, seqno: seqno++, extensions: {} });
+    const field = { name: p._memberKey, type: (entry.property as SchemaType).getValue<string>()! };
+    getMetaProperties(ctor, undefined, field.name).forEach(p => setProperty(field, p)); // for simple now
+    structSchema.fields.push(field);
   }
-  return fields;
+  
+  // build
+  setPropertyValue(nodeSchema, Display, { key: structName });
+  getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
+  getMetaPropertiesForSchema(SCHEMA_KIND_STRUCT, ctor).forEach(p => setProperty(structSchema, p));  
+  setPropertyValue(nodeSchema, StructProperty, structSchema);
+  saveSchema(nodeSchema);
 }

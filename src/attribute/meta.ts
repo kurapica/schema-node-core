@@ -156,8 +156,9 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
   kind: string,
   ctor: Function,
   propCtor?: new () => T,
+  field?: string | symbol
 ): T[] {
-  return getMetaProperties(ctor, propCtor).filter((p) => {
+  return getMetaProperties(ctor, propCtor, field).filter((p) => {
     // Check if the property's own class has @Meta(ForSchema, [kind])
     const pCtor = p.constructor as Function;
     const forSchema = getMetaProperty(pCtor, ForSchema) as ForSchema | undefined;

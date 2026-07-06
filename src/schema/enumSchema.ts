@@ -2,7 +2,7 @@
 // Mirros C# SchemaNode.Core/Schema/EnumSchema.cs
 // =============================================================================
 
-import { Meta, getMetaProperty } from '../attribute/meta';
+import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
@@ -12,7 +12,7 @@ import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { EnumType } from '../runtime/type';
 import { PrimaryIndex, Require, UpLimitString, Valid } from '../property/constraint';
 import { Relation } from '../attribute/relation';
-import { combineProperties, setPropertyValue } from '../property/propertyOwner';
+import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { NodeSchema } from './nodeSchema';
 import { FromEnum } from '../property/core/fromEnum';
 import { combinePaths } from '../utility/toolset';
@@ -155,7 +155,6 @@ class StringTypeMeta {}
 
 function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_ENUM }
-
   const enumSchema : EnumSchema = { type: EnumValueType.String, values: [] }
 
   const forEnum = getMetaProperty(ctor, FromEnum)?.getValue();
@@ -172,7 +171,11 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   }
   if (!enumSchema.values?.length) return;
   enumSchema.type = inferEnumType(enumSchema.values);
+
+  // build
   setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
+  getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
+  getMetaPropertiesForSchema(SCHEMA_KIND_ENUM, ctor).forEach(p => setProperty(enumSchema, p));  
   setPropertyValue(nodeSchema, EnumProperty, enumSchema);
   saveSchema(nodeSchema);
 }
