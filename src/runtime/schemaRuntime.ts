@@ -10,13 +10,14 @@
 // Notice: There is no need to create an instance of SchemaRuntime, it is a singleton and all methods are static.
 // =============================================================================
 
-import { NodeSchema, SchemaLoadState } from '../schema/nodeSchema';
+import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
 import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
 import { NamespaceType, NodeType } from './type';
+import { SchemaLoadState } from '../enum/schemaLoadState';
 
 // #region ── Schema Kind Configuration ─────────────────────────────────────────────
 
@@ -40,6 +41,16 @@ export function getSchemaKindProperties(kind: string): (new () => IProperty)[] {
   return [...props]; // Return a copy to avoid external mutation
 }
 
+/** Gets the schema kinds the property can works with */
+export function getPropertyForSchemas(prop: new () => IProperty) : string[] {
+  return _schemaKindProperties.keys().filter(e => _schemaKindProperties.get(e)?.includes(prop)).toArray()
+}
+
+/** Whether the property works for the schema kind */
+export function isSchemaKindProperty(kind: string, prop: new () => IProperty) : boolean {
+  return _schemaKindProperties.get(kind)?.includes(prop) ?? false;
+}
+
 // #endregion
 
 // #region ── Schema Registration (NodeSchema family) ────────────────────────────
@@ -50,7 +61,7 @@ export function getSchemaKindProperties(kind: string): (new () => IProperty)[] {
 const _schemaTypeRegistry = new Map<Function, string>();
 
 /** Root namespace — holds all registered schemas in a tree. */
-const rootNamespace = new NodeSchema('', SCHEMA_KIND_NAMESPACE, '');
+const rootNamespace : NodeSchema = { namespace: "", name: "", kind : SCHEMA_KIND_NAMESPACE };
 
 /** Schema lookups by full name for fast access. */
 const _schemaIndex = new Map<string, NodeSchema>();
@@ -84,7 +95,7 @@ export function saveSchema(schema: NodeSchema, loadStage: SchemaLoadState = Sche
   _setLoadState(schema, loadStage);
 
   _registerInNamespace(ns, schema);
-  _schemaIndex.set(schema.fullName, schema);
+  _schemaIndex.set(getNodeSchemaName(schema), schema);
 }
 
 /** Look up a schema by full name. */
@@ -106,7 +117,7 @@ export function deleteSchema(fullName: string): boolean {
 /** Set the load state flags for a schema and its children. */
 function _setLoadState(schema: NodeSchema, loadStage: SchemaLoadState): void {
   schema.loadState ??= loadStage;
-  schema.loadState |= loadStage;
+  schema.loadState! |= loadStage;
 
   if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas) {
     for (const child of schema.schemas) {
@@ -130,11 +141,11 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
     current.schemas ??= [];
     let child = current.schemas.find((s) => s.name === part);
     if (child && child.kind !== SCHEMA_KIND_NAMESPACE) {
-      throw new Error(`Schema conflict: ${child.fullName} is not a namespace`);
+      throw new Error(`Schema conflict: ${getNodeSchemaName(child)} is not a namespace`);
     }
 
     if (!child) {
-      child = new NodeSchema(part, SCHEMA_KIND_NAMESPACE, current.fullName);
+      child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE };
       current.schemas.push(child);
     }
     current = child;
@@ -144,7 +155,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
   const idx = current.schemas.findIndex((s) => s.name === schema.name);
   if (idx >= 0) {
     if (current.schemas[idx].kind !== schema.kind)
-      throw new Error(`Schema conflict: ${current.schemas[idx].fullName} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
+      throw new Error(`Schema conflict: ${getNodeSchemaName(current.schemas[idx])} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
     current.schemas[idx] = schema; // replace existing
   } else {
     current.schemas.push(schema);

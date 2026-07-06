@@ -6,7 +6,7 @@
 import { Meta, getMetaProperties, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, EntrySource, Require, Display } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, EntrySource, Require, Display, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
@@ -93,6 +93,7 @@ class StructUnionValidationMeta implements StructUnionValidation {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
+@Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 export class StructProperty extends Property<StructSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<StructSchema>();
@@ -183,10 +184,7 @@ export function generateStructSchema(namespace: string, name: string, ctor: Func
 
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRUCT };
   const structSchema: StructSchema = { fields : [] };
-  
-  const proto = (ctor as { prototype?: object }).prototype;
-  if (!proto) return;
-  const metaStore = (proto as Record<symbol, Array<{ property: { _memberKey?: string } }>>)[Symbol.for('schema-node:meta')];
+  const metaStore = ((ctor as { prototype?: object })?.prototype as Record<symbol, Array<{ property: { _memberKey?: string } }>>)[Symbol.for('schema-node:meta')];
   if (!metaStore) return;
   for (const entry of metaStore) {
     const p = entry.property;
