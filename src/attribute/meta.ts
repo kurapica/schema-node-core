@@ -130,14 +130,10 @@ export function getMetaProperty<T extends IProperty>(
 ): T | undefined {
   for (const entry of getMetaEntriesRaw(ctor)) {
     if (field ? entry._memberKey != field : entry._memberKey) continue;
-    if (field && !isNull(index) && entry._paramIndex != index) continue;
+    if (!isNull(index) ? entry._paramIndex != index : !isNull(entry._paramIndex)) continue;
 
     const p = entry.property;
     if (!(p instanceof propCtor)) continue;
-    if (field !== undefined) {
-      const mp = p as IProperty & { _memberKey?: string | symbol };
-      if (mp._memberKey !== field) continue;
-    }
     return p as unknown as T;
   }
   return undefined;
@@ -145,7 +141,6 @@ export function getMetaProperty<T extends IProperty>(
 
 /**
  * Get all Meta properties of type T from a constructor, optionally scoped to a field.
- * Walks the prototype chain (inheritance support).
  * @param ctor   The constructor (class)
  * @param propCtor The property type to filter
  * @param field  Optional field/method name to scope to
@@ -154,15 +149,15 @@ export function getMetaProperties<T extends IProperty>(
   ctor: Function,
   propCtor?: new () => T,
   field?: string | symbol,
+  index?: number
 ): T[] {
   const results: T[] = [];
   for (const entry of getMetaEntriesRaw(ctor)) {
+    if (field ? entry._memberKey != field : entry._memberKey) continue;
+    if (!isNull(index) ? entry._paramIndex != index : !isNull(entry._paramIndex)) continue;
+
     const p = entry.property;
     if (propCtor != null && !(p instanceof propCtor)) continue;
-    if (field !== undefined) {
-      const mp = p as IProperty & { _memberKey?: string | symbol };
-      if (mp._memberKey !== field) continue;
-    }
     results.push(p as unknown as T);
   }
   return results;
@@ -175,7 +170,9 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
   kind: string,
   ctor: Function,
   propCtor?: new () => T,
-  field?: string | symbol
+  field?: string | symbol,
+  index?: number
 ): T[] {
-  return getMetaProperties(ctor, propCtor, field).filter((p) => isSchemaKindProperty(kind, p.constructor as unknown as new () => IProperty));
+  return getMetaProperties(ctor, propCtor, field, index)
+    .filter((p) => isSchemaKindProperty(kind, p.constructor as unknown as new () => IProperty));
 }

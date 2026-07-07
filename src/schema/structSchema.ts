@@ -3,7 +3,7 @@
 // StructProperty is the Property<StructSchema> bridge for getProperty/getProperties
 // =============================================================================
 
-import { Meta, getMetaProperties, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
+import { Meta, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, EntrySource, Require, Display, PropertyValueType } from '../property/index';
@@ -17,6 +17,12 @@ import { CallArg } from './functionSchema';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
 
+/** The struct schema */
+export interface StructSchema {
+  fields: StructFieldSchema[];
+  unionValids?: StructUnionValidation[];
+}
+
 /** A single field definition within a struct. */
 export interface StructFieldSchema {
   name: string;
@@ -29,12 +35,6 @@ export interface StructUnionValidation {
   func: string;
   args: CallArg[];
   error?: string;
-}
-
-/** The struct schema */
-export interface StructSchema {
-  fields: StructFieldSchema[];
-  unionValids?: StructUnionValidation[];
 }
 
 /** Built-in struct type Meta registration (NOT exported). */
