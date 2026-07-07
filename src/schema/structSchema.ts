@@ -7,17 +7,19 @@ import { Meta, getMetaFields, getMetaProperties, getMetaPropertiesForSchema } fr
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
-import { Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType } from '../property/index';
+import { DataIndex, Indexes } from '../property/constraint/indexes';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_ARRAY } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_DECIMAL, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
-import { ArraySchema, ArrayProperty, DataIndex } from './arraySchema';
+import { ArraySchema, ArrayProperty } from './arraySchema';
+import { Relation } from '../attribute/relation';
+import { Base } from '../property/core/base';
 
 /** The struct schema */
 export interface StructSchema {
@@ -70,6 +72,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
+@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRUCT)
 export class StructProperty extends Property<StructSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<StructSchema>();
@@ -119,7 +122,16 @@ export class StructProperty extends Property<StructSchema> {
   }
 }
 
-export function generateStructSchema(namespace: string, name: string, ctor: Function) {
+/** Represents the struct value type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.type`)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_STRUCT }] } )
+class StructTypeMeta {}
+
+// ── Helper ─────────────────────────────────────────────────────────────────
+
+function generateStructSchema(namespace: string, name: string, ctor: Function) {
   const structName = combinePaths(namespace, name);
   const nodeSchema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRUCT };
   const structSchema: StructSchema = { fields: [] };
@@ -130,6 +142,7 @@ export function generateStructSchema(namespace: string, name: string, ctor: Func
 
   const fields = getMetaFields(ctor);
   for (const field of fields) {
+    // Gets the schema type for the field
     const props = getMetaProperties(ctor, undefined, field);
     const schemaType = props.find(p => p instanceof SchemaType);
     if (!schemaType?.hasValue) {
@@ -137,7 +150,9 @@ export function generateStructSchema(namespace: string, name: string, ctor: Func
       continue;
     }
 
+    // Generate the StructFieldSchema with savable properties and add to the struct schema
     const fieldSchema: StructFieldSchema = { name: field, type: schemaType.getValue<string>()! };
+    props.filter(p => p.savable).forEach(p => setProperty(fieldSchema, p));
     structSchema.fields.push(fieldSchema);
 
     // Collect index metadata per field
@@ -184,13 +199,11 @@ export function generateStructSchema(namespace: string, name: string, ctor: Func
     }
 
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
-    setPropertyValue(arrayNode, Display, { key: `list of ${structName}` });
+    setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });
     setPropertyValue(arrayNode, ArrayProperty, arraySchema);
     saveSchema(arrayNode);
   }
 }
-
-// ── Helper ─────────────────────────────────────────────────────────────────
 
 function buildOrderedFields(items: { order: number; field: string }[]): string[] {
   const result: string[] = [];

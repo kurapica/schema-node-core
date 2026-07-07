@@ -8,7 +8,6 @@
 // =============================================================================
 
 import type { IProperty } from '../property/property';
-import { ForSchema } from '../property/core/forSchema';
 import { Default } from '../property/common/default';
 import { isSchemaKindProperty } from '../runtime/schemaRuntime';
 import { isEmpty, isNull } from '../utility/toolset';

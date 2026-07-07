@@ -6,8 +6,11 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
+import { getPropertyForSchemas } from "../runtime/schemaRuntime";
+
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
+const _saveableCache = new Map<Function, boolean>();
 
 /**
  * Base interface for all property instances attached to a schema.
@@ -24,6 +27,9 @@ export interface IProperty {
 
   /** Whether the property carries a non-empty value. */
   readonly hasValue: boolean;
+
+  /** Whether the property value is savable (persisted) in schema. */
+  readonly savable: boolean;
 
   /** Set the raw value onto this property instance. */
   setValue<T>(value: T): void;
@@ -61,6 +67,14 @@ export abstract class Property<T> implements IProperty {
   get static(): boolean {
     const ctor = this.constructor as Function;
     return (ctor as unknown as Record<string, boolean>).static ?? false;
+  }
+
+  get savable(): boolean {
+    const ctor = this.constructor as Function;
+    if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
+    const savable = getPropertyForSchemas(this.constructor as new () => IProperty).length > 0;
+    _saveableCache.set(ctor, savable);
+    return savable;
   }
 
   get hasValue(): boolean {

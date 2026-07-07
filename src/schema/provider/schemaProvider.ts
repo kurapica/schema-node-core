@@ -3,7 +3,7 @@
 // =============================================================================
 
 import type { NodeSchema } from '../nodeSchema';
-import type { EnumValueAccess, EnumValueInfo } from '../enumSchema';
+import type { EnumValueAccess, EnumValueSchema } from '../enumSchema';
 
 /** Interface for loading NodeSchemas by name. */
 export interface INodeSchemaProvider {
@@ -12,7 +12,7 @@ export interface INodeSchemaProvider {
 
 /** Interface for lazy-loading enum value sub-trees. */
 export interface IEnumSchemaProvider {
-  loadEnumSubList(schemaName: string, value?: string): Promise<EnumValueInfo[]>;
+  loadEnumSubList(schemaName: string, value?: string): Promise<EnumValueSchema[]>;
   loadEnumAccessList(schemaName: string, value: string): Promise<EnumValueAccess[]>;
 }
 

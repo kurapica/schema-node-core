@@ -151,7 +151,7 @@ export class EnumProperty extends Property<EnumSchema> {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
 @Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_ENUM }] } )
-class StringTypeMeta {}
+class EnumTypeMeta {}
 
 function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_ENUM }
