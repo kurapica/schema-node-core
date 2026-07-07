@@ -119,9 +119,7 @@ export function getMetaMethods(ctor: Function) : string[]
   return methods;
 }
 
-/**
- * Get the first Meta property of type T, optionally scoped to a field.
- */
+/** Get the first Meta property of type T, optionally scoped to a field. */
 export function getMetaProperty<T extends IProperty>(
   ctor: Function,
   propCtor: new () => T,

@@ -3,17 +3,21 @@
 // StructProperty is the Property<StructSchema> bridge for getProperty/getProperties
 // =============================================================================
 
-import { Meta, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
+import { Meta, getMetaFields, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
+import { Primary } from '../property/constraint/primary';
+import { Indexes } from '../property/constraint/indexes';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_ARRAY } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
+import { ArraySchema, ArrayProperty, DataIndex } from './arraySchema';
 
 /** The struct schema */
 export interface StructSchema {
@@ -117,23 +121,96 @@ export class StructProperty extends Property<StructSchema> {
 
 export function generateStructSchema(namespace: string, name: string, ctor: Function) {
   const structName = combinePaths(namespace, name);
+  const nodeSchema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRUCT };
+  const structSchema: StructSchema = { fields: [] };
 
-  const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRUCT };
-  const structSchema: StructSchema = { fields : [] };
-  const metaStore = ((ctor as { prototype?: object })?.prototype as Record<symbol, Array<{ property: { _memberKey?: string } }>>)[Symbol.for('schema-node:meta')];
-  if (!metaStore) return;
-  for (const entry of metaStore) {
-    const p = entry.property;
-    if (!p._memberKey || !(entry.property instanceof SchemaType)) continue;
-    const field = { name: p._memberKey, type: (entry.property as SchemaType).getValue<string>()! };
-    getMetaProperties(ctor, undefined, field.name).forEach(p => setProperty(field, p)); // for simple now
-    structSchema.fields.push(field);
+  // Collect primary fields & indexes from Meta-declared fields
+  const primaries: { order: number; field: string }[] = [];
+  const pendingIndexes = new Map<string, { name: string; isUnique: boolean; fields: { order: number; field: string }[] }>();
+
+  const fields = getMetaFields(ctor);
+  for (const field of fields) {
+    const props = getMetaProperties(ctor, undefined, field);
+    const schemaType = props.find(p => p instanceof SchemaType);
+    if (!schemaType?.hasValue) {
+      console.error(`The field ${field}'s schema type missing in struct ${structName}`);
+      continue;
+    }
+
+    const fieldSchema: StructFieldSchema = { name: field, type: schemaType.getValue<string>()! };
+    structSchema.fields.push(fieldSchema);
+
+    // Collect index metadata per field
+    for (const prop of props) {
+      if (prop instanceof PrimaryIndex) {
+        primaries.push({ order: prop.order, field });
+      } else if (prop instanceof UniqueIndex) {
+        const value = prop.getValue<string>();
+        const indexName = value || field;
+        if (!pendingIndexes.has(indexName)) {
+          pendingIndexes.set(indexName, { name: indexName, isUnique: true, fields: [] });
+        } else {
+          pendingIndexes.get(indexName)!.isUnique = true;
+        }
+        pendingIndexes.get(indexName)!.fields.push({ order: prop.order, field });
+      } else if (prop instanceof Index) {
+        const value = prop.getValue<string>();
+        const indexName = value || field;
+        if (!pendingIndexes.has(indexName)) {
+          pendingIndexes.set(indexName, { name: indexName, isUnique: false, fields: [] });
+        }
+        pendingIndexes.get(indexName)!.fields.push({ order: prop.order, field });
+      }
+    }
   }
-  
-  // build
+
+  // Build
   setPropertyValue(nodeSchema, Display, { key: structName });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
-  getMetaPropertiesForSchema(SCHEMA_KIND_STRUCT, ctor).forEach(p => setProperty(structSchema, p));  
+  getMetaPropertiesForSchema(SCHEMA_KIND_STRUCT, ctor).forEach(p => setProperty(structSchema, p));
   setPropertyValue(nodeSchema, StructProperty, structSchema);
   saveSchema(nodeSchema);
+
+  // Companion ArraySchema
+  const primaryFields = buildOrderedFields(primaries);
+  const dataIndexes = buildDataIndexes(pendingIndexes);
+  if (primaryFields.length > 0 || dataIndexes.length > 0) {
+    const arraySchema: ArraySchema = { element: structName };
+    if (primaryFields.length > 0) {
+      setPropertyValue(arraySchema, Primary, primaryFields);
+    }
+    if (dataIndexes.length > 0) {
+      setPropertyValue(arraySchema, Indexes, dataIndexes);
+    }
+
+    const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
+    setPropertyValue(arrayNode, Display, { key: `list of ${structName}` });
+    setPropertyValue(arrayNode, ArrayProperty, arraySchema);
+    saveSchema(arrayNode);
+  }
+}
+
+// ── Helper ─────────────────────────────────────────────────────────────────
+
+function buildOrderedFields(items: { order: number; field: string }[]): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const item of [...items].sort((a, b) => a.order - b.order)) {
+    if (item.field && !seen.has(item.field)) {
+      seen.add(item.field);
+      result.push(item.field);
+    }
+  }
+  return result;
+}
+
+function buildDataIndexes(indexes: Map<string, { name: string; isUnique: boolean; fields: { order: number; field: string }[] }>): DataIndex[] {
+  const result: DataIndex[] = [];
+  for (const [, idx] of indexes) {
+    const fields = buildOrderedFields(idx.fields);
+    if (fields.length > 0) {
+      result.push({ name: idx.name, fields, isUnique: idx.isUnique });
+    }
+  }
+  return result;
 }
