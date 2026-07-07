@@ -4,36 +4,26 @@
 // =============================================================================
 
 import { Meta, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
-import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, EntrySource, Require, Display, PropertyValueType } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES, RELATION_OWNER, NODE_SELF, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
-import { CallArg } from './functionSchema';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
 
 /** The struct schema */
 export interface StructSchema {
   fields: StructFieldSchema[];
-  unionValids?: StructUnionValidation[];
 }
 
 /** A single field definition within a struct. */
 export interface StructFieldSchema {
   name: string;
   type: string;
-  error?: string;
-}
-
-/** The union validation between fields */
-export interface StructUnionValidation {
-  func: string;
-  args: CallArg[];
   error?: string;
 }
 
@@ -46,10 +36,9 @@ export interface StructUnionValidation {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(Append, [Relations])
-@Relation(EntrySource,'$unionValids.args.source', NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES, RELATION_OWNER, NODE_SELF)
 class StructSchemaMeta implements StructSchema {
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];
-  unionValids?: StructUnionValidation[];
 }
 
 /** The struct field schema meta */
@@ -68,23 +57,6 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   type!: string;
 
   /** The field error */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_ERROR)
-  error?: string;
-}
-
-/** The struct union validation meta */
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.unionvalid`)
-class StructUnionValidationMeta implements StructUnionValidation {
-  /** The validation function */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valid`)
-  @Meta(Require, true)
-  func!: string;
-
-  /** The valdiation arguments */
-  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
-  args!: CallArg[];
-
-  /** The error */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ERROR)
   error?: string;
 }
@@ -135,42 +107,6 @@ export class StructProperty extends Property<StructSchema> {
     }
     combineFields.push(...selfSchema.fields.filter(f => !matched.has(f.name.toLowerCase())))
     selfSchema.fields = combineFields;
-
-    // combine union valids
-    if (otherSchema.unionValids?.length)
-    {
-      if (!selfSchema.unionValids?.length)
-        selfSchema.unionValids = [...otherSchema.unionValids];
-      else
-      {
-        for (let i = 0; i < otherSchema.unionValids.length; i++)
-        {
-          const otherValid = otherSchema.unionValids[i];
-          let matched = false;
-          for (let j = 0; j < selfSchema.unionValids.length; j++)
-          {
-            const selfValid = selfSchema.unionValids[j];
-            if (selfValid.func === otherValid.func && selfValid.args.length === otherValid.args.length)
-            {
-              matched = true;
-              for (let k = 0; k < selfValid.args.length; k++)
-              {
-                const sarg = selfValid.args[k];
-                const oarg = otherValid.args[k];
-                if (sarg.source != oarg.source && sarg.value != oarg.value)
-                {
-                  matched = false;
-                  break;
-                }
-              }
-              if (matched) break;
-            }
-          }
-          if (!matched)
-            selfSchema.unionValids.push(otherValid);
-        }
-      }
-    }
 
     // combine properties
     combineProperties(selfSchema, otherSchema, SCHEMA_KIND_STRUCT);
