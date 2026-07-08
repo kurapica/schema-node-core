@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
@@ -72,6 +72,7 @@ export interface EnumValueAccess {
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.valuetype`)
+  @Meta(Require, true)
   type!: EnumValueTypeValue;
 
   /** The cascade of the enum value */
@@ -80,6 +81,7 @@ class EnumSchemaMeta implements EnumSchema {
   
   /** The root enum values */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.values`)
+  @Meta(Require, true)
   values!: EnumValueSchema[];
 }
 
@@ -116,6 +118,7 @@ class EnumValueSchemaMeta implements EnumValueSchema {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
+@Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ENUM)
 export class EnumProperty extends Property<EnumSchema> {
   combine(other: IProperty): boolean {

@@ -173,3 +173,26 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
   return getMetaProperties(ctor, propCtor, field, index)
     .filter((p) => isSchemaKindProperty(kind, p.constructor as unknown as new () => IProperty));
 }
+
+/**
+ * Get parameter type info for a method: returns an array of { index, type } sorted by parameter position.
+ * Each parameter must have @Meta(SchemaType, 'typeName') to be included.
+ */
+export function getMetaParameters<T extends IProperty>(
+  ctor: Function,
+  methodName: string
+): { index: number; property: IProperty; value: unknown }[] {
+  const results: { index: number; property: IProperty; value: unknown }[] = [];
+  for (const entry of getMetaEntriesRaw(ctor)) {
+    if (entry._memberKey !== methodName || entry._paramIndex === undefined) continue;
+    const p = entry.property;
+    results.push({ index: entry._paramIndex, property: p as IProperty, value: p.hasValue ? p.getValue() : undefined });
+  }
+  // Deduplicate by index (keep first occurrence)
+  const seen = new Set<number>();
+  return results.filter(r => {
+    if (seen.has(r.index)) return false;
+    seen.add(r.index);
+    return true;
+  }).sort((a, b) => a.index - b.index);
+}

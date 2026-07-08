@@ -6,7 +6,7 @@ import { Meta } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties } from '../property/propertyOwner';
 import { ArrayType } from '../runtime/type';
@@ -28,6 +28,7 @@ export interface ArraySchema {
 @Meta(Append, [Relations])
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
+  @Meta(Require, true)
   element: string = '';
 }
 
@@ -35,6 +36,7 @@ class ArraySchemaMeta implements ArraySchema {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.array`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ARRAY)
 export class ArrayProperty extends Property<ArraySchema> {
   combine(other: IProperty): boolean {

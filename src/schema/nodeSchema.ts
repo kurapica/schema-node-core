@@ -5,7 +5,7 @@
 import { Meta } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { Base } from '../property/core/base';
-import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid, Display } from '../property/index';
+import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid, Display, Require } from '../property/index';
 import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 
@@ -54,9 +54,11 @@ class NodeSchemaMeta implements NodeSchema {
 
   @Meta(PrimaryIndex, 1)
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
+  @Meta(Require, true)
   name: string = '';
 
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+  @Meta(Require, true)
   kind: string = '';
 
   /** The error status */

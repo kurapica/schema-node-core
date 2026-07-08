@@ -35,7 +35,7 @@ export type { DataIndex } from './schema/arraySchema';
 export { EnumSchema, EnumProperty } from './schema/enumSchema';
 export type { EnumValueInfo, EnumValueAccess } from './schema/enumSchema';
 export { FunctionSchema, FuncProperty } from './schema/functionSchema';
-export type { FunctionArgumentInfo, FunctionExpression } from './schema/functionSchema';
+export type { FuncArg, FuncExp, CallArg, ExpType } from './schema/functionSchema';
 export { PropertySchema, PropProperty } from './schema/propertySchema';
 export { RelationSchema, RelationsProperty } from './schema/relationSchema';
 export { NamespaceSchema, NamespaceProperty } from './schema/namespaceSchema';

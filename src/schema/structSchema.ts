@@ -61,10 +61,6 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
   type!: string;
-
-  /** The field error */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_ERROR)
-  error?: string;
 }
 
 /** Property bridge. */

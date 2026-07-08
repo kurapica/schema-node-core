@@ -1,129 +1,294 @@
 // =============================================================================
 // FunctionSchema — extension data under "func" key
+// Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs
 // =============================================================================
 
-import { Meta } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, SchemaType, Attach, ForSchema, OfSchema } from '../property/index';
-import { Property } from '../property/property';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
+import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaParameters } from '../attribute/meta';
+import { Relation } from '../attribute/relation';
+import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Generics, Display, Visible, PropertyValueType, PrimaryIndex, UpLimitString, Require } from '../property/index';
+import { IProperty, Property } from '../property/property';
+import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
+import { saveSchema } from '../runtime/schemaRuntime';
+import { FunctionType } from '../runtime/type';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT } from '../utility/constant';
+import { combinePaths } from '../utility/toolset';
+import { NodeSchema } from './nodeSchema';
 import type { GenericParameter } from '../property/core/generics';
+import type { LocaleString } from '../struct/localeString';
+import { ExpType } from '../enum/expType';
 
-export interface FunctionArgumentInfo { name: string; type: string; optional?: boolean; }
-export interface FunctionExpression { type: string; func?: string; args?: FunctionExpression[]; value?: unknown; }
+// #region ── FunctionSchema ─────────────────────────────────────────────────────
 
-/** Pure data interface. */
+/** Pure data interface for function schema extension data. */
 export interface FunctionSchema {
+  /** The return type of the function. 'T', 'T1', 'T2' denote generic type params. */
   return: string;
-  args: FunctionArgumentInfo[];
-  exps: FunctionExpression[];
-  generic?: GenericParameter[];
-  converter?: boolean;
-  server?: boolean;
-  nocache?: boolean;
-  sideEffect?: boolean;
+
+  /** The function arguments. */
+  args: FuncArg[];
+
+  /** The function expressions (compiled body). */
+  exps: FuncExp[];
 }
 
 /** Meta registration class (NOT exported). */
-@Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, 11])
-@Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, 11])
+@Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
+@Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
+@Meta(RuntimeNodeType, FunctionType)
 @Meta(Attach, SCHEMA_KIND_FUNCTION)
+@Meta(SchemaGenerator, generateFunctionSchema)
 class FunctionSchemaMeta implements FunctionSchema {
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   return: string = '';
-  args: FunctionArgumentInfo[] = [];
-  exps: FunctionExpression[] = [];
-  generic?: GenericParameter[];
-  converter?: boolean;
-  server?: boolean;
-  nocache?: boolean;
-  sideEffect?: boolean;
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
+  args: FuncArg[] = [];
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
+  exps: FuncExp[] = [];
 }
 
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
-export class FuncProperty extends Property<FunctionSchema> {}
+// #endregion
 
+// #region ── FuncArg ────────────────────────────────────────────────────────────
+
+/**
+ * A single argument definition of a function.
+ * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs FuncArg.
+ */
+export interface FuncArg {
+  /** The argument name. */
+  name: string;
+
+  /** The argument type. 'T', 'T1', 'T2' denote generic type params. */
+  type: string;
+
+  /** Whether the argument is nullable / optional. */
+  nullable?: boolean;
+
+  /** The display (localised) name. */
+  display?: LocaleString;
+
+  /** Whether this is a params/rest argument. */
+  params?: boolean;
+
+  /** Default value (schema-ignored in C#, stored for runtime). */
+  default?: unknown;
+
+  /** Schema node error status. */
+  error?: string;
+}
+
+/** Meta registration class for function argument (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.arg`)
+class FuncArgMeta implements FuncArg {
+  @Meta(PrimaryIndex, 0)
+  @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
+  @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(Require, true)
+  name: string = '';
+
+  @Meta(PrimaryIndex, 1)
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  type: string = '';
+
+  nullable?: boolean;
+
+  display?: LocaleString;
+
+  params?: boolean;
+
+  default?: unknown;
+
+  error?: string;
+}
+
+// #endregion
+
+// #region ── FuncExp ────────────────────────────────────────────────────────────
+
+/**
+ * A single expression in the function body.
+ * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs FuncExp.
+ */
+export interface FuncExp {
+  /** The expression name (identifier). */
+  name: string;
+
+  /** The function to call — schema type of the target function. */
+  func: string;
+
+  /** The expression evaluation type (Call / Map / Reduce / etc.). */
+  type: ExpType;
+
+  /** The return type of this expression. */
+  return: string;
+
+  /** Arguments — list of expression names or argument names. */
+  args: CallArg[];
+
+  /** Schema error status. */
+  error?: string;
+}
+
+/** Meta registration class for function expression (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exp`)
+class FuncExpMeta implements FuncExp {
+  @Meta(PrimaryIndex, 0)
+  @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
+  @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(Require, true)
+  name: string = '';
+
+  @Meta(PrimaryIndex, 1)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
+  func: string = '';
+
+  type: ExpType = ExpType.Call;
+
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  return: string = '';
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.callargs`)
+  args: CallArg[] = [];
+
+  error?: string;
+}
+
+// #endregion
+
+// #region ── CallArg ────────────────────────────────────────────────────────────
 
 /**
  * A single argument in a function call.
- * If prefixed with '$', value is a source reference path.
+ * If source is set, the value is a source reference path; otherwise value is a constant.
+ * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs CallArg.
  */
-export class CallArg {
-  /** The argument source path */
+export interface CallArg {
+  /** The argument source path (e.g. field access path). */
   source?: string;
 
-  /** The constant value */
+  /** The constant value. */
   value?: unknown;
 
-  /** The argument type */
+  /** The runtime type hint. */
   type?: string;
 }
 
-const META_KEY = Symbol.for('schema-node:meta');
+/** Meta registration class for call argument (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}`)
+class CallArgMeta implements CallArg {
+  source?: string;
 
-export function generateFunctionSchema(target: object, runtime: SchemaRuntime): void {
-  const proto = (target as { prototype?: object }).prototype;
-  if (!proto) return;
-  const metaStore = (proto as Record<symbol, Array<{ property: { _memberKey?: string; name: string; hasValue: boolean; getValue: <T>() => T | undefined } }>>)[META_KEY];
-  if (!metaStore) return;
+  /** The const value */
+  @Meta(SchemaType, NS_SYSTEM_OBJECT)
+  value?: unknown;
 
-  for (const entry of metaStore) {
-    const p = entry.property;
-    if (!p._memberKey || p.name !== 'ofSchema') continue;
-    const methodName = p._memberKey;
-    let methodSchemaType: string | undefined;
-    for (const me of metaStore) {
-      const mp = (me.property as { _memberKey?: string });
-      if (mp._memberKey === methodName && me.property instanceof SchemaType) {
-        methodSchemaType = (me.property as SchemaType).getValue<string>(); break;
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  type?: string;
+}
+
+// #endregion
+
+// #region ── FuncProperty ───────────────────────────────────────────────────────
+
+/** The function property for node schemas. */
+@Meta(ForSchema, [SCHEMA_KIND_NODE])
+@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
+@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_FUNCTION)
+export class FuncProperty extends Property<FunctionSchema> {
+  combine(other: IProperty): boolean {
+    const otherSchema = other?.getValue<FunctionSchema>();
+    if (!otherSchema) return false;
+    const selfSchema = this.getValue<FunctionSchema>();
+    if (!selfSchema) {
+      this.setValue(otherSchema);
+      return true;
+    }
+
+    // Combine argument display
+    for (let i = 0; i < Math.min(selfSchema.args.length, otherSchema.args.length); i++) {
+      const arg = selfSchema.args[i];
+      const otherArg = otherSchema.args[i];
+      if (!otherArg || otherArg.type !== arg.type) continue;
+      if (!arg.display)
+        arg.display = otherArg.display;
+      else if (otherArg.display)
+        arg.display = otherArg.display; // concat would go here
+    }
+
+    // Combine properties
+    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_FUNCTION);
+    this.setValue(selfSchema);
+    return true;
+  }
+}
+
+// #endregion
+
+// #region ── Generator ──────────────────────────────────────────────────────────
+
+/**
+ * Generate a FunctionSchema for each public static method of a function class.
+ *
+ * Each method must carry @Meta(OfSchema, SCHEMA_KIND_FUNCTION) plus at least
+ * @Meta(SchemaType, 'ns.funcName') and @Meta(Return, 'returnType').
+ * Parameter types are declared via @Meta(SchemaType, 'type') on each parameter.
+ */
+export function generateFunctionSchema(namespace: string, name: string, ctor: Function) {
+  const methods = getMetaMethods(ctor);
+  for (const methodName of methods) {
+    // A method is only a function schema if it has @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+    const ofSchema = getMetaProperty(ctor, OfSchema, methodName);
+    if (!ofSchema?.hasValue || ofSchema.getValue<string>() !== SCHEMA_KIND_FUNCTION) continue;
+
+    // Schema type (full name) — required
+    const schemaTypeProp = getMetaProperty(ctor, SchemaType, methodName);
+    if (!schemaTypeProp?.hasValue) {
+      console.warn(`FunctionSchema: method ${name}.${methodName} has no @Meta(SchemaType), skipping`);
+      continue;
+    }
+    const fullName = schemaTypeProp.getValue<string>()!;
+    const lastDot = fullName.lastIndexOf('.');
+    const methodNs = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
+    const methodNameOnly = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
+
+    // Return type — required
+    const returnProp = getMetaProperty(ctor, Return, methodName);
+    const returnType = returnProp?.hasValue ? returnProp.getValue<string>()! : '';
+
+    // Generics — optional
+    const genericsProp = getMetaProperty(ctor, Generics, methodName);
+    const genericParams = genericsProp?.hasValue ? genericsProp.getValue<GenericParameter[]>() : undefined;
+
+    // Extract argument types from parameter @Meta(SchemaType) annotations
+    const args: FuncArg[] = [];
+    const params = getMetaParameters(ctor, methodName);
+    for (const param of params) {
+      if (param.property instanceof SchemaType) {
+        args.push({ name: `arg${param.index}`, type: param.property.getValue<string>()! });
       }
     }
-    if (!methodSchemaType) continue;
-    const fullName = methodSchemaType;
-    const lastDot = fullName.lastIndexOf('.');
-    const ns = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
-    const nm = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
 
-    const funcData: FunctionSchema = {
-      return: getMethodMeta(metaStore, methodName, Return)?.getValue<string>() ?? '',
-      converter: getMethodMeta(metaStore, methodName, Converter)?.getValue<boolean>() ?? false,
-      server: getMethodMeta(metaStore, methodName, ServerOnly)?.getValue<boolean>() ?? false,
-      nocache: getMethodMeta(metaStore, methodName, NoCache)?.getValue<boolean>() ?? false,
-      generic: (getMethodMeta(metaStore, methodName, Generics)?.getValue()) as GenericParameter[] | undefined,
-      args: extractMethodArgs(metaStore, methodName),
+    // Build FunctionSchema
+    const funcSchema: FunctionSchema = {
+      return: returnType,
+      args,
       exps: [],
     };
 
-    const node = new NodeSchema(nm, SCHEMA_KIND_FUNCTION, ns);
-    node.extensions = { func: funcData };
-    runtime.saveSchema(node);
+    // Apply constructor-level Meta properties for SCHEMA_KIND_FUNCTION
+    getMetaPropertiesForSchema(SCHEMA_KIND_FUNCTION, ctor).forEach(p => setProperty(funcSchema, p));
+
+    // Build NodeSchema
+    const nodeSchema: NodeSchema = { namespace: methodNs, name: methodNameOnly, kind: SCHEMA_KIND_FUNCTION };
+    setPropertyValue(nodeSchema, Display, { key: combinePaths(methodNs, methodNameOnly) });
+    setPropertyValue(nodeSchema, FuncProperty, funcSchema);
+    saveSchema(nodeSchema);
   }
 }
 
-function getMethodMeta(metaStore: Array<{ property: unknown }>, memberName: string, PropCtor: new () => object): { getValue: <T>() => T | undefined } | undefined {
-  for (const entry of metaStore) {
-    const p = entry.property;
-    if ((p as { _memberKey?: string })._memberKey === memberName && p instanceof PropCtor) return p as { getValue: <T>() => T | undefined };
-  }
-}
-
-function extractMethodArgs(metaStore: Array<{ property: unknown }>, methodName: string): FunctionArgumentInfo[] {
-  const args: FunctionArgumentInfo[] = [];
-  const paramMap = new Map<number, { name: string; type: string }>();
-  for (const entry of metaStore) {
-    const p = entry.property as { _memberKey?: string; _paramIndex?: number; _paramKey?: string };
-    if (p._memberKey !== methodName || p._paramIndex === undefined) continue;
-    if (entry.property instanceof SchemaType) {
-      const existing = paramMap.get(p._paramIndex) ?? { name: p._paramKey?.toString() ?? `arg${p._paramIndex}`, type: 'system.object' };
-      existing.type = (entry.property as SchemaType).getValue<string>()!;
-      paramMap.set(p._paramIndex, existing);
-    }
-  }
-  for (const [, info] of [...paramMap.entries()].sort(([a], [b]) => a - b)) args.push(info);
-  return args;
-}
-
-export function registerFunctionGenerator(runtime: SchemaRuntime): void {
-  runtime.registerSchemaKind(SCHEMA_KIND_FUNCTION, { generator: generateFunctionSchema });
-}
+// #endregion

@@ -10,17 +10,19 @@
 import { NodeType } from './nodeType';
 import type { NodeSchema } from '../../schema/nodeSchema';
 import type { ValueType } from './valueType';
-import type { FunctionArgumentInfo, FunctionExpression } from '../../schema/functionSchema';
+import type { FuncArg, FuncExp, CallArg, ExpType, FunctionSchema } from '../../schema/functionSchema';
+import { FuncProperty } from '../../schema/functionSchema';
+import { getProperty } from '../../property/propertyOwner';
 
 export class FunctionType extends NodeType {
   /** Return value type (resolved at load time). */
   returnType?: ValueType;
 
   /** Argument definitions. */
-  args: FunctionArgumentInfo[] = [];
+  args: FuncArg[] = [];
 
   /** Expression tree (for composite functions). */
-  exps: FunctionExpression[] = [];
+  exps: FuncExp[] = [];
 
   /** Whether this is a server-side-only call. */
   server = false;
@@ -33,11 +35,13 @@ export class FunctionType extends NodeType {
 
   constructor(schema: NodeSchema, genericParams?: NodeType[]) {
     super(schema, genericParams);
-    this.args = (schema.extensions?.['func'] as FunctionSchemaData)?.args ?? [];
-    this.exps = (schema.extensions?.['func'] as FunctionSchemaData)?.exps ?? [];
-    this.server = (schema.extensions?.['func'] as FunctionSchemaData)?.server ?? false;
-    this.nocache = (schema.extensions?.['func'] as FunctionSchemaData)?.nocache ?? false;
-    this._systemFn = schema.extensions?.['_fn'] as ((...args: unknown[]) => unknown) | undefined;
+    const funcProp = getProperty(schema, FuncProperty);
+    const funcData = funcProp?.getValue<FunctionSchema>();
+    this.args = funcData?.args ?? [];
+    this.exps = funcData?.exps ?? [];
+    this.server = false;
+    this.nocache = false;
+    this._systemFn = (schema as any).extensions?.['_fn'] as ((...args: unknown[]) => unknown) | undefined;
   }
 
   // ── Interpretive execution ─────────────────────────────────────────────
@@ -105,16 +109,6 @@ export class FunctionType extends NodeType {
 
   /** Check if this is a converter function. */
   get isConverter(): boolean {
-    return (this.schema.extensions?.['func'] as FunctionSchemaData)?.converter ?? false;
+    return false;
   }
-}
-
-// Local type for func extension data shape
-interface FunctionSchemaData {
-  return?: string;
-  args?: FunctionArgumentInfo[];
-  exps?: FunctionExpression[];
-  converter?: boolean;
-  server?: boolean;
-  nocache?: boolean;
 }

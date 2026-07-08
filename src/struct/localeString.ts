@@ -28,7 +28,7 @@ export function concatLocaleString(left: LocaleString, right: LocaleString): Loc
             if (inOther != null)
                 tran.tran = inOther.tran == null || inOther.tran.trim() === '' ? tran.tran : inOther.tran;
         }
-        var otherOnly = right.trans.filter(t => !left.trans.some(a => a.lang === t.lang));
+        var otherOnly = right.trans.filter(t => !left.trans?.some(a => a.lang === t.lang));
         if (otherOnly.length > 0)
             left.trans = left.trans.concat(otherOnly);
     }
