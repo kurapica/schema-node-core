@@ -3,20 +3,22 @@
 // Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs
 // =============================================================================
 
-import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaParameters } from '../attribute/meta';
+import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Generics, Display, Visible, PropertyValueType, PrimaryIndex, UpLimitString, Require } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Generics, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
 import { FunctionType } from '../runtime/type';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_LIST } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import type { GenericParameter } from '../property/core/generics';
-import type { LocaleString } from '../struct/localeString';
+import { concatLocaleString, type LocaleString } from '../struct/localeString';
 import { ExpType } from '../enum/expType';
+import { Base } from '../property/core/base';
+import { Params } from '../property/core/params';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -41,6 +43,7 @@ export interface FunctionSchema {
 @Meta(SchemaGenerator, generateFunctionSchema)
 class FunctionSchemaMeta implements FunctionSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(Require, true)
   return: string = '';
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
@@ -218,7 +221,7 @@ export class FuncProperty extends Property<FunctionSchema> {
       if (!arg.display)
         arg.display = otherArg.display;
       else if (otherArg.display)
-        arg.display = otherArg.display; // concat would go here
+        concatLocaleString(arg.display, otherArg.display);
     }
 
     // Combine properties
@@ -227,6 +230,27 @@ export class FuncProperty extends Property<FunctionSchema> {
     return true;
   }
 }
+
+/** Represents the function type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_FUNCTION }] } )
+class FunctionTypeMeta {}
+
+/** Represents the validation function type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+@Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valid`)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, args: [ { source: NODE_SELF }, { value: NS_SYSTEM_BOOL }] } )
+class ValidFuncTypeMeta {}
+
+/** Represents the function return value type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+@Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
+@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, args: [ { source: NODE_SELF }, { value: `{NS_SYSTEM_SCHEMA_NODE}.valuetype` }] } )
+class TypeFuncTypeMeta {}
 
 // #endregion
 
@@ -261,18 +285,29 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
     const returnProp = getMetaProperty(ctor, Return, methodName);
     const returnType = returnProp?.hasValue ? returnProp.getValue<string>()! : '';
 
-    // Generics — optional
-    const genericsProp = getMetaProperty(ctor, Generics, methodName);
-    const genericParams = genericsProp?.hasValue ? genericsProp.getValue<GenericParameter[]>() : undefined;
-
     // Extract argument types from parameter @Meta(SchemaType) annotations
     const args: FuncArg[] = [];
-    const params = getMetaParameters(ctor, methodName);
-    for (const param of params) {
-      if (param.property instanceof SchemaType) {
-        args.push({ name: `arg${param.index}`, type: param.property.getValue<string>()! });
+    for (let i = 0; i < 32; i++) {
+      const paramProps = getMetaProperties(ctor, undefined, methodName, i);
+      if (!paramProps || paramProps.length === 0) break;
+      const schemaTypeProp = paramProps.find(p => p instanceof SchemaType);
+      if (!schemaTypeProp?.hasValue) {
+        console.error(`FunctionSchema: method ${name}.${methodName} parameter ${i} has no @Meta(SchemaType), skipping`);
+        break;
       }
+      const arg : FuncArg = {
+        name: `arg${i}`,
+        type: schemaTypeProp.getValue<string>()!,
+        nullable: !paramProps.some(p => p instanceof Require && p.getValue<boolean>() === true),
+        params: paramProps.some(p => p instanceof Params && p.getValue<boolean>() === true),
+      };
+      paramProps.filter(p => p.savable).forEach(p => setProperty(arg, p));
+      args.push(arg);
     }
+
+    // Build NodeSchema
+    const nodeSchema: NodeSchema = { namespace: methodNs, name: methodNameOnly, kind: SCHEMA_KIND_FUNCTION };
+    setPropertyValue(nodeSchema, Display, { key: combinePaths(methodNs, methodNameOnly) });
 
     // Build FunctionSchema
     const funcSchema: FunctionSchema = {
@@ -281,12 +316,8 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
       exps: [],
     };
 
-    // Apply constructor-level Meta properties for SCHEMA_KIND_FUNCTION
+    getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
     getMetaPropertiesForSchema(SCHEMA_KIND_FUNCTION, ctor).forEach(p => setProperty(funcSchema, p));
-
-    // Build NodeSchema
-    const nodeSchema: NodeSchema = { namespace: methodNs, name: methodNameOnly, kind: SCHEMA_KIND_FUNCTION };
-    setPropertyValue(nodeSchema, Display, { key: combinePaths(methodNs, methodNameOnly) });
     setPropertyValue(nodeSchema, FuncProperty, funcSchema);
     saveSchema(nodeSchema);
   }
