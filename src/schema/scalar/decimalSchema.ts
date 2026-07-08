@@ -1,4 +1,4 @@
-import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
+import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
@@ -62,7 +62,7 @@ class DecimalTypeMeta {}
 function generateDecimalSchema(namespace: string, name: string, ctor: Function)
 {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_DECIMAL };
-  const decimalSchema : DecimalSchema = {};
+  const decimalSchema : DecimalSchema = { base : getMetaProperty(ctor, Base)?.getValue<string>() ?? undefined };
 
   setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));

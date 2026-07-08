@@ -1,4 +1,4 @@
-import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
+import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
@@ -60,7 +60,7 @@ class IntTypeMeta {}
 /** Generate the date schema */
 function generateIntSchema(namespace: string, name: string, ctor: Function) {
   const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_INT };
-  const IntSchema : IntSchema = {};
+  const IntSchema : IntSchema = { base : getMetaProperty(ctor, Base)?.getValue<string>() ?? undefined };
 
   setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
