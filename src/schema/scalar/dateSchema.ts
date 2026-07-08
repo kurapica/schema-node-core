@@ -1,12 +1,12 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveSchema } from '../../runtime/schemaRuntime';
 import { DateType } from '../../runtime/type';
-import { NODE_SELF, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { NODE_SELF, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { NodeSchema } from '../nodeSchema';
 
@@ -32,6 +32,7 @@ class DateSchemaMeta {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.date`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_DATE)
 export class DateProperty extends Property<DateSchema>
 {

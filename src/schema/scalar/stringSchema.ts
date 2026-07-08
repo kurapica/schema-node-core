@@ -1,6 +1,6 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
@@ -32,6 +32,7 @@ class StringSchemaMeta {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.string`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
 @Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRING)
 export class StringProperty extends Property<StringSchema>
 {
