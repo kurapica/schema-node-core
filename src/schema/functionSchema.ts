@@ -11,7 +11,7 @@ import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveSchema } from '../runtime/schemaRuntime';
 import { FunctionType } from '../runtime/type';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_LIST } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import type { GenericParameter } from '../property/core/generics';
@@ -90,19 +90,18 @@ class FuncArgMeta implements FuncArg {
   @Meta(Require, true)
   name: string = '';
 
-  @Meta(PrimaryIndex, 1)
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(Require, true)
   type: string = '';
 
+  @Meta(SchemaType, NS_SYSTEM_BOOL)
   nullable?: boolean;
 
+  @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
   display?: LocaleString;
 
+  @Meta(SchemaType, NS_SYSTEM_BOOL)
   params?: boolean;
-
-  default?: unknown;
-
-  error?: string;
 }
 
 // #endregion
@@ -142,19 +141,20 @@ class FuncExpMeta implements FuncExp {
   @Meta(Require, true)
   name: string = '';
 
-  @Meta(PrimaryIndex, 1)
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
+  @Meta(Require, true)
   func: string = '';
 
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
+  @Meta(Require, true)
   type: ExpType = ExpType.Call;
 
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   return: string = '';
 
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.callargs`)
+  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
+  @Meta(Require, true)
   args: CallArg[] = [];
-
-  error?: string;
 }
 
 // #endregion
@@ -178,8 +178,9 @@ export interface CallArg {
 }
 
 /** Meta registration class for call argument (NOT exported). */
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}`)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG)
 class CallArgMeta implements CallArg {
+  @Meta(SchemaType, NS_SYSTEM_STRING)
   source?: string;
 
   /** The const value */
