@@ -4,13 +4,13 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, ArgName, Converter, ServerOnly, NoCache } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING } from '../utility/constant';
+import { OfSchema, SchemaType, Return, ArgName, Converter, ServerOnly, NoCache, Default } from '../property/index';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
-@Meta(SchemaType, 'system.str')
+@Meta(SchemaType, NS_SYSTEM_STR)
 export class SystemStr {
   // No methods on the root — all are in sub-namespaces below
 }
@@ -18,78 +18,88 @@ export class SystemStr {
 // ── Logic ──────────────────────────────────────────────────────────────────
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
-@Meta(SchemaType, 'system.str.logic')
+@Meta(SchemaType, `${NS_SYSTEM_STR}.logic`)
 export class SystemStrLogic {
-  @Meta(SchemaType, 'system.str.logic.startswith') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.startwith(prefix) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static startswith(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'prefix') @Meta(SchemaType, NS_SYSTEM_STRING) prefix: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'prefix') @Meta(SchemaType, NS_SYSTEM_STRING) prefix: string = "",
   ): boolean { return prefix.length > 0 && str.toLowerCase().startsWith(prefix.toLowerCase()); }
 
-  @Meta(SchemaType, 'system.str.logic.notstartswith') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.notstartwith(prefix) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static notstartswith(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'prefix') @Meta(SchemaType, NS_SYSTEM_STRING) prefix: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'prefix') @Meta(SchemaType, NS_SYSTEM_STRING) prefix: string = "",
   ): boolean { return prefix.length > 0 && !str.toLowerCase().startsWith(prefix.toLowerCase()); }
 
-  @Meta(SchemaType, 'system.str.logic.endswith') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.endswith(suffix) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static endswith(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'suffix') @Meta(SchemaType, NS_SYSTEM_STRING) suffix: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'suffix') @Meta(SchemaType, NS_SYSTEM_STRING) suffix: string = "",
   ): boolean { return suffix.length > 0 && str.toLowerCase().endsWith(suffix.toLowerCase()); }
 
-  @Meta(SchemaType, 'system.str.logic.notendswith') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.notendswith(suffix) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static notendswith(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'suffix') @Meta(SchemaType, NS_SYSTEM_STRING) suffix: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'suffix') @Meta(SchemaType, NS_SYSTEM_STRING) suffix: string = "",
   ): boolean { return suffix.length > 0 && !str.toLowerCase().endsWith(suffix.toLowerCase()); }
 
-  @Meta(SchemaType, 'system.str.logic.contains') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.contains(substr) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static contains(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'substr') @Meta(SchemaType, NS_SYSTEM_STRING) sub: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'substr') @Meta(SchemaType, NS_SYSTEM_STRING) sub: string = "",
   ): boolean { return sub.length > 0 && str.toLowerCase().includes(sub.toLowerCase()); }
 
-  @Meta(SchemaType, 'system.str.logic.notcontains') @Meta(Return, NS_SYSTEM_BOOL)
+  /** str.notcontains(substr) */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static notcontains(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'substr') @Meta(SchemaType, NS_SYSTEM_STRING) sub: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'substr') @Meta(SchemaType, NS_SYSTEM_STRING) sub: string = "",
   ): boolean { return sub.length > 0 && !str.toLowerCase().includes(sub.toLowerCase()); }
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
-@Meta(SchemaType, 'system.str.state')
+@Meta(SchemaType, `${NS_SYSTEM_STR}.state`)
 export class SystemStrState {
-  @Meta(SchemaType, 'system.str.state.len') @Meta(Return, NS_SYSTEM_INT)
-  static len(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string): number { return str.length; }
+  /** str.length */
+  @Meta(Return, NS_SYSTEM_INT)
+  @Meta(SchemaType, 'system.str.state.length')
+  static len(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): number { return str.length; }
 
-  @Meta(SchemaType, 'system.str.state.isempty') @Meta(Return, NS_SYSTEM_BOOL)
-  static isempty(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str?: string): boolean { return !str || str.trim().length === 0; }
+  /** str.isempty */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static isempty(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): boolean { return !str || str.trim().length === 0; }
 }
 
 // ── Convert ────────────────────────────────────────────────────────────────
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
-@Meta(SchemaType, 'system.str.convert')
+@Meta(SchemaType, `${NS_SYSTEM_STR}.convert`)
 export class SystemStrConvert {
+  /** a..b */
   @Meta(SchemaType, 'system.str.convert.concat') @Meta(Return, NS_SYSTEM_STRING)
   static concat(
-    @Meta(ArgName, 'str1') @Meta(SchemaType, NS_SYSTEM_STRING) a: string,
-    @Meta(ArgName, 'str2') @Meta(SchemaType, NS_SYSTEM_STRING) b: string,
+    @Meta(ArgName, 'str1') @Meta(SchemaType, NS_SYSTEM_STRING) a: string = "",
+    @Meta(ArgName, 'str2') @Meta(SchemaType, NS_SYSTEM_STRING) b: string = "",
   ): string { return a + b; }
 
   @Meta(SchemaType, 'system.str.convert.split') @Meta(Return, `system.list<${NS_SYSTEM_STRING}>`)
   static split(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'sep') @Meta(SchemaType, NS_SYSTEM_STRING) sep: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'sep') @Meta(SchemaType, NS_SYSTEM_STRING) sep: string = "",
   ): string[] { return str.split(sep).filter(s => s.length > 0); }
 
   @Meta(SchemaType, 'system.str.convert.substr') @Meta(Return, NS_SYSTEM_STRING)
   static substr(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'startIndex') @Meta(SchemaType, NS_SYSTEM_INT) start: number,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'startIndex') @Meta(SchemaType, NS_SYSTEM_INT) start: number = 0,
     @Meta(ArgName, 'stop') @Meta(SchemaType, NS_SYSTEM_INT) stop?: number,
   ): string {
     const s = Math.max(0, Math.min(start, str.length));
@@ -99,40 +109,40 @@ export class SystemStrConvert {
 
   @Meta(SchemaType, 'system.str.convert.replace') @Meta(Return, NS_SYSTEM_STRING)
   static replace(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
-    @Meta(ArgName, 'search') @Meta(SchemaType, NS_SYSTEM_STRING) search: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
+    @Meta(ArgName, 'search') @Meta(SchemaType, NS_SYSTEM_STRING) search: string = "",
     @Meta(ArgName, 'replace') @Meta(SchemaType, NS_SYSTEM_STRING) replace?: string,
   ): string { return str.split(search).join(replace ?? ''); }
 
   @Meta(SchemaType, 'system.str.convert.trim') @Meta(Return, NS_SYSTEM_STRING)
-  static trim(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string): string { return str.trim(); }
+  static trim(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.trim(); }
 
   @Meta(SchemaType, 'system.str.convert.tolower') @Meta(Return, NS_SYSTEM_STRING)
-  static tolower(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string): string { return str.toLowerCase(); }
+  static tolower(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.toLowerCase(); }
 
   @Meta(SchemaType, 'system.str.convert.toupper') @Meta(Return, NS_SYSTEM_STRING)
-  static toupper(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string): string { return str.toUpperCase(); }
+  static toupper(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.toUpperCase(); }
 
   @Meta(SchemaType, 'system.str.convert.reverse') @Meta(Return, NS_SYSTEM_STRING)
-  static reverse(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string): string { return str.split('').reverse().join(''); }
+  static reverse(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.split('').reverse().join(''); }
 
   @Meta(SchemaType, 'system.str.convert.padleft') @Meta(Return, NS_SYSTEM_STRING)
   static padleft(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'totalWidth') @Meta(SchemaType, NS_SYSTEM_INT) totalWidth: number,
     @Meta(ArgName, 'paddingChar') @Meta(SchemaType, NS_SYSTEM_STRING) paddingChar?: string,
   ): string { return str.padStart(totalWidth, (paddingChar ?? ' ')[0]); }
 
   @Meta(SchemaType, 'system.str.convert.padright') @Meta(Return, NS_SYSTEM_STRING)
   static padright(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'totalWidth') @Meta(SchemaType, NS_SYSTEM_INT) totalWidth: number,
     @Meta(ArgName, 'paddingChar') @Meta(SchemaType, NS_SYSTEM_STRING) paddingChar?: string,
   ): string { return str.padEnd(totalWidth, (paddingChar ?? ' ')[0]); }
 
   @Meta(SchemaType, 'system.str.convert.repeat') @Meta(Return, NS_SYSTEM_STRING)
   static repeat(
-    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string,
+    @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'count') @Meta(SchemaType, NS_SYSTEM_INT) count: number,
   ): string { return str.repeat(Math.max(0, count)); }
 }
