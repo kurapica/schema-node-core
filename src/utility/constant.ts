@@ -21,6 +21,7 @@ export const SCHEMA_KIND_PROPERTY = 'property';
 export const SCHEMA_KIND_STRUCT_FIELD = 'structfield';
 export const SCHEMA_KIND_ENUM_VALUE = 'enumvalue';
 export const SCHEMA_KIND_RELATION = 'relation';
+export const SCHEMA_KIND_FUNC_ARG = 'functionarg';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
 
@@ -40,6 +41,7 @@ export const SCHEMA_KIND_ORDER_PROP = 12;
 export const SCHEMA_KIND_ORDER_RELATION = 13;
 export const SCHEMA_KIND_ORDER_ENUM_VALUE = 14;
 export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 15;
+export const SCHEMA_KIND_ORDER_FUNC_ARG = 16;
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 
