@@ -43,7 +43,7 @@ export type { Entry } from './constraint/entries';
 
 // ── Function properties ───────────────────────────────────────────────────
 export {
-  Arithmetic, Logic, Converter, Constant, NoCache, ServerOnly, Return,
+  Arithmetic, Logic, Converter, Constant, NoCache, ServerOnly, Return, ArgName, Variadic,
 } from './function/index';
 
 // ── Record properties ─────────────────────────────────────────────────────

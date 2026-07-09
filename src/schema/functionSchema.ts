@@ -16,6 +16,7 @@ import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { ExpType } from '../enum/expType';
 import { Base } from '../property/core/base';
+import { ArgName } from '../property/function/argName';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ export interface FunctionSchema {
   exps: FuncExp[];
 
   /** The runtime function reference (not part of schema). */
-  function?: Function; // runtime function reference (not part of schema)
+  func?: Function; // runtime function reference (not part of schema)
 }
 
 /** Meta registration class (NOT exported). */
@@ -248,6 +249,9 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
 
   // save the functions
   for (const methodName of methods) {
+    const func = (ctor as unknown as Record<string, Function>)[methodName];
+    if (!func || typeof func !== 'function') continue;
+
     // Schema type (full name) — required
     const schemaTypeProp = getMetaProperty(ctor, SchemaType, methodName);
     const fullName = schemaTypeProp?.getValue<string>() ?? combinePaths(nsName, methodName);
@@ -274,7 +278,7 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
         break;
       }
       const arg : FuncArg = {
-        name: `arg${i}`,
+        name: getMetaProperty(ctor, ArgName, methodName, i)?.getValue<string>() ?? `arg${i}`,
         type: schemaTypeProp.getValue<string>()!,
       };
       paramProps.filter(p => p.savable).forEach(p => setProperty(arg, p));
@@ -290,7 +294,7 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
       return: returnType,
       args,
       exps: [],
-      function: (ctor as unknown as Record<string, Function>)[methodName],
+      func,
     };
 
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor, undefined, methodName).forEach(p => setProperty(nodeSchema, p));

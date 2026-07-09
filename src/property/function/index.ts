@@ -5,3 +5,5 @@ export { Constant } from './constant';
 export { NoCache } from './noCache';
 export { ServerOnly } from './serverOnly';
 export { Return } from './return';
+export { ArgName } from './argName';
+export { Variadic } from './variadic';
