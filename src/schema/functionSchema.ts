@@ -16,7 +16,7 @@ import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { ExpType } from '../enum/expType';
 import { Base } from '../property/core/base';
-import { Params } from '../property/function/params';
+import { Variadic } from '../property/function/variadic';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -278,8 +278,6 @@ export function generateFunctionSchema(namespace: string, name: string, ctor: Fu
       const arg : FuncArg = {
         name: `arg${i}`,
         type: schemaTypeProp.getValue<string>()!,
-        nullable: !paramProps.some(p => p instanceof Require && p.getValue<boolean>() === true),
-        params: paramProps.some(p => p instanceof Params && p.getValue<boolean>() === true),
       };
       paramProps.filter(p => p.savable).forEach(p => setProperty(arg, p));
       args.push(arg);
