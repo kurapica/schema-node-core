@@ -271,6 +271,7 @@ async function loadNodeTypeAsync(
   // Resolve NodeType class from _nodeTypeGenerator
   const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? NodeType;
   result ??= new NodeTypeCtor();
+  result.namespace = nsParent;
 
   // Cache in parent namespace
   nsParent?.saveNodeType(segment, result);
@@ -307,6 +308,7 @@ async function loadGenericTypeAsync(
   // Create generic type instance
   const NodeTypeCtor = node.constructor as new () => NodeType;
   genType = new NodeTypeCtor();
+  genType.namespace = node.namespace;
   node.setGenericType(inner, genType);
 
   await genType.loadTypeAsync(node.getNodeSchema()!, genParams);
@@ -326,7 +328,7 @@ async function loadNodeSchema(
 
   // 1. Check namespace cache (unless reloading)
   if (!reload) {
-    const cachedNodeSchema = ns?.getNodeSchema(name);
+    const cachedNodeSchema = ns?.getChildNodeSchema(name);
     if (cachedNodeSchema) return cachedNodeSchema;
   }
 

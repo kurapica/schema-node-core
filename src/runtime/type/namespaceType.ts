@@ -35,7 +35,7 @@ export class NamespaceType extends NodeType {
   }
 
   /** Get a cached NodeSchema by name. */
-  getNodeSchema(name: string): NodeSchema | undefined {
+  getChildNodeSchema(name: string): NodeSchema | undefined {
     return this._childSchemas.get(name.toLowerCase());
   }
 }
