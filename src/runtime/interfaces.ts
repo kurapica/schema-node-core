@@ -11,7 +11,7 @@ export interface INodeReference {
 }
 
 /** The node error interface */
-export interface INodeError {
+export interface IErrorProvider {
   error?: string;
 }
 

@@ -4,7 +4,8 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, ArgName, Converter, ServerOnly, NoCache, Default } from '../property/index';
+import { OfSchema, SchemaType, Return, ArgName, Converter } from '../property/index';
+import { LocaleString } from '../struct/localeString';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
 
 // ── Main class ─────────────────────────────────────────────────────────────
@@ -84,19 +85,19 @@ export class SystemStrState {
 @Meta(SchemaType, `${NS_SYSTEM_STR}.convert`)
 export class SystemStrConvert {
   /** a..b */
-  @Meta(SchemaType, 'system.str.convert.concat') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static concat(
     @Meta(ArgName, 'str1') @Meta(SchemaType, NS_SYSTEM_STRING) a: string = "",
     @Meta(ArgName, 'str2') @Meta(SchemaType, NS_SYSTEM_STRING) b: string = "",
   ): string { return a + b; }
 
-  @Meta(SchemaType, 'system.str.convert.split') @Meta(Return, `system.list<${NS_SYSTEM_STRING}>`)
+  @Meta(Return, `system.list<${NS_SYSTEM_STRING}>`)
   static split(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'sep') @Meta(SchemaType, NS_SYSTEM_STRING) sep: string = "",
   ): string[] { return str.split(sep).filter(s => s.length > 0); }
 
-  @Meta(SchemaType, 'system.str.convert.substr') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static substr(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'startIndex') @Meta(SchemaType, NS_SYSTEM_INT) start: number = 0,
@@ -107,40 +108,40 @@ export class SystemStrConvert {
     return str.substring(s, e);
   }
 
-  @Meta(SchemaType, 'system.str.convert.replace') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static replace(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'search') @Meta(SchemaType, NS_SYSTEM_STRING) search: string = "",
     @Meta(ArgName, 'replace') @Meta(SchemaType, NS_SYSTEM_STRING) replace?: string,
   ): string { return str.split(search).join(replace ?? ''); }
 
-  @Meta(SchemaType, 'system.str.convert.trim') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static trim(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.trim(); }
 
-  @Meta(SchemaType, 'system.str.convert.tolower') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static tolower(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.toLowerCase(); }
 
-  @Meta(SchemaType, 'system.str.convert.toupper') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static toupper(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.toUpperCase(); }
 
-  @Meta(SchemaType, 'system.str.convert.reverse') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static reverse(@Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = ""): string { return str.split('').reverse().join(''); }
 
-  @Meta(SchemaType, 'system.str.convert.padleft') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static padleft(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'totalWidth') @Meta(SchemaType, NS_SYSTEM_INT) totalWidth: number,
     @Meta(ArgName, 'paddingChar') @Meta(SchemaType, NS_SYSTEM_STRING) paddingChar?: string,
   ): string { return str.padStart(totalWidth, (paddingChar ?? ' ')[0]); }
 
-  @Meta(SchemaType, 'system.str.convert.padright') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static padright(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'totalWidth') @Meta(SchemaType, NS_SYSTEM_INT) totalWidth: number,
     @Meta(ArgName, 'paddingChar') @Meta(SchemaType, NS_SYSTEM_STRING) paddingChar?: string,
   ): string { return str.padEnd(totalWidth, (paddingChar ?? ' ')[0]); }
 
-  @Meta(SchemaType, 'system.str.convert.repeat') @Meta(Return, NS_SYSTEM_STRING)
+  @Meta(Return, NS_SYSTEM_STRING)
   static repeat(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str: string = "",
     @Meta(ArgName, 'count') @Meta(SchemaType, NS_SYSTEM_INT) count: number,
@@ -152,21 +153,24 @@ export class SystemStrConvert {
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.map')
 export class SystemStrMap {
-  @Meta(SchemaType, 'system.str.map.tolocale') @Meta(Return, NS_SYSTEM_LOCALE_STRING) @Meta(Converter, true)
+  /** Converts a string to a locale string */
+  @Meta(Return, NS_SYSTEM_LOCALE_STRING) @Meta(Converter, true)
   static tolocale(
     @Meta(ArgName, 'str') @Meta(SchemaType, NS_SYSTEM_STRING) str?: string,
   ): { key: string } { return { key: str ?? '' }; }
 
-  @Meta(SchemaType, 'system.str.map.tolocalestr') @Meta(Return, NS_SYSTEM_STRING) @Meta(Converter, true)
+  /** Converts a locale string to a string */
+  @Meta(Return, NS_SYSTEM_STRING) @Meta(Converter, true)
   static tolocalestr(
     @Meta(ArgName, 'locale') @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING) locale?: { key: string },
   ): string { return locale?.key ?? ''; }
 
-  @Meta(SchemaType, 'system.str.map.rectifylocale') @Meta(Return, NS_SYSTEM_LOCALE_STRING)
+  /** Rectifies a locale string with a default language */
+  @Meta(Return, NS_SYSTEM_LOCALE_STRING)
   static rectifylocale(
-    @Meta(ArgName, 'locale') @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING) locale: { key: string; trans?: { lang: string; tran: string }[] },
+    @Meta(ArgName, 'locale') @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING) locale: LocaleString,
     @Meta(ArgName, 'defaultLang') @Meta(SchemaType, NS_SYSTEM_STRING) defaultLang?: string,
-  ): { key: string; trans?: { lang: string; tran: string }[] } {
+  ): LocaleString {
     if (!locale.key && locale.trans && locale.trans.length > 0) {
       const t = defaultLang
         ? locale.trans.find(t => t.lang.toLowerCase() === defaultLang.toLowerCase())
@@ -182,7 +186,7 @@ export class SystemStrMap {
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.util')
 export class SystemStrUtil {
-  @Meta(SchemaType, 'system.str.util.newguid') @Meta(Return, NS_SYSTEM_STRING) @Meta(ServerOnly, true) @Meta(NoCache, true)
+  @Meta(Return, NS_SYSTEM_STRING)
   static newguid(): string {
     // Use crypto.randomUUID if available, fallback to manual
     if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();

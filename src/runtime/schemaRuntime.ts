@@ -12,12 +12,13 @@
 
 import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter } from '../property/index';
+import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
 import { NamespaceType, NodeType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
+import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 
 // #region ── Schema Kind Configuration ─────────────────────────────────────────────
 
@@ -201,6 +202,8 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 
 // #region ── Node Schema Type Generation ───────────────────────────────────────────
 
+const _nodeTypeGenerator = new Map<string, new () => NodeType>();
+
 /** Get the runtime node type by name with generics settings if provided */
 export function getNodeType(name: string, generics?: GenericParameter[], genericParams?: NodeType[]): NodeType | undefined {
   
@@ -245,6 +248,15 @@ export function initSchemaRuntime(): void {
         let existed = _schemaKindProperties.get(kind) ?? [];
         existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
         _schemaKindProperties.set(kind, Array.from(new Set(existed)));
+      }
+
+      // node type check
+      const nodeSchemaKind = getMetaProperty(ctor, NodeSchemaKind);
+      if (nodeSchemaKind?.hasValue)
+      {
+        const nodeTypeGenerator = getMetaProperty(ctor, RuntimeNodeType);
+        if (nodeTypeGenerator)
+          _nodeTypeGenerator.set(nodeSchemaKind.getValue<string>()!, nodeTypeGenerator.getValue<Function>() as new () => NodeType)
       }
     }
 
