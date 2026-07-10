@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { NodeSchema } from '../schema/nodeSchema';
+import type { ValueType } from '../runtime/type/valueType';
 import BigNumber from 'bignumber.js';
 
 /**
@@ -13,8 +13,13 @@ import BigNumber from 'bignumber.js';
 export abstract class ScalarNode<T> extends DataNode {
   protected _value: T | undefined;
 
+  constructor(type: ValueType) {
+    super(type);
+  }
+
   get isEmpty(): boolean {
-    return this._value === undefined || this._value === null;
+    return this._value === undefined || this._value === null || this._value === '' || 
+      (typeof this._value === 'object' && this._value && 'isZero' in (this._value as object) && (this._value as unknown as { isZero: () => boolean }).isZero?.() || false);
   }
 
   trySetValue<TValue>(value: TValue): boolean {
@@ -24,6 +29,13 @@ export abstract class ScalarNode<T> extends DataNode {
 
   tryGetValue<TV>(): TV | undefined {
     return this._value as unknown as TV;
+  }
+
+  clone(): DataNode {
+    const Ctor = this.constructor as new (type: ValueType) => ScalarNode<T>;
+    const copy = new Ctor(this.type);
+    copy._value = this._value;
+    return copy;
   }
 }
 

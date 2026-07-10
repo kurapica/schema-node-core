@@ -10,20 +10,9 @@ export abstract class ScalarType extends ValueType {
   /** Base type for scalar inheritance. */
   baseNode?: ScalarType;
 
-  constructor(schema: NodeSchema, genericParams?: ValueType[]) {
-    super(schema, genericParams);
-  }
-
-  override isAssignableTo(other: ValueType): boolean {
-    if (super.isAssignableTo(other)) return true;
-    if (this.baseNode?.isAssignableTo(other)) return true;
+  override isCompatibleWith(other: ValueType): boolean {
+    if (super.isCompatibleWith(other)) return true;
+    if (this.baseNode?.isCompatibleWith(other)) return true;
     return this.kind === other.kind;
-  }
-
-  /** Property lookup falls through to base. */
-  override getProperty<T>(propName: string): T | undefined {
-    const self = super.getProperty<T>(propName);
-    if (self !== undefined) return self;
-    return this.baseNode?.getProperty<T>(propName);
   }
 }

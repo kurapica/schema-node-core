@@ -16,9 +16,11 @@ import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSch
 import { getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
-import { NamespaceType, NodeType } from './type';
+import { NamespaceType, NodeType, GenericType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { getSchemaProvider } from '../schema/provider/schemaProvider';
+import { combineProperties } from '../property/propertyOwner';
 
 // #region ── Schema Kind Configuration ─────────────────────────────────────────────
 
@@ -200,33 +202,261 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 
 // #endregion
 
-// #region ── Node Schema Type Generation ───────────────────────────────────────────
+// #region ── Node Type Resolution ─────────────────────────────────────────────────
 
 const _nodeTypeGenerator = new Map<string, new () => NodeType>();
 
-/** Get the runtime node type by name with generics settings if provided */
-export function getNodeType(name: string, generics?: GenericParameter[], genericParams?: NodeType[]): NodeType | undefined {
-  
+/** Root namespace type (lazy-init on first getNodeType call). */
+let rootNamespaceType: NamespaceType | undefined;
+
+function isNamespaceType(node: NodeType): boolean {
+  return node instanceof NamespaceType;
 }
 
-// #region ── Internal ──
+/**
+ * Resolve a runtime NodeType by full schema name.
+ * 
+ * Mirrors C# SchemaContext.GetNodeTypeAsync:
+ *   1. Look up the NodeSchema by name from _schemaIndex
+ *   2. Use _nodeTypeGenerator to find the NodeType class for the schema's kind
+ *   3. Create the NodeType instance and call loadTypeAsync()
+ *
+ * @param fullName   The dotted full schema name (e.g. "system.string")
+ * @param generics   Optional generic parameter declarations
+ * @param genericParams Optional resolved generic type arguments
+ * @param reload     If true, forces re-loading from provider
+ */
+export async function getNodeType(
+  fullName: string,
+  generics?: GenericParameter[],
+  genericParams?: NodeType[],
+  reload = false,
+): Promise<NodeType | undefined> {
+  fullName = fullName.toLowerCase().trim();
 
-async function _loadNodeType(type: NodeType, path?: string, reload?: boolean) : Promise<NodeType | undefined> {
+  // Generic type — the name matches a generic parameter → return the concrete type
+  if (generics) {
+    const gIdx = generics.findIndex(g => g.name.toLowerCase() === fullName);
+    if (gIdx >= 0) {
+      if (genericParams && gIdx < genericParams.length)
+        return genericParams[gIdx];
+      return new GenericType(fullName);
+    }
+  }
+
+  // Walk namespace segments
+  let genericPart : string | undefined = undefined;
+  if (fullName.endsWith('>'))
+  {
+    const genericStart = fullName.indexOf('<');
+    if (genericStart < 0)
+    {
+      console.error(`The "${fullName}" is not a valid type name.`)
+      return undefined;
+    }
+    genericPart = fullName.substring(genericStart);
+    fullName = fullName.substring(0, genericStart);
+  }
+  const parts = fullName.split('.');
+  if (genericPart) parts.push(genericPart);
+
+  // Load nodes
+  if (!rootNamespaceType) rootNamespaceType = new NamespaceType();
+  let node: NodeType | undefined = rootNamespaceType as unknown as NodeType;
+  let currentPath = '';
+
+  for (const part of parts) {
+    if (!node) return undefined;
+    currentPath = currentPath ? `${currentPath}.${part}` : part;
+    node = await loadNodeTypeAsync(node, part, currentPath, generics, genericParams, reload);
+    if (!node) return undefined;
+  }
+
+  return node;
 }
 
-async function _loadNodeSchema(ns: NamespaceType | undefined, name: string, reload?: boolean): Promise<NodeSchema | undefined> {
+/** Load a single namespace segment. */
+async function loadNodeTypeAsync(
+  parent: NodeType,
+  segment: string,
+  fullPath: string,
+  generics?: GenericParameter[],
+  genericParams?: NodeType[],
+  reload = false,
+): Promise<NodeType | undefined> {
+  // Generic types: segment starts with '<', e.g. "list<system.string>"
+  if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
 
+  // Already loaded?
+  const nsParent = isNamespaceType(parent) ? (parent as unknown as NamespaceType) : undefined;
+  let result: NodeType | undefined = nsParent?.getNodeType(segment);
+  if (result && result.loaded && !reload) return result;
+  if (reload && !result) return undefined; // reload only on existing types
+
+  // Load the NodeSchema
+  const schema = await loadNodeSchema(nsParent, segment, reload);
+  if (!schema) return undefined;
+
+  // Resolve NodeType class from _nodeTypeGenerator
+  const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? NodeType;
+  result ??= new NodeTypeCtor();
+
+  // Cache in parent namespace
+  nsParent?.saveNodeType(segment, result);
+
+  // Load the type
+  await result.loadTypeAsync(schema);
+  return result;
 }
 
-// #endregion
+/** Load a generic type like "list<system.string>". */
+async function loadGenericTypeAsync(
+  node: NodeType,
+  segment: string,
+  generics?: GenericParameter[],
+  genericParams?: NodeType[],
+): Promise<NodeType | undefined> {
+  const inner = segment.slice(1, -1); // strip '<' and '>'
+  if (!node.generics) return undefined;
+
+  // Check cache
+  let genType = node.getGenericType(inner);
+  if (genType && genType.loaded) return genType;
+
+  // Parse generic params respecting nested <>, e.g. "system.point<system.int, system.number>"
+  const genParams: NodeType[] = [];
+  for (const paramName of splitGenericParams(inner)) {
+    const resolved = await getNodeType(paramName, generics, genericParams);
+    if (!resolved) return undefined;
+    genParams.push(resolved);
+  }
+
+  if (node.generics.length !== genParams.length) return undefined;
+
+  // Create generic type instance
+  const NodeTypeCtor = node.constructor as new () => NodeType;
+  genType = new NodeTypeCtor();
+  node.setGenericType(inner, genType);
+
+  await genType.loadTypeAsync(node.getNodeSchema()!, genParams);
+  return genType;
+}
+
+/**
+ * Load a NodeSchema — first from namespace cache, then system index, then providers.
+ * Schemas from multiple providers are COMBINED (not replaced), mirroring C# merging logic.
+ */
+async function loadNodeSchema(
+  ns: NamespaceType | undefined,
+  name: string,
+  reload = false,
+): Promise<NodeSchema | undefined> {
+  const schemaName = ns ? `${ns.name}.${name}`.replace(/^\./, '') : name;
+
+  // 1. Check namespace cache (unless reloading)
+  if (!reload) {
+    const cachedNodeSchema = ns?.getNodeSchema(name);
+    if (cachedNodeSchema) return cachedNodeSchema;
+  }
+
+  // 2. Try system (built-in) schema
+  let schema = _schemaIndex.get(schemaName.toLowerCase());
+  if (schema) {
+    _setLoadState(schema, SchemaLoadState.System);
+    // Shallow clone so provider merges don't mutate the cached system schema
+    schema = { ...schema, schemas: schema.schemas ? [...schema.schemas] : undefined };
+  }
+
+  // 3. Try loading from providers and combine
+  const provider = getSchemaProvider();
+  if (provider) {
+    try {
+      const loadSchemas = await provider.loadSchema([schemaName]);
+      for (const loadSchema of loadSchemas) {
+        loadSchema.loadState = SchemaLoadState.Service;
+
+        if (!schema) {
+          schema = loadSchema;
+          continue;
+        }
+
+        // Merge load states
+        schema.loadState = (schema.loadState ?? SchemaLoadState.None) | (loadSchema.loadState ?? SchemaLoadState.None);
+
+        // Combine properties on the schema itself
+        combineProperties(schema, loadSchema, schema.kind);
+
+        // For namespace schemas, merge sub-schemas
+        if (loadSchema.kind === SCHEMA_KIND_NAMESPACE && loadSchema.schemas?.length) {
+          if (!schema.schemas?.length) {
+            schema.schemas = loadSchema.schemas;
+          } else {
+            // Merge sub-schemas
+            const otherSchemas: NodeSchema[] = [];
+            for (const other of loadSchema.schemas) {
+              const existingIdx = schema.schemas.findIndex(
+                s => s.name.toLowerCase() === other.name.toLowerCase(),
+              );
+              if (existingIdx >= 0) {
+                if (schema.schemas[existingIdx].kind === other.kind) {
+                  combineProperties(schema.schemas[existingIdx], other, other.kind);
+                }
+              } else {
+                otherSchemas.push(other);
+              }
+            }
+            if (otherSchemas.length > 0) {
+              schema.schemas = [...schema.schemas, ...otherSchemas];
+            }
+          }
+        }
+      }
+    } catch {
+      // Provider failed, continue with what we have
+    }
+  }
+
+  // Cache in index if we got something
+  if (schema) {
+    _schemaIndex.set(schemaName.toLowerCase(), schema);
+  }
+
+  return schema;
+}
+
+/**
+ * Split generic parameters respecting nested angle brackets.
+ * Mirrors C# SpanReader.NextGenericParam().
+ *
+ * e.g. "system.string, system.point<system.int, system.number>"
+ *   → ["system.string", "system.point<system.int, system.number>"]
+ */
+function* splitGenericParams(input: string): Generator<string> {
+  let depth = 0;
+  let start = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (ch === '<') {
+      depth++;
+    } else if (ch === '>') {
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      yield input.substring(start, i).trim();
+      start = i + 1;
+    }
+  }
+
+  // Last segment
+  const last = input.substring(start).trim();
+  if (last) yield last;
+}
 
 // #endregion
 
 // #region ── Schema Runtime Setup ─────────────────────────────────────────────
 
-/**
- * Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
- */
+/** Scan all registered schema type to build the schema runtime, this is called to init the schema runtime */
 export function initSchemaRuntime(): void {
   // schema kind & generator & properties
   _schemaTypeRegistry.forEach((type, ctor) => {

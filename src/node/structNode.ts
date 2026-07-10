@@ -4,29 +4,47 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { NodeSchema } from '../schema/nodeSchema';
-import type { StructSchema } from '../schema/structSchema';
+import type { ValueType } from '../runtime/type/valueType';
+import type { StructType, StructFieldType } from '../runtime/type/structType';
 
 export class StructNode extends DataNode {
   /** Field nodes, keyed by field name. */
   private _fields = new Map<string, DataNode>();
+
+  constructor(type: ValueType) {
+    super(type);
+    // Initialize fields from the StructType's field definitions
+    const structType = type as StructType;
+    for (const fieldType of structType.getFields()) {
+      if (fieldType.type) {
+        this._fields.set(fieldType.name, fieldType.type.create());
+      }
+    }
+  }
 
   get isEmpty(): boolean {
     return this._fields.size === 0;
   }
 
   trySetValue<T>(_value: T): boolean {
-    // StructNode value setting is done per-field
-    return false;
+    return false; // StructNode value setting is done per-field
   }
 
   tryGetValue<T>(): T | undefined {
-    // Return the struct as a plain object
     const obj: Record<string, unknown> = {};
     for (const [key, node] of this._fields) {
       obj[key] = node.tryGetValue();
     }
     return obj as unknown as T;
+  }
+
+  clone(): DataNode {
+    const copy = new StructNode(this.type);
+    copy._fields = new Map();
+    for (const [key, node] of this._fields) {
+      copy._fields.set(key, node.clone());
+    }
+    return copy;
   }
 
   /** Get a field node by name. */
@@ -55,32 +73,10 @@ export class StructNode extends DataNode {
     const rest = dot >= 0 ? path.substring(dot + 1) : '';
 
     if (first === '$self') return this;
-    if (first === '$previous') return undefined; // struct has no previous
+    if (first === '$previous') return undefined;
 
     const field = this._fields.get(first);
     if (!field) return undefined;
     return rest ? field.getAccessValue(rest) : field;
-  }
-
-  /** Build child DataNodes from the StructSchema field definitions. */
-  buildFields(schema: StructSchema): void {
-    for (const fieldDef of schema.fields) {
-      const childSchema = this._resolveFieldSchema(fieldDef.type);
-      if (!childSchema) continue;
-
-      const childNode = this._createNodeForSchema(childSchema, fieldDef.extensions);
-      this._fields.set(fieldDef.name, childNode);
-    }
-  }
-
-  private _resolveFieldSchema(_typeName: string): NodeSchema | undefined {
-    // Will be connected to SchemaRuntime for type resolution
-    return undefined;
-  }
-
-  private _createNodeForSchema(_schema: NodeSchema, _overrides?: Record<string, unknown>): DataNode {
-    // Factory: create the appropriate DataNode subclass
-    // Will be connected to NodeType registry
-    return undefined as unknown as DataNode;
   }
 }

@@ -7,55 +7,47 @@ import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
 import type { NodeSchema } from '../../schema/nodeSchema';
 import type { StructFieldSchema } from '../../schema/structSchema';
+import { StructProperty } from '../../schema/structSchema';
+import { getProperty } from '../../property/propertyOwner';
+
+/** A resolved field type for a struct. */
+export interface StructFieldType {
+  name: string;
+  typeName: string;
+  type?: ValueType;
+  seqno: number;
+}
 
 export class StructType extends ValueType {
   /** Field type definitions. */
   fields: StructFieldType[] = [];
 
-  constructor(schema: NodeSchema, genericParams?: ValueType[]) {
-    super(schema, genericParams);
-  }
+  override async loadTypeAsync(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
+    await super.loadTypeAsync(schema, genericParams);
 
-  override load(): void {
-    const structData = this.schema.extensions?.['struct'] as StructSchemaData | undefined;
+    // Load fields from StructProperty
+    const structProp = getProperty(schema, StructProperty);
+    const structData = structProp?.getValue<{ fields: StructFieldSchema[] }>();
     if (structData?.fields) {
       this.fields = structData.fields.map((f, i) => ({
         name: f.name,
         typeName: f.type,
-        seqno: f.seqno ?? i,
+        seqno: i,
       }));
     }
-    super.load();
   }
 
-  /** Get a field's ValueType by name. */
-  getFieldType(name: string): StructFieldType | undefined {
+  /** Get a field's type definition by name. */
+  getField(name: string): StructFieldType | undefined {
     return this.fields.find((f) => f.name === name);
   }
 
+  /** Get all field definitions. */
+  getFields(): StructFieldType[] {
+    return this.fields;
+  }
+
   override create(): StructNode {
-    return new StructNode(this.schema);
+    return new StructNode(this);
   }
-
-  override getAccessValueType(path: string): ValueType | undefined {
-    const dot = path.indexOf('.');
-    const first = dot >= 0 ? path.substring(0, dot) : path;
-    const rest = dot >= 0 ? path.substring(dot + 1) : '';
-    if (first === '$self') return this;
-    const field = this.getFieldType(first);
-    if (!field?._resolvedType) return undefined;
-    return rest ? field._resolvedType.getAccessValueType(rest) : field._resolvedType;
-  }
-}
-
-export interface StructFieldType {
-  name: string;
-  typeName: string;
-  seqno: number;
-  /** Resolved at load time by the runtime context. */
-  _resolvedType?: ValueType;
-}
-
-interface StructSchemaData {
-  fields?: StructFieldSchema[];
 }

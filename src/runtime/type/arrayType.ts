@@ -6,37 +6,27 @@
 import { ValueType } from './valueType';
 import { ArrayNode } from '../../node/arrayNode';
 import type { NodeSchema } from '../../schema/nodeSchema';
+import { ArrayProperty } from '../../schema/arraySchema';
+import { getProperty } from '../../property/propertyOwner';
 
 export class ArrayType extends ValueType {
   /** Element value type (resolved at load time). */
-  elementType?: ValueType;
+  element?: ValueType;
 
   /** Primary key field names. */
   primaryKeys: string[] = [];
 
-  constructor(schema: NodeSchema, genericParams?: ValueType[]) {
-    super(schema, genericParams);
-  }
+  override async loadTypeAsync(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
+    await super.loadTypeAsync(schema, genericParams);
 
-  override load(): void {
-    const arrayData = this.schema.extensions?.['array'] as ArraySchemaData | undefined;
-    this.primaryKeys = arrayData?.primary ?? [];
-    super.load();
+    const arrayProp = getProperty(schema, ArrayProperty);
+    const arrayData = arrayProp?.getValue<{ element?: string }>();
+    if (arrayData?.element && genericParams?.[0]) {
+      this.element = genericParams[0] as ValueType;
+    }
   }
 
   override create(): ArrayNode {
-    return new ArrayNode(this.schema);
+    return new ArrayNode(this);
   }
-
-  override getAccessValueType(path: string): ValueType | undefined {
-    if (path === '$self') return this;
-    if (path === '$element' || path === '$previous') return this.elementType;
-    if (this.elementType) return this.elementType.getAccessValueType(path);
-    return undefined;
-  }
-}
-
-interface ArraySchemaData {
-  element?: string;
-  primary?: string[];
 }

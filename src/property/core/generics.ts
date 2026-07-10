@@ -21,8 +21,15 @@ export class Generics extends Property<GenericParameter[]> {}
 
 
 /** A single generic type parameter declaration. */
+export interface GenericParameter {
+  name: string;
+  compatibles?: string[];
+}
+
+
+/** A single generic type parameter declaration. */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.genericParameter`)
-export class GenericParameter {
+class GenericParameterMeta {
   @Meta(SchemaType, NS_SYSTEM_STRING)
   name: string = "T";
 

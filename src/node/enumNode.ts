@@ -4,42 +4,43 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { NodeSchema } from '../schema/nodeSchema';
+import type { ValueType } from '../runtime/type/valueType';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
 
 export class EnumNode extends DataNode {
-  private _value: string | string[] | undefined;
+  private _strValue: string | undefined;
+  private _longValue: number | undefined;
+  private readonly _isString: boolean;
+
+  constructor(type: ValueType) {
+    super(type);
+    this._isString = true; // default to string enum
+  }
 
   /** The enum storage type. */
-  valueType: EnumValueTypeValue = EnumValueType.String;
+  get valueType(): EnumValueTypeValue { return this._isString ? EnumValueType.String : EnumValueType.Int; }
 
   get isEmpty(): boolean {
-    return this._value === undefined;
+    return this._isString ? !this._strValue || this._strValue.trim() === '' : this._longValue === undefined;
   }
 
   trySetValue<T>(value: T): boolean {
-    if (typeof value === 'string') {
-      this._value = value;
-      return true;
+    if (this._isString) {
+      if (typeof value === 'string') { this._strValue = value; return true; }
+      return false;
     }
-    if (Array.isArray(value) && this.valueType === EnumValueType.Flags) {
-      this._value = value as string[];
-      return true;
-    }
+    if (typeof value === 'number') { this._longValue = value; return true; }
     return false;
   }
 
   tryGetValue<T>(): T | undefined {
-    return this._value as unknown as T;
+    return (this._isString ? this._strValue : this._longValue) as unknown as T;
   }
 
-  /** Whether multiple selections are allowed. */
-  get multiple(): boolean {
-    return this.valueType === EnumValueType.Flags;
-  }
-
-  /** Get selected value(s). */
-  get selected(): string | string[] | undefined {
-    return this._value;
+  clone(): DataNode {
+    const copy = new EnumNode(this.type);
+    copy._strValue = this._strValue;
+    copy._longValue = this._longValue;
+    return copy;
   }
 }

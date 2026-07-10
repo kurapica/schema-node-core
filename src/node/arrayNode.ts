@@ -4,10 +4,20 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { NodeSchema } from '../schema/nodeSchema';
+import type { ValueType } from '../runtime/type/valueType';
+import type { ArrayType } from '../runtime/type/arrayType';
 
 export class ArrayNode extends DataNode implements Iterable<DataNode> {
   private _elements: DataNode[] = [];
+
+  /** The array element type. */
+  get elementType(): ValueType | undefined {
+    return (this.type as ArrayType)?.element;
+  }
+
+  constructor(type: ValueType) {
+    super(type);
+  }
 
   get isEmpty(): boolean {
     return this._elements.length === 0;
@@ -25,15 +35,17 @@ export class ArrayNode extends DataNode implements Iterable<DataNode> {
     return this._elements.map((e) => e.tryGetValue()) as unknown as T;
   }
 
-  /** Get elements. */
-  get elements(): DataNode[] {
-    return this._elements;
+  clone(): DataNode {
+    const copy = new ArrayNode(this.type);
+    copy._elements = this._elements.map(e => e.clone());
+    return copy;
   }
 
+  /** Get elements. */
+  get elements(): DataNode[] { return this._elements; }
+
   /** Number of elements. */
-  get length(): number {
-    return this._elements.length;
-  }
+  get count(): number { return this._elements.length; }
 
   /** Get element by index. */
   at(index: number): DataNode | undefined {
