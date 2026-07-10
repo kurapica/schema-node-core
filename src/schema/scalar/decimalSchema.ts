@@ -68,5 +68,5 @@ function generateDecimalSchema(namespace: string, name: string, ctor: Function)
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_DECIMAL, ctor).forEach(p => setProperty(decimalSchema, p));
   setPropertyValue(nodeSchema, DecimalProperty, decimalSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 }

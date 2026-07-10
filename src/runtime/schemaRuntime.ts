@@ -14,7 +14,7 @@ import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
 import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
-import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
 import { NamespaceType, NodeType, GenericType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
@@ -56,7 +56,7 @@ export function isSchemaKindProperty(kind: string, prop: new () => IProperty) : 
 
 // #endregion
 
-// #region ── Schema Registration (NodeSchema family) ────────────────────────────
+// #region ── System Schema Registration (NodeSchema family) ────────────────────────────
 
 /** The type declared with schema type, the schema kind is also declare with node schema,
  * So we use this to track all
@@ -91,7 +91,7 @@ export function getSchemaType(typeCtor: object): string | undefined {
  * Save a NodeSchema into the namespace tree.
  * This is THE public API for schema registration — mirrors C# SchemaRuntime.SaveSystemSchema().
  */
-export function saveSchema(schema: NodeSchema, loadStage: SchemaLoadState = SchemaLoadState.None): void {
+export function saveSystemSchema(schema: NodeSchema, loadStage: SchemaLoadState = SchemaLoadState.System): void {
   const ns = schema.namespace ?? '';
 
   // Set the load state flags for the schema
@@ -102,17 +102,9 @@ export function saveSchema(schema: NodeSchema, loadStage: SchemaLoadState = Sche
 }
 
 /** Look up a schema by full name. */
-export function getSchema(fullName: string): NodeSchema | undefined {
+function getSystemSchema(fullName: string): NodeSchema | undefined {
   fullName = fullName.toLowerCase();
   return _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
-}
-
-/** Delete a schema by full name. */
-export function deleteSchema(fullName: string): boolean {
-  fullName = fullName.toLowerCase();
-  if (_deleteFromNamespace(fullName))
-    return _schemaIndex.delete(fullName);
-  return false;
 }
 
 // #region ── Internal ──
@@ -163,27 +155,6 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
   } else {
     current.schemas.push(schema);
   }
-}
-
-/** Walk a dotted path into the namespace tree, deleting a node if it exists. */
-function _deleteFromNamespace(path: string): boolean {
-  const parts = path.split('.');
-  let current: NodeSchema | undefined = rootNamespace;
-  let parent: NodeSchema | undefined = undefined;
-
-  for (const part of parts) {
-    if (!current?.schemas) return false;
-    parent = current;
-    current = current.schemas.find((s) => s.name === part);
-    if (!current) return false;
-  }
-
-  if (!parent?.schemas) return false;
-  const idx = parent.schemas.findIndex((s) => s.name === current.name);
-  if (idx < 0) return false;
-
-  parent.schemas.splice(idx, 1);
-  return true;
 }
 
 /** Walk the namespace tree by dotted path. */
@@ -360,9 +331,8 @@ async function loadNodeSchema(
   }
 
   // 2. Try system (built-in) schema
-  let schema = _schemaIndex.get(schemaName.toLowerCase());
+  let schema = getSystemSchema(schemaName);
   if (schema) {
-    _setLoadState(schema, SchemaLoadState.System);
     // Shallow clone so provider merges don't mutate the cached system schema
     schema = { ...schema, schemas: schema.schemas ? [...schema.schemas] : undefined };
   }
@@ -384,7 +354,7 @@ async function loadNodeSchema(
         schema.loadState = (schema.loadState ?? SchemaLoadState.None) | (loadSchema.loadState ?? SchemaLoadState.None);
 
         // Combine properties on the schema itself
-        combineProperties(schema, loadSchema, schema.kind);
+        combineProperties(schema, loadSchema, SCHEMA_KIND_NODE);
 
         // For namespace schemas, merge sub-schemas
         if (loadSchema.kind === SCHEMA_KIND_NAMESPACE && loadSchema.schemas?.length) {
@@ -399,7 +369,7 @@ async function loadNodeSchema(
               );
               if (existingIdx >= 0) {
                 if (schema.schemas[existingIdx].kind === other.kind) {
-                  combineProperties(schema.schemas[existingIdx], other, other.kind);
+                  combineProperties(schema.schemas[existingIdx], other, SCHEMA_KIND_NODE);
                 }
               } else {
                 otherSchemas.push(other);
@@ -414,11 +384,6 @@ async function loadNodeSchema(
     } catch {
       // Provider failed, continue with what we have
     }
-  }
-
-  // Cache in index if we got something
-  if (schema) {
-    _schemaIndex.set(schemaName.toLowerCase(), schema);
   }
 
   return schema;

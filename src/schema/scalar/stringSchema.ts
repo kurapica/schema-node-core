@@ -68,5 +68,5 @@ function generateStringSchema(namespace: string, name: string, ctor: Function)
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_STRING, ctor).forEach(p => setProperty(StringSchema, p));
   setPropertyValue(nodeSchema, StringProperty, StringSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 }

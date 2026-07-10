@@ -33,5 +33,5 @@ function generateBoolSchema(namespace: string, name: string, ctor: Function)
     const nodeschema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_BOOL }
     setPropertyValue(nodeschema, Display, { key : combinePaths(namespace, name)})
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => { setProperty(nodeschema, p) });
-    saveSchema(nodeschema);
+    saveSystemSchema(nodeschema);
 }

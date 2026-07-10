@@ -11,15 +11,15 @@ import { DataIndex, Indexes } from '../property/constraint/indexes';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
-import { saveSchema } from '../runtime/schemaRuntime';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_DECIMAL, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
 import { ArraySchema, ArrayProperty } from './arraySchema';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
+import { saveSystemSchema } from '../runtime/schemaRuntime';
 
 /** The struct schema */
 export interface StructSchema {
@@ -180,7 +180,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_STRUCT, ctor).forEach(p => setProperty(structSchema, p));
   setPropertyValue(nodeSchema, StructProperty, structSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 
   // Companion ArraySchema
   const primaryFields = buildOrderedFields(primaries);
@@ -197,7 +197,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
     setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });
     setPropertyValue(arrayNode, ArrayProperty, arraySchema);
-    saveSchema(arrayNode);
+    saveSystemSchema(arrayNode);
   }
 }
 

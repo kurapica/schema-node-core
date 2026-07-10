@@ -67,5 +67,5 @@ function generateIntSchema(namespace: string, name: string, ctor: Function) {
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_INT, ctor).forEach(p => setProperty(IntSchema, p));
   setPropertyValue(nodeSchema, IntProperty, IntSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 }

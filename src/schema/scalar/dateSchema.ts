@@ -68,5 +68,5 @@ function generateDateSchema(namespace: string, name: string, ctor: Function)
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_DATE, ctor).forEach(p => setProperty(dateSchema, p));
   setPropertyValue(nodeSchema, DateProperty, dateSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 }

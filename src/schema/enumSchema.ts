@@ -16,7 +16,7 @@ import { combineProperties, setProperty, setPropertyValue } from '../property/pr
 import { NodeSchema } from './nodeSchema';
 import { FromEnum } from '../property/core/fromEnum';
 import { combinePaths } from '../utility/toolset';
-import { saveSchema } from '../runtime/schemaRuntime';
+import { saveSystemSchema } from '../runtime/schemaRuntime';
 import { Base } from '../property/core/base';
 
 /** The enum schema */
@@ -180,7 +180,7 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_ENUM, ctor).forEach(p => setProperty(enumSchema, p));  
   setPropertyValue(nodeSchema, EnumProperty, enumSchema);
-  saveSchema(nodeSchema);
+  saveSystemSchema(nodeSchema);
 }
 
 function buildEnumValues(enumName: string, target: object): EnumValueSchema[] {
