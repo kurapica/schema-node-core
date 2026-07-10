@@ -6,6 +6,7 @@ import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
 import { SchemaKind, SchemaType, Attach, OfSchema, IProperty } from '../property/index';
 import { Property } from '../property/property';
+import { IValueAccess } from '../runtime/interfaces';
 import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND } from '../utility/constant';
 
 /** Pure data interface. */
@@ -70,5 +71,6 @@ function equal(a: RelationSchema, b: RelationSchema): boolean {
 
 /** The handler to process the relations */
 export interface IRelationProcess {
-  
+  /** Execute the relation process and return the reuslt value */
+  process(owner: IValueAccess) : Promise<unknown>;
 }

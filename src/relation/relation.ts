@@ -3,15 +3,15 @@
 // =============================================================================
 
 import type { DataNode } from '../node/dataNode';
-import type { IPropertyOwner } from '../property/propertyOwner';
+import type { PropertyOwner } from '../property/propertyOwner';
 
 /** A relation process applies a computed behavior to a target node. */
 export interface IRelationProcess {
   /** Load/resolve the relation's configuration. */
-  load(owner: IPropertyOwner): Promise<void>;
+  load(owner: PropertyOwner): Promise<void>;
 
   /** Execute the relation process and return the result value. */
-  process(owner: IPropertyOwner): Promise<unknown>;
+  process(owner: PropertyOwner): Promise<unknown>;
 }
 
 /**
@@ -26,11 +26,11 @@ export class CallRelation implements IRelationProcess {
     this.args = args;
   }
 
-  async load(_owner: IPropertyOwner): Promise<void> {
+  async load(_owner: PropertyOwner): Promise<void> {
     // Resolve function reference
   }
 
-  async process(_owner: IPropertyOwner): Promise<unknown> {
+  async process(_owner: PropertyOwner): Promise<unknown> {
     // Invoke function with resolved args
     return undefined;
   }
@@ -46,11 +46,11 @@ export class AssignRelation implements IRelationProcess {
     this.value = value;
   }
 
-  async load(_owner: IPropertyOwner): Promise<void> {
+  async load(_owner: PropertyOwner): Promise<void> {
     // No loading needed
   }
 
-  async process(_owner: IPropertyOwner): Promise<unknown> {
+  async process(_owner: PropertyOwner): Promise<unknown> {
     return this.value;
   }
 }
