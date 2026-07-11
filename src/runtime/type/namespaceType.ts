@@ -42,7 +42,7 @@ export class NamespaceType extends NodeType {
 
     this._subSchemas.set(name, schema);
 
-    // reload the type with new schema
+    // mark the type need reload
     const type = this._subTypes.get(name);
     if (type) type.loaded = false;
   }

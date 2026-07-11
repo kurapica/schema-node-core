@@ -4,7 +4,7 @@ import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, Prop
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { saveSchema } from '../../runtime/schemaRuntime';
+import { saveSystemSchema } from '../../runtime/schemaRuntime';
 import { StringType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_STRING_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';

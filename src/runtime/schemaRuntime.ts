@@ -242,10 +242,11 @@ export async function getNodeType(
   let node: NodeType | undefined = rootNamespaceType as unknown as NodeType;
   let currentPath = '';
 
-  for (const part of parts) {
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
     if (!node) return undefined;
     currentPath = currentPath ? `${currentPath}.${part}` : part;
-    node = await loadNodeTypeAsync(node, part, currentPath, generics, genericParams, reload);
+    node = await loadNodeTypeAsync(node, part, currentPath, generics, genericParams, reload, i + 1 == parts.length);
     if (!node) return undefined;
   }
 
@@ -260,6 +261,7 @@ async function loadNodeTypeAsync(
   generics?: GenericParameter[],
   genericParams?: NodeType[],
   reload = false,
+  isLast = false
 ): Promise<NodeType | undefined> {
   // Generic types: segment starts with '<', e.g. "list<system.string>"
   if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
@@ -267,7 +269,7 @@ async function loadNodeTypeAsync(
   // Already loaded?
   const nsParent = isNamespaceType(parent) ? (parent as unknown as NamespaceType) : undefined;
   let result: NodeType | undefined = nsParent?.getNodeType(segment);
-  if (result && result.loaded && !reload) return result;
+  if (result && result.loaded && !(isLast && reload)) return result;
   if (reload && !result) return undefined; // reload only on existing types
 
   // Load the NodeSchema
@@ -279,11 +281,25 @@ async function loadNodeTypeAsync(
   result ??= new NodeTypeCtor();
   result.namespace = nsParent;
 
-  // Cache in parent namespace
-  nsParent?.saveNodeType(segment, result);
+  // Cache in parent namespace (strip sub-schemas first — they're saved separately)
+  const schemas = schema.schemas;
+  delete schema.schemas;
+  if (nsParent !== result) {
+    nsParent?.saveSubNodeSchema(schema);
+    nsParent?.saveNodeType(segment, result);
+  }
 
   // Load the type
   await result.loadTypeAsync(schema);
+
+  // Save sub-schemas into NamespaceType
+  if (result instanceof NamespaceType && schemas?.length)
+    for (const s of schemas) result.saveSubNodeSchema(s);
+
+  // Generic types reloading (clone schema to avoid mutation)
+  for (const g of result.getGenericTypes())
+    await g.loadTypeAsync({ ...schema }, g.genericParams);
+
   return result;
 }
 
