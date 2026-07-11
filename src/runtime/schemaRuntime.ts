@@ -104,7 +104,13 @@ export function saveSystemSchema(schema: NodeSchema, loadStage: SchemaLoadState 
 /** Look up a schema by full name. */
 function getSystemSchema(fullName: string): NodeSchema | undefined {
   fullName = fullName.toLowerCase();
-  return _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
+  const schema = _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
+  if (!schema) return undefined;
+
+  const { schemas, ...clone } = schema
+  if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
+    (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
+  return clone;
 }
 
 // #region ── Internal ──
@@ -328,7 +334,7 @@ async function loadNodeSchema(
 
   // 1. Check namespace cache (unless reloading)
   if (!reload) {
-    const cachedNodeSchema = ns?.getChildNodeSchema(name);
+    const cachedNodeSchema = ns?.getSubNodeSchema(name);
     if (cachedNodeSchema) return cachedNodeSchema;
   }
 

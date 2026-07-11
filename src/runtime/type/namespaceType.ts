@@ -5,37 +5,62 @@
 
 import { NodeType } from './nodeType';
 import type { NodeSchema } from '../../schema/nodeSchema';
+import { SchemaLoadState } from '../../enum/schemaLoadState';
 
 export class NamespaceType extends NodeType {
-  /** Child types by name. */
-  private _children = new Map<string, NodeType>();
+  /** Sub types by name. */
+  private _subTypes = new Map<string, NodeType>();
 
-  /** Child schemas by name (loaded/registered). */
-  private _childSchemas = new Map<string, NodeSchema>();
+  /** Sub schemas by name (loaded/registered). */
+  private _subSchemas = new Map<string, NodeSchema>();
 
   // ── NodeType management ────────────────────────────────────────────────
 
+  /** Save the node type */
   saveNodeType(name: string, type: NodeType): void {
-    this._children.set(name, type);
+    this._subTypes.set(name, type);
   }
 
+  /** Gets the node type */
   getNodeType(name: string): NodeType | undefined {
-    return this._children.get(name);
+    return this._subTypes.get(name);
   }
 
+  /** Gets all sub node types */
   get children(): ReadonlyMap<string, NodeType> {
-    return this._children;
+    return this._subTypes;
   }
 
   // ── NodeSchema management (for reload detection & provider merging) ─────
 
   /** Cache a NodeSchema keyed by name (used for reload detection). */
-  saveNodeSchema(schema: NodeSchema): void {
-    this._childSchemas.set(schema.name.toLowerCase(), schema);
+  saveSubNodeSchema(schema: NodeSchema): void {
+    const name = schema.name.toLowerCase();
+
+    // The system schema don't need reload
+    if (this._subSchemas.has(name) && schema.loadState === SchemaLoadState.System) return;
+
+    this._subSchemas.set(name, schema);
+
+    // reload the type with new schema
+    const type = this._subTypes.get(name);
+    if (type) type.loaded = false;
+  }
+
+  /** Remove a sub node schema */
+  removeSubNodeSchema(name: string): void {
+    name = name.toLowerCase();
+    this._subSchemas.delete(name);
+    this._subTypes.delete(name);
   }
 
   /** Get a cached NodeSchema by name. */
-  getChildNodeSchema(name: string): NodeSchema | undefined {
-    return this._childSchemas.get(name.toLowerCase());
+  getSubNodeSchema(name: string): NodeSchema | undefined {
+    return this._subSchemas.get(name.toLowerCase());
+  }
+
+  /** Whether the namespace type is used */
+  get isUsed(): boolean {
+    return this._subSchemas?.size > 0
   }
 }
