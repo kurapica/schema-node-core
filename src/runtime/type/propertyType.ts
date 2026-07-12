@@ -3,27 +3,31 @@
 // =============================================================================
 
 import { NodeType } from './nodeType';
-import type { NodeSchema } from '../../schema/nodeSchema';
+import { PropertyProperty, PropertySchema } from '../../schema/propertySchema';
+import { IProperty } from '../../property';
+import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
+import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { ValueType } from '.';
+import { getNodeType } from '../schemaRuntime';
 
 export class PropertyType extends NodeType {
-  /** Property key name. */
-  property = '';
+  private _propertySchema: PropertySchema | undefined
+  private _valueType: ValueType | undefined
 
-  /** Value type name (for type reference resolution). */
-  valueType?: string;
+  /** The property type property name */
+  get property() { return this._propertySchema?.property; }
 
-  constructor(schema: NodeSchema) {
-    super(schema);
-    const propData = schema.extensions?.['property'] as PropertySchemaData | undefined;
-    this.property = propData?.property ?? '';
-    this.valueType = propData?.valueType;
+  /** the property value type */
+  get valueType(): ValueType | undefined { return this._valueType; }
+
+  override loadProperties(): IProperty[] {
+    this._propertySchema = getProperty(this.schema, PropertyProperty)?.getValue();
+    return this._propertySchema ? getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_PROPERTY) : [];
   }
-}
 
-interface PropertySchemaData {
-  property?: string;
-  valueType?: string;
-  forSchemas?: string[];
-  constraint?: boolean;
-  typeref?: boolean;
+  override async load() {
+    this._valueType = this._propertySchema?.type
+      ? await getNodeType(this._propertySchema.type) as ValueType
+      : undefined;
+  }
 }

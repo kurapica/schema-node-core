@@ -14,11 +14,7 @@ export class GenericType extends ValueType {
     this._name = name;
   }
 
-  override get name(): string { return this._name || super.name; }
+  override get name(): string { return this._name; }
 
-  set name(val: string) { this._name = val; }
-
-  override create(): AnyNode {
-    return new AnyNode(this);
-  }
+  override create(): AnyNode { return new AnyNode(this); }
 }

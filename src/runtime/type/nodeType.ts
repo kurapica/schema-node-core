@@ -8,12 +8,12 @@
 
 import type { NodeSchema } from '../../schema/nodeSchema';
 import type { IProperty, ITypeRefProperty } from '../../property/property';
-import type { GenericParameter } from '../../property/core/generics';
-import { getProperty, getProperties, getPropertiesBySchemaKind } from '../../property/propertyOwner';
+import { Generics, type GenericParameter } from '../../property/core/generics';
+import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { combinePaths } from '../../utility/toolset';
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
-import { getNodeType, getPropertyForSchemas } from '../schemaRuntime';
+import { getNodeType } from '../schemaRuntime';
 
 export class NodeType {
   /** The parent namespace (set once the type is loaded into a namespace). */
@@ -85,6 +85,9 @@ export class NodeType {
 
     // load properties
     this._props = getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE).concat(this.loadProperties());
+
+    // Generic check
+    this.generics = this.getProperty(Generics)?.getValue();
     
     // load ref types from properties
     this._refTypes = [];
@@ -123,6 +126,7 @@ export class NodeType {
       this.genericParams.forEach(g => g.removeUsedBy(this));
     else
       this.getRefTypes().forEach(g => g.removeUsedBy(this));
+    this.unload();
   }
 
   // ── Virtual ──────────────────────────────────────────────────────────
