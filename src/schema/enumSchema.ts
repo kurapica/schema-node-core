@@ -43,7 +43,16 @@ export interface EnumValueSchema {
   hasSubList?: boolean;
 
   /** The sub enum values */
-  sublist?: EnumValueSchema[];
+  subList?: EnumValueSchema[];
+
+  /** The enum value and its sub list is fully loaded */
+  isFullyLoaded?: boolean;
+
+  /** The parent of the enum value */
+  parent?: EnumValueSchema;
+
+  /** The cascade level */
+  level?: number;
 }
 
 /** The eunm value access info */
@@ -58,7 +67,7 @@ export interface EnumValueAccess {
   schema?: EnumValueSchema;
 
   /** The sub list of the current */
-  sublist?: EnumValueSchema[];
+  subList?: EnumValueSchema[];
 }
 
 /** Meta registration class (NOT exported). */
@@ -111,7 +120,7 @@ class EnumValueSchemaMeta implements EnumValueSchema {
 
   /** The enum sub list */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.values`)
-  sublist?: EnumValueSchema[] | undefined;
+  subList?: EnumValueSchema[] | undefined;
 }
 
 /** The enum property of node schema */

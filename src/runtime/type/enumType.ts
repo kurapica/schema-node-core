@@ -4,11 +4,11 @@
 // =============================================================================
 
 import { ValueType } from './valueType';
-import { EnumProperty, type EnumSchema, type EnumValueSchema } from '../../schema/enumSchema';
+import { EnumProperty, EnumValueAccess, type EnumSchema, type EnumValueSchema } from '../../schema/enumSchema';
 import { EnumValueType, EnumValueTypeValue } from '../../enum/enumValueType';
 import { IProperty } from '../../property';
-import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
-import { SCHEMA_KIND_ENUM } from '../../utility/constant';
+import { combineProperties, getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_VALUE } from '../../utility/constant';
 import { LocaleString } from '../../struct';
 import { ScalarType } from './scalarType';
 import { StringType } from './scalar/stringType';
@@ -63,7 +63,7 @@ export class EnumType extends ValueType {
 
   override create(): DataNode { return new EnumNode(this); }
 
-  override get isIndexable() { return true; }
+  override get isIndexable() { return true; }   
 
   /** Load the enum value sub list */
   async loadEnumSubList(value?: string): Promise<EnumValueSchema[]>
@@ -101,15 +101,8 @@ export class EnumType extends ValueType {
     return [];
   }
 
-  /// <summary>
-  /// Load the enum value access list from the server
-  /// </summary>
-  /// <param name="context">The schema context</param>
-  /// <param name="value">The enum value for access</param>
-  /// <param name="noSubList">no sub list should be loaded</param>
-  /// <param name="withSubList">with the value's sub list</param>
-  /// <returns></returns>
-  public async Task<EnumValueAccess[]> LoadEnumAccessListAsync(SchemaContext context, string value, bool? noSubList = false, bool? withSubList = false)
+  /** Load the enum value access list from the server */
+  async loadEnumAccessListAsync(value: string, noSubList: boolean = false, withSubList: boolean = false): Promise<EnumValueAccess[]>
   {
       EnumValueSchema[] accesses = await LoadEnumValueAccessAsync(context, value);
       if (accesses.Length == 0) return [];
@@ -196,52 +189,45 @@ export class EnumType extends ValueType {
     _maxFlags = max * 2;
   }
 
-  /// <summary>
-  /// Clones the enum value with limit level
-  /// </summary>
-  /// <param name="limitLevel"></param>
-  /// <returns></returns>
-  private clone(limitLevel: number = 0): EnumValueSchema
+  /** Clones the enum value with limit level */
+  private clone(enumValue: EnumValueSchema, limitLevel: number = 0): EnumValueSchema
   {
-      var schema = new EnumValueSchema()
+      const schema: EnumValueSchema = 
       {
-          Value = Value,
-          HasSubList = HasSubList,
-          SubList = (HasSubList ?? false) && SubList is { Length: > 0 } && limitLevel > 0 
-              ? SubList.Select(e => e.Clone(limitLevel - 1)).ToArray()
-              : null
+          value: enumValue.value,
+          hasSubList: enumValue.hasSubList,
+          subList: (enumValue.hasSubList ?? false) && enumValue.subList?.length && limitLevel > 0 
+              ? enumValue.subList.map(e => this.clone(e, limitLevel - 1))
+              : undefined
       };
-      schema.CombineProperties(this);
+      combineProperties(schema, enumValue, SCHEMA_KIND_ENUM_VALUE);
       return schema;
   }
   
-  /// <summary>
-  /// CombineProperties the access list
-  /// </summary>
-  /// <param name="accesses"></param>
-  internal void CombineAccessList(EnumValueAccess[] accesses)
+  /** CombineProperties the access list */
+  private combineAccessList(enumValue: EnumValueSchema, accesses: EnumValueAccess[]): void
   {
-      if (accesses.Length == 0) return;
-      EnumValueAccess current = accesses[0];
+      if (!accesses?.length) return;
+      const current = accesses[0];
 
-      if (current.SubList is not null)
+      if (current.subList?.length)
       {
           // replace with new
-          if (SubList is not null && SubList.Length > 0) {
-              foreach (var v in current.SubList)
+          if (enumValue.subList?.length) {
+              for (let v of current.subList)
               {
-                  EnumValueSchema? match = SubList!.FirstOrDefault(x => x.Value.Equals(v.Value, StringComparison.OrdinalIgnoreCase));
-                  if (match is not null) v.SubList = match.SubList;
+                  const match = enumValue.subList.find(x => x.value.toLowerCase() === v.value.toLowerCase());
+                  if (match) v.subList = match.subList;
               }
           }
 
-          SubList = current.SubList;
+          enumValue.subList = current.subList;
 
-          if (accesses.Length > 1)
+          if (accesses.length > 1)
           {
-              EnumValueSchema? match = SubList!.FirstOrDefault(x => x.Value.Equals(current.Value, StringComparison.OrdinalIgnoreCase));
-              if (match is not null)
-                  match.CombineAccessList(accesses.Skip(1).ToArray());
+              const match = enumValue.subList.find(x => x.value.toLowerCase() === current.value.toLowerCase());
+              if (match)
+                this.combineAccessList(match, accesses.slice(1));;
           }
       }
   }
