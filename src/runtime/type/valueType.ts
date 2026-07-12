@@ -14,7 +14,7 @@ import { NodeSchema } from '../../schema/nodeSchema';
 import { FunctionType } from './functionType';
 import { ArrayType } from './arrayType';
 import { isEmpty } from '../../utility/toolset';
-import { NODE_SELF } from '../../utility/constant';
+import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 import { Entry } from '../../struct/entry';
 
 /** Represents the value schema type */
@@ -34,9 +34,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
     this.constraints = this.properties.filter(p => typeof (p as any).validate !== 'function') as IConstraintProperty[];
   }
 
-  // ── DataNode factory ───────────────────────────────────────────────────
-
-  
+  // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
   abstract create(): DataNode;
@@ -53,15 +51,16 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   /** Whether the type can be used as data index */
   get isIndexable () { return false }
 
-  /** Validate the data node */
-  async validateNode(node: DataNode) {}
-
   /** Gets the value type through path part */
   getAccessValueType(path: string): ValueType | undefined {
     return isEmpty(path) || path === NODE_SELF ? this : undefined;
   }
 
+  // ── Sub Entries ────────────────────────────────────────────────────────
+
   getSubEntries(): Entry<string>[] { return [] }
+
+  get hasSubEntries() { return false }
 
   // ── Type compatibility ─────────────────────────────────────────────────
 
@@ -91,14 +90,13 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   }
 
   /** Check whether this type is compatible with another (for assignment). */
-  isCompatibleWith(other: ValueType): boolean {
-    if (this === other) return true;
-    // Override in subclasses for type-specific checks
-    return false;
-  }
-
-  /** Get the TypeScript constructor that maps to this runtime type. */
-  getCsharpType(): new () => unknown {
-    return Object as new () => unknown;
+  isAssignableTo(other: ValueType): boolean {
+    return this === other || this.name === other.name || 
+      this.kind === SCHEMA_KIND_OBJECT || 
+      other.kind === SCHEMA_KIND_OBJECT || 
+      (this._isAssignableTo ? (
+        this._isAssignableTo.has(other) || 
+        this._isAssignableTo?.keys().some(k => k.isAssignableTo(other))
+      ) : false)
   }
 }

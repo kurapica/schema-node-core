@@ -5,9 +5,11 @@
 
 import { ValueType } from './valueType';
 import { ArrayNode } from '../../node/arrayNode';
-import type { NodeSchema } from '../../schema/nodeSchema';
 import { ArrayProperty } from '../../schema/arraySchema';
-import { getProperty } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
+import { RelationType } from './relationType';
+import { IProperty } from '../../property';
+import { SCHEMA_KIND_ARRAY } from '../../utility/constant';
 
 export class ArrayType extends ValueType {
   /** Element value type (resolved at load time). */
@@ -16,14 +18,16 @@ export class ArrayType extends ValueType {
   /** Primary key field names. */
   primaryKeys: string[] = [];
 
-  override async loadType(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
-    await super.loadType(schema, genericParams);
+  /** The relation types */
+  relations?: RelationType[];
 
-    const arrayProp = getProperty(schema, ArrayProperty);
-    const arrayData = arrayProp?.getValue<{ element?: string }>();
-    if (arrayData?.element && genericParams?.[0]) {
-      this.element = genericParams[0] as ValueType;
-    }
+  async load() {
+    
+  }
+
+  loadProperties(): IProperty[]{
+    const arraySchema = getProperty(this.schema!, ArrayProperty);
+    return arraySchema ? getPropertiesBySchemaKind(arraySchema, SCHEMA_KIND_ARRAY) : [];
   }
 
   override create(): ArrayNode {
