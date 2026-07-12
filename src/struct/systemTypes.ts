@@ -26,23 +26,6 @@ export class SystemRangeDate {
   stop!: string;
 }
 
-/** The entry struct */
-@Meta(OfSchema, SCHEMA_KIND_STRUCT)
-@Meta(SchemaType, 'system.entry')
-@Meta(Generics, [{ name: 'T' }])
-export class SystemEntry<T> {
-  /** The value of the entry */
-  @Meta(SchemaType, "T")
-  value!: T;
-
-  /** Localized label for the entry */
-  @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
-  label!: LocaleString;
-
-  /** Has children entries */
-  hasChildren: boolean = false;
-}
-
 // ── Scalar Types ───────────────────────────────────────────────────────────
 
 @Meta(OfSchema, SCHEMA_KIND_STRING)

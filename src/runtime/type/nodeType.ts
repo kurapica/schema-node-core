@@ -7,16 +7,19 @@
 // =============================================================================
 
 import type { NodeSchema } from '../../schema/nodeSchema';
-import type { IProperty } from '../../property/property';
+import type { IProperty, ITypeRefProperty } from '../../property/property';
 import type { GenericParameter } from '../../property/core/generics';
-import { getProperty, getProperties } from '../../property/propertyOwner';
+import { getProperty, getProperties, getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { combinePaths } from '../../utility/toolset';
+import { SCHEMA_KIND_NODE } from '../../utility/constant';
+import { SchemaLoadState } from '../../enum/schemaLoadState';
+import { getNodeType, getPropertyForSchemas } from '../schemaRuntime';
 
 export class NodeType {
   /** The parent namespace (set once the type is loaded into a namespace). */
   namespace?: NodeType;
 
-  /** The backing NodeSchema — set during loadTypeAsync. */
+  /** The backing NodeSchema — set during loadType. */
   protected schema?: NodeSchema;
 
   /** The loaded state flag. */
@@ -34,6 +37,9 @@ export class NodeType {
   // Property cache
   private _props?: IProperty[];
 
+  // Refences types
+  private _refTypes?: NodeType[];
+
   // Used-by tracking
   private _usedBy?: Set<NodeType>;
 
@@ -49,55 +55,100 @@ export class NodeType {
     return baseName;
   }
 
+  /** Gets the properties */
+  get properties(): IProperty[] { return this._props ?? []; }
+
   /** The schema kind. */
-  get kind(): string { return this.schema?.kind ?? ''; }
+  get kind(): string { return this.schema?.kind ?? SCHEMA_KIND_NODE; }
 
   /** Schema error status. */
   get error(): string | undefined { return this.schema?.error; }
 
+  /** The schema load state */
+  get loadState(): SchemaLoadState | undefined { return this.schema?.loadState; }
+
+  /** Whether the type is generic */
+  get isGeneric(): boolean { return !this.genericParams?.length && this.generics?.length ? true : false }
+
   // ── Schema ──────────────────────────────────────────────────────────
 
-  /** Get the underlying NodeSchema (available after loadTypeAsync). */
-  getNodeSchema(): NodeSchema | undefined { return this.schema; }
+  /** Get the underlying NodeSchema (available after loadType). */
+  getNodeSchema(): NodeSchema | undefined { const { schemas, ...rest } = this.schema ?? {}; return rest as unknown as NodeSchema; }
 
   /** Load type-specific data from the NodeSchema. Subclasses override. */
-  async loadTypeAsync(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {
-    this.schema = schema;
-    this.genericParams = genericParams;
+  async loadType(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {
+    this.unloadType();
 
-    // Load generics from the FuncProperty's FunctionSchema (if available)
-    const funcProp = getProperty(schema, this._resolveFuncProp) as IProperty | undefined;
-    if (funcProp?.hasValue) {
-      const funcSchema = funcProp.getValue<{ generic?: GenericParameter[] }>();
-      if (funcSchema?.generic) this.generics = funcSchema.generic;
+    this.schema = schema;
+    this.genericParams = genericParams?.length ? genericParams : undefined;
+    this.loaded = true;
+
+    // load properties
+    this._props = getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE).concat(this.loadProperties());
+    
+    // load ref types from properties
+    this._refTypes = [];
+    if (!genericParams?.length){
+      for(let i = 0; i < this._props.length; i++)
+      {
+        const prop = this._props[i];
+        if (typeof (prop as any).getRefTypes !== 'function') continue;
+
+        for(let type of (prop as ITypeRefProperty).getRefTypes())
+        {
+          const nodeType = await getNodeType(type);
+          if (nodeType && !this._refTypes.includes(nodeType)) 
+            this._refTypes.push(nodeType);
+        }
+      }
     }
 
-    this.loaded = true;
+    // load schema specific data
+    await this.load();
+
+    // register used by
+    if (genericParams?.length)
+    {
+      genericParams.forEach(g => g.addUsedBy(this));
+    }
+    else
+    {
+      this._refTypes.forEach(g => g.addUsedBy(this));
+    }
   }
 
-  // private — will be overridden by FuncProperty reference
-  private _resolveFuncProp?: new () => IProperty;
+  /** Unload types */
+  unloadType(): void {
+    if (this.genericParams?.length)
+      this.genericParams.forEach(g => g.removeUsedBy(this));
+    else
+      this.getRefTypes().forEach(g => g.removeUsedBy(this));
+  }
+
+  // ── Virtual ──────────────────────────────────────────────────────────
+
+  /** load the schema data, should be overriden by the sub class */
+  async load() {}
+
+  /** Release the features when unload */
+  unload(): void {}
+
+  /** load the node schema kind properties */
+  loadProperties(): IProperty[] { return [] }
+
+  /** Gets the references types */
+  getRefTypes(): NodeType[] { return this._refTypes ? [...this._refTypes] : []; }
 
   // ── Property Access ──────────────────────────────────────────────────
 
   /** Get a single property from the NodeSchema. */
   getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
-    return getProperty(this.schema, propCtor) as T | undefined;
+    return this._props?.find(p => p instanceof propCtor) as T;
   }
 
   /** Get stacked property values. */
   getProperties<T extends IProperty>(propCtor: new () => T): T[] {
-    return getProperties(this.schema, propCtor) as T[];
-  }
-
-  /** Get all properties from the schema (cached). */
-  getAllProperties(): IProperty[] {
-    if (!this._props && this.schema) {
-      // Collect from all schema kind properties
-      this._props = [];
-      // This will be populated by the runtime
-    }
-    return this._props ?? [];
+    return this._props?.filter(p => p instanceof propCtor) as T[] ?? [];
   }
 
   // ── Generic Types ────────────────────────────────────────────────────
@@ -121,13 +172,16 @@ export class NodeType {
   // ── Used-by tracking ─────────────────────────────────────────────────
 
   /** Whether this type is referenced by any other type. */
-  get isUsed(): boolean {
-    return (this._usedBy?.size ?? 0) > 0;
-  }
+  get isUsed(): boolean { return (this._usedBy?.size ?? 0) > 0; }
 
   /** Record that another type references this one. */
   addUsedBy(type: NodeType): void {
     if (!this._usedBy) this._usedBy = new Set();
     this._usedBy.add(type);
+  }
+
+  /** Remove the used by type reference */
+  removeUsedBy(type: NodeType): void {
+    this._usedBy?.delete(type);
   }
 }

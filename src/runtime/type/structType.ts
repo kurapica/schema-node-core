@@ -22,8 +22,8 @@ export class StructType extends ValueType {
   /** Field type definitions. */
   fields: StructFieldType[] = [];
 
-  override async loadTypeAsync(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
-    await super.loadTypeAsync(schema, genericParams);
+  override async loadType(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
+    await super.loadType(schema, genericParams);
 
     // Load fields from StructProperty
     const structProp = getProperty(schema, StructProperty);

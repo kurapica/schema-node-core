@@ -5,7 +5,7 @@
 
 import { getSchemaKindProperties } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
-import { getPropertyName, type IProperty } from './property';
+import { getPropertyName, ITypeRefProperty, type IProperty } from './property';
 
 /**
  * Get a single property by its class constructor.
@@ -28,9 +28,7 @@ export function getProperty(owner: any, propCtor: new () => IProperty): IPropert
   return temp;
 }
 
-/**
- * Get all properties with given property types.
- */
+/** Get all properties with given property types. */
 export function getProperties(owner: any, ...propCtors: (new () => IProperty)[]): IProperty[] {
   if (owner === null) return [];
   
@@ -60,6 +58,11 @@ export function getProperties(owner: any, ...propCtors: (new () => IProperty)[])
     }
   }
   return result;
+}
+
+/** Gets all propreties with the given schema kind. */
+export function getPropertiesBySchemaKind(owner: any, kind: string): IProperty[] {
+  return getProperties(owner, ...getSchemaKindProperties(kind))
 }
 
 /**

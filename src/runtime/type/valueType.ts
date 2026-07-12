@@ -7,17 +7,36 @@
 // =============================================================================
 
 import { NodeType } from './nodeType';
-import type { NodeSchema } from '../../schema/nodeSchema';
 import type { DataNode } from '../../node/dataNode';
+import { IValueTypeAccess } from '../interfaces';
+import { IConstraintProperty } from '../../property';
+import { NodeSchema } from '../../schema/nodeSchema';
+import { FunctionType } from './functionType';
+import { ArrayType } from './arrayType';
+import { isEmpty } from '../../utility/toolset';
+import { NODE_SELF } from '../../utility/constant';
+import { Entry } from '../../struct/entry';
 
-export abstract class ValueType extends NodeType {
+/** Represents the value schema type */
+export abstract class ValueType extends NodeType implements IValueTypeAccess {
+
+  /** The converter */
+  private _isAssignableTo: Map<ValueType, FunctionType> | undefined;
+
+  /** The constraint properties */
+  constraints: IConstraintProperty[] | undefined;
+
   /** Back-reference to wrapping array type (set by ArrayType). */
   arrayType?: ValueType;
 
-  /** Whether this is a system-only type. */
-  system = false;
+  async loadType(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {
+    await super.loadType(schema, genericParams);
+    this.constraints = this.properties.filter(p => typeof (p as any).validate !== 'function') as IConstraintProperty[];
+  }
 
   // ── DataNode factory ───────────────────────────────────────────────────
+
+  
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
   abstract create(): DataNode;
@@ -29,7 +48,47 @@ export abstract class ValueType extends NodeType {
     return node;
   }
 
+  // ── Virtual ────────────────────────────────────────────────────────────
+
+  /** Whether the type can be used as data index */
+  get isIndexable () { return false }
+
+  /** Validate the data node */
+  async validateNode(node: DataNode) {}
+
+  /** Gets the value type through path part */
+  getAccessValueType(path: string): ValueType | undefined {
+    return isEmpty(path) || path === NODE_SELF ? this : undefined;
+  }
+
+  getSubEntries(): Entry<string>[] { return [] }
+
   // ── Type compatibility ─────────────────────────────────────────────────
+
+  /** Add used by */
+  addUsedBy(type: NodeType): void {
+    if (type instanceof FunctionType)
+    {
+      if (type.isConverter && type.args.length === 1 && type.args[0].type === this.name && type.returnType)
+      {
+        this._isAssignableTo ??= new Map<ValueType, FunctionType>();
+        this._isAssignableTo.set(type.returnType, type);
+      }
+    }
+    else if(type instanceof ArrayType && type.element === this)
+    {
+      this.arrayType = type;
+    }
+    super.addUsedBy(type);
+  }
+
+  /** Remove used by */
+  removeUsedBy(type: NodeType): void {
+    if (type instanceof FunctionType && type.isConverter && type.returnType && this._isAssignableTo?.get(type.returnType) === type)
+      this._isAssignableTo?.delete(type.returnType);
+    if (type === this.arrayType) this.arrayType = undefined;
+    super.removeUsedBy(type);
+  }
 
   /** Check whether this type is compatible with another (for assignment). */
   isCompatibleWith(other: ValueType): boolean {

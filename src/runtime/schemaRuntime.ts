@@ -196,7 +196,7 @@ function isNamespaceType(node: NodeType): boolean {
  * Mirrors C# SchemaContext.GetNodeTypeAsync:
  *   1. Look up the NodeSchema by name from _schemaIndex
  *   2. Use _nodeTypeGenerator to find the NodeType class for the schema's kind
- *   3. Create the NodeType instance and call loadTypeAsync()
+ *   3. Create the NodeType instance and call loadType()
  *
  * @param fullName   The dotted full schema name (e.g. "system.string")
  * @param generics   Optional generic parameter declarations
@@ -290,7 +290,7 @@ async function loadNodeTypeAsync(
   }
 
   // Load the type
-  await result.loadTypeAsync(schema);
+  await result.loadType(schema);
 
   // Save sub-schemas into NamespaceType
   if (result instanceof NamespaceType && schemas?.length)
@@ -298,7 +298,7 @@ async function loadNodeTypeAsync(
 
   // Generic types reloading (clone schema to avoid mutation)
   for (const g of result.getGenericTypes())
-    await g.loadTypeAsync({ ...schema }, g.genericParams);
+    await g.loadType({ ...schema }, g.genericParams);
 
   return result;
 }
@@ -333,7 +333,7 @@ async function loadGenericTypeAsync(
   genType.namespace = node.namespace;
   node.setGenericType(inner, genType);
 
-  await genType.loadTypeAsync(node.getNodeSchema()!, genParams);
+  await genType.loadType(node.getNodeSchema()!, genParams);
   return genType;
 }
 

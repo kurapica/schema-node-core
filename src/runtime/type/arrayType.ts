@@ -16,8 +16,8 @@ export class ArrayType extends ValueType {
   /** Primary key field names. */
   primaryKeys: string[] = [];
 
-  override async loadTypeAsync(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
-    await super.loadTypeAsync(schema, genericParams);
+  override async loadType(schema: NodeSchema, genericParams?: import('./nodeType').NodeType[]): Promise<void> {
+    await super.loadType(schema, genericParams);
 
     const arrayProp = getProperty(schema, ArrayProperty);
     const arrayData = arrayProp?.getValue<{ element?: string }>();
