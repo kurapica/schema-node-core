@@ -16,6 +16,7 @@ import { ArrayType } from './arrayType';
 import { isEmpty } from '../../utility/toolset';
 import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 import { Entry } from '../../struct/entry';
+import { isConstraintProperty } from '../../property/constraintProperty';
 
 /** Represents the value schema type */
 export abstract class ValueType extends NodeType implements IValueTypeAccess {
@@ -31,7 +32,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   async loadType(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {
     await super.loadType(schema, genericParams);
-    this.constraints = this.properties.filter(p => typeof (p as any).validate !== 'function') as IConstraintProperty[];
+    this.constraints = this.properties.filter(isConstraintProperty) as IConstraintProperty[];
   }
 
   // ── DataNode factory ─────────────────────────────────────────────────── 

@@ -23,9 +23,19 @@ export abstract class ScalarType extends ValueType {
     return super.getProperty(propCtor) ?? this.baseNode?.getProperty(propCtor);
   }
 
-  override getProperties<T extends IProperty>(propCtor: new () => T): T[] {
-    const props = super.getProperties(propCtor);
-    if (props?.length) return props;
-    return this.baseNode?.getProperties(propCtor) ?? [];
+  override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    for(let p of super.getProperties(propCtor))
+    {
+      yield p;
+      if (!p.stackable) return;
+    }
+    if (this.baseNode)
+    {
+      for (let p of this.baseNode.getProperties(propCtor))
+      {
+        yield p;
+        if (!p.stackable) return;
+      }
+    }
   }
 }

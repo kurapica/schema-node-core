@@ -7,7 +7,7 @@
 // =============================================================================
 
 import type { NodeSchema } from '../../schema/nodeSchema';
-import type { IProperty, ITypeRefProperty } from '../../property/property';
+import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
 import { Generics, type GenericParameter } from '../../property/core/generics';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { combinePaths } from '../../utility/toolset';
@@ -92,11 +92,8 @@ export class NodeType {
     // load ref types from properties
     this._refTypes = [];
     if (!genericParams?.length){
-      for(let i = 0; i < this._props.length; i++)
+      for(let prop of this._props.filter(isTypeRefProperty))
       {
-        const prop = this._props[i];
-        if (typeof (prop as any).getRefTypes !== 'function') continue;
-
         for(let type of (prop as ITypeRefProperty).getRefTypes())
         {
           const nodeType = await getNodeType(type);
@@ -151,8 +148,15 @@ export class NodeType {
   }
 
   /** Get stacked property values. */
-  getProperties<T extends IProperty>(propCtor: new () => T): T[] {
-    return this._props?.filter(p => p instanceof propCtor) as T[] ?? [];
+  *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    if (this._props)
+    {
+      for(let prop of this._props)
+      {
+        if (prop instanceof propCtor)
+          yield prop;
+      }
+    }
   }
 
   // ── Generic Types ────────────────────────────────────────────────────

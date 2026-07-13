@@ -5,16 +5,20 @@
 
 import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
-import { StructProperty, type StructFieldSchema } from '../../schema/structSchema';
+import { StructProperty, StructSchema, type StructFieldSchema } from '../../schema/structSchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import type { INodeReference } from '../interfaces';
-import type { IProperty } from '../../property/property';
-import type { IConstraintProperty } from '../../property/constraintProperty';
+import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
+import { isConstraintProperty, type IConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
 import { getNodeType } from '../schemaRuntime';
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
+import { RelationType } from './relationType';
+import { ArrayType } from './arrayType';
+import { DisplayOnly } from '../../property';
+
 
 // ── StructType ────────────────────────────────────────────────────────────
 
@@ -26,31 +30,27 @@ export class StructType extends ValueType {
   private _relations: RelationType[] | undefined;
 
   /** The struct schema data. */
-  private _structSchema: { fields: StructFieldSchema[] } | undefined;
+  private _structSchema: StructSchema | undefined;
 
   // ── Loading ─────────────────────────────────────────────────────────
 
   override loadProperties(): IProperty[] {
     this._structSchema = getProperty(this.getNodeSchema(), StructProperty)?.getValue();
-    return this._structSchema
-      ? getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT)
-      : [];
+    return this._structSchema ? getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT) : [];
   }
 
   override async load(): Promise<void> {
     this._fields = [];
     this._relations = undefined;
 
-    if (!this._structSchema?.fields) {
-      if (this.schema) this.schema.error = 'NO_DEFINITION';
-      return;
-    }
-
-    for (const field of this._structSchema.fields) {
+    for (const field of this._structSchema?.fields ?? []) {
       const fieldType = new StructFieldType();
-      await fieldType.loadAsync(field, this.generics, this.genericParams);
-      if (fieldType.error && this.schema) this.schema.error = fieldType.error;
+      await fieldType.load(field, this.generics, this.genericParams);
       this._fields.push(fieldType);
+
+      // for simple, only check field type now
+      if (!fieldType.type)
+        console.error(`The struct ${this.name}'s field ${fieldType.name}'s type ${field.type} cant be solved.`)
     }
 
     // TODO: load relations from Relations property (similar to ArrayType)
@@ -162,29 +162,24 @@ export class StructType extends ValueType {
 // ── StructFieldType ────────────────────────────────────────────────────────
 
 export class StructFieldType implements INodeReference {
+  private _fieldSchema?: StructFieldSchema;
+  private _props?: IProperty[];
+  private _constraints?: IConstraintProperty[];
+  private _refTypes?: NodeType[];
+  private _displayOnly?: boolean;
+  private _type?: ValueType;
+
   /** The field name. */
-  name = '';
+  get name() { return this._fieldSchema?.name };
 
   /** The resolved value type. */
-  type?: ValueType;
-
-  /** All properties (from schema extensions). */
-  properties?: IProperty[];
-
-  /** Constraint properties (subset of properties). */
-  constraints?: IConstraintProperty[];
-
-  /** Referenced types from property values. */
-  refTypes?: NodeType[];
-
-  /** Whether the field is required. */
-  require?: boolean;
+  get type() { return this._type };
 
   /** Whether the field is display-only. */
-  displayOnly?: boolean;
+  get displayOnly() { return this._displayOnly ?? false };
 
   /** Error status. */
-  error?: string;
+  get error() { return this._fieldSchema?.error }
 
   // ── Loading ─────────────────────────────────────────────────────────
 
@@ -192,35 +187,40 @@ export class StructFieldType implements INodeReference {
    * Load field from StructFieldSchema. Resolves the type name via getNodeType,
    * collects properties and constraints.
    */
-  async loadAsync(
+  async load(
     field: StructFieldSchema,
     generics?: import('../../property/core/generics').GenericParameter[],
     genericParams?: NodeType[],
   ): Promise<void> {
-    this.name = field.name;
+    this._fieldSchema = field;
 
     // Resolve the field's value type
-    this.type = await getNodeType(field.type, generics, genericParams) as ValueType | undefined;
-    if (!this.type) {
-      this.error = 'STRUCT_FIELD_WRONG_TYPE';
-      return;
-    }
+    this._type = await getNodeType(field.type, generics, genericParams) as ValueType | undefined;
+    if (!this.type) return;
 
     // Collect properties from schema kind registries
-    const valueType = this.type instanceof ArrayType ? this.type.element : this.type;
     const props = getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD);
-    if (valueType) {
-      props.push(...getPropertiesBySchemaKind(field, valueType.kind));
+    props.push(...getPropertiesBySchemaKind(field, this.type.kind));
+    if (this.type instanceof ArrayType && this.type.element)
+      props.push(...getPropertiesBySchemaKind(field, this.type.element.kind));
+
+    this._props = props;
+    this._constraints = props.filter(isConstraintProperty) as IConstraintProperty[];
+
+    const refTypes: NodeType[] = []
+    for(let prop of props.filter(isTypeRefProperty))
+    {
+      for(let n of (prop as ITypeRefProperty).getRefTypes())
+      {
+        const type = await getNodeType(n);
+        if (type && !refTypes.includes(type))
+          refTypes.push(type);
+      }
     }
+    this._refTypes = refTypes;
 
-    this.properties = props;
-    this.constraints = props.filter(
-      p => 'validate' in p || 'validateAsync' in p,
-    ) as IConstraintProperty[];
-
-    // Useful flags
-    this.require = props.find(p => p.name === 'require')?.getValue<boolean>() ?? undefined;
-    this.displayOnly = props.find(p => p.name === 'displayonly')?.getValue<boolean>() ?? undefined;
+    // static property
+    this._displayOnly = this.getProperty(DisplayOnly)?.getValue() ?? false;
   }
 
   // ── Reference Types ─────────────────────────────────────────────────
@@ -228,11 +228,35 @@ export class StructFieldType implements INodeReference {
   getReferenceTypes(): NodeType[] {
     const refs: NodeType[] = [];
     if (this.type) refs.push(this.type as NodeType);
-    if (this.refTypes) refs.push(...this.refTypes);
+    if (this._refTypes) refs.push(...this._refTypes);
     return refs;
   }
-}
 
-// Re-import for internal use (circular dependency workaround)
-import { RelationType } from './relationType';
-import { ArrayType } from './arrayType';
+  // ── Property Access ─────────────────────────────────────────────────
+
+  /** Get property by type */
+  getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    return this._props?.find(p => p instanceof propCtor) as T ?? this._type?.getProperty(propCtor);
+  }
+
+  /** Get properties by type */
+  *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    if (this._props)
+    {
+      for(let p of this._props)
+      {
+        if (!(p instanceof propCtor)) continue;
+        yield p;
+        if (!p.stackable) return;
+      }
+    }
+    if (this._type)
+    {
+      for (let p of this._type.getProperties(propCtor))
+      {
+        yield p;
+        if (!p.stackable) return;
+      }
+    }
+  }
+}

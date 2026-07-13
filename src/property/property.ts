@@ -114,6 +114,12 @@ export interface ITypeRefProperty extends IProperty {
   getRefTypes(): string[];
 }
 
+/** Check if the property has ref type */
+export function isTypeRefProperty(prop: IProperty)
+{
+  return typeof (prop as any).getRefTypes === 'function'
+}
+
 /** Get the property name of the property constructor. */
 export function getPropertyName(ctor: new () => IProperty): string {
   let n = _nameCache.get(ctor);

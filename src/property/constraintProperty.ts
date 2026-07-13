@@ -17,3 +17,9 @@ export interface IConstraintProperty extends IProperty {
   /** validate the data node */
   validate(node: DataNode): Promise<boolean | undefined>;
 }
+
+/** Check if the property is constraint */
+export function isConstraintProperty(prop: IProperty)
+{
+  return typeof (prop as any).validate === 'function'
+}

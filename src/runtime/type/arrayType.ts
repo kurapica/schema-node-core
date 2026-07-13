@@ -71,4 +71,24 @@ export class ArrayType extends ValueType {
   override get hasSubEntries(): boolean {
     return this.element?.hasSubEntries ?? false;
   }
+
+  override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    return super.getProperty(propCtor) ?? this.element?.getProperty(propCtor);
+  }
+
+  override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    for(let p of super.getProperties(propCtor))
+    {
+      yield p;
+      if (!p.stackable) return;
+    }
+    if (this.element)
+    {
+      for (let p of this.element.getProperties(propCtor))
+      {
+        yield p;
+        if (!p.stackable) return;
+      }
+    }
+  }
 }
