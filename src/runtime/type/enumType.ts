@@ -16,6 +16,9 @@ import { IntType } from './scalar/intType';
 import { DataNode } from '../../node/dataNode';
 import { EnumNode } from '../../node/enumNode';
 import { isEmpty } from '../../utility/toolset';
+import { getSchemaProvider } from '../../schema/provider/schemaProvider';
+
+const MAX_SUBLIST_LEVEL = 3;
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;
@@ -40,7 +43,7 @@ export class EnumType extends ValueType {
   override async load()
   {
     this._valueMaps.clear();
-    this._root = { value: '', sublist: this._enumSchema?.values };
+    this._root = { value: '', subList: this._enumSchema?.values };
     this.updateLoadState(this._root, undefined, undefined, true);
     this.updateMaxFlags();
   }
@@ -70,33 +73,31 @@ export class EnumType extends ValueType {
   {
     let fullList = false;
     if (isEmpty(value))
-        return _root.Clone(fullList ? (_enumSchema?.Cascade?.Length ?? 1) : 1).SubList ?? [];
+        return this.clone(this._root, fullList ? (this._enumSchema?.cascade?.length ?? 1) : 1).subList ?? [];
 
-    EnumValueSchema[] accesses = await LoadEnumValueAccessAsync(context, value);
-    if (accesses.Length == 0) return [];
+    const accesses = await this.loadEnumValueAccess(value);
+    if (!accesses?.length) return [];
 
-    EnumValueSchema access = accesses.Last();
-    if (!(access.HasSubList ?? false)) return [];
+    const access = accesses[accesses.length - 1];
+    if (!(access.hasSubList ?? false)) return [];
 
     // load sub list
-    int chkLvl = 1;
+    let chkLvl = 1;
     if (fullList)
-        chkLvl = Math.Min((_enumSchema?.Cascade?.Length ?? 1) - accesses.Length + 1, MAX_SUBLIST_LEVEL);
+        chkLvl = Math.min((this._enumSchema?.cascade?.length ?? 1) - accesses.length + 1, MAX_SUBLIST_LEVEL);
 
     // full-filled
-    if (UpdateLoadState(access, chkLvl))
-        return access.Clone(chkLvl).SubList ?? [];
+    if (this.updateLoadState(access, chkLvl))
+        return this.clone(access, chkLvl).subList ?? [];
 
     // load sub list
-    if (Provider != null && context.GetRequiredService(Provider) is IEnumSchemaProvider provider)
+    const provider = getSchemaProvider();
+    if (provider)
     {
-        EnumValueSchema[] subList = await provider.LoadEnumSubListAsync(Name, value);
-        lock (_lock)
-        {
-            access.SubList = subList;
-            UpdateLoadState(access);
-        }
-        return access.Clone(chkLvl).SubList ?? [];
+        const subList = await provider.loadEnumSubList(this.name, value);
+        access.subList = subList;
+        this.updateLoadState(access);
+        return this.clone(access, chkLvl).subList ?? [];
     }
     return [];
   }
@@ -104,89 +105,75 @@ export class EnumType extends ValueType {
   /** Load the enum value access list from the server */
   async loadEnumAccessListAsync(value: string, noSubList: boolean = false, withSubList: boolean = false): Promise<EnumValueAccess[]>
   {
-      EnumValueSchema[] accesses = await LoadEnumValueAccessAsync(context, value);
-      if (accesses.Length == 0) return [];
-      
-      withSubList = (withSubList ?? false) && accesses.Length < (_enumSchema?.Cascade?.Length ?? 1) && accesses.Last().SubList is { Length: > 0};
-      EnumValueAccess[] result = new EnumValueAccess[withSubList.Value ? accesses.Length : (accesses.Length - 1)];
-      for (int i = 0; i < accesses.Length - 1; i++)
-      {
-          result[i] = new EnumValueAccess
-          {
-              Value = accesses[i + 1].Value,
-              Name = _enumSchema?.Cascade?[i],
-              Schema = noSubList == true ? accesses[i + 1].Clone() : null,
-              SubList = (noSubList ?? false) ? null : accesses[i].SubList?.Select(a => a.Clone()).ToArray()
-          };
-      }
+    const accesses = await this.loadEnumValueAccess(value);
+    if (!accesses?.length) return [];
+    
+    withSubList = (withSubList ?? false) && accesses.length < (this._enumSchema?.cascade?.length ?? 1) && accesses[accesses.length - 1].subList?.length ? true : false;
+    const result: EnumValueAccess[] = []; // new EnumValueAccess[withSubList.Value ? accesses.Length : (accesses.Length - 1)];
+    for (let i = 0; i < accesses.length - 1; i++)
+    {
+        result[i] =
+        {
+            value: accesses[i + 1].value,
+            name: this._enumSchema?.cascade ? this._enumSchema.cascade[i] : undefined,
+            schema: noSubList == true ? this.clone(accesses[i + 1]) : undefined,
+            subList: (noSubList ?? false) ? undefined : accesses[i].subList?.map(a => this.clone(a))
+        };
+    }
 
-      if (withSubList.Value)
-      {
-          result[accesses.Length - 1] = new EnumValueAccess
-          {
-              Value = "",
-              Name = _enumSchema?.Cascade?[accesses.Length - 1],
-              SubList = accesses.Last().SubList?.Select(a => a.Clone()).ToArray()
-          };
-      }
-      
-      return result;
+    if (withSubList)
+    {
+        result[accesses.length - 1] =
+        {
+            value: "",
+            name: this._enumSchema?.cascade ? this._enumSchema.cascade[accesses.length - 1] : undefined,
+            subList: accesses[accesses.length - 1].subList?.map(a => this.clone(a))
+        };
+    }
+    
+    return result;
   }
 
   // ── Utility ────────────────────────────────────────────────────────
   private updateLoadState(node: EnumValueSchema, level: number = 999, parent: EnumValueSchema | undefined = undefined, reset: boolean = false) {
-
-    if (node.IsFullyLoaded && !reset || level == 0) return true;
-    node.IsFullyLoaded = false;
-    _valueMaps[node.Value] = node;
+    if (node.isFullyLoaded && !reset || level == 0) return true;
+    node.isFullyLoaded = false;
+    this._valueMaps.set(node.value, node);
 
     // update ref
     if (parent != null)
     {
-        node.Parent = parent;
-        node.Level = parent.Level + 1;
+      node.parent = parent;
+      node.level = (parent.level ?? 0) + 1;
     }
 
     // If loaded from static resources
-    if (node.SubList is not null && node.SubList.Length > 0) node.HasSubList = true;
+    if (node.subList?.length) node.hasSubList = true;
 
-    if (node.HasSubList ?? false)
+    if (node.hasSubList)
     {
-        if (node.SubList is not null && node.SubList.Length > 0)
-        {
-            foreach (var item in node.SubList)
-                UpdateLoadState(item, level - 1, node, reset);
-            node.IsFullyLoaded = node.SubList.All(x => x.IsFullyLoaded);
-            return true;
-        }
+      if (node.subList?.length)
+      {
+        for (let item of node.subList)
+            this.updateLoadState(item, level - 1, node, reset);
+        node.isFullyLoaded = !node.subList.some(x => !x.isFullyLoaded);
+        return true;
+      }
     }
     else
     {
-        node.IsFullyLoaded = true;
+      node.isFullyLoaded = true;
     }
 
-    return node.IsFullyLoaded;
+    return node.isFullyLoaded;
   }
 
-  private updateMaxFlags() {
-    if (_enumSchema?.Type != EnumValueType.Flags || _root.SubList == null || _root.SubList.Length == 0) return;
-    long max = 0;
-    try
-    {
-        foreach (EnumValueSchema info in _root.SubList)
-        {
-            if (long.TryParse(info.Value, out long val))
-            {
-                max = Math.Max(max, val);
-            }
-        }
-    }
-    catch
-    {
-        // pass
-    }
-
-    _maxFlags = max * 2;
+  private updateMaxFlags(): void {
+    if (this._enumSchema?.type != EnumValueType.Flags || !this._root.subList?.length) return;
+    let max = 0;
+    for(let info of this._root.subList)
+      max |= parseInt(info.value);
+    this._maxFlags = max;
   }
 
   /** Clones the enum value with limit level */
@@ -233,46 +220,43 @@ export class EnumType extends ValueType {
   }
   
   // Load the enum value access path
-  async Task<EnumValueSchema[]> LoadEnumValueAccessAsync(SchemaContext context, string? value)
+  async loadEnumValueAccess(value: string = ''): Promise<EnumValueSchema[]>
   {
-      if (string.IsNullOrWhiteSpace(value)) return [];
+      if (isEmpty(value)) return [];
 
       // Try to get from cache
-      if (GetAccess(value, out EnumValueSchema[]? accesses))
-          return accesses ?? [];
+      let accesses = this.getAccess(value);
+      if (accesses) return accesses;
 
       // Load from the provider
-      if (Provider != null && context.GetRequiredService(Provider) is IEnumSchemaProvider provider)
+      const provider = getSchemaProvider();
+      if (provider)
       {
-          EnumValueAccess[] accessList = await provider.LoadEnumAccessListAsync(Name, value, false, true);
-          if (accessList.Length > 0)
+          const accessList = await provider.loadEnumAccessList(this.name, value, false, true);
+          if (accessList?.length)
           {
-              lock (_lock)
-              {
-                  _root.CombineAccessList(accessList);
-                  UpdateLoadState(_root);
-              }
-              return GetAccess(value, out accesses) ? accesses ?? [] : [];
+              this.combineAccessList(this._root, accessList);
+              this.updateLoadState(this._root);
+              return this.getAccess(value) ?? [];
           }
       }
       return [];
-
-      bool GetAccess(string v, out EnumValueSchema[]? result)
-      {
-          result = null;
-          if (!_valueMaps.TryGetValue(v, out var node)) return false;
-          
-          var temp = new EnumValueSchema[node.Level + 1];
-          temp[node.Level] = node;
-          for (int i = node.Level - 1; i >= 0; i--)
-          {
-              if (node.Parent == null) return false;
-              node = node.Parent;
-              temp[i] = node;
-          }
-          result = temp;
-          return true;
-      }
   }
 
+  getAccess(v: string): EnumValueSchema[] | undefined
+  {
+    let node = this._valueMaps.get(v);
+    if (!node) return undefined;
+    
+    const temp: EnumValueSchema[] = [];
+    temp.unshift(node);
+
+    for (let i = (node.level ?? 0) - 1; i >= 0; i--)
+    {
+        if (node?.parent == null) return undefined;
+        node = node.parent;
+        temp.unshift(node);
+    }
+    return temp;
+  }
 }

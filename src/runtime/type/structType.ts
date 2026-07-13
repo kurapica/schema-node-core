@@ -9,14 +9,9 @@ import type { NodeSchema } from '../../schema/nodeSchema';
 import type { StructFieldSchema } from '../../schema/structSchema';
 import { StructProperty } from '../../schema/structSchema';
 import { getProperty } from '../../property/propertyOwner';
-
-/** A resolved field type for a struct. */
-export interface StructFieldType {
-  name: string;
-  typeName: string;
-  type?: ValueType;
-  seqno: number;
-}
+import { INodeReference } from '../interfaces';
+import { IProperty } from '../../property';
+import { NodeType } from './nodeType';
 
 export class StructType extends ValueType {
   /** Field type definitions. */
@@ -50,4 +45,23 @@ export class StructType extends ValueType {
   override create(): StructNode {
     return new StructNode(this);
   }
+}
+
+export class StructFieldType implements INodeReference {
+  /** The field name */
+  name: string = '';
+
+  /** The field value type */
+  type?: ValueType;
+
+  /** The properties */
+  properties?: IProperty[];
+
+  /** The constraints properties */
+  constraints?: IProperty[];
+
+  /** The reference types */
+  refTypes?: NodeType[];
+
+  
 }
