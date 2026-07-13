@@ -47,8 +47,12 @@ export class ArrayType extends ValueType {
     return new ArrayNode(this);
   }
 
-  override getRefTypes(): NodeType[] {
-    return this.element ? [this.element as NodeType].concat(super.getRefTypes()) : super.getRefTypes();
+  override *getRefTypes(): Generator<NodeType> {
+    if (this.element)
+      yield this.element;
+
+    for(const type of super.getRefTypes())
+      yield type;
   }
 
   override getAccessValueType(path: string): ValueType | undefined {

@@ -138,7 +138,11 @@ export class NodeType {
   loadProperties(): IProperty[] { return [] }
 
   /** Gets the references types */
-  getRefTypes(): NodeType[] { return this._refTypes ? [...this._refTypes] : []; }
+  *getRefTypes(): Generator<NodeType> {
+    if (!this._refTypes?.length) return;
+    for(const type of this._refTypes)
+      yield type;
+  }
 
   // ── Property Access ──────────────────────────────────────────────────
 

@@ -17,7 +17,7 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { DisplayOnly } from '../../property';
+import { DisplayOnly, Require } from '../../property';
 
 
 // ── StructType ────────────────────────────────────────────────────────────
@@ -107,13 +107,13 @@ export class StructType extends ValueType {
 
   // ── References ──────────────────────────────────────────────────────
 
-  override getRefTypes(): NodeType[] {
-    const refs: NodeType[] = [];
+  override *getRefTypes(): Generator<NodeType> {
     for (const field of this._fields) {
-      if (field.type) refs.push(field.type as NodeType);
-      if (field.refTypes) refs.push(...field.refTypes);
+      for (const type of field.getRefTypes())
+        yield type;
     }
-    return refs.concat(super.getRefTypes());
+    for (const type of super.getRefTypes())
+      yield type;
   }
 
   // ── Type Compatibility ──────────────────────────────────────────────
@@ -133,7 +133,7 @@ export class StructType extends ValueType {
       const match = this._fields.find(
         f => f.name.toLowerCase() === v.name.toLowerCase(),
       );
-      if (!match?.type) return !(v.require ?? false);
+      if (!match?.type) return !v.require;
       return v.type != null && match.type.isAssignableTo(v.type);
     });
   }
@@ -167,13 +167,17 @@ export class StructFieldType implements INodeReference {
   private _constraints?: IConstraintProperty[];
   private _refTypes?: NodeType[];
   private _displayOnly?: boolean;
+  private _require?: boolean;
   private _type?: ValueType;
 
   /** The field name. */
-  get name() { return this._fieldSchema?.name };
+  get name() { return this._fieldSchema?.name ?? '' };
 
   /** The resolved value type. */
   get type() { return this._type };
+
+  /** Whether the field is require by default */
+  get require() { return this._require ?? false } 
 
   /** Whether the field is display-only. */
   get displayOnly() { return this._displayOnly ?? false };
@@ -219,17 +223,21 @@ export class StructFieldType implements INodeReference {
     }
     this._refTypes = refTypes;
 
-    // static property
+    // property
+    this._require = this.getProperty(Require)?.getValue();
     this._displayOnly = this.getProperty(DisplayOnly)?.getValue() ?? false;
   }
 
   // ── Reference Types ─────────────────────────────────────────────────
 
-  getReferenceTypes(): NodeType[] {
-    const refs: NodeType[] = [];
-    if (this.type) refs.push(this.type as NodeType);
-    if (this._refTypes) refs.push(...this._refTypes);
-    return refs;
+  *getRefTypes(): Generator<NodeType> {
+    if (this.type) 
+      yield this.type;
+    if (this._refTypes)
+    {
+      for (const type of this._refTypes)
+        yield type;
+    }
   }
 
   // ── Property Access ─────────────────────────────────────────────────

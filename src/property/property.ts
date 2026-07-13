@@ -111,7 +111,7 @@ export abstract class Property<T> implements IProperty {
 
 export interface ITypeRefProperty extends IProperty {
   /** Return the referenced type name for type-reference resolution. */
-  getRefTypes(): string[];
+  getRefTypes(): Generator<string>;
 }
 
 /** Check if the property has ref type */
