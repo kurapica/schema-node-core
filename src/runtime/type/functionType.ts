@@ -12,6 +12,7 @@
 import type { ValueType } from './valueType';
 import { NodeType } from './nodeType';
 import { StructType } from './structType';
+import { ArrayType } from './arrayType';
 import { FuncProperty, type FuncArg, type FuncExp, type CallArg, type FunctionSchema } from '../../schema/functionSchema';
 import { ExpType } from '../../enum/expType';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
@@ -19,7 +20,7 @@ import { getNodeType } from '../schemaRuntime';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
 import { Converter, IProperty, NoCache, ServerOnly } from '../../property';
-import { SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -226,6 +227,7 @@ export class FunctionType extends NodeType {
    * and fall back to schemaProvider remote call.
    */
   private async _buildComposite(): Promise<void> {
+    if (this._built) return;
     this._built = true;
     if (!this.exps.length) return;
 
@@ -240,24 +242,54 @@ export class FunctionType extends NodeType {
   private async _compileExpressions(
     exps: FuncExp[],
     args: FuncArg[],
-  ): Promise<(...callArgs: unknown[]) => unknown> {
+  ): Promise<((...callArgs: unknown[]) => unknown) | undefined> {
     const argNames = args.map(a => a.name);
 
-    // Build sub-expression functions with array-dependency info
-    const expFunctions = new Map<string, ExpCompileInfo>();
-    for (const exp of exps) {
-      const expFn = await this._resolveExpFunction(exp);
-      if (!expFn) throw new Error(`Cannot resolve expression function: ${exp.func}`);
+    // Build type dictionary: name → ValueType (args + expressions)
+    const expTypes = new Map<string, ValueType | undefined>();
+    for (const arg of args)
+      expTypes.set(arg.name, await getNodeType(arg.type) as ValueType | undefined);
 
+    // Build compiled expression info (with type-informed array analysis)
+    const compiledExps: CompiledExp[] = [];
+    for (const exp of exps) {
+
+      // Resolve the called function's type for arg type analysis
+      const calledFunc = await getNodeType(exp.func) as FunctionType | undefined;
+      if (!calledFunc) return undefined;
+      await calledFunc._buildComposite();
+
+      // Gets the function
+      const expFn = calledFunc._systemFn ?? calledFunc._compositeFn;
+
+      if (calledFunc._noCache) this._noCache = true;
+      if (calledFunc._serverOnly || !expFn)
+      {
+        this._serverOnly = true;
+        return undefined;
+      }
+
+      // Resolve return type and store
+      const expRetType = await getNodeType(exp.return) as ValueType | undefined;
+      expTypes.set(exp.name, expRetType);
+
+      // Analyze array dependencies using type compatibility
       const arrayInfo = exp.type !== ExpType.Call
-        ? _analyzeArrayDeps(exp, argNames)
+        ? await _analyzeArrayDepsByType(exp, calledFunc, expTypes)
         : undefined;
 
-      expFunctions.set(exp.name, { fn: expFn, funcName: exp.func, arrayInfo });
+      // Build require flags from called function's arg nullability
+      const requireFlags: boolean[] = [];
+      if (exp.args && calledFunc) {
+        for (let i = 0; i < exp.args.length; i++) {
+          const fnArg = calledFunc.args[i];
+          requireFlags.push(fnArg ? !(fnArg as any).nullable : false);
+        }
+      }
+
+      compiledExps.push({ fn: expFn, funcName: exp.func, exp, arrayInfo, requireFlags });
     }
 
-    // Check if return type is a struct and last expression's result doesn't match →
-    // need to construct result from field names (matching exp names + arg names).
     const objFields = await _resolveStructReturnFields(
       this.returnType,
       exps.length > 0 ? exps[exps.length - 1].return : undefined,
@@ -270,52 +302,52 @@ export class FunctionType extends NodeType {
       for (let i = 0; i < argNames.length; i++)
         expValues[argNames[i]] = callArgs[i];
 
-      for (const exp of exps) {
-        const info = expFunctions.get(exp.name)!;
-
+      for (const comp of compiledExps) {
         const argsVal: unknown[] = [];
-        if (exp.args) {
-          for (const arg of exp.args) {
-            argsVal.push(arg.source ? expValues[arg.source] : arg.value);
+        let valid = true;
+        const arrayVal = comp.arrayInfo?.arrayName ? (_getExpValue(comp.arrayInfo.arrayName, expValues) ?? []) : null;
+
+        if (comp.exp.args) {
+          for (let j = 0; j < comp.exp.args.length; j++) {
+            const arg = comp.exp.args[j];
+
+            // If this position is array-dependent, push placeholder
+            if (comp.arrayInfo?.arrayIndexes.includes(j) && comp.arrayInfo.sourceArrayIdx >= 0) {
+              argsVal.push(arrayVal); // placeholder, replaced later
+              continue;
+            }
+
+            const v = arg.source ? _getExpValue(arg.source, expValues) : arg.value;
+            if (isNull(v) && comp.requireFlags[j] && !(comp.exp.type === ExpType.Reduce && j === 1)) {
+              valid = false;
+              break;
+            }
+            argsVal.push(v);
           }
         }
 
-        const interruptResult = _checkInterrupt(info.funcName, argsVal);
+        if (!valid) {
+          expValues[comp.exp.name] = null;
+          continue;
+        }
+
+        const interruptResult = _checkInterrupt(comp.funcName, argsVal);
         if (interruptResult !== undefined) return interruptResult;
 
-        const result = await this._executeExpressionWithInfo(info.fn, exp, argsVal, info.arrayInfo);
-        expValues[exp.name] = result;
+        // process exp
+        const result = this._executeExpressionWithInfo(comp.fn, comp.exp, argsVal, comp.arrayInfo);
+        expValues[comp.exp.name] = result instanceof Promise ? await result : result;
       }
 
-      // If return type is struct that needs field construction, build result object
       if (objFields?.length) {
         const result: Record<string, unknown> = {};
-        for (const field of objFields) {
-          result[field] = expValues[field] ?? callArgs[argNames.indexOf(field)];
-        }
+        for (const field of objFields)
+          result[field] = expValues[field];
         return result;
       }
 
       return expValues[exps[exps.length - 1].name];
     };
-  }
-
-  /** Resolve a function reference from an expression. */
-  private async _resolveExpFunction(exp: FuncExp): Promise<Function | undefined> {
-    const funcType = await getNodeType(exp.func, this.generics, this.genericParams) as FunctionType | undefined;
-    if (!funcType) return undefined;
-    if (funcType._noCache) this._noCache = true;
-    if (funcType._serverOnly) {
-      this._serverOnly = true;
-      return undefined;
-    }
-    if (funcType._systemFn) return funcType._systemFn as Function;
-
-    if (!funcType._built) await funcType._buildComposite();
-    if (funcType._compositeFn) return funcType._compositeFn;
-
-    this._serverOnly = true;
-    return undefined;
   }
 
   /** Execute a single expression with array-dependency info. */
@@ -325,28 +357,25 @@ export class FunctionType extends NodeType {
     val: unknown[],
     arrayInfo: ArrayDepInfo | undefined,
   ): Promise<unknown> {
-    // Direct call — no array operations
-    if (exp.type === ExpType.Call) {
+    if (exp.type === ExpType.Call)
       return fn(...val);
-    }
 
-    if (!arrayInfo) return null;
+    if (!arrayInfo || arrayInfo.sourceArrayIdx < 0) return null;
 
-    // Get the source array from the pre-analyzed index
-    const sourceArray = val[arrayInfo.arrayIndex] as unknown[] | undefined;
+    const sourceArray = val[arrayInfo.sourceArrayIdx] as unknown[] | undefined;
     if (!sourceArray || !Array.isArray(sourceArray)) return null;
 
-    const { arrayIndex, arrayIndexes } = arrayInfo;
+    const { arrayIndexes, arrayName } = arrayInfo;
 
     switch (exp.type) {
       case ExpType.Map:
         return Promise.all(sourceArray.map((elem) =>
-          fn(..._replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args)),
+          fn(..._replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args)),
         ));
 
       case ExpType.Filter:
         return (await Promise.all(sourceArray.map(async (elem) => {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           return (await fn(...testVals)) ? elem : undefined;
         }))).filter(Boolean);
 
@@ -354,7 +383,7 @@ export class FunctionType extends NodeType {
         let acc = val.length > 1 && val[1] !== undefined ? val[1] : sourceArray[0];
         const startIdx = val.length > 1 && val[1] !== undefined ? 0 : 1;
         for (let j = startIdx; j < sourceArray.length; j++) {
-          const reduced = _replaceArrayElements(val, arrayIndex, arrayIndexes, sourceArray[j], exp.args);
+          const reduced = _replaceArrayElements(val, arrayIndexes, arrayName, sourceArray[j], exp.args);
           reduced[1] = acc;
           acc = await fn(...reduced);
         }
@@ -363,7 +392,7 @@ export class FunctionType extends NodeType {
 
       case ExpType.First:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           if (await fn(...testVals)) return elem;
         }
         return undefined;
@@ -371,7 +400,7 @@ export class FunctionType extends NodeType {
       case ExpType.Last: {
         let last: unknown;
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           if (await fn(...testVals)) last = elem;
         }
         return last;
@@ -380,7 +409,7 @@ export class FunctionType extends NodeType {
       case ExpType.Count: {
         let count = 0;
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           if (await fn(...testVals)) count++;
         }
         return count;
@@ -388,14 +417,14 @@ export class FunctionType extends NodeType {
 
       case ExpType.All:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           if (!(await fn(...testVals))) return false;
         }
         return true;
 
       case ExpType.Any:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
           if (await fn(...testVals)) return true;
         }
         return false;
@@ -406,121 +435,126 @@ export class FunctionType extends NodeType {
   }
 }
 
-// ── Array Dependency Analysis ──────────────────────────────────────────
-
-/**
- * If the return type is a StructType and the last expression's return type
- * is NOT assignable to it, collect struct field names for result construction.
- * Mirrors the old schema-node objFields logic using isSchemaCanBeUseAs.
- */
-async function _resolveStructReturnFields(
-  returnType: ValueType | undefined,
-  lastExpReturn: string | undefined,
-  generics?: import('../../property/index').GenericParameter[],
-  genericParams?: NodeType[],
-): Promise<string[] | undefined> {
-  if (!(returnType instanceof StructType) || !lastExpReturn) return undefined;
-
-  // Resolve the last expression's return type
-  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as ValueType | undefined;
-  if (!lastExpType) return undefined;
-
-  // If the last expression's return type IS assignable to the struct → no field construction needed
-  if (lastExpType.isAssignableTo(returnType)) return undefined;
-
-  // Not assignable → construct result from struct field names
-  const fields = returnType.getFields();
-  if (!fields.length) return undefined;
-
-  return fields.map(f => f.name);
-}
-
-// ── Array Dependency Helpers ───────────────────────────────────────────
+// ── Array Dependency Analysis (Type-Based) ────────────────────────────────
 
 /** Info about how array elements substitute into expression arguments. */
 interface ArrayDepInfo {
-  /** Index in the val[] array that holds the source array. */
-  arrayIndex: number;
   /** Indices of args that reference the array (directly or via sub-path). */
   arrayIndexes: number[];
   /** The source name (argument/expression name) of the array. */
   arrayName: string;
+  /** Index in val[] where the source array lives (at build time we can't know — resolved at runtime from the first matching index). */
+  sourceArrayIdx: number;
 }
 
-/** Compiled expression info with array-dependency metadata. */
-interface ExpCompileInfo {
+/** Compiled expression with type-informed metadata. */
+interface CompiledExp {
   fn: Function;
   funcName: string;
+  exp: FuncExp;
   arrayInfo?: ArrayDepInfo;
+  requireFlags: boolean[];
 }
 
 /**
- * Analyze which expression arguments reference an array source.
- * For non-Call expressions (Map/Filter/Reduce/etc.), determines:
- *   - Which arg is the source array
- *   - Which other args reference it (directly or via sub-paths like "array.field.name")
+ * Analyze array dependencies using type compatibility (old buildFunction approach).
+ * 
+ * For each expression arg whose referenced type is NOT an array in the called function's
+ * parameter list, but IS an array in the expression context → that's the array source.
+ * Also handles nested struct field access to find arrays.
  */
-function _analyzeArrayDeps(exp: FuncExp, argNames: string[]): ArrayDepInfo | undefined {
-  if (!exp.args || !exp.args.length) return undefined;
+async function _analyzeArrayDepsByType(
+  exp: FuncExp,
+  calledFunc: FunctionType | undefined,
+  expTypes: Map<string, ValueType | undefined>,
+): Promise<ArrayDepInfo | undefined> {
+  if (!exp.args || !exp.args.length || !calledFunc) return undefined;
 
   const arrayIndexes: number[] = [];
   let arrayName: string | undefined;
-  let arrayIndex = -1;
+  let sourceArrayIdx = -1;
 
-  for (let i = 0; i < exp.args.length; i++) {
-    const source = exp.args[i].source;
-    if (!source) continue;
+  for (let j = 0; j < Math.min(calledFunc.args.length, exp.args.length); j++) {
+    const expArg = exp.args[j];
+    if (!expArg.source) continue;
 
-    // Find which arg name is an array source prefix
-    const match = _findArraySource(source, argNames);
-    if (!match) continue;
+    // If the called function already expects an array for this param — skip
+    const fnArgType = await getNodeType(calledFunc.args[j].type) as ValueType | undefined;
+    if (fnArgType?.kind === SCHEMA_KIND_ARRAY) continue;
 
-    if (arrayName && arrayName !== match.sourceName) {
+    // Find the array source: walk the source path to find which prefix resolves to an ArrayType
+    const sourceInfo = _findArraySourceByType(expArg.source, expTypes);
+    if (!sourceInfo) continue;
+
+    if (arrayName && arrayName !== sourceInfo.sourceName) {
       console.warn(`Multiple array sources in expression ${exp.name}`);
       return undefined;
     }
 
-    arrayName = match.sourceName;
-    arrayIndexes.push(i);
+    arrayName = sourceInfo.sourceName;
+    arrayIndexes.push(j);
 
-    // If this is a direct reference, record the array index
-    if (match.direct) {
-      arrayIndex = i;
-    }
+    if (sourceInfo.direct) sourceArrayIdx = j;
   }
 
   if (!arrayName || arrayIndexes.length === 0) return undefined;
+  if (sourceArrayIdx < 0) sourceArrayIdx = arrayIndexes[0];
 
-  // If we found indirect refs but no direct, use the first arrayIndexes entry
-  if (arrayIndex < 0) arrayIndex = arrayIndexes[0];
-
-  return { arrayIndex, arrayIndexes, arrayName };
+  return { arrayIndexes, arrayName, sourceArrayIdx };
 }
 
 /**
- * Find which argument name is the array source for a given source path.
- * e.g. source="items" → { sourceName: "items", direct: true }
- *      source="items.name" → { sourceName: "items", direct: false }
+ * Walk a source path through the type dictionary to find which prefix is an ArrayType.
+ * Returns the source name and whether it's a direct match.
+ * 
+ * e.g. source="items.name" → if "items" is ArrayType → { sourceName: "items", direct: false }
+ *                               if "items" is StructType with "name" field → check field type → ...
  */
-function _findArraySource(source: string, argNames: string[]): { sourceName: string; direct: boolean } | undefined {
-  const dotIdx = source.indexOf('.');
-  const prefix = dotIdx >= 0 ? source.substring(0, dotIdx) : source;
-  if (argNames.includes(prefix)) {
-    return { sourceName: prefix, direct: source === prefix };
+function _findArraySourceByType(
+  source: string,
+  expTypes: Map<string, ValueType | undefined>,
+): { sourceName: string; direct: boolean } | undefined {
+  if (!source) return undefined;
+
+  const parts = source.split('.');
+  let type = expTypes.get(parts[0]);
+
+  // Direct: the first part is an array
+  if (type instanceof ArrayType)
+    return { sourceName: parts[0], direct: parts.length === 1 };
+
+  for (let i = 1; i < parts.length; i++) {
+    type = type?.getAccessValueType(parts[i]);
+    if (!type) break;
+    if (type instanceof ArrayType) {
+      return { sourceName: parts.slice(0, i + 1).join('.'), direct: false };
+    }
   }
+
   return undefined;
+}
+
+function _getExpValue(source: string, exps: Record<string, unknown>)
+{
+  if (!source) return undefined;
+  const parts = source.split('.');
+  let value: any = exps[parts[0]];
+  for (let i = 1; i < parts.length; i++)
+  {
+    if (isNull(value)) return null;
+    value = value[parts[i]];
+  }
+  return value;
 }
 
 /**
  * Replace array-dependent elements in the argument list.
- * Mirrors the old schema-node replaceArray logic:
- *   - Direct reference: replace with element
- *   - Sub-path reference (e.g. "array.field.name"): extract nested value from element
+ * Mirrors the old schema-node replaceArray logic.
  */
 function _replaceArrayElements(
   val: unknown[],
-  arrayIndex: number,
   arrayIndexes: number[],
+  arrayName: string,
   element: unknown,
   args?: CallArg[],
 ): unknown[] {
@@ -531,21 +565,20 @@ function _replaceArrayElements(
 
     const source = args[idx]?.source;
     if (!source) {
-      // Direct array element replacement
       result[idx] = element;
       continue;
     }
 
-    // Check if direct match or sub-path
-    // Find the array source name (the first segment of `source`)
-    const dotIdx = source.indexOf('.');
-    if (dotIdx < 0) {
+    if (source === arrayName) {
       // Direct match — replace whole arg with element
       result[idx] = element;
-    } else {
-      // Sub-path — extract from element: "array.field.name" → element.field.name
-      const subPath = source.substring(dotIdx + 1);
+    } else if (source.startsWith(arrayName + '.')) {
+      // Sub-path — extract from element
+      const subPath = source.substring(arrayName.length + 1);
       result[idx] = _extractSubValue(element, subPath);
+    } else {
+      // Also direct but source name differs (e.g. nested struct access)
+      result[idx] = element;
     }
   }
 
@@ -561,6 +594,31 @@ function _extractSubValue(obj: unknown, path: string): unknown {
     current = (current as Record<string, unknown>)[part];
   }
   return current;
+}
+
+// ── Struct Return Fields ─────────────────────────────────────────────────
+
+/**
+ * If the return type is a StructType and the last expression's return type
+ * is NOT assignable to it, collect struct field names for result construction.
+ */
+async function _resolveStructReturnFields(
+  returnType: ValueType | undefined,
+  lastExpReturn: string | undefined,
+  generics?: import('../../property/index').GenericParameter[],
+  genericParams?: NodeType[],
+): Promise<string[] | undefined> {
+  if (!(returnType instanceof StructType) || !lastExpReturn) return undefined;
+
+  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as ValueType | undefined;
+  if (!lastExpType) return undefined;
+
+  if (lastExpType.isAssignableTo(returnType)) return undefined;
+
+  const fields = returnType.getFields();
+  if (!fields.length) return undefined;
+
+  return fields.map(f => f.name);
 }
 
 // ── Interrupt Intrinsic Helpers ─────────────────────────────────────────
