@@ -25,7 +25,8 @@ export interface FuncCall {
  */
 export abstract class FuncCallProperty extends Property<FuncCall> implements ITypeRefProperty {
   /** Return the referenced function type name for type-reference resolution. */
-  getRefTypes(): string[] {
-    return this._hasValue && this._value ? [this._value.func] : [];
+  *getRefTypes(): Generator<string> {
+    if (this._value?.func)
+      yield this._value.func;
   }
 }

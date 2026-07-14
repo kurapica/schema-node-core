@@ -15,8 +15,11 @@ export abstract class ScalarType extends ValueType {
     return this.kind.toLowerCase() === other.kind.toLowerCase() || super.isAssignableTo(other);
   }
 
-  override getRefTypes(): NodeType[] {
-    return this.baseNode ? [this.baseNode as NodeType].concat(super.getRefTypes()) : super.getRefTypes();
+  override *getRefTypes(): Generator<NodeType> {
+    if (this.baseNode)
+      yield this.baseNode;
+    for (const type of super.getRefTypes())
+      yield type;
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {

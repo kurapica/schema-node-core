@@ -7,7 +7,7 @@ import { NodeType, ValueType } from './type';
 
 /** The node reference interface */
 export interface INodeReference {
-  getReferenceTypes(): NodeType[];
+  getRefTypes(): Generator<NodeType>;
 }
 
 /** The node error interface */
