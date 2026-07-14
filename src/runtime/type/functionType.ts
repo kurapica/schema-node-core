@@ -98,12 +98,12 @@ export class FunctionType extends NodeType {
    */
   async call(args: unknown[]): Promise<unknown> {
     // Build composite function if not yet built
+    if (!this._built)
+      await this._buildComposite();
+
     // 1. System function — direct invocation
     if (this._systemFn && !this.isRemote)
       return this._callSystem(args);
-
-    if (!this._built)
-      await this._buildComposite();
 
     // 2. Composite function — local execution
     if (this._compositeFn && !this.isRemote)
@@ -145,11 +145,8 @@ export class FunctionType extends NodeType {
       if (cached !== undefined) return cached;
 
       // Dedup concurrent calls
-      if (pendingCall[token]) {
-        return new Promise((resolve, reject) =>
-          pendingCall[token].push({ resolve, reject }),
-        );
-      }
+      if (pendingCall[token])
+        return new Promise((resolve, reject) => pendingCall[token].push({ resolve, reject }));
 
       pendingCall[token] = [];
 
@@ -190,11 +187,8 @@ export class FunctionType extends NodeType {
 
     // Check if there's already a pending call for this exact arg set
     let queue = root.get('CALL_QUEUE');
-    if (queue) {
-      return new Promise((resolve, reject) =>
-        queue.push({ resolve, reject }),
-      );
-    }
+    if (queue)
+      return new Promise((resolve, reject) => queue.push({ resolve, reject }));
 
     // Init queue
     queue = [];
@@ -273,9 +267,8 @@ export class FunctionType extends NodeType {
 
     return async (...callArgs: unknown[]): Promise<unknown> => {
       const expValues: Record<string, unknown> = {};
-      for (let i = 0; i < argNames.length; i++) {
+      for (let i = 0; i < argNames.length; i++)
         expValues[argNames[i]] = callArgs[i];
-      }
 
       for (const exp of exps) {
         const info = expFunctions.get(exp.name)!;

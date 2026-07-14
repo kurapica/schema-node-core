@@ -129,13 +129,19 @@ export class StructType extends ValueType {
     );
     if (!hasCommon) return false;
 
+    let matched = 0;
     return otherFields.every(v => {
       const match = this._fields.find(
         f => f.name.toLowerCase() === v.name.toLowerCase(),
       );
       if (!match?.type) return !v.require;
-      return v.type != null && match.type.isAssignableTo(v.type);
-    });
+      if (v.type != null && match.type.isAssignableTo(v.type))
+      {
+        matched++;
+        return true;
+      }
+      return false;
+    }) && matched > 0;
   }
 
   // ── DataNode Factory ────────────────────────────────────────────────
