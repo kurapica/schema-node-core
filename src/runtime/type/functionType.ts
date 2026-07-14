@@ -11,17 +11,15 @@
 
 import type { ValueType } from './valueType';
 import { NodeType } from './nodeType';
-import { FuncProperty, type FuncArg, type FuncExp, type FunctionSchema } from '../../schema/functionSchema';
+import { StructType } from './structType';
+import { FuncProperty, type FuncArg, type FuncExp, type CallArg, type FunctionSchema } from '../../schema/functionSchema';
 import { ExpType } from '../../enum/expType';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { getNodeType } from '../schemaRuntime';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
-import { isEmpty, useQueueQuery } from '../../utility/toolset';
+import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
 import { Converter, IProperty, NoCache, ServerOnly } from '../../property';
 import { SCHEMA_KIND_FUNCTION } from '../../utility/constant';
-
-/** Track which function names must be called remotely (server-only). */
-const serverCallOnly = new Set<string>();
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -34,6 +32,12 @@ const callSchemaFunctionQueue = useQueueQuery(
   (schemaName: string, args: unknown[], retType?: string) =>
     getSchemaProvider()!.callFunction(schemaName, args, retType),
 );
+
+/** Delay (ms) to batch concurrent remote calls before execution. */
+const REMOTE_CALL_DELAY = 50;
+
+/** Temporary dedup tree for complex-arg remote calls: schemaName → nested Map → "CALL_QUEUE". */
+const pendingComplexCall: Record<string, Map<any, any>> = {};
 
 export class FunctionType extends NodeType {
   /** Return value type (resolved at load time). */
@@ -53,9 +57,6 @@ export class FunctionType extends NodeType {
 
   /** Whether this is a converter function. */
   get isConverter(): boolean { return this._converter; }
-
-  /** Don't cache results. */
-  private nocache = false;
 
   // ── Internals ───────────────────────────────────────────────────────
 
@@ -85,28 +86,6 @@ export class FunctionType extends NodeType {
 
     // Resolve return type
     this.returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
-
-    // Resolve all exp functions
-    if (this._funcSchema.exps?.length)
-    {
-      this._funcMap = new Map<string, FunctionType>();
-      for(let i = 0; i < this._funcSchema.exps.length; i++)
-      {
-        const expName = this._funcSchema.exps[i].name?.toLowerCase();
-        if (isEmpty(expName) || this._funcMap.has(expName)) continue;
-        const funcType = await getNodeType(expName);
-        if (funcType instanceof FunctionType)
-        {
-          this._funcMap.set(expName, funcType);
-          if (funcType._serverOnly) this._serverOnly = true;
-          if (funcType._noCache) this._noCache = true;
-        }
-        else
-        {
-          console.error(`Ths ${expName} is not a valid function schema.`)
-        }
-      }
-    }
   }
 
   // ── Call ────────────────────────────────────────────────────────────
@@ -124,7 +103,7 @@ export class FunctionType extends NodeType {
       return this._callSystem(args);
 
     if (!this._built)
-      this._buildComposite();
+      await this._buildComposite();
 
     // 2. Composite function — local execution
     if (this._compositeFn && !this.isRemote)
@@ -150,6 +129,8 @@ export class FunctionType extends NodeType {
    * Remote function call via schemaProvider, with:
    * - Shared result cache (nocache skips)
    * - Pending call dedup (avoids concurrent duplicate calls)
+   * - Complex-arg tree dedup (nested Map keyed by arg values)
+   * - Delay-based batching (REMOTE_CALL_DELAY ms)
    * - Queue-based serialization via useQueueQuery
    */
   private async _callRemote(schemaName: string, args: unknown[]): Promise<unknown> {
@@ -171,9 +152,13 @@ export class FunctionType extends NodeType {
       }
 
       pendingCall[token] = [];
+
+      // Delay to batch concurrent requests in the same tick
+      await new Promise(resolve => setTimeout(resolve, REMOTE_CALL_DELAY));
+
       try {
         const res = await callSchemaFunctionQueue(schemaName, args);
-        if (!this.nocache) shareFuncCallResult.set(token, res);
+        if (!this._noCache) shareFuncCallResult.set(token, res);
         pendingCall[token].forEach(c => c.resolve(res));
         return res;
       } catch (ex) {
@@ -184,8 +169,51 @@ export class FunctionType extends NodeType {
       }
     }
 
-    // Complex args — no caching, just queue
-    return callSchemaFunctionQueue(schemaName, args);
+    // ── Complex args — nested Map dedup ──────────────────────────
+
+    // Build / walk nested Map tree keyed by arg values
+    let root = pendingComplexCall[schemaName];
+    if (!root) {
+      root = new Map();
+      pendingComplexCall[schemaName] = root;
+    }
+
+    for (const arg of args) {
+      const key = isNull(arg) ? 'NULL_TOKEN' : arg;
+      let next = root.get(key);
+      if (!next) {
+        next = new Map();
+        root.set(key, next);
+      }
+      root = next;
+    }
+
+    // Check if there's already a pending call for this exact arg set
+    let queue = root.get('CALL_QUEUE');
+    if (queue) {
+      return new Promise((resolve, reject) =>
+        queue.push({ resolve, reject }),
+      );
+    }
+
+    // Init queue
+    queue = [];
+    root.set('CALL_QUEUE', queue);
+
+    // Delay to batch concurrent requests
+    await new Promise(resolve => setTimeout(resolve, REMOTE_CALL_DELAY));
+
+    // Reset tree for next batch
+    delete pendingComplexCall[schemaName];
+
+    try {
+      const res = await callSchemaFunctionQueue(schemaName, args);
+      queue.forEach((c: any) => c.resolve(res));
+      return res;
+    } catch (ex) {
+      queue.forEach((c: any) => c.reject(ex));
+      throw ex;
+    }
   }
 
   /** Build a cache token for simple argument sets. */
@@ -210,7 +238,7 @@ export class FunctionType extends NodeType {
     try {
       this._compositeFn = await this._compileExpressions(this.exps, this.args);
     } catch {
-      this._needsRemote = true;
+      this._serverOnly = true;
     }
   }
 
@@ -221,13 +249,27 @@ export class FunctionType extends NodeType {
   ): Promise<(...callArgs: unknown[]) => unknown> {
     const argNames = args.map(a => a.name);
 
-    // Build sub-expression functions
-    const expFunctions = new Map<string, Function>();
+    // Build sub-expression functions with array-dependency info
+    const expFunctions = new Map<string, ExpCompileInfo>();
     for (const exp of exps) {
       const expFn = await this._resolveExpFunction(exp);
       if (!expFn) throw new Error(`Cannot resolve expression function: ${exp.func}`);
-      expFunctions.set(exp.name, expFn);
+
+      const arrayInfo = exp.type !== ExpType.Call
+        ? _analyzeArrayDeps(exp, argNames)
+        : undefined;
+
+      expFunctions.set(exp.name, { fn: expFn, funcName: exp.func, arrayInfo });
     }
+
+    // Check if return type is a struct and last expression's result doesn't match →
+    // need to construct result from field names (matching exp names + arg names).
+    const objFields = await _resolveStructReturnFields(
+      this.returnType,
+      exps.length > 0 ? exps[exps.length - 1].return : undefined,
+      this.generics,
+      this.genericParams,
+    );
 
     return async (...callArgs: unknown[]): Promise<unknown> => {
       const expValues: Record<string, unknown> = {};
@@ -236,82 +278,90 @@ export class FunctionType extends NodeType {
       }
 
       for (const exp of exps) {
-        const fn = expFunctions.get(exp.name)!;
-        expValues[exp.name] = await this._executeExpression(fn, exp, expValues);
+        const info = expFunctions.get(exp.name)!;
+
+        const argsVal: unknown[] = [];
+        if (exp.args) {
+          for (const arg of exp.args) {
+            argsVal.push(arg.source ? expValues[arg.source] : arg.value);
+          }
+        }
+
+        const interruptResult = _checkInterrupt(info.funcName, argsVal);
+        if (interruptResult !== undefined) return interruptResult;
+
+        const result = await this._executeExpressionWithInfo(info.fn, exp, argsVal, info.arrayInfo);
+        expValues[exp.name] = result;
       }
 
-      // Return the last expression's result
+      // If return type is struct that needs field construction, build result object
+      if (objFields?.length) {
+        const result: Record<string, unknown> = {};
+        for (const field of objFields) {
+          result[field] = expValues[field] ?? callArgs[argNames.indexOf(field)];
+        }
+        return result;
+      }
+
       return expValues[exps[exps.length - 1].name];
     };
   }
 
   /** Resolve a function reference from an expression. */
   private async _resolveExpFunction(exp: FuncExp): Promise<Function | undefined> {
-    // Try system function first (locally registered)
     const funcType = await getNodeType(exp.func, this.generics, this.genericParams) as FunctionType | undefined;
     if (!funcType) return undefined;
-
-    if (funcType._systemFn) return funcType._systemFn as Function;
-    if (serverCallOnly.has(funcType.name)) {
-      this._needsRemote = true;
+    if (funcType._noCache) this._noCache = true;
+    if (funcType._serverOnly) {
+      this._serverOnly = true;
       return undefined;
     }
+    if (funcType._systemFn) return funcType._systemFn as Function;
 
-    // Try building recursively
     if (!funcType._built) await funcType._buildComposite();
     if (funcType._compositeFn) return funcType._compositeFn;
 
-    // Must be server-side
-    serverCallOnly.add(funcType.name);
-    this._needsRemote = true;
+    this._serverOnly = true;
     return undefined;
   }
 
-  /** Execute a single expression against current values. */
-  private async _executeExpression(
+  /** Execute a single expression with array-dependency info. */
+  private async _executeExpressionWithInfo(
     fn: Function,
     exp: FuncExp,
-    expValues: Record<string, unknown>,
+    val: unknown[],
+    arrayInfo: ArrayDepInfo | undefined,
   ): Promise<unknown> {
-    // Resolve arguments
-    const val: unknown[] = [];
-    if (exp.args) {
-      for (const arg of exp.args) {
-        val.push(arg.source ? expValues[arg.source] : arg.value);
-      }
-    }
-
-    // Direct call
+    // Direct call — no array operations
     if (exp.type === ExpType.Call) {
       return fn(...val);
     }
 
-    // Array-operator expressions: find the array source argument
-    const arrayIdx = val.findIndex(v => Array.isArray(v));
-    const sourceArray = arrayIdx >= 0 ? val[arrayIdx] as unknown[] : undefined;
-    if (!sourceArray) return null;
+    if (!arrayInfo) return null;
+
+    // Get the source array from the pre-analyzed index
+    const sourceArray = val[arrayInfo.arrayIndex] as unknown[] | undefined;
+    if (!sourceArray || !Array.isArray(sourceArray)) return null;
+
+    const { arrayIndex, arrayIndexes } = arrayInfo;
 
     switch (exp.type) {
       case ExpType.Map:
-        return Promise.all(sourceArray.map((elem) => {
-          const mapped = [...val];
-          if (arrayIdx >= 0) mapped[arrayIdx] = elem;
-          return fn(...mapped);
-        }));
+        return Promise.all(sourceArray.map((elem) =>
+          fn(..._replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args)),
+        ));
 
       case ExpType.Filter:
         return (await Promise.all(sourceArray.map(async (elem) => {
-          const filtered = [...val];
-          if (arrayIdx >= 0) filtered[arrayIdx] = elem;
-          return (await fn(...filtered)) ? elem : undefined;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          return (await fn(...testVals)) ? elem : undefined;
         }))).filter(Boolean);
 
       case ExpType.Reduce: {
-        let acc = val.length > 1 ? val[1] : sourceArray[0];
-        const startIdx = acc !== val[1] ? 1 : 0;
+        let acc = val.length > 1 && val[1] !== undefined ? val[1] : sourceArray[0];
+        const startIdx = val.length > 1 && val[1] !== undefined ? 0 : 1;
         for (let j = startIdx; j < sourceArray.length; j++) {
-          const reduced = [...val];
-          if (arrayIdx >= 0 && arrayIdx < reduced.length) reduced[arrayIdx] = sourceArray[j];
+          const reduced = _replaceArrayElements(val, arrayIndex, arrayIndexes, sourceArray[j], exp.args);
           reduced[1] = acc;
           acc = await fn(...reduced);
         }
@@ -320,18 +370,16 @@ export class FunctionType extends NodeType {
 
       case ExpType.First:
         for (const elem of sourceArray) {
-          const test = [...val];
-          if (arrayIdx >= 0) test[arrayIdx] = elem;
-          if (await fn(...test)) return elem;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          if (await fn(...testVals)) return elem;
         }
         return undefined;
 
       case ExpType.Last: {
         let last: unknown;
         for (const elem of sourceArray) {
-          const test = [...val];
-          if (arrayIdx >= 0) test[arrayIdx] = elem;
-          if (await fn(...test)) last = elem;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          if (await fn(...testVals)) last = elem;
         }
         return last;
       }
@@ -339,26 +387,23 @@ export class FunctionType extends NodeType {
       case ExpType.Count: {
         let count = 0;
         for (const elem of sourceArray) {
-          const test = [...val];
-          if (arrayIdx >= 0) test[arrayIdx] = elem;
-          if (await fn(...test)) count++;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          if (await fn(...testVals)) count++;
         }
         return count;
       }
 
       case ExpType.All:
         for (const elem of sourceArray) {
-          const test = [...val];
-          if (arrayIdx >= 0) test[arrayIdx] = elem;
-          if (!(await fn(...test))) return false;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          if (!(await fn(...testVals))) return false;
         }
         return true;
 
       case ExpType.Any:
         for (const elem of sourceArray) {
-          const test = [...val];
-          if (arrayIdx >= 0) test[arrayIdx] = elem;
-          if (await fn(...test)) return true;
+          const testVals = _replaceArrayElements(val, arrayIndex, arrayIndexes, elem, exp.args);
+          if (await fn(...testVals)) return true;
         }
         return false;
 
@@ -366,4 +411,191 @@ export class FunctionType extends NodeType {
         return fn(...val);
     }
   }
+}
+
+// ── Array Dependency Analysis ──────────────────────────────────────────
+
+/**
+ * If the return type is a StructType and the last expression's return type
+ * is NOT assignable to it, collect struct field names for result construction.
+ * Mirrors the old schema-node objFields logic using isSchemaCanBeUseAs.
+ */
+async function _resolveStructReturnFields(
+  returnType: ValueType | undefined,
+  lastExpReturn: string | undefined,
+  generics?: import('../../property/index').GenericParameter[],
+  genericParams?: NodeType[],
+): Promise<string[] | undefined> {
+  if (!(returnType instanceof StructType) || !lastExpReturn) return undefined;
+
+  // Resolve the last expression's return type
+  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as ValueType | undefined;
+  if (!lastExpType) return undefined;
+
+  // If the last expression's return type IS assignable to the struct → no field construction needed
+  if (lastExpType.isAssignableTo(returnType)) return undefined;
+
+  // Not assignable → construct result from struct field names
+  const fields = returnType.getFields();
+  if (!fields.length) return undefined;
+
+  return fields.map(f => f.name);
+}
+
+// ── Array Dependency Helpers ───────────────────────────────────────────
+
+/** Info about how array elements substitute into expression arguments. */
+interface ArrayDepInfo {
+  /** Index in the val[] array that holds the source array. */
+  arrayIndex: number;
+  /** Indices of args that reference the array (directly or via sub-path). */
+  arrayIndexes: number[];
+  /** The source name (argument/expression name) of the array. */
+  arrayName: string;
+}
+
+/** Compiled expression info with array-dependency metadata. */
+interface ExpCompileInfo {
+  fn: Function;
+  funcName: string;
+  arrayInfo?: ArrayDepInfo;
+}
+
+/**
+ * Analyze which expression arguments reference an array source.
+ * For non-Call expressions (Map/Filter/Reduce/etc.), determines:
+ *   - Which arg is the source array
+ *   - Which other args reference it (directly or via sub-paths like "array.field.name")
+ */
+function _analyzeArrayDeps(exp: FuncExp, argNames: string[]): ArrayDepInfo | undefined {
+  if (!exp.args || !exp.args.length) return undefined;
+
+  const arrayIndexes: number[] = [];
+  let arrayName: string | undefined;
+  let arrayIndex = -1;
+
+  for (let i = 0; i < exp.args.length; i++) {
+    const source = exp.args[i].source;
+    if (!source) continue;
+
+    // Find which arg name is an array source prefix
+    const match = _findArraySource(source, argNames);
+    if (!match) continue;
+
+    if (arrayName && arrayName !== match.sourceName) {
+      console.warn(`Multiple array sources in expression ${exp.name}`);
+      return undefined;
+    }
+
+    arrayName = match.sourceName;
+    arrayIndexes.push(i);
+
+    // If this is a direct reference, record the array index
+    if (match.direct) {
+      arrayIndex = i;
+    }
+  }
+
+  if (!arrayName || arrayIndexes.length === 0) return undefined;
+
+  // If we found indirect refs but no direct, use the first arrayIndexes entry
+  if (arrayIndex < 0) arrayIndex = arrayIndexes[0];
+
+  return { arrayIndex, arrayIndexes, arrayName };
+}
+
+/**
+ * Find which argument name is the array source for a given source path.
+ * e.g. source="items" → { sourceName: "items", direct: true }
+ *      source="items.name" → { sourceName: "items", direct: false }
+ */
+function _findArraySource(source: string, argNames: string[]): { sourceName: string; direct: boolean } | undefined {
+  const dotIdx = source.indexOf('.');
+  const prefix = dotIdx >= 0 ? source.substring(0, dotIdx) : source;
+  if (argNames.includes(prefix)) {
+    return { sourceName: prefix, direct: source === prefix };
+  }
+  return undefined;
+}
+
+/**
+ * Replace array-dependent elements in the argument list.
+ * Mirrors the old schema-node replaceArray logic:
+ *   - Direct reference: replace with element
+ *   - Sub-path reference (e.g. "array.field.name"): extract nested value from element
+ */
+function _replaceArrayElements(
+  val: unknown[],
+  arrayIndex: number,
+  arrayIndexes: number[],
+  element: unknown,
+  args?: CallArg[],
+): unknown[] {
+  const result = [...val];
+
+  for (const idx of arrayIndexes) {
+    if (idx >= result.length || !args) continue;
+
+    const source = args[idx]?.source;
+    if (!source) {
+      // Direct array element replacement
+      result[idx] = element;
+      continue;
+    }
+
+    // Check if direct match or sub-path
+    // Find the array source name (the first segment of `source`)
+    const dotIdx = source.indexOf('.');
+    if (dotIdx < 0) {
+      // Direct match — replace whole arg with element
+      result[idx] = element;
+    } else {
+      // Sub-path — extract from element: "array.field.name" → element.field.name
+      const subPath = source.substring(dotIdx + 1);
+      result[idx] = _extractSubValue(element, subPath);
+    }
+  }
+
+  return result;
+}
+
+/** Extract a nested value from an object by dotted path. */
+function _extractSubValue(obj: unknown, path: string): unknown {
+  const parts = path.split('.');
+  let current = obj;
+  for (const part of parts) {
+    if (isNull(current)) break;
+    current = (current as Record<string, unknown>)[part];
+  }
+  return current;
+}
+
+// ── Interrupt Intrinsic Helpers ─────────────────────────────────────────
+
+/**
+ * Interrupt intrinsic function names that cause early return from composite execution.
+ * Each checker receives the resolved argument values and returns:
+ *   { interrupt: true, value }  if execution should stop
+ *   { interrupt: false }        otherwise
+ */
+const INTERRUPT_CHECKERS: Record<string, (args: unknown[]) => { interrupt: true; value: unknown } | { interrupt: false }> = {
+  'system.intrinsic.ifret': (args) =>
+    args[0] ? { interrupt: true, value: args[1] } : { interrupt: false },
+
+  'system.intrinsic.ifnot': (args) =>
+    !args[0] ? { interrupt: true, value: args[1] } : { interrupt: false },
+
+  'system.intrinsic.ifnull': (args) =>
+    isNull(args[0]) ? { interrupt: true, value: args[1] } : { interrupt: false },
+
+  'system.intrinsic.ifempty': (args) =>
+    isEmpty(args[0]) ? { interrupt: true, value: args[1] } : { interrupt: false },
+};
+
+/** Check interrupt condition and return the value if interrupted, or undefined. */
+function _checkInterrupt(funcName: string, args: unknown[]): unknown | undefined {
+  const checker = INTERRUPT_CHECKERS[funcName];
+  if (!checker) return undefined;
+  const result = checker(args);
+  return result.interrupt ? result.value : undefined;
 }
