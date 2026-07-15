@@ -20,32 +20,26 @@ export * from './property/index';
 
 // ── Attribute System ───────────────────────────────────────────────────────
 export { Meta, getMetaProperty, getMetaProperties, getMetaPropertiesForSchema } from './attribute/meta';
-export type { IRelationProcess, Call, Assign } from './attribute/relation';
-export { Relation, RelationAssign, getRelationEntries, createCall, createAssign } from './attribute/relation';
+export * from './attribute/relation';
+export { Relation, RelationAssign, getRelationEntries } from './attribute/relation';
 
 // ── Schema Types ───────────────────────────────────────────────────────────
-export { ExtensibleSchema } from './schema/extensibleSchema';
-export { NodeSchema, SchemaLoadState } from './schema/nodeSchema';
+export { NodeSchema } from './schema/nodeSchema';
 export type { CompatibleSchema } from './schema/nodeSchema';
-export { ObjectSchema, ObjectProperty } from './schema/objectSchema';
 export { StructSchema, StructProperty } from './schema/structSchema';
-export type { StructFieldSchema, StructUnionValidation } from './schema/structSchema';
+export type { StructFieldSchema } from './schema/structSchema';
 export { ArraySchema, ArrayProperty } from './schema/arraySchema';
-export type { DataIndex } from './schema/arraySchema';
 export { EnumSchema, EnumProperty } from './schema/enumSchema';
-export type { EnumValueInfo, EnumValueAccess } from './schema/enumSchema';
+export type { EnumValueSchema, EnumValueAccess } from './schema/enumSchema';
 export { FunctionSchema, FuncProperty } from './schema/functionSchema';
-export type { FuncArg, FuncExp, CallArg, ExpType } from './schema/functionSchema';
-export { PropertySchema, PropProperty } from './schema/propertySchema';
-export { RelationSchema, RelationsProperty } from './schema/relationSchema';
-export { NamespaceSchema, NamespaceProperty } from './schema/namespaceSchema';
-export { ScalarSchema } from './schema/scalar/scalarSchema';
-export { BoolSchema } from './schema/scalar/boolSchema';
+export type { FuncArg, FuncExp, CallArg } from './schema/functionSchema';
+export { PropertySchema } from './schema/propertySchema';
+export { RelationSchema } from './schema/relationSchema';
 export { IntSchema } from './schema/scalar/intSchema';
 export { DecimalSchema } from './schema/scalar/decimalSchema';
 export { StringSchema } from './schema/scalar/stringSchema';
 export { DateSchema } from './schema/scalar/dateSchema';
-export type { INodeSchemaProvider, IEnumSchemaProvider, IFunctionSchemaProvider } from './schema/provider/schemaProvider';
+export type { INodeSchemaProvider } from './schema/provider/schemaProvider';
 
 // ── Runtime ────────────────────────────────────────────────────────────────
 export type { IValueAccess } from './runtime/interfaces';
@@ -70,8 +64,6 @@ export { createSchemaRuntime, scanModules, activateRuntime } from './service/ser
 export { DefaultRuntimeStageHandler } from './service/runtimeStageHandler';
 
 // ── Function ───────────────────────────────────────────────────────────────
-export type { ISystemFunction } from './function/index';
-export { registerSystemSchemas } from './function/systemSchemas';
 
 // ── Struct & System Types ──────────────────────────────────────────────────
 export { systemStructTypes, systemScalarTypes } from './struct/systemTypes';

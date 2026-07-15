@@ -12,7 +12,7 @@
 
 import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind } from '../property/index';
+import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType } from '../property/index';
 import { getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaKind } from '../property/record/schemaKind';
@@ -61,7 +61,7 @@ export function isSchemaKindProperty(kind: string, prop: new () => IProperty) : 
 /** The type declared with schema type, the schema kind is also declare with node schema,
  * So we use this to track all
  */
-const _schemaTypeRegistry = new Map<Function, string>();
+const _schemaTypeRegistry = new Map<string, Function>();
 
 /** Root namespace — holds all registered schemas in a tree. */
 const rootNamespace : NodeSchema = { namespace: "", name: "", kind : SCHEMA_KIND_NAMESPACE };
@@ -74,8 +74,8 @@ const _schemaIndex = new Map<string, NodeSchema>();
  * @param typeCtor The type constructor
  * @param type The schema type
  */
-export function registerSchemaType(typeCtor: Function, type: string): void {
-  _schemaTypeRegistry.set(typeCtor, type);
+export function registerSchemaType(type: string, typeCtor: Function): void {
+  _schemaTypeRegistry.set(type.toLowerCase(), typeCtor);
 }
 
 /**
@@ -83,8 +83,13 @@ export function registerSchemaType(typeCtor: Function, type: string): void {
  * @param typeCtor The type constructor or instance
  * @returns The schema type or undefined if not registered
  */
-export function getSchemaType(typeCtor: object): string | undefined {
-  return _schemaTypeRegistry.get(typeof typeCtor === 'function' ? typeCtor : (typeCtor as any).constructor);
+export function getSchemaType(type: string): Function | undefined {
+  return _schemaTypeRegistry.get(type.toLowerCase());
+}
+
+/** Gets the schema name of the type */
+export function getTypeSchemaName(typeCtor: Function): string | undefined {
+  return getMetaProperty(typeCtor, SchemaType)?.getValue<string>();
 }
 
 /**
@@ -448,7 +453,7 @@ function* splitGenericParams(input: string): Generator<string> {
 /** Scan all registered schema type to build the schema runtime, this is called to init the schema runtime */
 export function initSchemaRuntime(): void {
   // schema kind & generator & properties
-  _schemaTypeRegistry.forEach((type, ctor) => {
+  _schemaTypeRegistry.forEach((ctor, type) => {
     // schema kinds
     const schemaKind = getMetaProperty(ctor, SchemaKind);
     if (schemaKind?.hasValue) {
@@ -493,7 +498,7 @@ export function initSchemaRuntime(): void {
   });
 
   // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
-  _schemaTypeRegistry.forEach((type, ctor) => {
+  _schemaTypeRegistry.forEach((ctor, type) => {
     const ofSchema = getMetaProperty(ctor, OfSchema);
     const kind = ofSchema?.hasValue ? ofSchema.getValue<string>()! : SCHEMA_KIND_STRUCT;
     const generator = _schemaGenerators.get(kind);

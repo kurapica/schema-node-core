@@ -14,5 +14,5 @@ import { Relation } from '../../attribute/relation';
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.unpack`)
-@Relation(Visible, `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`, "$type", SCHEMA_KIND_OBJECT)
+@Relation(Visible, { call: { func: `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`, args: [ { source: 'type'}, { value: SCHEMA_KIND_OBJECT} ]} })
 export class Unpack extends Property<boolean> {}

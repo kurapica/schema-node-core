@@ -1,41 +1,17 @@
 // =============================================================================
 // @Relation / @RelationAssign — declare how a property's value is computed
 // Mirrors C# SchemaNode.Core/Attribute/RelationAttribute.cs
-//
-// Architecture:
-//   RelationSchema { Target, Property, Stage, Kind }  — the schema declaration
-//   IRelationProcess { LoadAsync, ProcessAsync }       — the execution body
-//   Call { Func, Args }                                — function-call relation
-//   Assign { Value }                                   — static-value relation
-//
-// Usage:
-//   @Relation(Visible, "system.reflect.isvaluekind", "$Type", "enum")
-//     → Call("system.reflect.isvaluekind", [CallArg("$Type"), CallArg("enum")])
-//   @RelationAssign(Valid, "$self", "system.intrinsic.null")
-//     → Assign("system.intrinsic.null")
 // =============================================================================
 
 import { RelationStage } from '../enum/relationStage';
 import type { IProperty } from '../property/property';
-import { CallArg } from '../schema/functionSchema';
-
-// ── RelationEntry — stored on a property class's constructor ───────────────
-
-interface RelationEntry {
-  /** The property class this relation computes (e.g., Visible, Default). */
-  propertyClass: Function;
-  /** The IRelationProcess (Call or Assign). */
-  process: Call | Assign;
-  /** The target path (e.g., "$self", or null for default). */
-  target?: string;
-  /** When to apply (Load | Input). */
-  stage: number;
-}
+import { getTypeSchemaName } from '../runtime/schemaRuntime';
+import { RelationSchema } from '../schema/relationSchema';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
 
-function ensureStore(ctor: Function): RelationEntry[] {
-  const rec = ctor as unknown as Record<symbol, RelationEntry[]>;
+function ensureStore(ctor: Function): RelationSchema[] {
+  const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
   let store = rec[RELATION_KEY];
   if (!store) {
     store = [];
@@ -44,79 +20,39 @@ function ensureStore(ctor: Function): RelationEntry[] {
   return store;
 }
 
-// ── @Relation(propClass, func, ...args) — Call relation ──────────────────
+// ── @Relation(propClass, data[, target][, stage]) — Call relation ──────────────────
 
 /**
  * Declare that a property's value is computed by calling a function.
- *
- * @param propClass  The property class to compute (e.g., Visible, Default).
- * @param func       The function name to call (e.g., "system.reflect.isvaluekind").
- * @param args       Call arguments — strings starting with `$` are source paths, otherwise literal values.
- *
- * Example:
- *   @Relation(Visible, "system.reflect.isvaluekind", "$Type", "enum")
- *   → When computing Visible, call isvaluekind(resolve("$Type"), "enum")
  */
 export function Relation(
   propClass: new () => IProperty,
-  func: string,
-  ...args: string[]
-): ClassDecorator {
-  return ((target: object) => {
-    let rtar : string | undefined
-    if (func.startsWith('$'))
-    {
-      rtar = func;
-      func = args.splice(0, 1)[0];
-    }
-
-    const callArgs: CallArg[] = args.map((a) => {
-      if (typeof a === 'string' && a.startsWith('$') && !a.startsWith('$$')) {
-        return { source: a };
-      }
-      return { value: a };
-    });
-    ensureStore(target as Function).push({
-      propertyClass: propClass,
-      target: rtar,
-      process: createCall(func, callArgs),
-      stage: RelationStage.Load | RelationStage.Input,
-    });
-  }) as ClassDecorator;
-}
-
-// ── @RelationAssign(propClass, target, value) — Assign relation ──────────
-
-/**
- * Declare that a property is assigned a static value (optionally on a target).
- *
- * @param propClass  The property class being assigned.
- * @param value      The static value to assign.
- * @param target     Optional target path (e.g., "$self").
- *
- * Example:
- *   @RelationAssign(Valid, "system.intrinsic.null")
- *   → Assign Valid the value "system.intrinsic.null"
- */
-export function RelationAssign(
-  propClass: new () => IProperty,
-  value: unknown,
+  data: Record<string, unknown>,
   target?: string,
+  stage?: RelationStage
 ): ClassDecorator {
-  return ((targetObj: object) => {
-    ensureStore(targetObj as Function).push({
-      propertyClass: propClass,
-      process: createAssign(value),
-      target: target,
-      stage: RelationStage.Load | RelationStage.Input,
-    });
+  return ((tar: object) => {
+    const scheam: RelationSchema = {
+      target: target ?? '',
+      property: getTypeSchemaName(propClass)!,
+      kind: '',
+      stage: stage ?? RelationStage.Load | RelationStage.Input,
+      ...data
+    };
+
+    // Use data key as kind
+    for(let kind in data)
+    {
+      scheam.kind = kind;
+      break;
+    }
+    ensureStore(tar as Function).push(scheam);
   }) as ClassDecorator;
 }
 
 // ── Retrieval ──────────────────────────────────────────────────────────────
 
 /** Get all relation entries declared on a class constructor. */
-export function getRelationEntries(ctor: Function): RelationEntry[] {
+export function getRelationSchemas(ctor: Function): RelationEntry[] {
   return (ctor as unknown as Record<symbol, RelationEntry[]>)[RELATION_KEY] ?? [];
 }
-

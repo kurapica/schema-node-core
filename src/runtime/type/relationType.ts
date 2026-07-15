@@ -4,14 +4,13 @@
 // =============================================================================
 
 import { getMetaProperty } from '../../attribute/meta';
-import { RelationStage } from '../../enum/relationStage';
 import { RelationKind } from '../../property';
 import { RelationProcess } from '../../property/core/relationProcess';
 import type { IProperty } from '../../property/property';
 import { IRelationProcess, RelationSchema } from '../../schema/relationSchema';
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
-import { IErrorProvider, INodeReference, IValueTypeAccess } from '../interfaces';
-import { getNodeType, getSchemaKindProperties } from '../schemaRuntime';
+import { IErrorProvider, INodeReference, IValueAccess, IValueTypeAccess } from '../interfaces';
+import { getNodeType, getSchemaKindProperties, getSchemaType } from '../schemaRuntime';
 import { NodeType } from './nodeType';
 import { PropertyType } from './propertyType';
 
@@ -19,20 +18,25 @@ export class RelationType implements INodeReference, IErrorProvider {
   
   // ── Constructor ────────────────────────────────────────────────────────
 
-  constructor(schema: RelationSchema) {
+  constructor(schema: RelationSchema, owner: IValueTypeAccess) {
+
     this._relationSchema = schema;
+    this._owner = owner;
   }
 
   // ── Properties ─────────────────────────────────────────────────────────
 
   private _relationSchema: RelationSchema;
+  private _owner: IValueTypeAccess;
   private _property?: PropertyType;
+  private _propCtor?: new() => IProperty;
+  private _process?: IRelationProcess;
 
   /** Target access path. */
-  readonly target = '';
+  get target() { return this._relationSchema.target };
 
   /** The relation owner type */
-  readonly owner!: IValueTypeAccess;
+  get owner() { return this._owner };
 
   /** The property type */
   get property() { return this._property };
@@ -44,7 +48,7 @@ export class RelationType implements INodeReference, IErrorProvider {
   get kind() { return this._relationSchema.kind };
 
   /** The execution process (Call or Assign). */
-  readonly process?: IRelationProcess;
+  get process() { return this._process };
 
   /** The error message */
   readonly error?: string | undefined;
@@ -53,6 +57,7 @@ export class RelationType implements INodeReference, IErrorProvider {
 
   async load() {
     this._property = await getNodeType(this._relationSchema.property) as PropertyType;
+    this._propCtor = this._property ? getSchemaType(this._property.name) as new() => IProperty : undefined;
 
     // load process
     for(const propCtor of getSchemaKindProperties(SCHEMA_KIND_RELATION))
@@ -63,7 +68,9 @@ export class RelationType implements INodeReference, IErrorProvider {
         const processCtor = getMetaProperty(propCtor, RelationProcess)?.getValue() as new() => IRelationProcess;
         if (processCtor)
         {
-          const process = new processCtor()
+          const process = new processCtor();
+          await process.load(this._relationSchema);
+          this._process = process;
         }
         break;
       }
@@ -83,8 +90,11 @@ export class RelationType implements INodeReference, IErrorProvider {
   }
 
   /** Execute the relation and return the resulting property. */
-  async execute(owner: unknown): Promise<IProperty | undefined> {
-    // TODO: resolve owner to IValueAccess, call process.ProcessAsync
-    return undefined;
+  async execute(owner: IValueAccess): Promise<IProperty | undefined> {
+    if (!this._propCtor) return undefined;
+    const value = await this._process?.process(owner);
+    const prop = new this._propCtor();
+    prop.setValue(value);
+    return prop;
   }
 }
