@@ -8,12 +8,12 @@ import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 
 /** The call relation process */
-class Call implements IRelationProcess {
+class CallProcess implements IRelationProcess {
     /** The function call settings */
     private _call?: FuncCall;
 
     load(schema: RelationSchema): void {
-        this._call = getProperty(schema, CallProperty)?.getValue();
+        this._call = getProperty(schema, Call)?.getValue();
     }
 
     process(owner: IValueAccess): Promise<unknown> {
@@ -26,6 +26,6 @@ class Call implements IRelationProcess {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.call`)
 @Meta(RelationKind, 'call')
-@Meta(RelationProcess, Call)
+@Meta(RelationProcess, CallProcess)
 @Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', 'call')
-class CallProperty extends FuncCallProperty {}
+export class Call extends FuncCallProperty {}
