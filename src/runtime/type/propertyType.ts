@@ -30,4 +30,11 @@ export class PropertyType extends NodeType {
       ? await getNodeType(this._propertySchema.type) as ValueType
       : undefined;
   }
+
+  override *getRefTypes(): Generator<NodeType> {
+    if (this._valueType)
+      yield this._valueType;
+    for(const type of super.getRefTypes())
+      yield type;
+  }
 }

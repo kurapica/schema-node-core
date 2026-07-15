@@ -1,13 +1,7 @@
 // ── Base classes ──────────────────────────────────────────────────────────
 export { Property } from './property';
 export type { IProperty } from './property';
-export type { IPropertyOwner } from './propertyOwner';
-export {
-  getPropertyTyped,
-  getPropertiesTyped,
-  setPropertyTyped,
-  getPropertiesOrdered,
-} from './propertyOwner';
+export * from './propertyOwner';
 export type { IConstraintProperty } from './constraintProperty';
 export type { IOrderProperty } from './orderProperty';
 export { OrderProperty } from './orderProperty';

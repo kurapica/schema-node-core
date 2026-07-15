@@ -19,40 +19,6 @@ import { RelationStage } from '../enum/relationStage';
 import type { IProperty } from '../property/property';
 import { CallArg } from '../schema/functionSchema';
 
-// ── IRelationProcess (execution body) ──────────────────────────────────────
-
-/** The execution body of a relation. Implemented by Call and Assign. */
-export interface IRelationProcess {
-  kind: 'call' | 'assign';
-}
-
-// ── Call — function-call relation ──────────────────────────────────────────
-
-/** Invoke a function with arguments to compute a property value. */
-export interface Call extends IRelationProcess {
-  kind: 'call';
-  func: string;
-  args: CallArg[];
-}
-
-/** Create a Call relation process. */
-export function createCall(func: string, args: CallArg[]): Call {
-  return { kind: 'call', func, args };
-}
-
-// ── Assign — static-value relation ─────────────────────────────────────────
-
-/** Assign a static value to a property. */
-export interface Assign extends IRelationProcess {
-  kind: 'assign';
-  value: unknown;
-}
-
-/** Create an Assign relation process. */
-export function createAssign(value: unknown): Assign {
-  return { kind: 'assign', value };
-}
-
 // ── RelationEntry — stored on a property class's constructor ───────────────
 
 interface RelationEntry {

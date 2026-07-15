@@ -4,6 +4,7 @@
 
 import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
+import { DataNode } from '../node/dataNode';
 import { SchemaKind, SchemaType, Attach, OfSchema, IProperty } from '../property/index';
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
@@ -71,6 +72,15 @@ function equal(a: RelationSchema, b: RelationSchema): boolean {
 
 /** The handler to process the relations */
 export interface IRelationProcess {
+  /** load relation kind data from relation schema */
+  load(schema: RelationSchema): void;
+
+  /** Attach the relation to the target */
+  attach(owner: IValueAccess, target?: DataNode): void;
+
+  /** Detach the relation from the target */
+  detach(owner: IValueAccess, target?: DataNode): void;
+
   /** Execute the relation process and return the reuslt value */
   process(owner: IValueAccess) : Promise<unknown>;
 }
