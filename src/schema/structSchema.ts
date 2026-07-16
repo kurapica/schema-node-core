@@ -20,6 +20,8 @@ import { ArraySchema, ArrayProperty } from './arraySchema';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
+import { Call } from '../relation/call';
+import { buildFuncCall } from '../property/funcCallProperty';
 
 /** The struct schema */
 export interface StructSchema {
@@ -68,7 +70,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRUCT)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRUCT))
 export class StructProperty extends Property<StructSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<StructSchema>();

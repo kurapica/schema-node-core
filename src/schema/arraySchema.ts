@@ -6,9 +6,11 @@ import { Meta } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties } from '../property/propertyOwner';
+import { Call } from '../relation/call';
 import { ArrayType } from '../runtime/type';
 import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_LOGIC_EQ } from '../utility/constant';
 import { Relations } from './relationSchema';
@@ -37,7 +39,7 @@ class ArraySchemaMeta implements ArraySchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.array`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ARRAY)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ARRAY))
 export class ArrayProperty extends Property<ArraySchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other.getValue<ArraySchema>();

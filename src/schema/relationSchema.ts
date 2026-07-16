@@ -4,7 +4,6 @@
 
 import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
-import { DataNode } from '../node/dataNode';
 import { SchemaKind, SchemaType, Attach, OfSchema, IProperty } from '../property/index';
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
@@ -76,11 +75,11 @@ export interface IRelationProcess {
   load(schema: RelationSchema): void;
 
   /** Attach the relation to the target */
-  attach(owner: IValueAccess, target?: DataNode): void;
+  attach(owner: IValueAccess, target?: IValueAccess): void;
 
   /** Detach the relation from the target */
-  detach(owner: IValueAccess, target?: DataNode): void;
+  detach(owner: IValueAccess, target?: IValueAccess): void;
 
   /** Execute the relation process and return the reuslt value */
-  process(owner: IValueAccess) : Promise<unknown>;
+  process(owner: IValueAccess, target?: IValueAccess) : Promise<unknown>;
 }

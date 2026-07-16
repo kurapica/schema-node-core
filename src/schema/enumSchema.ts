@@ -18,6 +18,8 @@ import { FromEnum } from '../property/core/fromEnum';
 import { combinePaths } from '../utility/toolset';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
 import { Base } from '../property/core/base';
+import { Call } from '../relation/call';
+import { buildFuncCall } from '../property/funcCallProperty';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -128,7 +130,7 @@ class EnumValueSchemaMeta implements EnumValueSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ENUM)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ENUM))
 export class EnumProperty extends Property<EnumSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<EnumSchema>();

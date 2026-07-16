@@ -3,7 +3,9 @@ import { Relation } from '../../attribute/relation';
 import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
+import { buildFuncCall } from '../../property/funcCallProperty';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
+import { Call } from '../../relation/call';
 import { saveSystemSchema } from '../../runtime/schemaRuntime';
 import { StringType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_STRING_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
@@ -33,7 +35,7 @@ class StringSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.string`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRING)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRING))
 export class StringProperty extends Property<StringSchema>
 {
   combine(other: IProperty): boolean {

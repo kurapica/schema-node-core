@@ -17,6 +17,8 @@ import { NodeSchema } from './nodeSchema';
 import { ExpType } from '../enum/expType';
 import { Base } from '../property/core/base';
 import { ArgName } from '../property/function/argName';
+import { Call } from '../relation/call';
+import { buildFuncCall } from '../property/funcCallProperty';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -179,7 +181,7 @@ class CallArgMeta implements CallArg {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_FUNCTION)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_FUNCTION))
 export class FuncProperty extends Property<FunctionSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<FunctionSchema>();

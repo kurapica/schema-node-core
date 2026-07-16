@@ -6,9 +6,11 @@ import { NodeSchema } from '..';
 import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
+import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, PropertyValueType, Visible, Alias, Valid, Display, IProperty, Stackable, Static } from '../property/index';
 import { getPropertyName, Property } from '../property/property';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
+import { Call } from '../relation/call';
 import { getPropertyForSchemas, saveSystemSchema } from '../runtime/schemaRuntime';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
@@ -69,7 +71,7 @@ class PropertySchemaMeta implements PropertySchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.prop`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_PROPERTY)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_PROPERTY))
 export class PropertyProperty extends Property<PropertySchema> {}
 
 /** Represents the property type */

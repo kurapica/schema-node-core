@@ -2,6 +2,7 @@ import { Meta } from "../attribute/meta";
 import { Relation } from "../attribute/relation";
 import { ForSchema, FuncCall, FuncCallProperty, OfSchema, RelationKind, SchemaType, Visible } from "../property";
 import { RelationProcess } from "../property/core/relationProcess";
+import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
 import { IValueAccess } from "../runtime/interfaces";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
@@ -27,5 +28,5 @@ class CallProcess implements IRelationProcess {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.call`)
 @Meta(RelationKind, 'call')
 @Meta(RelationProcess, CallProcess)
-@Relation(Visible, NS_SYSTEM_LOGIC_EQ, '$kind', 'call')
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', 'call'))
 export class Call extends FuncCallProperty {}

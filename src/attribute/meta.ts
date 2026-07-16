@@ -27,7 +27,7 @@ function getConstructor(target: object): Function {
   return typeof target === 'function' ? target : target.constructor;
 }
 
-function ensureConstructorStore(ctor: Function): MetaEntry[] {
+function ensureStore(ctor: Function): MetaEntry[] {
   const rec = ctor as unknown as Record<symbol, MetaEntry[]>;
   let store = rec[META_KEY];
   if (!store) {
@@ -83,7 +83,7 @@ export function Meta(
         entry._func = descriptorOrIndex.value as Function;
     }
 
-    ensureConstructorStore(ctor).push(entry);
+    ensureStore(ctor).push(entry);
     metaProp.apply(target, _propertyKey, descriptorOrIndex);
   }) as ClassDecorator & PropertyDecorator & ParameterDecorator & MethodDecorator;
 }
