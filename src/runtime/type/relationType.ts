@@ -9,17 +9,18 @@ import { RelationProcess } from '../../property/core/relationProcess';
 import type { IProperty } from '../../property/property';
 import { IRelationProcess, RelationSchema } from '../../schema/relationSchema';
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
-import { IErrorProvider, INodeReference, IValueAccess, IValueTypeAccess } from '../interfaces';
+import { generateGuid } from '../../utility/toolset';
+import { hasNodeReferences, IErrorProvider, INodeReference, IValueAccess, IValueTypeAccess } from '../interfaces';
 import { getNodeType, getSchemaKindProperties, getSchemaType } from '../schemaRuntime';
 import { NodeType } from './nodeType';
 import { PropertyType } from './propertyType';
 
+/** The relation type */
 export class RelationType implements INodeReference, IErrorProvider {
   
   // ── Constructor ────────────────────────────────────────────────────────
 
   constructor(schema: RelationSchema, owner: IValueTypeAccess) {
-
     this._relationSchema = schema;
     this._owner = owner;
   }
@@ -31,6 +32,9 @@ export class RelationType implements INodeReference, IErrorProvider {
   private _property?: PropertyType;
   private _propCtor?: new() => IProperty;
   private _process?: IRelationProcess;
+
+  /** A guid */
+  readonly guid = generateGuid();
 
   /** Target access path. */
   get target() { return this._relationSchema.target };
@@ -47,11 +51,8 @@ export class RelationType implements INodeReference, IErrorProvider {
   /** Execution kind. */
   get kind() { return this._relationSchema.kind };
 
-  /** The execution process (Call or Assign). */
-  get process() { return this._process };
-
   /** The error message */
-  readonly error?: string | undefined;
+  get error() { return this._relationSchema.error }
 
   // ── Methods ────────────────────────────────────────────────────────────
 
@@ -82,19 +83,31 @@ export class RelationType implements INodeReference, IErrorProvider {
     if (this.property)
       yield this.property;
 
-    if (typeof (this.process as any)?.getRefTypes === 'function')
+    if (hasNodeReferences(this.process))
     {
       for (const type of (this.process as unknown as INodeReference).getRefTypes())
         yield type;
     }
   }
 
-  /** Execute the relation and return the resulting property. */
-  async execute(owner: IValueAccess): Promise<IProperty | undefined> {
+  /** Attach the relation to target with the owner */
+  attach(owner: IValueAccess, target?: IValueAccess)
+  {
+    if (!this._propCtor) return;
+    this._process?.attach(this, owner, target);
+  }
+
+  /** Detach the relation from the target with the owner */
+  detach(owner: IValueAccess, target?: IValueAccess)
+  {
+    if (!this._propCtor) return;
+    this._process?.detach(this, owner, target);
+    (target ?? owner).overridePropertyValue(owner, this._propCtor, undefined); // clear
+  }
+
+  /** Execute the relation and set new property to the target */
+  async process(owner: IValueAccess, target?: IValueAccess) {
     if (!this._propCtor) return undefined;
-    const value = await this._process?.process(owner);
-    const prop = new this._propCtor();
-    prop.setValue(value);
-    return prop;
+    (target ?? owner).overridePropertyValue(owner, this._propCtor, await this._process?.process(owner, target));
   }
 }

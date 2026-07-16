@@ -5,22 +5,46 @@ import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
 import { IValueAccess } from "../runtime/interfaces";
+import { getNodeType } from "../runtime/schemaRuntime";
+import { FunctionType, RelationType } from "../runtime/type";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
+import { isEmpty } from "../utility/toolset";
 
 /** The call relation process */
 class CallProcess implements IRelationProcess {
-    /** The function call settings */
-    private _call?: FuncCall;
+  /** The function call settings */
+  private _call?: FuncCall;
 
-    load(schema: RelationSchema): void {
-        this._call = getProperty(schema, Call)?.getValue();
-    }
+  load(schema: RelationSchema): void {
+    this._call = getProperty(schema, Call)?.getValue();
+  }
 
-    process(owner: IValueAccess): Promise<unknown> {
-        throw new Error("Method not implemented.");
-    }
+  attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {
+    if (!this._call?.func) return;
+    const handler = () => relation.process(owner, target);
+    this._call.args.forEach(a => {
+      if (isEmpty(a.source)) return;
+      const node = owner.getAccessValue(a.source!, target);
+      if (!node) return;
+      (target ?? owner).recordSubscription(relation, node.subscribe(handler))
+    });
+  }
 
+  detach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {
+    (target ?? owner).clearSubscription(relation);
+  }
+
+  async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
+    if (!this._call?.func) return undefined;
+    const func = await getNodeType(this._call.func) as FunctionType;
+    if (!func) return undefined;
+    return await func.call(this._call.args.map(a => {
+      if (isEmpty(a.source)) return a.value;
+      const node = owner.getAccessValue(a.source!, target);
+      return node?.getValue();
+    }));
+  }
 }
 
 @Meta(ForSchema, SCHEMA_KIND_RELATION)

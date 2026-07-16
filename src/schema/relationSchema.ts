@@ -7,6 +7,7 @@ import { RelationStage } from '../enum/relationStage';
 import { SchemaKind, SchemaType, Attach, OfSchema, IProperty } from '../property/index';
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
+import { RelationType } from '../runtime/type';
 import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND } from '../utility/constant';
 
 /** Pure data interface. */
@@ -22,6 +23,9 @@ export interface RelationSchema {
 
   /** The relation kind */
   kind: string;
+
+  /** The error message */
+  error?: string;
 }
 
 /** Meta registration class (NOT exported). */
@@ -75,10 +79,10 @@ export interface IRelationProcess {
   load(schema: RelationSchema): void;
 
   /** Attach the relation to the target */
-  attach(owner: IValueAccess, target?: IValueAccess): void;
+  attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void;
 
   /** Detach the relation from the target */
-  detach(owner: IValueAccess, target?: IValueAccess): void;
+  detach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void;
 
   /** Execute the relation process and return the reuslt value */
   process(owner: IValueAccess, target?: IValueAccess) : Promise<unknown>;

@@ -16,8 +16,13 @@ class Assign implements IRelationProcess {
       this._value = getProperty(schema, AssignProperty)?.getValue();
     }
 
-    process(owner: IValueAccess): Promise<unknown> {
-      throw new Error("Method not implemented.");
+    attach(owner: IValueAccess, target?: IValueAccess): void {
+    }
+    detach(owner: IValueAccess, target?: IValueAccess): void {
+    }
+
+    async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
+      return this._value;
     }
 
 }
