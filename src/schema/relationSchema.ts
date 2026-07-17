@@ -76,7 +76,7 @@ function equal(a: RelationSchema, b: RelationSchema): boolean {
 /** The handler to process the relations */
 export interface IRelationProcess {
   /** load relation kind data from relation schema */
-  load(schema: RelationSchema): void;
+  load(schema: RelationSchema): Promise<void>;
 
   /** Attach the relation to the target */
   attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void;

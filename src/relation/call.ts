@@ -4,7 +4,7 @@ import { ForSchema, FuncCall, FuncCallProperty, OfSchema, RelationKind, SchemaTy
 import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
-import { IValueAccess } from "../runtime/interfaces";
+import { IErrorProvider, IValueAccess } from "../runtime/interfaces";
 import { getNodeType } from "../runtime/schemaRuntime";
 import { FunctionType, RelationType } from "../runtime/type";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
@@ -12,18 +12,28 @@ import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PRO
 import { isEmpty } from "../utility/toolset";
 
 /** The call relation process */
-class CallProcess implements IRelationProcess {
+class CallProcess implements IRelationProcess, IErrorProvider {
   /** The function call settings */
   private _call?: FuncCall;
+  private _error?: string;
+  private _func?: FunctionType;
 
-  load(schema: RelationSchema): void {
+  /** The error */
+  get error() { return this._error }
+
+  async load(schema: RelationSchema) {
     this._call = getProperty(schema, Call)?.getValue();
+    this._func = this._call?.func ? await getNodeType(this._call.func) as FunctionType : undefined;
+    if (!this._func)
+      this._error = 'RELATION_FUNC_NOT_EXIST'; // @TODO: handle error later
   }
 
   attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {
-    if (!this._call?.func) return;
+    if (!this._func) return;
     const handler = () => relation.process(owner, target);
-    this._call.args.forEach(a => {
+
+    // Subscribe the source node for data changes
+    this._call!.args.forEach(a => {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
       if (!node) return;
@@ -36,10 +46,8 @@ class CallProcess implements IRelationProcess {
   }
 
   async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
-    if (!this._call?.func) return undefined;
-    const func = await getNodeType(this._call.func) as FunctionType;
-    if (!func) return undefined;
-    return await func.call(this._call.args.map(a => {
+    if (!this._func) return undefined;
+    return await this._func.call(this._call!.args.map(a => {
       if (isEmpty(a.source)) return a.value;
       const node = owner.getAccessValue(a.source!, target);
       return node?.getValue();

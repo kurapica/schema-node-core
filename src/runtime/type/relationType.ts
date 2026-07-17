@@ -102,12 +102,12 @@ export class RelationType implements INodeReference, IErrorProvider {
   {
     if (!this._propCtor) return;
     this._process?.detach(this, owner, target);
-    (target ?? owner).overridePropertyValue(owner, this._propCtor, undefined); // clear
+    (target ?? owner).setPropertyValue(this._propCtor, undefined, owner); // clear
   }
 
   /** Execute the relation and set new property to the target */
   async process(owner: IValueAccess, target?: IValueAccess) {
     if (!this._propCtor) return undefined;
-    (target ?? owner).overridePropertyValue(owner, this._propCtor, await this._process?.process(owner, target));
+    (target ?? owner).setPropertyValue(this._propCtor, await this._process?.process(owner, target), owner);
   }
 }

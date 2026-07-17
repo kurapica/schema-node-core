@@ -2,7 +2,6 @@
 // IRuntime Interfaces — shared interfaces used across Node/Runtime layers
 // =============================================================================
 
-import type { DataNode } from '../node/dataNode';
 import { IProperty } from '../property';
 import { NodeType, ValueType } from './type';
 
@@ -29,7 +28,7 @@ export interface IValueAccess {
    * @param path The access path
    * @param node The accessed path must contains the node
    */
-  getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined;
+  getAccessValue(path: string, node: IValueAccess | undefined): IValueAccess | undefined;
 
   /** Whether this node holds no value. */
   get isEmpty(): boolean;
@@ -37,29 +36,23 @@ export interface IValueAccess {
   /** Try to set a typed value. Returns true on success. */
   trySetValue<T>(value: T): boolean;
 
-  /** Try to get the value as a specific type. */
-  getValue<T>(): T | undefined;
+  /** Gets the vlue. */
+  getValue(): unknown;
 
   /** The parent */
-  get Parent(): IValueAccess | undefined;
+  get parent(): IValueAccess | undefined;
 
   /** Gets the property */
   getProperty(propCtor: new() => IProperty): IProperty | undefined;
 
   /** Gets the properties */
-  getProperties(propCtor: new() => IProperty): IProperty[];
+  getProperties(propCtor: new() => IProperty): Generator<IProperty>;
 
   /** Sets the property */
-  setProperty(property: IProperty): void;
+  setProperty(property: IProperty, source?: IValueAccess): void;
 
   /** Sets the value of the given property */
-  setPropertyValue(propCtor: new () => IProperty, value?: unknown): void;
-
-  /** Override the property with owner */
-  overrideProperty(owner: IValueAccess, property: IProperty): void;
-
-  /** Overrie the value of the given property with owner */
-  overridePropertyValue(owner: IValueAccess, propCtor: new () => IProperty, value?: unknown): void;
+  setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void;
 
   /** Subscribe the data change and return the function for un-subsribe */
   subscribe(func: Function, immediate?: boolean): Function;

@@ -5,6 +5,7 @@ import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
 import { IValueAccess } from "../runtime/interfaces";
+import { RelationType } from "../runtime/type";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 import { Call } from "./call";
@@ -12,15 +13,12 @@ import { Call } from "./call";
 class Assign implements IRelationProcess {
     private _value?: unknown
 
-    load(schema: RelationSchema): void {
+    async load(schema: RelationSchema) {
       this._value = getProperty(schema, AssignProperty)?.getValue();
     }
 
-    attach(owner: IValueAccess, target?: IValueAccess): void {
-    }
-    detach(owner: IValueAccess, target?: IValueAccess): void {
-    }
-
+    attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {}
+    detach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {}
     async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
       return this._value;
     }
