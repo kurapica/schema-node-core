@@ -6,8 +6,9 @@
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
-import { isEmpty, isEqual } from '../utility/toolset';
+import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
 import { Observable } from '../utility/observable';
+import { NODE_SELF } from '../utility/constant';
 
 /**
  * A DataNode holds a value (or children) governed by a runtime ValueType.
@@ -16,6 +17,9 @@ import { Observable } from '../utility/observable';
 export abstract class DataNode implements IValueAccess {
   // #region ── Fields ────────────────────────────────────────────────────────
 
+  /** The guid of the node */
+  readonly id = generateGuid();
+
   /** The runtime value type (schema + runtime info). */
   readonly type: ValueType;
 
@@ -23,7 +27,7 @@ export abstract class DataNode implements IValueAccess {
   readonly parent: IValueAccess | undefined;
 
   /** The value */
-  private _value: unknown;
+  protected _value: unknown;
 
   /** Violated constraint names. undefined = never validated, [] = valid. */
   private _violated?: string[];
@@ -40,6 +44,9 @@ export abstract class DataNode implements IValueAccess {
   /** The property observable */
   private _propObs?: Map<(new () => IProperty), Observable>;
 
+  /** The subscrptions */
+  private _subs?: Map<unknown, Set<Function>>;
+
   // #endregion
 
   // #region ── ctor & dtor ───────────────────────────────────────────────────
@@ -48,11 +55,22 @@ export abstract class DataNode implements IValueAccess {
   constructor(type: ValueType, value: unknown, parent: IValueAccess | undefined = undefined) {
     this.type = type;
     this.parent = parent;
-    this.trySetValue(value);
+    this.setValue(value);
   }
 
   /** Dipose the data node, release references */
   dispose() {
+    this._dataOb?.dispose();
+    this._stateOb?.dispose();
+    this._propObs?.forEach(p => p.dispose());
+    this._propObs?.clear();
+    this._subs?.forEach(s => s.forEach(f => f()))
+    this._subs?.clear();
+
+    delete this._dataOb;
+    delete this._stateOb;
+    delete this._propObs;
+    delete this._subs;
     delete this._props;
     delete this._value;
     delete this._violated;
@@ -65,18 +83,15 @@ export abstract class DataNode implements IValueAccess {
   /** Whether this node holds no value. */
   get isEmpty(): boolean { return isEmpty(this._value) }
 
-  /** Try to set a typed value. Returns true on success. */
-  trySetValue<T>(value: T): boolean{
+  /** Sets the value. */
+  setValue(value: unknown): void{
+    if (isEqual(this._value, value)) return;
     this._value = value;
     this._dataOb?.onNext(value);
-    return true;
   }
 
-  /** Clear the stored value. */
-  clearValue(): void { this.trySetValue(null); }
-
   /** Gets the value */
-  getValue(): unknown { return this._value }
+  getValue(): unknown { return deepClone(this._value) }
 
   // #endregion
   
@@ -91,6 +106,12 @@ export abstract class DataNode implements IValueAccess {
       if (prop) return prop;
     }
     return this.type.getProperty(propCtor);
+  }
+
+  /** Gets the property value */
+  getPropertyValue(propCtor: new() => IProperty): unknown
+  {
+    return this.getProperty(propCtor)?.getValue();
   }
 
   /** Gets the properties */
@@ -109,6 +130,14 @@ export abstract class DataNode implements IValueAccess {
     {
       yield prop;
       if (!prop.stackable) return;
+    }
+  }
+
+  /** Gets the property values */
+  *getPropertyValues(propCtor: new() => IProperty): Generator<unknown>{
+    for (let prop of this.getProperties(propCtor))
+    {
+      yield prop.getValue();
     }
   }
 
@@ -147,17 +176,22 @@ export abstract class DataNode implements IValueAccess {
     }
     else
       return;
-    this._stateOb?.onNext(propCtor);
+    this._stateOb?.onNext(propCtor, property.getValue());
+    this._propObs?.get(propCtor)?.onNext(property.getValue());
   }
 
   /** Sets the value of the given property */
   setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void {
     if (isEmpty(value))
     {
-      if (this._props && this._props.has(propCtor))
+      const props = this._props?.get(propCtor);
+      if (props?.length)
       {
         source ??= this;
-        this._props.set(propCtor, this._props.get(propCtor)!.filter(d => d.source !== source));
+        if (!props.some(d => d.source === source)) return;
+        this._props!.set(propCtor, props.filter(d => d.source !== source));
+        this._stateOb?.onNext(propCtor, undefined);
+        this._propObs?.get(propCtor)?.onNext(undefined);
       }
     }
     else
@@ -174,27 +208,58 @@ export abstract class DataNode implements IValueAccess {
 
   /** Subscribe the data change and return the function for un-subsribe */
   subscribe(func: Function, immediate?: boolean): Function {
-    throw new Error('Method not implemented.');
+    this._dataOb ??= new Observable();
+    const sub = this._dataOb.subscribe(func);
+    if (immediate) func(this._value);
+    return sub;
   }
 
   /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
   subscribeState(func: Function, immediate?: boolean): Function {
-    throw new Error('Method not implemented.');
+    this._stateOb ??= new Observable();
+    const sub = this._stateOb.subscribe(func);
+    if (immediate) func();
+    return sub;
   }
 
   /** Subscribe the node property change and return the function for un-subscribe */
-  subscribeProperty(func: Function, propCtor: new () => IProperty, immediate?: boolean): Function {
-    throw new Error('Method not implemented.');
+  subscribeProperty(propCtor: new () => IProperty, func: Function, immediate?: boolean): Function {
+    this._propObs ??= new Map();
+    let ob = this._propObs.get(propCtor);
+    if (!ob){
+      ob = new Observable();
+      this._propObs.set(propCtor, ob);
+    }
+    const sub = ob.subscribe(func);
+    if (immediate) func(propCtor, this.getPropertyValue(propCtor))
+    return sub;
   }
 
   /** Record subscription by source */
-  recordSubscription(source: unknown, subscription: Function): void {
-    throw new Error('Method not implemented.');
+  recordSubscription(subscription: Function, source: unknown = undefined): void {
+    source ??= this;
+    this._subs ??= new Map();
+    let subs = this._subs.get(source);
+    if (subs)
+      subs.add(subscription);
+    else
+    {
+      subs = new Set();
+      subs.add(subscription);
+      this._subs.set(source, subs);
+    }
   }
 
   /** Clear subscriptions by souce */
-  clearSubscription(source: unknown): void {
-    throw new Error('Method not implemented.');
+  clearSubscription(source?: unknown): void {
+    source ??= this;
+    const subs = this._subs?.get(source);
+    if (subs)
+    {
+      this._subs!.delete(source);
+      subs.forEach(s => s());
+      subs.clear();
+    }
   }
 
   // #endregion
@@ -207,16 +272,7 @@ export abstract class DataNode implements IValueAccess {
    * Supports: $self, field names, array indices.
    */
   getAccessValue(path: string, node: IValueAccess | undefined = undefined): IValueAccess | undefined {
-    if (!path || path === '$self') return this;
-
-    // Split by '.' for compound paths
-    const parts = path.split('.');
-    let current: IValueAccess | undefined = this;
-    for (const part of parts) {
-      if (!current) return undefined;
-      current = current.getAccessValue(part, node);
-    }
-    return current;
+    return isEmpty(path) || path === NODE_SELF ? this : undefined;
   }
 
   // #endregion
@@ -259,18 +315,21 @@ export abstract class DataNode implements IValueAccess {
   // #region ── Utility ───────────────────────────────────────────────────────
 
   /** Clone this data node. */
-  abstract clone(): DataNode;
+  clone(): DataNode {
+    const ctor = this.constructor as new (type: ValueType, value: unknown, parent: IValueAccess | undefined) => DataNode;
+    return new ctor(this.type, this.getValue(), this.parent);
+  }
 
   /** Equality check. */
   equals(other: DataNode | undefined): boolean {
     if (!other) return this.isEmpty;
     if (this === other) return true;
     if (this.isEmpty) return other.isEmpty;
-    return isEqual(this.getValue<unknown>(), other.getValue<unknown>());
+    return isEqual(this.getValue(), other.getValue());
   }
 
   toString(): string {
-    const val = this.getValue<string>();
+    const val = this.getValue();
     return isEmpty(val) ? '' : `${val}`;
   }
 

@@ -33,8 +33,8 @@ export interface IValueAccess {
   /** Whether this node holds no value. */
   get isEmpty(): boolean;
 
-  /** Try to set a typed value. Returns true on success. */
-  trySetValue<T>(value: T): boolean;
+  /** Sets the value. */
+  setValue(value: unknown): void;
 
   /** Gets the vlue. */
   getValue(): unknown;
@@ -45,8 +45,14 @@ export interface IValueAccess {
   /** Gets the property */
   getProperty(propCtor: new() => IProperty): IProperty | undefined;
 
+  /** Gets the property value */
+  getPropertyValue(propCtor: new() => IProperty): unknown;
+
   /** Gets the properties */
   getProperties(propCtor: new() => IProperty): Generator<IProperty>;
+
+  /** Gets the properties */
+  getPropertyValues(propCtor: new() => IProperty): Generator<unknown>;
 
   /** Sets the property */
   setProperty(property: IProperty, source?: IValueAccess): void;
@@ -61,10 +67,10 @@ export interface IValueAccess {
   subscribeState(func: Function, immediate?: boolean): Function;
 
   /** Subscribe the node property change and return the function for un-subscribe */
-  subscribeProperty(func: Function, propCtor: new() => IProperty, immediate?: boolean): Function;
+  subscribeProperty(propCtor: new() => IProperty, func: Function, immediate?: boolean): Function;
 
   /** Record subscription by source */
-  recordSubscription(source: unknown, subscription: Function): void;
+  recordSubscription(subscription: Function, source: unknown): void;
 
   /** Clear subscriptions by souce */
   clearSubscription(source: unknown): void;
