@@ -15,6 +15,15 @@ export interface IErrorProvider {
   error?: string;
 }
 
+/** Provider the properties */
+export interface IPropertyProvider {
+  /** Gets the property */
+  getProperty(propCtor: new() => IProperty): IProperty | undefined;
+
+  /** Gets the properties */
+  getProperties(propCtor: new() => IProperty): Generator<IProperty>;
+}
+
 /** The value type access interface */
 export interface IValueTypeAccess {
   /** Gets the access value type */

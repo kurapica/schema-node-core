@@ -7,7 +7,7 @@ import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
 import { StructProperty, StructSchema, type StructFieldSchema } from '../../schema/structSchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
-import type { INodeReference } from '../interfaces';
+import type { INodeReference, IPropertyProvider } from '../interfaces';
 import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
 import { isConstraintProperty, type IConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
@@ -18,6 +18,7 @@ import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
 import { DisplayOnly, Require } from '../../property';
+import { Name } from '../../property/core/name';
 
 
 // ── StructType ────────────────────────────────────────────────────────────
@@ -167,7 +168,7 @@ export class StructType extends ValueType {
 
 // ── StructFieldType ────────────────────────────────────────────────────────
 
-export class StructFieldType implements INodeReference {
+export class StructFieldType implements INodeReference, IPropertyProvider {
   private _fieldSchema?: StructFieldSchema;
   private _props?: IProperty[];
   private _constraints?: IConstraintProperty[];
@@ -230,6 +231,9 @@ export class StructFieldType implements INodeReference {
     this._refTypes = refTypes;
 
     // property
+    const name = new Name();
+    name.setValue(field.name);
+    this._props.unshift(name); // special property
     this._require = this.getProperty(Require)?.getValue();
     this._displayOnly = this.getProperty(DisplayOnly)?.getValue() ?? false;
   }

@@ -3,59 +3,66 @@
 // Mirrors C# SchemaNode.Core/Node/ScalarNode.cs
 // =============================================================================
 
+import { isNull } from '../utility/toolset';
 import { DataNode } from './dataNode';
-import BigNumber from 'bignumber.js';
 
-/**
- * Abstract scalar node holding a value of type T.
- */
+/** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {}
 
 // ── Concrete scalar nodes ─────────────────────────────────────────────────
 
+/** The data node represents the object type */
 export class AnyNode extends ScalarNode {}
 
-export class BoolNode extends ScalarNode {}
+/** The data node represents the bool node */
+export class BoolNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    if (typeof (value) === "string") value = value.toLowerCase() === "true"
+    if (!isNull(value)) value = value ? true : false
+    return value;
+  }
+}
 
-export class StringNode extends ScalarNode {}
+/** The data node represents the string node */
+export class StringNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? JSON.stringify(value) : value}`
+  }
+}
 
+/** The int node represents the int node */
 export class IntNode extends ScalarNode {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof BigNumber) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
-      this._value = new BigNumber(value);
-    } else {
-      return false;
-    }
-    return true;
+  override getValue() {
+    let value = this._value;
+    if (isNull(value)) return null;
+    if (typeof value === 'string') value = parseInt(value);
+    return Number.isFinite(value) ? value : null;
   }
 }
 
 export class NumericNode extends ScalarNode {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof BigNumber) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
-      this._value = new BigNumber(value);
-    } else {
-      return false;
-    }
-    return true;
+  override getValue() {
+    let value = this._value;
+    if (isNull(value)) return null;
+    if (typeof value === 'string') value = parseFloat(value);
+    return Number.isFinite(value) ? value : null;
   }
 }
 
 export class DateNode extends ScalarNode {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof Date) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number') {
-      const d = new Date(value);
-      if (isNaN(d.getTime())) return false;
-      this._value = d;
-    } else {
-      return false;
+  override getValue(){
+    let value = this._value;
+    if (!(value instanceof Date)) {
+        if (typeof (value) === "string" || typeof (value) === "number" && value > 0) {
+            value = new Date(value)
+            if (isNaN((value as Date)?.getFullYear())) value = null;
+        }
+        else {
+            value = null;
+        }
     }
-    return true;
+    return value;
   }
 }

@@ -5,16 +5,16 @@
 
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
-import { IValueAccess } from '../runtime/interfaces';
+import { IPropertyProvider, IValueAccess } from '../runtime/interfaces';
 import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
+import { Name } from '../property/core/name';
+import { Display, DisplayOnly, Immutable, ReadOnly, Require } from '../property';
+import { Unit } from '../property/common/unit';
 
-/**
- * A DataNode holds a value (or children) governed by a runtime ValueType.
- * Violated constraints track validation status: undefined = never validated.
- */
-export abstract class DataNode implements IValueAccess {
+/** A DataNode holds a value (or children) governed by a runtime ValueType. */
+export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── Fields ────────────────────────────────────────────────────────
 
   /** The guid of the node */
@@ -32,6 +32,9 @@ export abstract class DataNode implements IValueAccess {
   /** Violated constraint names. undefined = never validated, [] = valid. */
   private _violated?: string[];
 
+  /** The alternative property provider  */
+  private _propProvider?: IPropertyProvider;
+
   /** The override properties */
   private _props?: Map<(new () => IProperty), { source: IValueAccess, level: number, property: IProperty }[]>;
 
@@ -47,6 +50,9 @@ export abstract class DataNode implements IValueAccess {
   /** The subscrptions */
   private _subs?: Map<unknown, Set<Function>>;
 
+  /** The original value */
+  protected _original: unknown;
+
   // #endregion
 
   // #region ── ctor & dtor ───────────────────────────────────────────────────
@@ -56,6 +62,7 @@ export abstract class DataNode implements IValueAccess {
     this.type = type;
     this.parent = parent;
     this.setValue(value);
+    this.confirm();
   }
 
   /** Dipose the data node, release references */
@@ -80,22 +87,68 @@ export abstract class DataNode implements IValueAccess {
 
   // #region ── Value Access ──────────────────────────────────────────────────
 
-  /** Whether this node holds no value. */
-  get isEmpty(): boolean { return isEmpty(this._value) }
-
   /** Sets the value. */
   setValue(value: unknown): void{
     if (isEqual(this._value, value)) return;
     this._value = value;
-    this._dataOb?.onNext(value);
+    this.onNext();
   }
 
   /** Gets the value */
   getValue(): unknown { return deepClone(this._value) }
 
+  /** Gets the value */
+  get value() { return this.getValue() }
+
+  /** Sets the value */
+  set value(value: unknown) { this.setValue(value) }
+
+  /** Whether this node holds no value. */
+  get isEmpty(): boolean { return isEmpty(this._value) }
+
+  /** Gets the raw value */
+  get rawValue() { return this._value }
+
+  /** Gets the original value */
+  get original() { return deepClone(this._original) }
+
+  /** Gets the submit value */
+  get submitValue() { return this.value }
+
+  /** Whether the data node changed */
+  get changed(): boolean { return !isEqual(this._original, this._value) }
+
+  /** Confirm the changes and save to original */
+  confirm(): void { this._original = deepClone(this.getValue()) }
+
+  /** Reset the data node value */
+  reset(): void { this.setValue(deepClone(this._original)) }
+
   // #endregion
   
   // #region ── Property Access ───────────────────────────────────────────────
+
+  /** Shortcut to gets the node name */
+  get name() { return this.getPropertyValue(Name) }
+
+  /** Shortcut to gets the dislay of the node */
+  get display() { return this.getPropertyValue(Display) }
+
+  /** Shortcut to gets whether the node is require */
+  get require() { return this.getPropertyValue(Require) }
+
+  /** Shortcut to gets whether the node is readonly */
+  get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
+
+  /** Shortcut to gets the unit */
+  get unit() { return this.getPropertyValue(Unit) }
+
+  /** Set alternative property provider */
+  setPropertyProvider(provider?: IPropertyProvider) { 
+    if (this._propProvider == provider) return;
+    this._propProvider = provider;
+    this.onNextState(); // can't publish property changes here
+  }
 
   /** Gets the property */
   getProperty(propCtor: new () => IProperty): IProperty | undefined {
@@ -105,7 +158,7 @@ export abstract class DataNode implements IValueAccess {
       const prop = props.length ? props[0].property : undefined
       if (prop) return prop;
     }
-    return this.type.getProperty(propCtor);
+    return (this._propProvider ?? this.type).getProperty(propCtor);
   }
 
   /** Gets the property value */
@@ -126,7 +179,7 @@ export abstract class DataNode implements IValueAccess {
         if (!prop.stackable) return;
       }
     }
-    for(let prop of this.type.getProperties(propCtor))
+    for(let prop of (this._propProvider ?? this.type).getProperties(propCtor))
     {
       yield prop;
       if (!prop.stackable) return;
@@ -176,8 +229,8 @@ export abstract class DataNode implements IValueAccess {
     }
     else
       return;
-    this._stateOb?.onNext(propCtor, property.getValue());
-    this._propObs?.get(propCtor)?.onNext(property.getValue());
+    this.onNextState(propCtor, property.getValue());
+    this.onNextProperty(propCtor, property.getValue());
   }
 
   /** Sets the value of the given property */
@@ -214,6 +267,9 @@ export abstract class DataNode implements IValueAccess {
     return sub;
   }
 
+  /** Publish the value change */
+  onNext() { this._dataOb?.onNext(this._value);  }
+
   /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
   subscribeState(func: Function, immediate?: boolean): Function {
     this._stateOb ??= new Observable();
@@ -221,6 +277,9 @@ export abstract class DataNode implements IValueAccess {
     if (immediate) func();
     return sub;
   }
+
+  /** Publish the state change */
+  onNextState(propCtor: (new() => IProperty) | undefined = undefined, value: unknown | undefined = undefined) { this._stateOb?.onNext(propCtor, value); }
 
   /** Subscribe the node property change and return the function for un-subscribe */
   subscribeProperty(propCtor: new () => IProperty, func: Function, immediate?: boolean): Function {
@@ -231,8 +290,14 @@ export abstract class DataNode implements IValueAccess {
       this._propObs.set(propCtor, ob);
     }
     const sub = ob.subscribe(func);
-    if (immediate) func(propCtor, this.getPropertyValue(propCtor))
+    if (immediate) func(this.getPropertyValue(propCtor))
     return sub;
+  }
+
+  /** Publish the property value change */
+  onNextProperty(propCtor: new() => IProperty, value: unknown)
+  {
+    this._propObs?.get(propCtor)?.onNext(value);
   }
 
   /** Record subscription by source */

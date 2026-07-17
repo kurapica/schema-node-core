@@ -14,8 +14,9 @@ import { combinePaths } from '../../utility/toolset';
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { getNodeType } from '../schemaRuntime';
+import { IPropertyProvider } from '../interfaces';
 
-export class NodeType {
+export class NodeType implements IPropertyProvider {
   /** The parent namespace (set once the type is loaded into a namespace). */
   namespace?: NodeType;
 
