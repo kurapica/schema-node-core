@@ -1,5 +1,5 @@
 import { ScalarType } from '../scalarType';
-import { NumericNode } from '../../../node/scalarNode';
+import { DecimalNode } from '../../../node/scalarNode';
 import { DecimalProperty, DecimalSchema } from '../../../schema/scalar/decimalSchema';
 import { IProperty } from '../../../property';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
@@ -9,7 +9,7 @@ import { getNodeType } from '../../schemaRuntime';
 export class DecimalType extends ScalarType {
   private _decimalSchema: DecimalSchema | undefined
 
-  override create(): NumericNode { return new NumericNode(this); }
+  override create(): DecimalNode { return new DecimalNode(this); }
 
   override loadProperties(): IProperty[] {
     this._decimalSchema = getProperty(this.schema, DecimalProperty)?.getValue();

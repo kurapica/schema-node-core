@@ -54,7 +54,7 @@ export type { StructFieldType } from './runtime/type/index';
 
 // ── Node ───────────────────────────────────────────────────────────────────
 export { DataNode } from './node/dataNode';
-export { ScalarNode, AnyNode, BoolNode, StringNode, IntNode, NumericNode, DateNode } from './node/scalarNode';
+export { ScalarNode, AnyNode, BoolNode, StringNode, IntNode, DecimalNode, DateNode } from './node/scalarNode';
 export { StructNode } from './node/structNode';
 export { ArrayNode } from './node/arrayNode';
 export { EnumNode } from './node/enumNode';

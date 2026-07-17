@@ -8,7 +8,7 @@
 
 import { NodeType } from './nodeType';
 import type { DataNode } from '../../node/dataNode';
-import { IValueTypeAccess } from '../interfaces';
+import { IValueAccess, IValueTypeAccess } from '../interfaces';
 import { IConstraintProperty } from '../../property';
 import { NodeSchema } from '../../schema/nodeSchema';
 import { FunctionType } from './functionType';
@@ -38,14 +38,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
-  abstract create(): DataNode;
-
-  /** Create a DataNode and set its value. Mirrors C# ValueType.From(). */
-  from(value: unknown): DataNode {
-    const node = this.create();
-    node.trySetValue(value);
-    return node;
-  }
+  abstract create(value: unknown, parent: IValueAccess | undefined): DataNode;
 
   // ── Virtual ────────────────────────────────────────────────────────────
 

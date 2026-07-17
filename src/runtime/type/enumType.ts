@@ -17,6 +17,7 @@ import { DataNode } from '../../node/dataNode';
 import { EnumNode } from '../../node/enumNode';
 import { isEmpty } from '../../utility/toolset';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
+import { IValueAccess } from '../interfaces';
 
 const MAX_SUBLIST_LEVEL = 3;
 
@@ -64,7 +65,7 @@ export class EnumType extends ValueType {
     return false;
   }
 
-  override create(): DataNode { return new EnumNode(this); }
+  override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): DataNode { return new EnumNode(this, value, parent); }
 
   override get isIndexable() { return true; }   
 

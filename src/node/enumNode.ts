@@ -4,19 +4,25 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { ValueType } from '../runtime/type/valueType';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
+import { IValueAccess } from '../runtime/interfaces';
+import { EnumType } from '../runtime/type';
 
 export class EnumNode extends DataNode {
   private _strValue: string | undefined;
   private _longValue: number | undefined;
   private readonly _isString: boolean;
 
-  constructor(type: ValueType) {
-    super(type);
-    this._isString = true; // default to string enum
+  // #region ── ctor & dtor ───────────────────────────────────────────────────
+
+  /** Construct the data node with value type, parent and init value */
+  constructor(type: EnumType, value: unknown, parent: IValueAccess | undefined = undefined) {
+    super(type, value, parent);
+    this._isString = type.type === EnumValueType.String;
   }
 
+  // #endregion
+  
   /** The enum storage type. */
   get valueType(): EnumValueTypeValue { return this._isString ? EnumValueType.String : EnumValueType.Int; }
 

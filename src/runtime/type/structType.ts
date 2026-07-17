@@ -7,7 +7,7 @@ import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
 import { StructProperty, StructSchema, type StructFieldSchema } from '../../schema/structSchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
-import type { INodeReference, IPropertyProvider } from '../interfaces';
+import type { INodeReference, IPropertyProvider, IValueAccess } from '../interfaces';
 import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
 import { isConstraintProperty, type IConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
@@ -147,8 +147,8 @@ export class StructType extends ValueType {
 
   // ── DataNode Factory ────────────────────────────────────────────────
 
-  override create(): StructNode {
-    return new StructNode(this);
+  override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): StructNode {
+    return new StructNode(this, value, parent);
   }
 
   // ── Relations ───────────────────────────────────────────────────────
