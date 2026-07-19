@@ -37,7 +37,7 @@ class CallProcess implements IRelationProcess, IErrorProvider {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
       if (!node) return;
-      (target ?? owner).recordSubscription(relation, node.subscribe(handler))
+      (target ?? owner).recordSubscription(node.subscribe(handler), relation)
     });
   }
 
