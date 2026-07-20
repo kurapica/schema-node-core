@@ -63,14 +63,14 @@ export function getSchemaKindProperty<T extends IProperty>(kind: string, propCto
 }
 
 /** Gets the schema kind prototype properties */
-export function *getSchemaKindProperties(kind: string, propCtor: new () => IProperty): Generator<IProperty> {
+export function *getSchemaKindProperties<T extends IProperty>(kind: string, propCtor: new () => IProperty): Generator<T> {
   const props = _schemaKindProperties.get(kind);
   if (!props?.length) return;
   for (let prop of props)
   {
     if (prop instanceof propCtor)
     {
-      yield prop;
+      yield prop as T;
       if (!prop.stackable) return;
     }
   }

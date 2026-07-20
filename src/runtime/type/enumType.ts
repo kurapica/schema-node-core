@@ -18,24 +18,21 @@ import { EnumNode } from '../../node/enumNode';
 import { isEmpty } from '../../utility/toolset';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
 import { IValueAccess } from '../interfaces';
-import { getSchemaKindProperty } from '../schemaRuntime';
+import { getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
+import { EntryType } from '../../struct/entry';
 
 const MAX_SUBLIST_LEVEL = 3;
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;
   private _maxFlags: number | undefined;
-  private _root: EnumValueSchema = { value: '' };
-  private _valueMaps = new Map<string, EnumValueSchema>();
+  private _root: EntryType<string> = new EntryType<string>();
 
   /** The enum value type */
   get type(): EnumValueTypeValue { return this._enumSchema?.type ?? EnumValueType.String } 
 
   /** Gets the enum cascade */
   get cascade(): LocaleString[] | undefined { return this._enumSchema?.cascade }
-
-  /** Enum value tree. */
-  values: EnumValueSchema[] = [];
 
   override loadProperties(): IProperty[] {
     this._enumSchema = getProperty(this.schema, EnumProperty)?.getValue();
@@ -44,10 +41,19 @@ export class EnumType extends ValueType {
 
   override async load()
   {
-    this._valueMaps.clear();
-    this._root = { value: '', subList: this._enumSchema?.values };
-    this.updateLoadState(this._root, undefined, undefined, true);
-    this.updateMaxFlags();
+    this._root = new EntryType<string>();
+    this._maxFlags = 0;
+    if (this._enumSchema?.type === EnumValueType.Flags)
+    {
+      for(let v of this._enumSchema.values)
+        this._maxFlags |= parseInt(v.value) ?? 0;
+    }
+    // init
+    this._root.saveAccessList([
+      {
+        children: this._enumSchema?.values
+      }
+    ]);
   }
 
   override isAssignableTo(other: ValueType): boolean {
@@ -67,7 +73,21 @@ export class EnumType extends ValueType {
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    // enable prototype properties
     return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_ENUM, propCtor);
+  }
+
+  override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    for (const prop of super.getProperties<T>(propCtor))
+    {
+      yield prop;
+      if (!prop.stackable) return;
+    }
+    for(const prop of getSchemaKindProperties<T>(SCHEMA_KIND_ENUM, propCtor))
+    {
+      yield prop;
+      if (!prop.stackable) return;
+    }
   }
 
   override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): DataNode { return new EnumNode(this, value, parent); }
