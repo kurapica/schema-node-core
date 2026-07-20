@@ -6,7 +6,7 @@
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
 import { IPropertyProvider, IValueAccess } from '../runtime/interfaces';
-import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
+import { deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
@@ -61,8 +61,11 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   constructor(type: ValueType, value: unknown, parent: IValueAccess | undefined = undefined) {
     this.type = type;
     this.parent = parent;
-    this.setValue(value);
-    this.confirm();
+    if (!isEmpty(value))
+    {
+      this.setValue(value);
+      this.confirm();
+    }
   }
 
   /** Dipose the data node, release references */
@@ -112,9 +115,6 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** Gets the original value */
   get original() { return deepClone(this._original) }
 
-  /** Gets the submit value */
-  get submitValue() { return this.value }
-
   /** Whether the data node changed */
   get changed(): boolean { return !isEqual(this._original, this._value) }
 
@@ -129,19 +129,13 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── Property Access ───────────────────────────────────────────────
 
   /** Shortcut to gets the node name */
-  get name() { return this.getPropertyValue(Name) }
-
-  /** Shortcut to gets the dislay of the node */
-  get display() { return this.getPropertyValue(Display) }
+  get name(): string | undefined { return this.getPropertyValue(Name) as string }
 
   /** Shortcut to gets whether the node is require */
   get require() { return this.getPropertyValue(Require) }
 
   /** Shortcut to gets whether the node is readonly */
   get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
-
-  /** Shortcut to gets the unit */
-  get unit() { return this.getPropertyValue(Unit) }
 
   /** Set alternative property provider */
   setPropertyProvider(provider?: IPropertyProvider) { 

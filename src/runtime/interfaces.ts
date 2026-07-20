@@ -37,7 +37,7 @@ export interface IValueAccess {
    * @param path The access path
    * @param node The accessed path must contains the node
    */
-  getAccessValue(path: string, node: IValueAccess | undefined): IValueAccess | undefined;
+  getAccessValue(path: string, node?: IValueAccess | undefined): IValueAccess | undefined;
 
   /** Whether this node holds no value. */
   get isEmpty(): boolean;

@@ -17,7 +17,7 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { DisplayOnly, Require } from '../../property';
+import { DisplayOnly, Require, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 
 
@@ -176,6 +176,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
   private _displayOnly?: boolean;
   private _require?: boolean;
   private _type?: ValueType;
+  private _unpack?: boolean;
 
   /** The field name. */
   get name() { return this._fieldSchema?.name ?? '' };
@@ -188,6 +189,9 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Whether the field is display-only. */
   get displayOnly() { return this._displayOnly ?? false };
+
+  /** The field is used to pack & unpack the data */
+  get unpack() { return this._unpack ?? false };
 
   /** Error status. */
   get error() { return this._fieldSchema?.error }
@@ -234,8 +238,9 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     const name = new Name();
     name.setValue(field.name);
     this._props.unshift(name); // special property
-    this._require = this.getProperty(Require)?.getValue();
-    this._displayOnly = this.getProperty(DisplayOnly)?.getValue() ?? false;
+    this._require = this.getProperty(Require)?.getValue<boolean>();
+    this._displayOnly = this.getProperty(DisplayOnly)?.getValue<boolean>() ?? false;
+    this._unpack = this.getProperty(Unpack)?.getValue<boolean>();
   }
 
   // ── Reference Types ─────────────────────────────────────────────────

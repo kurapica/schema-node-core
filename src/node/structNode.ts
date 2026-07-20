@@ -4,68 +4,97 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { ValueType } from '../runtime/type/valueType';
-import type { StructType, StructFieldType } from '../runtime/type/structType';
+import type { StructType } from '../runtime/type/structType';
+import { IValueAccess } from '../runtime/interfaces';
+import { isNull } from '../utility/toolset';
+import { DisplayOnly, InVisible, Unpack } from '../property';
 
 export class StructNode extends DataNode {
-  /** Field nodes, keyed by field name. */
-  private _fields = new Map<string, DataNode>();
+  // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  constructor(type: ValueType) {
-    super(type);
-    // Initialize fields from the StructType's field definitions
-    const structType = type as StructType;
-    for (const fieldType of structType.getFields()) {
-      if (fieldType.type) {
-        this._fields.set(fieldType.name, fieldType.type.create());
+  private _fields: DataNode[] = [];
+
+  constructor(type: StructType, value: unknown, parent: IValueAccess | undefined = undefined) {
+    super(type, undefined, parent);
+
+    const fields = type.getFields();
+    for (const field of fields.filter(f => f.type)) {
+      const node = field.type!.create(undefined, this);
+      node.setPropertyProvider(field);
+      this._fields.push(node);
+    }
+
+    if (typeof(value) === 'object' && !isNull(value) && !Array.isArray(value))
+    {
+      this.setValue(value);
+      this.confirm();
+    }
+  }
+
+  dispose() {
+    super.dispose();
+  }
+
+  // #endregion
+
+  // #region ── Value Access ──────────────────────────────────────────────────
+
+  override setValue(value: unknown): void {
+    const data: Record<string, unknown> = typeof(value) === 'object' && !isNull(value) && !Array.isArray(value) ? value as Record<string, unknown> : {};
+    // as raw
+    this._value = data;
+    this._fields.forEach(f => {
+      let d = data[f.name!];
+      if (f.getPropertyValue(Unpack) && isNull(d))
+      {
+          const names = this._fields.map(f => f.name);
+          d = {} ;
+          for (let k in data)
+          {
+            if (!names.includes(k))
+              (d as Record<string, unknown>)[k] = data[k];
+          }
       }
-    }
+      f.setValue(d);
+    });
   }
 
-  get isEmpty(): boolean {
-    return this._fields.size === 0;
+  override getValue(): unknown {
+    const result: Record<string, unknown> = {};
+    this._fields.forEach(f => {
+      if (f.isEmpty || f.getPropertyValue(DisplayOnly)) return;
+      if (f.getProperty(InVisible) && !f.isValid) return; // skip invisible required fields
+      const d = f.getValue();
+      if (f.getProperty(Unpack))
+      {
+        if (typeof(d) === 'object')
+        {
+          for (let k in d){
+            const v = (d as Record<string, unknown>)[k];
+            if (!isNull(v)) result[k] = v;
+          }
+        }
+        else
+        {
+          result[f.name!] = d;
+        }
+      }
+    });
+    return result;
   }
 
-  trySetValue<T>(_value: T): boolean {
-    return false; // StructNode value setting is done per-field
+  override get isEmpty(): boolean { return !this._fields.some(f => !f.isEmpty) }
+
+  override get changed(): boolean { return this._fields.some(f => !f.getPropertyValue(DisplayOnly) && f.changed) }
+
+  override confirm(): void { 
+    this._fields.forEach(f => f.confirm())  
+    super.confirm();
   }
 
-  tryGetValue<T>(): T | undefined {
-    const obj: Record<string, unknown> = {};
-    for (const [key, node] of this._fields) {
-      obj[key] = node.tryGetValue();
-    }
-    return obj as unknown as T;
-  }
+  // #endregion
 
-  clone(): DataNode {
-    const copy = new StructNode(this.type);
-    copy._fields = new Map();
-    for (const [key, node] of this._fields) {
-      copy._fields.set(key, node.clone());
-    }
-    return copy;
-  }
-
-  /** Get a field node by name. */
-  getField(name: string): DataNode | undefined {
-    return this._fields.get(name);
-  }
-
-  /** Set a field node. */
-  setField(name: string, node: DataNode): void {
-    this._fields.set(name, node);
-  }
-
-  /** All field names. */
-  get fieldNames(): string[] {
-    return [...this._fields.keys()];
-  }
-
-  /** All field nodes. */
-  get fields(): DataNode[] {
-    return [...this._fields.values()];
-  }
+  // #region ── Path Navigation ───────────────────────────────────────────────
 
   override getAccessValue(path: string): DataNode | undefined {
     const dot = path.indexOf('.');
@@ -79,4 +108,6 @@ export class StructNode extends DataNode {
     if (!field) return undefined;
     return rest ? field.getAccessValue(rest) : field;
   }
+
+  // #endregion
 }

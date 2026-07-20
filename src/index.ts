@@ -21,7 +21,7 @@ export * from './property/index';
 // ── Attribute System ───────────────────────────────────────────────────────
 export { Meta, getMetaProperty, getMetaProperties, getMetaPropertiesForSchema } from './attribute/meta';
 export * from './attribute/relation';
-export { Relation, RelationAssign, getRelationEntries } from './attribute/relation';
+export { Relation } from './attribute/relation';
 
 // ── Schema Types ───────────────────────────────────────────────────────────
 export { NodeSchema } from './schema/nodeSchema';
@@ -30,7 +30,6 @@ export { StructSchema, StructProperty } from './schema/structSchema';
 export type { StructFieldSchema } from './schema/structSchema';
 export { ArraySchema, ArrayProperty } from './schema/arraySchema';
 export { EnumSchema, EnumProperty } from './schema/enumSchema';
-export type { EnumValueSchema, EnumValueAccess } from './schema/enumSchema';
 export { FunctionSchema, FuncProperty } from './schema/functionSchema';
 export type { FuncArg, FuncExp, CallArg } from './schema/functionSchema';
 export { PropertySchema } from './schema/propertySchema';

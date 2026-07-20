@@ -10,11 +10,11 @@ import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 import { Call } from "./call";
 
-class Assign implements IRelationProcess {
+class AssignProcess implements IRelationProcess {
     private _value?: unknown
 
     async load(schema: RelationSchema) {
-      this._value = getProperty(schema, AssignProperty)?.getValue();
+      this._value = getProperty(schema, Assign)?.getValue();
     }
 
     attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {}
@@ -29,6 +29,6 @@ class Assign implements IRelationProcess {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.assign`)
 @Meta(RelationKind, 'assign')
-@Meta(RelationProcess, Assign)
+@Meta(RelationProcess, AssignProcess)
 @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'assign'))
-class AssignProperty extends FuncCallProperty {}
+export class Assign extends FuncCallProperty {}
