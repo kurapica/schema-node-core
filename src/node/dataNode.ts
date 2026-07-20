@@ -6,12 +6,11 @@
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
 import { IPropertyProvider, IValueAccess } from '../runtime/interfaces';
-import { deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
+import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { Display, DisplayOnly, Immutable, ReadOnly, Require } from '../property';
-import { Unit } from '../property/common/unit';
+import { DisplayOnly, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export abstract class DataNode implements IValueAccess, IPropertyProvider {
@@ -136,6 +135,12 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Shortcut to gets whether the node is readonly */
   get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
+
+  /** shortcut to gets visiblity */
+  get visible() { return !this.getPropertyValue(InVisible) && this.getPropertyValue(Visible) != false }
+
+  /** shortcut to check if the node is display-only */
+  get displayOnly() { return this.getPropertyValue(DisplayOnly) }
 
   /** Set alternative property provider */
   setPropertyProvider(provider?: IPropertyProvider) { 
@@ -330,7 +335,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
    * Mirrors C# DataNode.GetAccessValue(string path).
    * Supports: $self, field names, array indices.
    */
-  getAccessValue(path: string, node: IValueAccess | undefined = undefined): IValueAccess | undefined {
+  getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
     return isEmpty(path) || path === NODE_SELF ? this : undefined;
   }
 

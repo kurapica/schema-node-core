@@ -7,7 +7,8 @@ import { DataNode } from './dataNode';
 import type { StructType } from '../runtime/type/structType';
 import { IValueAccess } from '../runtime/interfaces';
 import { isNull } from '../utility/toolset';
-import { DisplayOnly, InVisible, Unpack } from '../property';
+import { Unpack } from '../property';
+import { NODE_SELF } from '../utility/constant';
 
 export class StructNode extends DataNode {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
@@ -45,6 +46,7 @@ export class StructNode extends DataNode {
     this._value = data;
     this._fields.forEach(f => {
       let d = data[f.name!];
+      // pack/unpack
       if (f.getPropertyValue(Unpack) && isNull(d))
       {
           const names = this._fields.map(f => f.name);
@@ -62,8 +64,9 @@ export class StructNode extends DataNode {
   override getValue(): unknown {
     const result: Record<string, unknown> = {};
     this._fields.forEach(f => {
-      if (f.isEmpty || f.getPropertyValue(DisplayOnly)) return;
-      if (f.getProperty(InVisible) && !f.isValid) return; // skip invisible required fields
+      if (f.isEmpty || f.displayOnly) return;
+      if (!f.isValid && f.visible) return; // skip invisible & invalid field
+
       const d = f.getValue();
       if (f.getProperty(Unpack))
       {
@@ -85,7 +88,7 @@ export class StructNode extends DataNode {
 
   override get isEmpty(): boolean { return !this._fields.some(f => !f.isEmpty) }
 
-  override get changed(): boolean { return this._fields.some(f => !f.getPropertyValue(DisplayOnly) && f.changed) }
+  override get changed(): boolean { return this._fields.some(f => !f.displayOnly && f.changed) }
 
   override confirm(): void { 
     this._fields.forEach(f => f.confirm())  
@@ -96,18 +99,22 @@ export class StructNode extends DataNode {
 
   // #region ── Path Navigation ───────────────────────────────────────────────
 
-  override getAccessValue(path: string): DataNode | undefined {
+  override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
     const dot = path.indexOf('.');
-    const first = dot >= 0 ? path.substring(0, dot) : path;
+    const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
     const rest = dot >= 0 ? path.substring(dot + 1) : '';
 
-    if (first === '$self') return this;
-    if (first === '$previous') return undefined;
-
-    const field = this._fields.get(first);
+    if (!first || first == NODE_SELF) return this;
+    const field = this._fields.find(f => f.name?.toLowerCase() == first);
     if (!field) return undefined;
     return rest ? field.getAccessValue(rest) : field;
   }
+
+  // #endregion
+  
+  // #region ── Validation ────────────────────────────────────────────────────
+
+  override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) }
 
   // #endregion
 }
