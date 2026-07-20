@@ -15,7 +15,7 @@ export class DateType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._dateSchema = getProperty(this.schema, DateProperty)?.getValue()
-    return this._dateSchema ? getPropertiesBySchemaKind(this._dateSchema, SCHEMA_KIND_DATE) : [];
+    return this._dateSchema ? getPropertiesBySchemaKind(this._dateSchema, SCHEMA_KIND_DATE).toArray() : [];
   }
 
   override async load() {

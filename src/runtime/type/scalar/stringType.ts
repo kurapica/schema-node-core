@@ -18,7 +18,7 @@ export class StringType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._stringSchema = getProperty(this.schema, StringProperty)?.getValue();
-    return this._stringSchema ? getPropertiesBySchemaKind(this._stringSchema, SCHEMA_KIND_STRING) : [];
+    return this._stringSchema ? getPropertiesBySchemaKind(this._stringSchema, SCHEMA_KIND_STRING).toArray() : [];
   }
 
   override async load() {

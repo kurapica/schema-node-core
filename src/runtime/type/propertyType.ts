@@ -22,7 +22,7 @@ export class PropertyType extends NodeType {
 
   override loadProperties(): IProperty[] {
     this._propertySchema = getProperty(this.schema, PropertyProperty)?.getValue();
-    return this._propertySchema ? getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_PROPERTY) : [];
+    return this._propertySchema ? getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_PROPERTY).toArray() : [];
   }
 
   override async load() {

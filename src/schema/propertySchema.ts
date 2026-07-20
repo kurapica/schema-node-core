@@ -11,7 +11,7 @@ import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSc
 import { getPropertyName, Property } from '../property/property';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
 import { Call } from '../relation/call';
-import { getPropertyForSchemas, saveSystemSchema } from '../runtime/schemaRuntime';
+import { getPropertyTypeSupportSchemas, saveSystemSchema } from '../runtime/schemaRuntime';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { Relations } from './relationSchema';
@@ -71,7 +71,7 @@ class PropertySchemaMeta implements PropertySchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.prop`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_PROPERTY))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_PROPERTY))
 export class PropertyProperty extends Property<PropertySchema> {}
 
 /** Represents the property type */
@@ -92,7 +92,7 @@ function generatePropertySchema(namespace: string, name: string, ctor: Function)
 
     const isStatic = getMetaProperty(ctor, Static)?.getValue<boolean>();
     const stackable = getMetaProperty(ctor, Stackable)?.getValue<boolean>();
-    const forSchemas = getPropertyForSchemas(ctor as new () => IProperty);
+    const forSchemas = getPropertyTypeSupportSchemas(ctor as new () => IProperty);
     const propSchema : PropertySchema = { property: getPropertyName(ctor as new () => IProperty), type, static: isStatic, stackable, forSchemas };
     
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));

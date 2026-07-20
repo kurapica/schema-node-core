@@ -9,7 +9,7 @@
 
 import type { IProperty } from '../property/property';
 import { Default } from '../property/common/default';
-import { isSchemaKindProperty } from '../runtime/schemaRuntime';
+import { isSchemaKindPropertyType } from '../runtime/schemaRuntime';
 import { isEmpty, isNull } from '../utility/toolset';
 
 const META_KEY = Symbol('schema-node:meta');
@@ -171,5 +171,5 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
   index?: number
 ): T[] {
   return getMetaProperties(ctor, propCtor, field, index)
-    .filter((p) => isSchemaKindProperty(kind, p.constructor as unknown as new () => IProperty));
+    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as new () => IProperty));
 }

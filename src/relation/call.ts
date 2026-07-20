@@ -60,5 +60,5 @@ class CallProcess implements IRelationProcess, IErrorProvider {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.call`)
 @Meta(RelationKind, 'call')
 @Meta(RelationProcess, CallProcess)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', 'call'))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'call'))
 export class Call extends FuncCallProperty {}

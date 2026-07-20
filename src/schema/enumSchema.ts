@@ -3,14 +3,14 @@
 // =============================================================================
 
 import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, UniqueIndex, Visible, getRecordedValues, Display, PropertyValueType } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, Visible, getRecordedValues, Display, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
 import { concatLocaleString, LocaleString } from '../struct';
 import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { EnumType } from '../runtime/type';
-import { PrimaryIndex, Require, UpLimitString, Valid } from '../property/constraint';
+import { Require, Valid } from '../property/constraint';
 import { Relation } from '../attribute/relation';
 import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { NodeSchema } from './nodeSchema';
@@ -20,6 +20,7 @@ import { saveSystemSchema } from '../runtime/schemaRuntime';
 import { Base } from '../property/core/base';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
+import { Entry } from '../struct/entry';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -30,46 +31,7 @@ export interface EnumSchema {
   cascade?: LocaleString[];
   
   /** The root enum values */
-  values: EnumValueSchema[];
-}
-
-/** The enum value schema */
-export interface EnumValueSchema {
-  /** The enum value */
-  value: string;
-
-  /** The root value */
-  root?: string;
-  
-  /** Whether has sub list */
-  hasSubList?: boolean;
-
-  /** The sub enum values */
-  subList?: EnumValueSchema[];
-
-  /** The enum value and its sub list is fully loaded */
-  isFullyLoaded?: boolean;
-
-  /** The parent of the enum value */
-  parent?: EnumValueSchema;
-
-  /** The cascade level */
-  level?: number;
-}
-
-/** The eunm value access info */
-export interface EnumValueAccess {
-  /** The cascade name */
-  name?: LocaleString;
-
-  /** The enum value of the cascade */
-  value: string;
-
-  /** The enum value schema */
-  schema?: EnumValueSchema;
-
-  /** The sub list of the current */
-  subList?: EnumValueSchema[];
+  values: Entry<string>[];
 }
 
 /** Meta registration class (NOT exported). */
@@ -91,38 +53,9 @@ class EnumSchemaMeta implements EnumSchema {
   cascade?: LocaleString[];
   
   /** The root enum values */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.values`)
+  @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
   @Meta(Require, true)
-  values!: EnumValueSchema[];
-}
-
-/** The enum value schema meta */
-@Meta(SchemaKind, [SCHEMA_KIND_ENUM_VALUE, SCHEMA_KIND_ORDER_ENUM_VALUE])
-@Meta(OfSchema, SCHEMA_KIND_STRUCT)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.value`)
-@Meta(Attach, SCHEMA_KIND_ENUM_VALUE)
-class EnumValueSchemaMeta implements EnumValueSchema {
-  /** The enum value */
-  @Meta(PrimaryIndex, 0)
-  @Meta(UniqueIndex, ['SUB_LIST', 1])
-  @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
-  @Meta(SchemaType, NS_SYSTEM_STRING)
-  @Meta(Require, true)
-  value!: string;
-
-  /** The root value */
-  @Meta(UniqueIndex, ['SUB_LIST', 0])
-  @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
-  @Meta(SchemaType, NS_SYSTEM_STRING)
-  root?: string | undefined;
-
-  /** Whether has sub enum list */
-  @Meta(SchemaType, NS_SYSTEM_BOOL)
-  hasSubList?: boolean | undefined;
-
-  /** The enum sub list */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.values`)
-  subList?: EnumValueSchema[] | undefined;
+  values!: Entry<string>[];
 }
 
 /** The enum property of node schema */
@@ -130,7 +63,7 @@ class EnumValueSchemaMeta implements EnumValueSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ENUM))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
 export class EnumProperty extends Property<EnumSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<EnumSchema>();
@@ -151,7 +84,7 @@ export class EnumProperty extends Property<EnumSchema> {
 
     // combine enum values
     for (let i = 0; i < Math.min(selfSchema.values.length, otherSchema.values.length); i++)
-      combineProperties(selfSchema.values[i], otherSchema.values[i], SCHEMA_KIND_ENUM_VALUE);
+      combineProperties(selfSchema.values[i], otherSchema.values[i], SCHEMA_KIND_ENTRY);
 
     // combine properties
     combineProperties(selfSchema, otherSchema, SCHEMA_KIND_ENUM);
@@ -164,7 +97,7 @@ export class EnumProperty extends Property<EnumSchema> {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_ENUM }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_ENUM))
 class EnumTypeMeta {}
 
 function generateEnumSchema(namespace: string, name: string, ctor: Function) {
@@ -194,8 +127,8 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   saveSystemSchema(nodeSchema);
 }
 
-function buildEnumValues(enumName: string, target: object): EnumValueSchema[] {
-  const values: EnumValueSchema[] = [];
+function buildEnumValues(enumName: string, target: object): Entry<string>[] {
+  const values: Entry<string>[] = [];
   for (const key of Object.getOwnPropertyNames(target).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name')) {
     const val = (target as Record<string, unknown>)[key];
     if (typeof val === 'string' || typeof val === 'number') 
@@ -204,7 +137,7 @@ function buildEnumValues(enumName: string, target: object): EnumValueSchema[] {
   return values;
 }
 
-function inferEnumType(values: EnumValueSchema[]): EnumValueTypeValue {
+function inferEnumType(values: Entry<string>[]): EnumValueTypeValue {
   if (values.length > 0 && values.every((v) => !isNaN(Number(v.value)))) return EnumValueType.Int;
   return EnumValueType.String;
 }

@@ -19,9 +19,9 @@ export const SCHEMA_KIND_ARRAY = 'array';
 export const SCHEMA_KIND_FUNCTION = 'function';
 export const SCHEMA_KIND_PROPERTY = 'property';
 export const SCHEMA_KIND_STRUCT_FIELD = 'structfield';
-export const SCHEMA_KIND_ENUM_VALUE = 'enumvalue';
 export const SCHEMA_KIND_RELATION = 'relation';
 export const SCHEMA_KIND_FUNC_ARG = 'functionarg';
+export const SCHEMA_KIND_ENTRY = 'entry';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
 
@@ -39,9 +39,9 @@ export const SCHEMA_KIND_ORDER_ARRAY = 10;
 export const SCHEMA_KIND_ORDER_FUNC = 11;
 export const SCHEMA_KIND_ORDER_PROP = 12;
 export const SCHEMA_KIND_ORDER_RELATION = 13;
-export const SCHEMA_KIND_ORDER_ENUM_VALUE = 14;
-export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 15;
-export const SCHEMA_KIND_ORDER_FUNC_ARG = 16;
+export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 14;
+export const SCHEMA_KIND_ORDER_FUNC_ARG = 15;
+export const SCHEMA_KIND_ORDER_ENTRY = 16;
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 
@@ -92,6 +92,8 @@ export const NS_SYSTEM_LOCALE_TRAN = 'system.localetran';
 
 // entry for white list
 export const NS_SYSTEM_ENTRY = 'system.entry';
+export const NS_SYSTEM_ENTRYS = 'system.entrys';
+export const NS_SYSTEM_ENTRY_ACCESS = 'system.entryaccess';
 
 // ── Schema Namespace ───────────────────────────────────────────────────────
 

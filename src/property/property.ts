@@ -6,7 +6,7 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
-import { getPropertyForSchemas } from "../runtime/schemaRuntime";
+import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -72,7 +72,7 @@ export abstract class Property<T> implements IProperty {
   get savable(): boolean {
     const ctor = this.constructor as Function;
     if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
-    const savable = getPropertyForSchemas(this.constructor as new () => IProperty).length > 0;
+    const savable = getPropertyTypeSupportSchemas(this.constructor as new () => IProperty).length > 0;
     _saveableCache.set(ctor, savable);
     return savable;
   }

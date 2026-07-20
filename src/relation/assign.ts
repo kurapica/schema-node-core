@@ -30,5 +30,5 @@ class Assign implements IRelationProcess {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.assign`)
 @Meta(RelationKind, 'assign')
 @Meta(RelationProcess, Assign)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', 'assign'))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'assign'))
 class AssignProperty extends FuncCallProperty {}

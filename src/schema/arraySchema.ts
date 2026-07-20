@@ -39,7 +39,7 @@ class ArraySchemaMeta implements ArraySchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.array`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_ARRAY))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ARRAY))
 export class ArrayProperty extends Property<ArraySchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other.getValue<ArraySchema>();

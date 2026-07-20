@@ -35,7 +35,7 @@ class DateSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.date`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_DATE))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DATE))
 export class DateProperty extends Property<DateSchema>
 {
   combine(other: IProperty): boolean {

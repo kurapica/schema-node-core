@@ -35,7 +35,7 @@ class StringSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.string`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRING))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRING))
 export class StringProperty extends Property<StringSchema>
 {
   combine(other: IProperty): boolean {

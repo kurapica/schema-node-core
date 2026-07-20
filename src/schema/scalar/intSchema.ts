@@ -35,7 +35,7 @@ class IntSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.int`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_INT))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_INT))
 export class IntProperty extends Property<IntSchema>
 {
   combine(other: IProperty): boolean {

@@ -39,11 +39,17 @@ export function buildFuncCall(func: string, ...args: unknown[]): FuncCall
     args: args.map(a => {
       if (typeof(a) === 'string')
       {
-        if (a.startsWith('$'))
+        if (a.startsWith('@'))
+        {
+          if (a.startsWith('@@'))
+            return { value: a.substring(1) }
+          return { source: a.substring(1) }
+        }
+        else if (a.startsWith('$'))
         {
           if (a.startsWith('$$'))
             return { value: a.substring(1) }
-          return { source: a.substring(1) }
+          return { source: a }
         }
       }
       return { value: a }

@@ -35,7 +35,7 @@ class DecimalSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.decimal`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_DECIMAL))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DECIMAL))
 export class DecimalProperty extends Property<DecimalSchema>
 {
   combine(other: IProperty): boolean {

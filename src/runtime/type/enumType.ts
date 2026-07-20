@@ -4,11 +4,11 @@
 // =============================================================================
 
 import { ValueType } from './valueType';
-import { EnumProperty, EnumValueAccess, type EnumSchema, type EnumValueSchema } from '../../schema/enumSchema';
+import { EnumProperty, type EnumSchema } from '../../schema/enumSchema';
 import { EnumValueType, EnumValueTypeValue } from '../../enum/enumValueType';
 import { IProperty } from '../../property';
 import { combineProperties, getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_VALUE } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM } from '../../utility/constant';
 import { LocaleString } from '../../struct';
 import { ScalarType } from './scalarType';
 import { StringType } from './scalar/stringType';
@@ -18,6 +18,7 @@ import { EnumNode } from '../../node/enumNode';
 import { isEmpty } from '../../utility/toolset';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
 import { IValueAccess } from '../interfaces';
+import { getSchemaKindProperty } from '../schemaRuntime';
 
 const MAX_SUBLIST_LEVEL = 3;
 
@@ -38,7 +39,7 @@ export class EnumType extends ValueType {
 
   override loadProperties(): IProperty[] {
     this._enumSchema = getProperty(this.schema, EnumProperty)?.getValue();
-    return this._enumSchema ? getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM) : [];
+    return this._enumSchema ? getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM).toArray() : [];
   }
 
   override async load()
@@ -63,6 +64,10 @@ export class EnumType extends ValueType {
       }
     }
     return false;
+  }
+
+  override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_ENUM, propCtor);
   }
 
   override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): DataNode { return new EnumNode(this, value, parent); }

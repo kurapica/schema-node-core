@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Property/PropertyOwner.cs
 // =============================================================================
 
-import { getSchemaKindProperties } from '../runtime/schemaRuntime';
+import { getSchemaKindPropertyTypes } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
 import { getPropertyName, ITypeRefProperty, type IProperty } from './property';
 
@@ -29,40 +29,33 @@ export function getProperty(owner: any, propCtor: new () => IProperty): IPropert
 }
 
 /** Get all properties with given property types. */
-export function getProperties(owner: any, ...propCtors: (new () => IProperty)[]): IProperty[] {
-  if (owner === null) return [];
-  
-  const seen = new Set<Function>();
-  const result: IProperty[] = [];
+export function *getProperties(owner: any, propCtor: new () => IProperty): Generator<IProperty> {
+  if (owner === null) return;  
 
-  for (const ctor of propCtors) {
-    if (seen.has(ctor)) continue; // Avoid duplicates
-    seen.add(ctor);
+  const key = getPropertyName(propCtor);
+  const raw = key ? owner?.[key] : undefined;
+  if (isNull(raw)) return;
 
-    const key = getPropertyName(ctor);
-    const raw = key ? owner?.[key] : undefined;
-    if (isNull(raw)) continue;
-
-    const temp = new ctor();
-    if (temp.stackable && Array.isArray(raw)) {
-      raw.map((v) => {
-        const p = new ctor();
-        p.setValue(v);
-        result.push(p);
-      });
-    }
-    else
-    {
-      temp.setValue(raw);
-      result.push(temp);
+  const temp = new propCtor();
+  if (temp.stackable && Array.isArray(raw)) {
+    for (let v of raw){
+      const p = new propCtor();
+      p.setValue(v);
+      yield p; 
     }
   }
-  return result;
+  else
+  {
+    temp.setValue(raw);
+    yield temp;
+  }
 }
 
 /** Gets all propreties with the given schema kind. */
-export function getPropertiesBySchemaKind(owner: any, kind: string): IProperty[] {
-  return getProperties(owner, ...getSchemaKindProperties(kind))
+export function *getPropertiesBySchemaKind(owner: any, kind: string): Generator<IProperty> {
+  for (let propCtor of getSchemaKindPropertyTypes(kind))
+    for (let prop of getProperties(owner, propCtor))
+      yield prop;
 }
 
 /**
@@ -102,11 +95,11 @@ export function setPropertyValue(owner: any, propCtor: new () => IProperty, valu
 export function combineProperties(owner: any, other: any | undefined, kind: string): any {
   if (!kind || !other) return owner;
 
-  for (const propCtor of getSchemaKindProperties(kind)) {
-    const otherProps = getProperties(other, propCtor);
+  for (const propCtor of getSchemaKindPropertyTypes(kind)) {
+    const otherProps = getProperties(other, propCtor).toArray();
     if (otherProps.length === 0) continue;
 
-    const selfProps = getProperties(owner, propCtor);
+    const selfProps = getProperties(owner, propCtor).toArray();
     const otherProp = otherProps[0];
     if (otherProp.stackable) {
       if (selfProps.length === 0) {

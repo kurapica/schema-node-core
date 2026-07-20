@@ -36,7 +36,7 @@ export class ArrayType extends ValueType {
 
   override loadProperties(): IProperty[]{
     this._arraySchema = getProperty(this.schema, ArrayProperty)?.getValue();
-    return this._arraySchema ? getPropertiesBySchemaKind(this._arraySchema, SCHEMA_KIND_ARRAY) : [];
+    return this._arraySchema ? getPropertiesBySchemaKind(this._arraySchema, SCHEMA_KIND_ARRAY).toArray() : [];
   }
 
   override unload(): void {

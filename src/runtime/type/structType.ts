@@ -37,7 +37,7 @@ export class StructType extends ValueType {
 
   override loadProperties(): IProperty[] {
     this._structSchema = getProperty(this.getNodeSchema(), StructProperty)?.getValue();
-    return this._structSchema ? getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT) : [];
+    return this._structSchema ? getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT).toArray() : [];
   }
 
   override async load(): Promise<void> {
@@ -210,7 +210,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     if (!this.type) return;
 
     // Collect properties from schema kind registries
-    const props = getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD);
+    const props = getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD).toArray();
     props.push(...getPropertiesBySchemaKind(field, this.type.kind));
     if (this.type instanceof ArrayType && this.type.element)
       props.push(...getPropertiesBySchemaKind(field, this.type.element.kind));

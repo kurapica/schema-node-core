@@ -3,13 +3,10 @@
 // =============================================================================
 
 import type { NodeSchema } from '../nodeSchema';
-import type { EnumValueAccess, EnumValueSchema } from '../enumSchema';
 
 /** Interface for node schema familiy */
 export interface INodeSchemaProvider {
-  loadSchema(names: string[]): Promise<NodeSchema[]>;
-  loadEnumSubList(schemaName: string, value?: string): Promise<EnumValueSchema[]>;
-  loadEnumAccessList(schemaName: string, value: string, noSubList?: boolean, withSubList?: boolean): Promise<EnumValueAccess[]>;
+  getSchema(names: string[]): Promise<NodeSchema[]>;
   callFunction(schemaName: string, args: unknown[], retType?: string): Promise<unknown>;
 }
 

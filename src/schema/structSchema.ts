@@ -8,9 +8,9 @@ import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
 import { DataIndex, Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter } from '../property/index';
 import { IProperty, Property } from '../property/property';
-import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
+import { combineProperties, getProperty, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { StructType } from '../runtime/type';
 import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
@@ -70,7 +70,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '$kind', SCHEMA_KIND_STRUCT))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRUCT))
 export class StructProperty extends Property<StructSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<StructSchema>();
@@ -195,6 +195,14 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     if (dataIndexes.length > 0) {
       setPropertyValue(arraySchema, Indexes, dataIndexes);
     }
+    // generic
+    const generics = getProperty(structSchema, Generics);
+    if (generics?.hasValue)
+    {
+      setProperty(arraySchema, generics);
+      arraySchema.element = `${structName}<${generics.getValue<GenericParameter[]>()!.map(g => g.name).join(',')}>`
+    }
+
 
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
     setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });
