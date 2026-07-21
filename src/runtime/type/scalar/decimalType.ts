@@ -5,11 +5,12 @@ import { IProperty } from '../../../property';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
 import { SCHEMA_KIND_DECIMAL } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';
+import { IValueAccess } from '../../interfaces';
 
 export class DecimalType extends ScalarType {
   private _decimalSchema: DecimalSchema | undefined
 
-  override create(): DecimalNode { return new DecimalNode(this); }
+  override create(value: unknown, parent?: IValueAccess): DecimalNode { return new DecimalNode(this, value, parent); }
 
   override loadProperties(): IProperty[] {
     this._decimalSchema = getProperty(this.schema, DecimalProperty)?.getValue();

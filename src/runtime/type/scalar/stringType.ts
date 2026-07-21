@@ -5,11 +5,12 @@ import { IProperty, UpLimitString } from '../../../property';
 import { ENTITY_PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_STRING } from '../../../utility/constant';
 import { getProperty, getPropertiesBySchemaKind } from '../../../property/propertyOwner';
 import { getNodeType } from '../../schemaRuntime';
+import { IValueAccess } from '../../interfaces';
 
 export class StringType extends ScalarType {
   private _stringSchema: StringSchema | undefined;
 
-  override create(): StringNode { return new StringNode(this); }
+  override create(value: unknown, parent?: IValueAccess): StringNode { return new StringNode(this, value, parent); }
 
   override get isIndexable(): boolean {
     const uplimit = this.getProperty(UpLimitString);

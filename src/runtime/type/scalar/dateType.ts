@@ -5,11 +5,12 @@ import { getPropertiesBySchemaKind, getProperty } from '../../../property/proper
 import { IProperty } from '../../../property';
 import { SCHEMA_KIND_DATE } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';
+import { IValueAccess } from '../../interfaces';
 
 export class DateType extends ScalarType {
   private _dateSchema: DateSchema | undefined
 
-  override create(): DateNode { return new DateNode(this); }
+  override create(value: unknown, parent?: IValueAccess): DateNode { return new DateNode(this, value, parent); }
 
   override get isIndexable(): boolean { return true; }
 

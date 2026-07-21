@@ -38,7 +38,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
-  abstract create(value: unknown, parent: IValueAccess | undefined): DataNode;
+  abstract create(value: unknown, parent?: IValueAccess): DataNode;
 
   // ── Virtual ────────────────────────────────────────────────────────────
 

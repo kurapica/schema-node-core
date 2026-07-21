@@ -21,6 +21,7 @@ import { Base } from '../property/core/base';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { Entry } from '../struct/entry';
+import { EnumValue } from '../property/constraint/enumValue';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -41,6 +42,7 @@ export interface EnumSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(RuntimeNodeType, EnumType)
 @Meta(Attach, SCHEMA_KIND_ENUM)
+@Meta(EnumValue, true)
 @Meta(SchemaGenerator, generateEnumSchema)
 @Meta(EntrySource, buildFuncCall('system.data.enum.getenumaccess', NODE_TYPE, NODE_SELF, ENTRY_ROOT))
 class EnumSchemaMeta implements EnumSchema {

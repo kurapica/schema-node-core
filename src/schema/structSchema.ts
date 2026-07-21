@@ -22,6 +22,7 @@ import { Base } from '../property/core/base';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
+import { StructValue } from '../property/constraint/structValue';
 
 /** The struct schema */
 export interface StructSchema {
@@ -44,6 +45,7 @@ export interface StructFieldSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(Append, [Relations])
+@Meta(StructValue, true)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];
