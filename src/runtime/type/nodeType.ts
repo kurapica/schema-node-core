@@ -14,9 +14,9 @@ import { combinePaths } from '../../utility/toolset';
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { getNodeType } from '../schemaRuntime';
-import { IPropertyProvider } from '../interfaces';
+import { INodeReference, IPropertyProvider } from '../interfaces';
 
-export class NodeType implements IPropertyProvider {
+export class NodeType implements IPropertyProvider, INodeReference {
   /** The parent namespace (set once the type is loaded into a namespace). */
   namespace?: NodeType;
 
@@ -51,13 +51,10 @@ export class NodeType implements IPropertyProvider {
     if (!this.schema) return '';
     const baseName = combinePaths(this.schema.namespace ?? '', this.schema.name);
     if (this.genericParams && this.genericParams.length > 0) {
-      return `${baseName}<${this.genericParams.map(g => g.name).join(', ')}>`;
+      return `${baseName}<${this.genericParams.map(g => g.name).join(',')}>`;
     }
     return baseName;
   }
-
-  /** Gets the properties */
-  get properties(): IProperty[] { return this._props ?? []; }
 
   /** The schema kind. */
   get kind(): string { return this.schema?.kind ?? SCHEMA_KIND_NODE; }
@@ -138,6 +135,7 @@ export class NodeType implements IPropertyProvider {
   /** load the node schema kind properties */
   loadProperties(): IProperty[] { return [] }
 
+  // ── Node Reference ───────────────────────────────────────────────────
   /** Gets the references types */
   *getRefTypes(): Generator<NodeType> {
     if (!this._refTypes?.length) return;
@@ -159,8 +157,21 @@ export class NodeType implements IPropertyProvider {
       for(let prop of this._props)
       {
         if (prop instanceof propCtor)
+        {
           yield prop;
+          if (!prop.stackable) return;
+        }
       }
+    }
+  }
+
+  /** Filter properties by predicate */
+  *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    if (!this._props?.length) return;
+    for(let prop of this._props)
+    {
+      if (predicate(prop))
+        yield prop;
     }
   }
 

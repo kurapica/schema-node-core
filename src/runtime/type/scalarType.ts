@@ -4,6 +4,8 @@
 // =============================================================================
 
 import { IProperty } from "../../property";
+import { joinProperties } from "../interfaces";
+import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from "../schemaRuntime";
 import { NodeType } from "./nodeType";
 import { ValueType } from "./valueType";
 
@@ -23,22 +25,15 @@ export abstract class ScalarType extends ValueType {
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
-    return super.getProperty(propCtor) ?? this.baseNode?.getProperty(propCtor);
+    return super.getProperty(propCtor) ?? (this.baseNode ? this.baseNode.getProperty(propCtor) : getSchemaKindProperty(this.kind, propCtor));
   }
 
   override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
-    for(let p of super.getProperties(propCtor))
-    {
-      yield p;
-      if (!p.stackable) return;
-    }
-    if (this.baseNode)
-    {
-      for (let p of this.baseNode.getProperties(propCtor))
-      {
-        yield p;
-        if (!p.stackable) return;
-      }
-    }
+    // self -> base -> prototype
+    return joinProperties(super.getProperties(propCtor), (this.baseNode ? this.baseNode.getProperties(propCtor) : getSchemaKindProperties(this.kind, propCtor)));
+  }
+
+  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(super.filterProperties(predicate), (this.baseNode ? this.baseNode.filterProperties(predicate) : filterSchemaKindProperties(this.kind, predicate)));
   }
 }

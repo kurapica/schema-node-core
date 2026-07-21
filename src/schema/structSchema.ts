@@ -45,7 +45,7 @@ export interface StructFieldSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(Append, [Relations])
-@Meta(StructValue, true)
+@Meta(StructValue)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];

@@ -7,9 +7,13 @@ export interface IPropertyProvider {
 
   /** Gets the properties */
   getProperties<T extends IProperty>(propCtor: new() => T): Generator<T>;
+
+  /** Gets the properties with predicate */
+  filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty>;
 }
 
-export function *joinProperties<T extends IProperty>(...propertyProviders: (Generator<T> | T[] | undefined)[]): Generator<T> {
+/** Joins the properties from multiple providers. */
+export function *joinProperties(...propertyProviders: (Generator<IProperty> | IProperty[] | undefined)[]): Generator<IProperty> {
   const types: Set<Function> = new Set();
   for (const propertyProvider of propertyProviders) {
     if (!propertyProvider) continue;

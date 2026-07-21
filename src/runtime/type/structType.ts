@@ -7,11 +7,11 @@ import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
 import { StructProperty, StructSchema, type StructFieldSchema } from '../../schema/structSchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
-import type { INodeReference, IPropertyProvider, IValueAccess } from '../interfaces';
+import { IRelationProvider, joinProperties, type INodeReference, type IPropertyProvider, type IValueAccess } from '../interfaces';
 import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
-import { isConstraintProperty, type IConstraintProperty } from '../../property/constraintProperty';
+import { IConstraintProperty, isConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
-import { getNodeType } from '../schemaRuntime';
+import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
@@ -20,10 +20,9 @@ import { ArrayType } from './arrayType';
 import { DisplayOnly, Require, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 
-
 // ── StructType ────────────────────────────────────────────────────────────
 
-export class StructType extends ValueType {
+export class StructType extends ValueType implements IRelationProvider {
   /** Field type definitions. */
   private _fields: StructFieldType[] = [];
 
@@ -106,6 +105,21 @@ export class StructType extends ValueType {
     return this._fields.length > 0;
   }
 
+  // ── Property ────────────────────────────────────────────────────────
+
+  override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    // enable prototype properties
+    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
+  }
+
+  override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    return joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor));
+  }
+
+  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
+  }
+
   // ── References ──────────────────────────────────────────────────────
 
   override *getRefTypes(): Generator<NodeType> {
@@ -154,15 +168,18 @@ export class StructType extends ValueType {
   // ── Relations ───────────────────────────────────────────────────────
 
   /** Get all relation types. */
-  getRelations(): RelationType[] {
-    return this._relations ?? [];
+  *getRelations(): Generator<RelationType> {
+    if (!this._relations?.length) return;
+    for(const relation of this._relations)
+      yield relation;
   }
 
   /** Get relations for a specific field name. */
-  getRelationsForField(fieldName: string): RelationType[] {
-    return (this._relations ?? []).filter(
-      r => r.target?.toLowerCase() === fieldName.toLowerCase(),
-    );
+  *getRelationsForField(fieldName: string): Generator<RelationType> {
+    if (!this._relations?.length) return;
+    for(const relation of this._relations)
+      if (relation.target?.toLowerCase() === fieldName.toLowerCase() || relation.target?.toLowerCase().startsWith(fieldName.toLowerCase() + '.'))
+        yield relation;
   }
 }
 
@@ -171,7 +188,6 @@ export class StructType extends ValueType {
 export class StructFieldType implements INodeReference, IPropertyProvider {
   private _fieldSchema?: StructFieldSchema;
   private _props?: IProperty[];
-  private _constraints?: IConstraintProperty[];
   private _refTypes?: NodeType[];
   private _displayOnly?: boolean;
   private _require?: boolean;
@@ -183,6 +199,13 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** The resolved value type. */
   get type() { return this._type };
+
+  /** Get all constraints. */
+  get constraints(): IConstraintProperty[] { 
+    const constraints = this.filterProperties(isConstraintProperty).toArray() as IConstraintProperty[];
+    constraints.reverse();
+    return constraints;
+  };
 
   /** Whether the field is require by default */
   get require() { return this._require ?? false } 
@@ -220,7 +243,6 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
       props.push(...getPropertiesBySchemaKind(field, this.type.element.kind));
 
     this._props = props;
-    this._constraints = props.filter(isConstraintProperty) as IConstraintProperty[];
 
     const refTypes: NodeType[] = []
     for(let prop of props.filter(isTypeRefProperty))
@@ -264,22 +286,11 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Get properties by type */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
-    if (this._props)
-    {
-      for(let p of this._props)
-      {
-        if (!(p instanceof propCtor)) continue;
-        yield p;
-        if (!p.stackable) return;
-      }
-    }
-    if (this._type)
-    {
-      for (let p of this._type.getProperties(propCtor))
-      {
-        yield p;
-        if (!p.stackable) return;
-      }
-    }
+    return joinProperties(this._props?.filter(p => p instanceof propCtor) as T[], this._type?.getProperties(propCtor));
+  }
+
+  /** Filter properties by predicate */
+  *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate));
   }
 }

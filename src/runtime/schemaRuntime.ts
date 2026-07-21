@@ -76,6 +76,20 @@ export function *getSchemaKindProperties<T extends IProperty>(kind: string, prop
   }
 }
 
+/** Filter the schema kind prototype properties */
+export function *filterSchemaKindProperties(kind: string, predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+  const props = _schemaKindProperties.get(kind);
+  if (!props?.length) return;
+  for (let prop of props)
+  {
+    if (predicate(prop))
+    {
+      yield prop;
+      if (!prop.stackable) return;
+    }
+  }
+}
+
 // #endregion
 
 // #region ── System Schema Registration (NodeSchema family) ────────────────────────────

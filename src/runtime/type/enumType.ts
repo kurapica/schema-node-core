@@ -15,8 +15,8 @@ import { StringType } from './scalar/stringType';
 import { IntType } from './scalar/intType';
 import { DataNode } from '../../node/dataNode';
 import { EnumNode } from '../../node/enumNode';
-import { IValueAccess } from '../interfaces';
-import { getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
+import { IValueAccess, joinProperties } from '../interfaces';
+import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { EntryAccess, EntryType } from '../../struct/entry';
 import { isEmpty } from '../../utility/toolset';
 import { FunctionType } from './functionType';
@@ -57,20 +57,15 @@ export class EnumType extends ValueType {
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
     // enable prototype properties
-    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_ENUM, propCtor);
+    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
-    for (const prop of super.getProperties<T>(propCtor))
-    {
-      yield prop;
-      if (!prop.stackable) return;
-    }
-    for(const prop of getSchemaKindProperties<T>(SCHEMA_KIND_ENUM, propCtor))
-    {
-      yield prop;
-      if (!prop.stackable) return;
-    }
+    return joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor));
+  }
+
+  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
   }
 
   override isAssignableTo(other: ValueType): boolean {

@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Property/ConstraintProperty.cs
 // =============================================================================
 
-import { DataNode } from '../node/dataNode';
+import { IValueAccess } from '../runtime/interfaces';
 import type { IProperty } from './property';
 
 /**
@@ -15,11 +15,12 @@ import type { IProperty } from './property';
  */
 export interface IConstraintProperty extends IProperty {
   /** validate the data node */
-  validate(node: DataNode): Promise<boolean | undefined>;
+  validate(node: IValueAccess): Promise<boolean | undefined>;
 }
 
 /** Check if the property is constraint */
 export function isConstraintProperty(prop: IProperty)
 {
+  // for simple
   return typeof (prop as any).validate === 'function'
 }

@@ -10,12 +10,13 @@ import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyO
 import { RelationType } from './relationType';
 import { IProperty, Primary } from '../../property';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
-import { getNodeType } from '../schemaRuntime';
+import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { NodeType } from './nodeType';
 import { isEmpty } from '../../utility/toolset';
 import { Entry } from '../../struct/entry';
+import { IRelationProvider, joinProperties } from '../interfaces';
 
-export class ArrayType extends ValueType {
+export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
 
   /** Element value type (resolved at load time). */
@@ -25,7 +26,7 @@ export class ArrayType extends ValueType {
   primary: string[] = [];
 
   /** The relation types */
-  relations?: RelationType[];
+  private _relations?: RelationType[];
 
   override async load() {
     this.element = this._arraySchema?.element
@@ -40,7 +41,7 @@ export class ArrayType extends ValueType {
   }
 
   override unload(): void {
-    this.relations = undefined;
+    this._relations = undefined;
   }
 
   override create(): ArrayNode {
@@ -77,22 +78,20 @@ export class ArrayType extends ValueType {
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
-    return super.getProperty(propCtor) ?? this.element?.getProperty(propCtor);
+    return super.getProperty(propCtor) ?? this.element?.getProperty(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
-    for(let p of super.getProperties(propCtor))
-    {
-      yield p;
-      if (!p.stackable) return;
-    }
-    if (this.element)
-    {
-      for (let p of this.element.getProperties(propCtor))
-      {
-        yield p;
-        if (!p.stackable) return;
-      }
-    }
+    return joinProperties(super.getProperties(propCtor), this.element?.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor));
+  }
+
+  override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(super.filterProperties(predicate), this.element?.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
+  }
+
+  *getRelations(): Generator<RelationType> {
+    if (!this._relations?.length) return;
+    for(const relation of this._relations)
+      yield relation;
   }
 }

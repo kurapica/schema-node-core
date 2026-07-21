@@ -29,7 +29,7 @@ export interface ArraySchema {
 @Meta(RuntimeNodeType, ArrayType)
 @Meta(Attach, SCHEMA_KIND_ARRAY)
 @Meta(Append, [Relations])
-@Meta(ArrayValue, true)
+@Meta(ArrayValue)
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
   @Meta(Require, true)

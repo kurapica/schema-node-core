@@ -42,7 +42,7 @@ export interface EnumSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(RuntimeNodeType, EnumType)
 @Meta(Attach, SCHEMA_KIND_ENUM)
-@Meta(EnumValue, true)
+@Meta(EnumValue)
 @Meta(SchemaGenerator, generateEnumSchema)
 @Meta(EntrySource, buildFuncCall('system.data.enum.getenumaccess', NODE_TYPE, NODE_SELF, ENTRY_ROOT))
 class EnumSchemaMeta implements EnumSchema {

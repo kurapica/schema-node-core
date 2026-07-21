@@ -21,7 +21,7 @@ export class StructNode extends DataNode {
     const fields = type.getFields();
     for (const field of fields.filter(f => f.type)) {
       const node = field.type!.create(undefined, this);
-      node.setPropertyProvider(field);
+      node.setPropertyProvider(field); // use field as property provider
       this._fields.push(node);
     }
 
@@ -30,6 +30,16 @@ export class StructNode extends DataNode {
       this.setValue(value);
       this.confirm();
     }
+    else 
+    {
+      this._value = {};
+    }
+
+    // keep raw data update
+    this._fields.forEach(f => {
+      if (f.displayOnly) return;
+      this.recordSubscription(f.subscribe(() => (this._value as Record<string, unknown>)[f.name!] = f.rawValue));
+    });
   }
 
   dispose() {
@@ -115,6 +125,11 @@ export class StructNode extends DataNode {
   // #region ── Validation ────────────────────────────────────────────────────
 
   override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) }
+
+  // #endregion
+
+  // #region ── Utility ────────────────────────────────────────────────────
+
 
   // #endregion
 }

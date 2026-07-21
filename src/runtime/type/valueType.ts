@@ -10,7 +10,6 @@ import { NodeType } from './nodeType';
 import type { DataNode } from '../../node/dataNode';
 import { IValueAccess, IValueTypeAccess } from '../interfaces';
 import { IConstraintProperty } from '../../property';
-import { NodeSchema } from '../../schema/nodeSchema';
 import { FunctionType } from './functionType';
 import { ArrayType } from './arrayType';
 import { isEmpty } from '../../utility/toolset';
@@ -23,16 +22,18 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   /** The converter */
   private _isAssignableTo: Map<ValueType, FunctionType> | undefined;
+  private _arrayType: ValueType | undefined;
 
   /** The constraint properties */
-  constraints: IConstraintProperty[] | undefined;
+  get constraints(): IConstraintProperty[] {
+    const constraints = this.filterProperties(isConstraintProperty).toArray() as IConstraintProperty[];
+    constraints.reverse();
+    return constraints;
+  }
 
   /** Back-reference to wrapping array type (set by ArrayType). */
-  arrayType?: ValueType;
-
-  async loadType(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {
-    await super.loadType(schema, genericParams);
-    this.constraints = this.properties.filter(isConstraintProperty) as IConstraintProperty[];
+  get arrayType(): ValueType | undefined {
+    return this._arrayType;
   }
 
   // ── DataNode factory ─────────────────────────────────────────────────── 
@@ -47,7 +48,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   /** Gets the value type through path part */
   getAccessValueType(path: string): ValueType | undefined {
-    return isEmpty(path) || path === NODE_SELF ? this : undefined;
+    return isEmpty(path) || path.toLowerCase() === NODE_SELF ? this : undefined;
   }
 
   // ── Sub Entries ────────────────────────────────────────────────────────
@@ -64,13 +65,13 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
     {
       if (type.isConverter && type.args.length === 1 && type.args[0].type === this.name && type.returnType)
       {
-        this._isAssignableTo ??= new Map<ValueType, FunctionType>();
+        this._isAssignableTo ??= new Map();
         this._isAssignableTo.set(type.returnType, type);
       }
     }
     else if(type instanceof ArrayType && type.element === this)
     {
-      this.arrayType = type;
+      this._arrayType = type;
     }
     super.addUsedBy(type);
   }
@@ -79,7 +80,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   removeUsedBy(type: NodeType): void {
     if (type instanceof FunctionType && type.isConverter && type.returnType && this._isAssignableTo?.get(type.returnType) === type)
       this._isAssignableTo?.delete(type.returnType);
-    if (type === this.arrayType) this.arrayType = undefined;
+    if (type === this.arrayType) this._arrayType = undefined;
     super.removeUsedBy(type);
   }
 
