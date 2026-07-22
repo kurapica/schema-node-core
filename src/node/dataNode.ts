@@ -5,7 +5,7 @@
 
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
-import { IPropertyProvider, IValueAccess } from '../runtime/interfaces';
+import { IPropertyProvider, IValueAccess, joinProperties } from '../runtime/interfaces';
 import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
@@ -35,7 +35,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   private _propProvider?: IPropertyProvider;
 
   /** The override properties */
-  private _props?: Map<(new () => IProperty), { source: IValueAccess, level: number, property: IProperty }[]>;
+  private _props?: Map<(new () => IProperty), { source: IValueAccess, level: number, property: IProperty, valid?: boolean }[]>;
 
   /** The data observable */
   private _dataOb?: Observable;
@@ -150,14 +150,14 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property */
-  getProperty(propCtor: new () => IProperty): IProperty | undefined {
+  getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
     if (this._props?.has(propCtor))
     {
       const props = this._props.get(propCtor)!;
       const prop = props.length ? props[0].property : undefined
-      if (prop) return prop;
+      if (prop) return prop as T;
     }
-    return (this._propProvider ?? this.type).getProperty(propCtor);
+    return (this._propProvider ?? this.type).getProperty<T>(propCtor);
   }
 
   /** Gets the property value */
@@ -167,30 +167,19 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the properties */
-  *getProperties(propCtor: new () => IProperty): Generator<IProperty> {
-    if (this._props?.has(propCtor))
-    {
-      const props = this._props.get(propCtor)!;
-      for(let i = 0 ;i < props.length; i++)
-      {
-        const prop = props[i].property;
-        yield prop;
-        if (!prop.stackable) return;
-      }
-    }
-    for(let prop of (this._propProvider ?? this.type).getProperties(propCtor))
-    {
-      yield prop;
-      if (!prop.stackable) return;
-    }
+  *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    return joinProperties(this._props?.get(propCtor)?.map(p => p.property as T), (this._propProvider ?? this.type).getProperties<T>(propCtor));
   }
 
   /** Gets the property values */
   *getPropertyValues(propCtor: new() => IProperty): Generator<unknown>{
     for (let prop of this.getProperties(propCtor))
-    {
       yield prop.getValue();
-    }
+  }
+
+  /** Filters the properties */
+  *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this._propProvider ?? this.type).filterProperties(predicate));
   }
 
   /** Sets the property */
@@ -207,7 +196,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
         const exist = props?.find(p => p.source === source);
         if (exist)
         {
-          if (isEqual(exist.property.getValue(), property.getValue())) return;
+          if (exist.property === property) return; // property with same value also be treated as changed
           exist.property = property;
         }
         else
