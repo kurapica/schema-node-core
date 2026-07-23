@@ -10,4 +10,4 @@ import { IProperty, Property } from '../property';
  * This allows extending schema kinds with pre-defined property types without modifying the property class.
  * @example @Meta(Append, [Relations])
  */
-export class Append extends Property<(() => IProperty)[]> {}
+export class Append extends Property<(new () => IProperty)[]> {}

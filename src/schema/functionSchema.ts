@@ -239,7 +239,7 @@ class TypeFuncTypeMeta {}
  * @Meta(SchemaType, 'ns.funcName') and @Meta(Return, 'returnType').
  * Parameter types are declared via @Meta(SchemaType, 'type') on each parameter.
  */
-export function generateFunctionSchema(namespace: string, name: string, ctor: Function) {
+function generateFunctionSchema(namespace: string, name: string, ctor: Function) {
   const methods = getMetaMethods(ctor);
   
   // save the namespace

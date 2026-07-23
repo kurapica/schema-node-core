@@ -261,7 +261,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
   subscribeState(func: Function, immediate?: boolean): Function {
-    this._stateOb ??= new Observable();``
+    this._stateOb ??= new Observable();
     const sub = this._stateOb.subscribe(func);
     if (immediate) func(this);
     return sub;

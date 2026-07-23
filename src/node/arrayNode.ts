@@ -123,7 +123,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── Validation ────────────────────────────────────────────────────
 
   override get isValid(): boolean {
-    return this._elements.some(e => e instanceof DataNode && !e.isValid) && super.isValid;
+    return this._elements.every(e => e.isValid) && super.isValid;
   }
 
   // #endregion

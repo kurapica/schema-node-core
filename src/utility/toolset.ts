@@ -163,12 +163,12 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
   if (a && b && typeof a === "object" && typeof b === "object")
   {
     const flds = new Set<string>()
-    for(let f in Object.getOwnPropertyNames(a))
+    for(let f of Object.getOwnPropertyNames(a))
     {
       if (!isEqual(a[f], b[f])) return false
       flds.add(f)
     }
-    for(let f in Object.getOwnPropertyNames(b))
+    for(let f of Object.getOwnPropertyNames(b))
     {
       if (!flds.has(f)) return false
     }

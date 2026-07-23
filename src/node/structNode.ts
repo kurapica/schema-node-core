@@ -101,6 +101,10 @@ export class StructNode extends DataNode {
           result[f.name!] = d;
         }
       }
+      else
+      {
+        result[f.name!] = d;
+      }
     });
     return result;
   }

@@ -15,7 +15,6 @@ import { NodeType } from './nodeType';
 import { isEmpty } from '../../utility/toolset';
 import { Entry } from '../../struct/entry';
 import { IPropertyProvider, IRelationProvider, IValueAccess, joinProperties } from '../interfaces';
-import { Unlock } from '@element-plus/icons-vue';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
