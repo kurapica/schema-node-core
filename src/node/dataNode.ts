@@ -6,7 +6,7 @@
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
 import { IPropertyProvider, IRelationInfo, IValueAccess, joinProperties } from '../runtime/interfaces';
-import { debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
+import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
@@ -28,14 +28,14 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** The node parent */
   readonly parent: IValueAccess | undefined;
 
+  /** The alternative property provider  */
+  readonly propertyProvider?: IPropertyProvider;
+
   /** The value */
   protected _value: unknown;
 
   /** The original value */
   protected _original: unknown;
-
-  /** The alternative property provider  */
-  private _propProvider?: IPropertyProvider;
 
   /** The violated constraint properties(not from relations) */
   private _violated?: IConstraintProperty[];
@@ -66,7 +66,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     this.type = type;
     this.parent = parent;
-    this._propProvider = propProvider;
+    this.propertyProvider = propProvider;
     if (!isEmpty(value))
     {
       this.setValue(value);
@@ -92,6 +92,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     delete this._props;
     delete this._value;
     delete this._violated;
+    clearDebounce(this.onNext);
   }
 
   // #endregion
@@ -160,7 +161,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** Gets the property */
   getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
     const props = this._props?.get(propCtor);
-    return props?.length ? props[0].property as T : (this._propProvider ?? this.type).getProperty<T>(propCtor);
+    return props?.length ? props[0].property as T : (this.propertyProvider ?? this.type).getProperty<T>(propCtor);
   }
 
   /** Gets the property value */
@@ -168,7 +169,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Gets the properties */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
-    return joinProperties(this._props?.get(propCtor)?.map(p => p.property as T), (this._propProvider ?? this.type).getProperties<T>(propCtor));
+    return joinProperties(this._props?.get(propCtor)?.map(p => p.property as T), (this.propertyProvider ?? this.type).getProperties<T>(propCtor));
   }
 
   /** Gets the property values */
@@ -176,7 +177,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this._propProvider ?? this.type).filterProperties(predicate));
+    return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this.propertyProvider ?? this.type).filterProperties(predicate));
   }
 
   /** Sets the value of the given property */
@@ -388,7 +389,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     this._violated = undefined;
 
     // validate static constraints
-    for (const constraint of (this._propProvider ?? this.type).filterProperties(isConstraintProperty)) {
+    for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty)) {
       const res = await (constraint as IConstraintProperty).validate(this);
       if (res === false){
         this._violated ??= [];

@@ -10,7 +10,7 @@ import { isNull } from '../utility/toolset';
 
 export class EnumNode extends DataNode {
   override getValue() {
-    let value = this._value;
+    const value = this._value;
     return isNull(value) ? null : (this.type as EnumType).type === EnumValueType.String ? `${value}` : parseInt(`${value}`);
   }
 }
