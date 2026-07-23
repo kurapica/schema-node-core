@@ -28,7 +28,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   }
 
   override dispose() {
-    this._elements.forEach(f => (f as DataNode)?.dispose());
+    this._elements.forEach(f => f?.dispose());
     this._elements = [];
     delete this._relations;
     
@@ -63,7 +63,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
       this._elements[i].setValue(data[i]);
 
     for (let i = this._elements.length - 1; i >= data.length; i--)
-      (this._elements[i] as DataNode)?.dispose();
+      this._elements[i]?.dispose();
 
     this._elements.length = Math.min(this._elements.length, data.length);
 
@@ -79,10 +79,10 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   override get isEmpty(): boolean { return !this._elements.length; }
 
-  override get changed(): boolean { return this._elements.some(e => (e as DataNode)?.changed ?? false); }
+  override get changed(): boolean { return this._elements.some(e => e.changed); }
 
   override confirm(): void {
-    this._elements.forEach(e => (e as DataNode)?.confirm());
+    this._elements.forEach(e => e?.confirm());
     super.confirm();
   }
 
@@ -111,8 +111,11 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     if (first == ARRAY_PREVIOUS)
       result = new SliceArrayNode(this, 0, eleIndex - 1); // for func call
     else 
+    {
       result = this._elements[eleIndex];
-    return rest ? result.getAccessValue(rest, node) : result;
+      result = first == ARRAY_ELEMENT ? result : result?.getAccessValue(first, node);
+    }
+    return rest ? result?.getAccessValue(rest, node) : result;
   }
 
   // #endregion
@@ -184,7 +187,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     if (start < 0 || start >= this._elements.length) return;
 
     const remove = this._elements.splice(start, count);
-    remove.forEach(r => (r as DataNode).dispose());
+    remove.forEach(r => r.dispose());
 
     this.onNext();
   }
@@ -257,4 +260,18 @@ export class SliceArrayNode extends DataNode {
   override get rawValue(): unknown[] {
     return (this._arrayNode.rawValue as unknown[])?.slice(this._start, this._end) ?? [];
   }
+
+  override subscribe(func: Function, immediate?: boolean): Function {
+    return this._arrayNode.subscribe(func, immediate);
+  }
+
+  override recordSubscription(subscription: Function, source: unknown): void {
+    this._arrayNode.recordSubscription(subscription, source);
+  }
+
+  override clearSubscription(source: unknown): void {
+    this._arrayNode.clearSubscription(source);
+  }
+
+  override attachRelations(relationInfos: IRelationInfo[]): void {}
 }

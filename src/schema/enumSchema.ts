@@ -8,7 +8,7 @@ import { IProperty, Property } from '../property/property';
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
 import { concatLocaleString, LocaleString } from '../struct';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { EnumType } from '../runtime/type';
 import { Require, Valid } from '../property/constraint';
 import { Relation } from '../attribute/relation';

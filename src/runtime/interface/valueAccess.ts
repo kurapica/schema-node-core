@@ -83,6 +83,25 @@ export interface IValueAccess {
   attachRelations(relationInfos: IRelationInfo[]): void;
 
   // #endregion
+
+  // #region ── Utility ───────────────────────────────────────────────────────
+
+  /** Confirm the value */
+  confirm(): void;
+
+  /** Reset the value */
+  reset(): void;
+
+  /** Dispose the node */
+  dispose(): void;
+
+  /** Whether the value has changed */
+  get changed(): boolean | undefined;
+
+  /** Whether the value is valid */ 
+  get isValid(): boolean | undefined;
+
+  // #endregion
 }
 
 export interface IRelationInfo {

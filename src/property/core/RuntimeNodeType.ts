@@ -8,4 +8,4 @@ import { Property } from '../property';
 /**
  * Define the runtime type of a node schema kind.
  */
-export class RuntimeNodeType extends Property<new () => NodeType> {}
+export class RuntimeNodeType extends Property<new () => NodeType> {};

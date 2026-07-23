@@ -2,7 +2,7 @@ import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribu
 import { Relation } from '../../attribute/relation';
 import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
-import { RuntimeNodeType } from '../../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { Call } from '../../relation/call';

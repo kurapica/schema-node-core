@@ -5,7 +5,7 @@
 import { Meta } from '../attribute/meta';
 import { SchemaKind, NodeSchemaKind, SchemaType, OfSchema, Valid } from '../property/index';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_ORDER_NAMESPACE } from '../utility/constant';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { NamespaceType } from '../runtime/type';
 import { Base } from '../property/core/base';
 

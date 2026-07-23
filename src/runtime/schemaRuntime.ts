@@ -18,7 +18,7 @@ import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../
 import { SchemaKind } from '../property/record/schemaKind';
 import { NamespaceType, NodeType, GenericType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { getSchemaProvider } from '../schema/provider/schemaProvider';
 import { combineProperties } from '../property/propertyOwner';
 

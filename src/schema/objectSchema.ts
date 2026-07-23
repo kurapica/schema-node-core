@@ -4,7 +4,7 @@
 
 import { getMetaPropertiesForSchema, Meta } from '../attribute/meta';
 import { Base } from '../property/core/base';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, OfSchema, SchemaType, Valid, Display } from '../property/index';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
 import { saveSystemSchema } from '../runtime/schemaRuntime';

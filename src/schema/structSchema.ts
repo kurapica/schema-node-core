@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { Meta, getMetaFields, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
 import { DataIndex, Indexes } from '../property/constraint/indexes';

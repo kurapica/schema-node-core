@@ -5,7 +5,7 @@
 import { Meta } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
-import { RuntimeNodeType } from '../property/core/RuntimeNodeType';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require } from '../property/index';
 import { IProperty, Property } from '../property/property';
