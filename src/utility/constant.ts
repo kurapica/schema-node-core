@@ -150,6 +150,7 @@ export const NS_SYSTEM_LOGIC = 'system.logic';
 export const NS_SYSTEM_CALENDAR = 'system.calendar';
 export const NS_SYSTEM_COLLECTION = 'system.collection';
 export const NS_SYSTEM_DATA = 'system.data';
+export const NS_SYSTEM_DATA_ENUM = 'system.data.enum';
 export const NS_SYSTEM_STR = 'system.str';
 
 export const NS_SYSTEM_SCHEMA_REFLECT = `${NS_SYSTEM_SCHEMA}.reflect`;
