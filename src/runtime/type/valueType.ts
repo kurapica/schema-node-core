@@ -8,7 +8,7 @@
 
 import { NodeType } from './nodeType';
 import type { DataNode } from '../../node/dataNode';
-import { IValueAccess, IValueTypeAccess } from '../interfaces';
+import { IPropertyProvider, IValueAccess, IValueTypeAccess } from '../interfaces';
 import { IConstraintProperty } from '../../property';
 import { FunctionType } from './functionType';
 import { ArrayType } from './arrayType';
@@ -39,7 +39,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
-  abstract create(value: unknown, parent?: IValueAccess): DataNode;
+  abstract create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode;
 
   // ── Virtual ────────────────────────────────────────────────────────────
 

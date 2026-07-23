@@ -5,12 +5,12 @@ import { IProperty } from '../../../property';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
 import { SCHEMA_KIND_INT } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';
-import { IValueAccess } from '../../interfaces';
+import { IPropertyProvider, IValueAccess } from '../../interfaces';
 
 export class IntType extends ScalarType {
   private _intSchema: IntSchema | undefined
   
-  override create(value: unknown, parent?: IValueAccess): IntNode { return new IntNode(this, value, parent); }
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IntNode { return new IntNode(this, value, parent, propProvider); }
 
   override get isIndexable(): boolean { return true; }
 

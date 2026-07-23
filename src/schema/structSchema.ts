@@ -17,12 +17,11 @@ import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
 import { ArraySchema, ArrayProperty } from './arraySchema';
-import { Relation } from '../attribute/relation';
+import { getRelationSchemas, Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { StructValue } from '../property/constraint/structValue';
 
 /** The struct schema */
 export interface StructSchema {
@@ -45,7 +44,6 @@ export interface StructFieldSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(Append, [Relations])
-@Meta(StructValue)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];
@@ -183,6 +181,13 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
   setPropertyValue(nodeSchema, Display, { key: structName });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_STRUCT, ctor).forEach(p => setProperty(structSchema, p));
+
+  // Collect relations
+  const relations = getRelationSchemas(ctor);
+  if (relations.length > 0)
+    setPropertyValue(structSchema, Relations, relations);
+  
+  // save struct schema
   setPropertyValue(nodeSchema, StructProperty, structSchema);
   saveSystemSchema(nodeSchema);
 
@@ -204,7 +209,6 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
       setProperty(arraySchema, generics);
       arraySchema.element = `${structName}<${generics.getValue<GenericParameter[]>()!.map(g => g.name).join(',')}>`
     }
-
 
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
     setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });

@@ -19,9 +19,11 @@ import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
 import { DisplayOnly, Require, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
+import { Relations, RelationSchema } from '../../schema/relationSchema';
 
 // ── StructType ────────────────────────────────────────────────────────────
 
+/** The runtime struct type */
 export class StructType extends ValueType implements IRelationProvider {
   /** Field type definitions. */
   private _fields: StructFieldType[] = [];
@@ -53,7 +55,19 @@ export class StructType extends ValueType implements IRelationProvider {
         console.error(`The struct ${this.name}'s field ${fieldType.name}'s type ${field.type} cant be solved.`)
     }
 
-    // TODO: load relations from Relations property (similar to ArrayType)
+    // Load relations from Relations property
+    const relations = getProperty(this._structSchema, Relations)?.getValue<RelationSchema[]>();
+    if (relations?.length)
+    {
+      const rtypes: RelationType[] = [];
+      for (const r of relations)
+      {
+        const rtype = new RelationType(r, this);
+        rtypes.push(rtype);
+        await rtype.load();
+      }
+      this._relations = rtypes;
+    }
   }
 
   override unload(): void {
@@ -161,8 +175,8 @@ export class StructType extends ValueType implements IRelationProvider {
 
   // ── DataNode Factory ────────────────────────────────────────────────
 
-  override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): StructNode {
-    return new StructNode(this, value, parent);
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): StructNode {
+    return new StructNode(this, value, parent, propProvider);
   }
 
   // ── Relations ───────────────────────────────────────────────────────

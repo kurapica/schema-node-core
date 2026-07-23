@@ -19,8 +19,7 @@ export interface IConstraintProperty extends IProperty {
 }
 
 /** Check if the property is constraint */
-export function isConstraintProperty(prop: IProperty)
-{
-  // for simple
+export function isConstraintProperty(prop: IProperty): prop is IConstraintProperty {
+    // for simple
   return typeof (prop as any).validate === 'function'
 }

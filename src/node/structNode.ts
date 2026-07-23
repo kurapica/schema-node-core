@@ -5,7 +5,7 @@
 
 import { DataNode } from './dataNode';
 import type { StructType } from '../runtime/type/structType';
-import { IValueAccess } from '../runtime/interfaces';
+import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
 import { isNull } from '../utility/toolset';
 import { Unpack } from '../property';
 import { NODE_SELF } from '../utility/constant';
@@ -15,35 +15,43 @@ export class StructNode extends DataNode {
 
   private _fields: DataNode[] = [];
 
-  constructor(type: StructType, value: unknown, parent: IValueAccess | undefined = undefined) {
-    super(type, undefined, parent);
+  constructor(type: StructType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+    super(type, undefined, parent, propProvider);
 
     const fields = type.getFields();
     for (const field of fields.filter(f => f.type)) {
-      const node = field.type!.create(undefined, this);
-      node.setPropertyProvider(field); // use field as property provider
+      const node = field.type!.create(undefined, this, field);
       this._fields.push(node);
     }
 
-    if (typeof(value) === 'object' && !isNull(value) && !Array.isArray(value))
-    {
-      this.setValue(value);
-      this.confirm();
-    }
-    else 
-    {
-      this._value = {};
-    }
+    value = typeof(value) === 'object' && !isNull(value) && !Array.isArray(value) ? value : {};
+    this.setValue(value);
+    this.confirm();
 
     // keep raw data update
     this._fields.forEach(f => {
       if (f.displayOnly) return;
-      this.recordSubscription(f.subscribe(() => (this._value as Record<string, unknown>)[f.name!] = f.rawValue));
+      this.recordSubscription(f.subscribe(this.writeBackRawValue, true));
     });
+
+    // attach relations from type
+    this.attachRelations([{owner: this, relations: type.getRelations().toArray()}]);
   }
 
-  dispose() {
+  override dispose() {
+    this._fields.forEach(f => f.dispose());
+    this._fields = [];
     super.dispose();
+  }
+
+  // #endregion
+
+  // #region Core Features  ───────────────────────────────────────────────────
+
+  *fields(): Generator<DataNode> {
+    for (const f of this._fields) {
+      yield f;
+    }
   }
 
   // #endregion
@@ -53,29 +61,30 @@ export class StructNode extends DataNode {
   override setValue(value: unknown): void {
     const data: Record<string, unknown> = typeof(value) === 'object' && !isNull(value) && !Array.isArray(value) ? value as Record<string, unknown> : {};
     // as raw
-    this._value = data;
     this._fields.forEach(f => {
       let d = data[f.name!];
       // pack/unpack
       if (f.getPropertyValue(Unpack) && isNull(d))
       {
           const names = this._fields.map(f => f.name);
-          d = {} ;
+          d = {};
           for (let k in data)
           {
             if (!names.includes(k))
               (d as Record<string, unknown>)[k] = data[k];
           }
+          data[f.name!] = d;
       }
       f.setValue(d);
     });
+    super.setValue(value);
   }
 
   override getValue(): unknown {
     const result: Record<string, unknown> = {};
     this._fields.forEach(f => {
       if (f.isEmpty || f.displayOnly) return;
-      if (!f.isValid && f.visible) return; // skip invisible & invalid field
+      if (!f.isValid && !f.visible) return; // skip invisible & invalid field
 
       const d = f.getValue();
       if (f.getProperty(Unpack))
@@ -96,7 +105,7 @@ export class StructNode extends DataNode {
     return result;
   }
 
-  override get isEmpty(): boolean { return !this._fields.some(f => !f.isEmpty) }
+  override get isEmpty(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isEmpty) }
 
   override get changed(): boolean { return this._fields.some(f => !f.displayOnly && f.changed) }
 
@@ -117,19 +126,64 @@ export class StructNode extends DataNode {
     if (!first || first == NODE_SELF) return this;
     const field = this._fields.find(f => f.name?.toLowerCase() == first);
     if (!field) return undefined;
-    return rest ? field.getAccessValue(rest) : field;
+    return rest ? field.getAccessValue(rest, node) : field;
   }
 
   // #endregion
   
   // #region ── Validation ────────────────────────────────────────────────────
 
-  override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) }
+  override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) && super.isValid }
 
   // #endregion
 
+  // #region ── Relation ──────────────────────────────────────────────────────
+  override attachRelations(relationInfos: IRelationInfo[]): void {
+    const fieldRelations = new Map<string, IRelationInfo[]>();
+
+    // attach relations from given infos
+    relationInfos.forEach(info => {
+      info.relations.forEach(r => {
+        const paths = r.target.split('.').filter(p => p.trim() !== '');
+        let curr: IValueAccess | undefined = info.owner;
+        for (let i = 0; i < paths.length; i++)
+        {
+          if (curr === undefined) return;
+          if (curr === this){
+            if (i === paths.length - 1)
+              r.attach(info.owner, this);
+            else
+            {
+              const next = paths[i].toLowerCase();
+              const fieldInfos = fieldRelations.get(next) ?? [];
+              const exist = fieldInfos.find(f => f.owner === info.owner);
+              if (exist){
+                exist.relations.push(r);
+              }
+              else{
+                fieldInfos.push({owner: info.owner, relations: [r]});
+              }
+              fieldRelations.set(next, fieldInfos);
+            }
+            break;
+          }
+          curr = curr?.getAccessValue(paths[i], this);
+        }
+      });
+    });
+
+    // attach relations from children
+    this._fields.forEach(f => f.attachRelations(fieldRelations.get(f.name!.toLowerCase()) ?? []));
+  }
+  
+  // #endregion
+  
   // #region ── Utility ────────────────────────────────────────────────────
 
+  private writeBackRawValue(field: DataNode, value: unknown) {
+    (this._value as any)[field.name!] = value;
+    this.onNext();
+  }
 
   // #endregion
 }

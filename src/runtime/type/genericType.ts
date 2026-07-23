@@ -5,7 +5,7 @@
 
 import { ValueType } from './valueType';
 import { AnyNode } from '../../node/scalarNode';
-import { IValueAccess } from '../interfaces';
+import { IPropertyProvider, IValueAccess } from '../interfaces';
 
 export class GenericType extends ValueType {
   private _name: string;
@@ -17,5 +17,5 @@ export class GenericType extends ValueType {
 
   override get name(): string { return this._name; }
 
-  override create(value: unknown, parent?: IValueAccess): AnyNode { return new AnyNode(this, value, parent); }
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): AnyNode { return new AnyNode(this, value, parent, propProvider); }
 }

@@ -5,12 +5,15 @@
 
 import type { ValueType } from '../runtime/type/valueType';
 import type { IProperty } from '../property/property';
-import { IPropertyProvider, IValueAccess, joinProperties } from '../runtime/interfaces';
-import { deepClone, generateGuid, isEmpty, isEqual } from '../utility/toolset';
+import { IPropertyProvider, IRelationInfo, IValueAccess, joinProperties } from '../runtime/interfaces';
+import { debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
 import { Observable } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
 import { DisplayOnly, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
+import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
+
+const DEBOUNCE_TIME = 20;
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export abstract class DataNode implements IValueAccess, IPropertyProvider {
@@ -28,14 +31,17 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** The value */
   protected _value: unknown;
 
-  /** Violated constraint names. undefined = never validated, [] = valid. */
-  private _violated?: string[];
+  /** The original value */
+  protected _original: unknown;
 
   /** The alternative property provider  */
   private _propProvider?: IPropertyProvider;
 
-  /** The override properties */
-  private _props?: Map<(new () => IProperty), { source: IValueAccess, level: number, property: IProperty, valid?: boolean }[]>;
+  /** The violated constraint properties(not from relations) */
+  private _violated?: IConstraintProperty[];
+
+  /** The override properties(from relations) */
+  private _props?: Map<(new () => IProperty), IPropertyRecord[]>;
 
   /** The data observable */
   private _dataOb?: Observable;
@@ -43,23 +49,24 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** The state observable */
   private _stateOb?: Observable;
 
+  /** The violated observable */
+  private _violatedOb?: Observable;
+
   /** The property observable */
   private _propObs?: Map<(new () => IProperty), Observable>;
 
   /** The subscrptions */
   private _subs?: Map<unknown, Set<Function>>;
 
-  /** The original value */
-  protected _original: unknown;
-
   // #endregion
 
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  /** Construct the data node with value type, parent and init value */
-  constructor(type: ValueType, value: unknown, parent: IValueAccess | undefined = undefined) {
+  /** Construct the data node with value type, parent and init value, alternative property provider */
+  constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     this.type = type;
     this.parent = parent;
+    this._propProvider = propProvider;
     if (!isEmpty(value))
     {
       this.setValue(value);
@@ -75,9 +82,11 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     this._propObs?.clear();
     this._subs?.forEach(s => s.forEach(f => f()))
     this._subs?.clear();
+    this._violatedOb?.dispose();
 
     delete this._dataOb;
     delete this._stateOb;
+    delete this._violatedOb;  
     delete this._propObs;
     delete this._subs;
     delete this._props;
@@ -87,12 +96,33 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   // #endregion
 
+  // #region ── Shortcuts ──────────────────────────────────────────────────
+
+  /** Shortcut to gets the node name */
+  get name(): string | undefined { return this.getPropertyValue(Name) as string }
+
+  /** Shortcut to gets whether the node is require */
+  get require() { return this.getPropertyValue(Require) }
+
+  /** Shortcut to gets whether the node is readonly */
+  get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
+
+  /** shortcut to gets visiblity */
+  get visible() { return !this.getPropertyValue(InVisible) && this.getPropertyValue(Visible) != false }
+
+  /** shortcut to check if the node is display-only */
+  get displayOnly() { return this.getPropertyValue(DisplayOnly) }
+
+  // #endregion
+
   // #region ── Value Access ──────────────────────────────────────────────────
 
   /** Sets the value. */
   setValue(value: unknown): void{
-    if (isEqual(this._value, value)) return;
+    if (this._value === value) return;
     this._value = value;
+
+    // notify changes
     this.onNext();
   }
 
@@ -118,53 +148,23 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   get changed(): boolean { return !isEqual(this._original, this._value) }
 
   /** Confirm the changes and save to original */
-  confirm(): void { this._original = deepClone(this.getValue()) }
+  confirm(): void { this._original = this.value }
 
   /** Reset the data node value */
-  reset(): void { this.setValue(deepClone(this._original)) }
+  reset(): void { this.value = this.original }
 
   // #endregion
   
   // #region ── Property Access ───────────────────────────────────────────────
 
-  /** Shortcut to gets the node name */
-  get name(): string | undefined { return this.getPropertyValue(Name) as string }
-
-  /** Shortcut to gets whether the node is require */
-  get require() { return this.getPropertyValue(Require) }
-
-  /** Shortcut to gets whether the node is readonly */
-  get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
-
-  /** shortcut to gets visiblity */
-  get visible() { return !this.getPropertyValue(InVisible) && this.getPropertyValue(Visible) != false }
-
-  /** shortcut to check if the node is display-only */
-  get displayOnly() { return this.getPropertyValue(DisplayOnly) }
-
-  /** Set alternative property provider */
-  setPropertyProvider(provider?: IPropertyProvider) { 
-    if (this._propProvider == provider) return;
-    this._propProvider = provider;
-    this.onNextState(); // can't publish property changes here
-  }
-
   /** Gets the property */
   getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
-    if (this._props?.has(propCtor))
-    {
-      const props = this._props.get(propCtor)!;
-      const prop = props.length ? props[0].property : undefined
-      if (prop) return prop as T;
-    }
-    return (this._propProvider ?? this.type).getProperty<T>(propCtor);
+    const props = this._props?.get(propCtor);
+    return props?.length ? props[0].property as T : (this._propProvider ?? this.type).getProperty<T>(propCtor);
   }
 
   /** Gets the property value */
-  getPropertyValue(propCtor: new() => IProperty): unknown
-  {
-    return this.getProperty(propCtor)?.getValue();
-  }
+  getPropertyValue(propCtor: new() => IProperty): unknown { return this.getProperty(propCtor)?.getValue(); }
 
   /** Gets the properties */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
@@ -172,75 +172,71 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property values */
-  *getPropertyValues(propCtor: new() => IProperty): Generator<unknown>{
-    for (let prop of this.getProperties(propCtor))
-      yield prop.getValue();
-  }
+  *getPropertyValues(propCtor: new() => IProperty): Generator<unknown>{ for (let prop of this.getProperties(propCtor)) yield prop.getValue(); }
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
     return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this._propProvider ?? this.type).filterProperties(predicate));
   }
 
-  /** Sets the property */
-  setProperty(property: IProperty, source?: IValueAccess): void {
+  /** Sets the value of the given property */
+  setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void {
     source ??= this;
 
-    this._props ??= new Map();
-    const propCtor = property.constructor as new()=>IProperty;
-    const props = this._props.get(propCtor);
-    if (props)
+    let props = this._props?.get(propCtor);
+    let record = props?.find(p => p.source === source);
+
+    // clear
+    if (isEmpty(value)) {
+      if (!record) return;
+      props = props!.filter(d => d.source !== source)
+      this._props!.set(propCtor, props);
+    }
+    // set
+    else if (record)
     {
-      if (property.hasValue)
-      {
-        const exist = props?.find(p => p.source === source);
-        if (exist)
-        {
-          if (exist.property === property) return; // property with same value also be treated as changed
-          exist.property = property;
-        }
-        else
-        {
-          props.push({ source, level: this.calcLevel(source), property });
-          props.sort((a, b) => b.level - a.level); // keep order
-        }
+      if (isEqual(record.property.getValue(), value)) return;
+      record.property.setValue(value);
+    }
+    else
+    {
+      this._props ??= new Map();
+      record = { source, level: this.calcLevel(source), property: new propCtor() };
+      record.property.setValue(value);
+      if (props) {
+        props.push(record);
+        props.sort((a, b) => b.level - a.level); // keep order
       }
       else
       {
-        if (!props.some(d => d.source === source)) return;
-        this._props.set(propCtor, props.filter(d => d.source !== source));
+        props = [record];
       }
+      this._props.set(propCtor, props);
     }
-    else if (property.hasValue)
-    {
-      this._props.set(propCtor, [{ source, level: this.calcLevel(source), property }]);
-    }
-    else
-      return;
-    this.onNextState(propCtor, property.getValue());
-    this.onNextProperty(propCtor, property.getValue());
-  }
 
-  /** Sets the value of the given property */
-  setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void {
-    if (isEmpty(value))
-    {
-      const props = this._props?.get(propCtor);
-      if (props?.length)
+    // Validate constraint
+    if (isConstraintProperty(record.property)) {
+      if (isEmpty(value))
       {
-        source ??= this;
-        if (!props.some(d => d.source === source)) return;
-        this._props!.set(propCtor, props.filter(d => d.source !== source));
-        this._stateOb?.onNext(propCtor, undefined);
-        this._propObs?.get(propCtor)?.onNext(undefined);
+        if (record.valid == false) // clear violated
+          this.onNextViolated();
+      }
+      else
+      {
+        // validate
+        (record.property as IConstraintProperty).validate(this).then((res?: boolean) => {
+          if (res != record.valid)
+          {
+            record.valid = res;
+            this.onNextViolated();
+          }
+        }).catch(ex => console.error(ex))
       }
     }
-    else
-    {
-      const prop = new propCtor();
-      prop.setValue(value);
-      this.setProperty(prop, source);
-    }
+
+    // public property change
+    if (!props?.length || props[0].level <= record.level)
+      this.onNextProperty(propCtor);
   }
 
   // #endregion
@@ -251,23 +247,29 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   subscribe(func: Function, immediate?: boolean): Function {
     this._dataOb ??= new Observable();
     const sub = this._dataOb.subscribe(func);
-    if (immediate) func(this._value);
+    if (immediate) func(this, this.rawValue);
     return sub;
   }
 
   /** Publish the value change */
-  onNext() { this._dataOb?.onNext(this._value);  }
+  onNext = debounce(() => { 
+    this._dataOb?.onNext(this, this.rawValue);
+    this.validate();
+  }, DEBOUNCE_TIME);
 
   /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
   subscribeState(func: Function, immediate?: boolean): Function {
-    this._stateOb ??= new Observable();
+    this._stateOb ??= new Observable();``
     const sub = this._stateOb.subscribe(func);
-    if (immediate) func();
+    if (immediate) func(this);
     return sub;
   }
 
   /** Publish the state change */
-  onNextState(propCtor: (new() => IProperty) | undefined = undefined, value: unknown | undefined = undefined) { this._stateOb?.onNext(propCtor, value); }
+  onNextState(propCtor?: (new() => IProperty)) {
+    if (!this._stateOb) return;
+    this._stateOb.onNext(this, propCtor, propCtor ? this.getPropertyValue(propCtor) : undefined); 
+  }
 
   /** Subscribe the node property change and return the function for un-subscribe */
   subscribeProperty(propCtor: new () => IProperty, func: Function, immediate?: boolean): Function {
@@ -278,14 +280,30 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       this._propObs.set(propCtor, ob);
     }
     const sub = ob.subscribe(func);
-    if (immediate) func(this.getPropertyValue(propCtor))
+    if (immediate) func(this, propCtor, this.getPropertyValue(propCtor))
     return sub;
   }
 
   /** Publish the property value change */
-  onNextProperty(propCtor: new() => IProperty, value: unknown)
+  onNextProperty(propCtor: new() => IProperty)
   {
-    this._propObs?.get(propCtor)?.onNext(value);
+    const ob = this._propObs?.get(propCtor);
+    if (ob) ob.onNext(this, propCtor, this.getPropertyValue(propCtor));
+    this.onNextState(propCtor);
+  }
+
+  /** Subscribe the violated constraints and return the function for un-subscribe */
+  subscribeViolated(func: Function, immediate?: boolean): Function {
+    this._violatedOb ??= new Observable();
+    const sub = this._violatedOb.subscribe(func);
+    if (immediate) func(this, this.isValid);
+    return sub;
+  }
+
+  /** Publish the violated constraints */
+  onNextViolated() { 
+    if (!this._violatedOb) return;
+    this._violatedOb.onNext(this, this.isValid);
   }
 
   /** Record subscription by source */
@@ -332,60 +350,102 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   // #region ── Validation ────────────────────────────────────────────────────
 
-  /** Violated constraint names. undefined = never validated. */
-  get violated(): string[] | undefined { return this._violated; }
+  /** Violated constraint properties */
+  *violated(): Generator<IConstraintProperty> {
+    const unStackable = new Set<Function>();
+    if (this._props) {
+      for(const records of this._props.values()) {
+        if (!records.length || !isConstraintProperty(records[0].property)) continue;
+        for(const record of records) {
+          if (isNull(record.valid)) continue;
 
-  /** Whether the node passed all constraint validations. */
-  get isValid(): boolean { return !this._violated || this._violated.length === 0; }
+          if (!record.property.stackable) {
+            if (unStackable.has(record.property.constructor)) continue;
+            unStackable.add(record.property.constructor);
+          }
+          if (record.valid !== false) continue;
+          yield record.property as IConstraintProperty;
+        }
+      }
+    }
 
-  /** Set violated (and optional passed) constraints. */
-  setViolated(
-    violated?: IProperty[] | string[] | null,
-    passed?: IProperty[] | string[] | null,
-    reset?: boolean,
-  ): void {
-    const toNames = (items?: IProperty[] | string[] | null): string[] =>
-      !items ? [] : items.map(i => typeof i === 'string' ? i : i.name);
-
-    const vNames = toNames(violated);
-    const pNames = toNames(passed);
-
-    let result = reset || !this._violated
-      ? vNames
-      : [...this._violated, ...vNames];
-
-    result = result.filter(n => !pNames.includes(n));
-    this._violated = result.length > 0 ? result : [];
+    if (this._violated?.length) {
+      for (const prop of this._violated) {
+        if (!prop.stackable) {
+          if (unStackable.has(prop.constructor)) continue;
+          unStackable.add(prop.constructor);
+        }
+        yield prop;
+      }
+    }
   }
 
-  /** Clear specific passed constraints. */
-  clearViolated(passed?: IProperty[] | string[]): void {
-    this.setViolated(null, passed, false);
+  /** Whether the node passed all constraint validations. */
+  get isValid(): boolean { return this.violated().next().done ?? false; }
+
+  /** Validate the node. */
+  async validate() {
+    this._violated = undefined;
+
+    // validate static constraints
+    for (const constraint of (this._propProvider ?? this.type).filterProperties(isConstraintProperty)) {
+      const res = await (constraint as IConstraintProperty).validate(this);
+      if (res === false){
+        this._violated ??= [];
+        this._violated.push(constraint as IConstraintProperty);
+      }
+    }
+
+    // validate dynamic constraints
+    if (this._props) {
+      for(const records of this._props.values())
+      {
+        if (records.length && isConstraintProperty(records[0].property))
+        {
+          for(const record of records)
+          {
+            const res = await (record.property as IConstraintProperty).validate(this);
+            if (res !== record.valid)
+            {
+              record.valid = res;
+              this.onNextViolated();
+            }
+            // non-stackable property, only check the top one
+            if (!record.property.stackable) break;
+          }
+        }
+      }
+    }
+
+    // publish violated constraints
+    this.onNextViolated();
+  }
+
+  // #endregion
+
+  // #region ── Relation ──────────────────────────────────────────────────────
+
+  /** Attach the relations */
+  attachRelations(relationInfos: IRelationInfo[]): void {
+    relationInfos.forEach(info => {
+      info.relations.forEach(r => {
+        if (info.owner.getAccessValue(r.target, this) === this)
+          r.attach(info.owner, this);
+      });
+    });
   }
 
   // #endregion
 
   // #region ── Utility ───────────────────────────────────────────────────────
 
-  /** Clone this data node. */
-  clone(): DataNode {
-    const ctor = this.constructor as new (type: ValueType, value: unknown, parent: IValueAccess | undefined) => DataNode;
-    return new ctor(this.type, this.getValue(), this.parent);
-  }
-
-  /** Equality check. */
-  equals(other: DataNode | undefined): boolean {
-    if (!other) return this.isEmpty;
-    if (this === other) return true;
-    if (this.isEmpty) return other.isEmpty;
-    return isEqual(this.getValue(), other.getValue());
-  }
-
+  /** Convert to string. */
   toString(): string {
     const val = this.getValue();
     return isEmpty(val) ? '' : `${val}`;
   }
 
+  /** Calculate the distance to the source node. */
   private calcLevel(source: IValueAccess)
   {
     let level = 0;
@@ -399,4 +459,11 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   // #endregion
+}
+
+interface IPropertyRecord {
+  source: IValueAccess;
+  level: number;
+  property: IProperty;
+  valid?: boolean;
 }

@@ -14,18 +14,13 @@ import { getMetaProperty } from './meta';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
 
-interface RelationEntry {
-  schema: RelationSchema,
-  _memberKey?: string | symbol;
-}
-
 /** Resolve the canonical constructor for storing metadata. */
 function getConstructor(target: object): Function {
   return typeof target === 'function' ? target : target.constructor;
 }
 
-function ensureStore(ctor: Function): RelationEntry[] {
-  const rec = ctor as unknown as Record<symbol, RelationEntry[]>;
+function ensureStore(ctor: Function): RelationSchema[] {
+  const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
   let store = rec[RELATION_KEY];
   if (!store) {
     store = [];
@@ -51,23 +46,22 @@ export function Relation(
   if (!kind)
     throw new Error(`Can't figure out the relation kind of ${kind}`);
 
-  return ((tar: object, _memberKey?: string | symbol) => {
+  return ((tar: object, _memberKey?: string) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : '',
+      target: target && target.toLowerCase() != NODE_SELF ? target : _memberKey ?? '',
       property: getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,
       [kind]: value
     };
-    ensureStore(ctor).push({ schema, _memberKey });
+    ensureStore(ctor).push(schema);
   }) as ClassDecorator & PropertyDecorator;
 }
 
 // ── Retrieval ──────────────────────────────────────────────────────────────
 
 /** Get all relation entries declared on a class constructor. */
-export function getRelationSchemas(ctor: Function, field?: string | symbol): RelationSchema[] {
-  const entrys = (ctor as unknown as Record<symbol, RelationEntry[]>)[RELATION_KEY] ?? [];
-  return isEmpty(field) ? entrys.map(e => e.schema) : entrys.filter(e => e._memberKey == field).map(e => e.schema);
+export function getRelationSchemas(ctor: Function): RelationSchema[] {
+  return (ctor as unknown as Record<symbol, RelationSchema[]>)[RELATION_KEY] ?? [];
 }

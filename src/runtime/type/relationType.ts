@@ -91,29 +91,24 @@ export class RelationType implements INodeReference, IErrorProvider {
   }
 
   /** Attach the relation to target with the owner */
-  attach(owner: IValueAccess, target?: IValueAccess)
+  attach(owner: IValueAccess, target: IValueAccess)
   {
     if (!this._propCtor) return;
-    target ??= owner.getAccessValue(this.target);
-    if (!target) return;
+    this._process?.detach(this, owner, target); // clear first
     this._process?.attach(this, owner, target);
   }
 
   /** Detach the relation from the target with the owner */
-  detach(owner: IValueAccess, target?: IValueAccess)
+  detach(owner: IValueAccess, target: IValueAccess)
   {
     if (!this._propCtor) return;
-    target ??= owner.getAccessValue(this.target);
-    if (!target) return;
     this._process?.detach(this, owner, target);
     target.setPropertyValue(this._propCtor, undefined, owner); // clear
   }
 
   /** Execute the relation and set new property to the target */
-  async process(owner: IValueAccess, target?: IValueAccess) {
+  async process(owner: IValueAccess, target: IValueAccess) {
     if (!this._propCtor) return undefined;
-    target ??= owner.getAccessValue(this.target);
-    if (!target) return;
     target.setPropertyValue(this._propCtor, await this._process?.process(owner, target), owner);
   }
 }

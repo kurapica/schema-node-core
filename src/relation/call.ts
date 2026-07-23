@@ -1,5 +1,6 @@
 import { Meta } from "../attribute/meta";
 import { Relation } from "../attribute/relation";
+import { RelationStage } from "../enum/relationStage";
 import { ForSchema, FuncCall, FuncCallProperty, OfSchema, RelationKind, SchemaType, Visible } from "../property";
 import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
@@ -28,7 +29,7 @@ class CallProcess implements IRelationProcess, IErrorProvider {
       this._error = 'RELATION_FUNC_NOT_EXIST'; // @TODO: handle error later
   }
 
-  attach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {
+  attach(relation: RelationType, owner: IValueAccess, target: IValueAccess): void {
     if (!this._func) return;
     const handler = () => relation.process(owner, target);
 
@@ -37,15 +38,19 @@ class CallProcess implements IRelationProcess, IErrorProvider {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
       if (!node) return;
-      (target ?? owner).recordSubscription(node.subscribe(handler), relation)
+      target.recordSubscription(node.subscribe(handler), relation);
     });
+
+    // Load stage: call the function immediately
+    if (relation.stage & RelationStage.Load)
+      handler();
   }
 
-  detach(relation: RelationType, owner: IValueAccess, target?: IValueAccess): void {
-    (target ?? owner).clearSubscription(relation);
+  detach(relation: RelationType, owner: IValueAccess, target: IValueAccess): void {
+    target.clearSubscription(relation);
   }
 
-  async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
+  async process(owner: IValueAccess, target: IValueAccess): Promise<unknown> {
     if (!this._func) return undefined;
     return await this._func.call(this._call!.args.map(a => {
       if (isEmpty(a.source)) return a.value;

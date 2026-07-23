@@ -15,7 +15,7 @@ import { StringType } from './scalar/stringType';
 import { IntType } from './scalar/intType';
 import { DataNode } from '../../node/dataNode';
 import { EnumNode } from '../../node/enumNode';
-import { IValueAccess, joinProperties } from '../interfaces';
+import { IPropertyProvider, IValueAccess, joinProperties } from '../interfaces';
 import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { EntryAccess, EntryType } from '../../struct/entry';
 import { isEmpty } from '../../utility/toolset';
@@ -84,7 +84,7 @@ export class EnumType extends ValueType {
     return false;
   }
 
-  override create(value: unknown = undefined, parent: IValueAccess | undefined = undefined): DataNode { return new EnumNode(this, value, parent); }
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode { return new EnumNode(this, value, parent, propProvider); }
 
   override get isIndexable() { return true; }   
 

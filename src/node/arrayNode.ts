@@ -6,6 +6,7 @@
 import { DataNode } from './dataNode';
 import type { ValueType } from '../runtime/type/valueType';
 import type { ArrayType } from '../runtime/type/arrayType';
+import { IPropertyProvider, IValueAccess } from '../runtime/interfaces';
 
 export class ArrayNode extends DataNode implements Iterable<DataNode> {
   private _elements: DataNode[] = [];
@@ -15,8 +16,8 @@ export class ArrayNode extends DataNode implements Iterable<DataNode> {
     return (this.type as ArrayType)?.element;
   }
 
-  constructor(type: ValueType) {
-    super(type);
+  constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+    super(type, value, parent, propProvider);
   }
 
   get isEmpty(): boolean {

@@ -14,7 +14,8 @@ import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSc
 import { NodeType } from './nodeType';
 import { isEmpty } from '../../utility/toolset';
 import { Entry } from '../../struct/entry';
-import { IRelationProvider, joinProperties } from '../interfaces';
+import { IPropertyProvider, IRelationProvider, IValueAccess, joinProperties } from '../interfaces';
+import { Unlock } from '@element-plus/icons-vue';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
@@ -44,8 +45,8 @@ export class ArrayType extends ValueType implements IRelationProvider {
     this._relations = undefined;
   }
 
-  override create(): ArrayNode {
-    return new ArrayNode(this);
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): ArrayNode {
+    return new ArrayNode(this, value, parent, propProvider);
   }
 
   override *getRefTypes(): Generator<NodeType> {
