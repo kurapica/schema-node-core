@@ -3,6 +3,10 @@ import { Meta } from '../../attribute/meta';
 import { OfSchema, SchemaType, PropertyValueType, Alias, ForSchema, InVisible, Default, Static } from '../index';
 import type { IConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { IValueAccess } from '../../runtime/interfaces';
+import { EnumArrayNode } from '../../node/enumArrayNode';
+import { EnumNode } from '../../node/enumNode';
+import { EnumType } from '../../runtime/type';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
@@ -14,4 +18,23 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND
 @Meta(Static, true)
 export class EnumValue extends Property<boolean> implements IConstraintProperty {
   override get hasValue(): boolean { return true; }
+
+  async validate(node: IValueAccess): Promise<boolean | undefined> {
+    if (node.isEmpty) return undefined;
+    if (node instanceof EnumNode) {
+      const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
+      return access.length > 0;
+    }
+    else if (node instanceof EnumArrayNode)
+    {
+      const values = node.getValue() as unknown[];
+      for(let value of values)
+      {
+        const access = await (node.type as EnumType).getEnumEntryAccess(`${value}`);
+        if (!access?.length) return false;
+      }
+      return true;
+    }
+    return undefined;
+  }
 }

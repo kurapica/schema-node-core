@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { LowLimitDate, LowLimitInt, LowLimitNumber, LowLimitString, UpLimitDate, UpLimitInt, UpLimitNumber, UpLimitString } from '../property';
-import { isNull } from '../utility/toolset';
+import { isNull, parseDate } from '../utility/toolset';
 import { DataNode } from './dataNode';
 
 /** The data node represets the scalar types */
@@ -71,23 +71,11 @@ export class DecimalNode extends ScalarNode {
 }
 
 export class DateNode extends ScalarNode {
-  override getValue(){ return this._parseDate(this._value); }
+  override getValue(){ return parseDate(this._value); }
 
   /** The uplimit of numeric */
-  get upLimit(): Date | undefined { return this._parseDate(this.getPropertyValue(UpLimitDate)) }
+  get upLimit(): Date | undefined { return parseDate(this.getPropertyValue(UpLimitDate)) }
 
   /** The lowlimit of numeric */
-  get lowLimit(): Date | undefined { return this._parseDate(this.getPropertyValue(LowLimitDate)) }
-
-  /** Parse value to date */
-  private _parseDate(value: unknown): Date | undefined
-  {
-    if (value instanceof Date) return value;
-
-    if (typeof (value) === "string" || typeof (value) === "number" && value > 0) {
-        const date = new Date(value)
-        if (date && !isNaN(date.getFullYear())) return date;
-    }
-    return undefined;
-  }
+  get lowLimit(): Date | undefined { return parseDate(this.getPropertyValue(LowLimitDate)) }
 }

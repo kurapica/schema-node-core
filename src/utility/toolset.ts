@@ -4,6 +4,19 @@ export function combinePaths(...names: string[])
   return names.filter(n => !isEmpty(n)).join('.')
 }
 
+
+  /** Parse value to date */
+export function parseDate(value: unknown): Date | undefined
+{
+  if (value instanceof Date) return value;
+
+  if (typeof (value) === "string" || typeof (value) === "number" && value > 0) {
+      const date = new Date(value)
+      if (date && !isNaN(date.getFullYear())) return date;
+  }
+  return undefined;
+}
+
 /**
  * is null
  */
@@ -328,13 +341,4 @@ export function generateGuid(): string {
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16).toUpperCase()
   })
-}
-
-/**
- * format string
- */
-export function sformat(template: string | ILocaleString, ...args: any[]) {
-  return `${_L(template)}`.replace(/{(\d+)}/g, (match, index) => {
-    return typeof args[index] !== 'undefined' ? _L(args[index]) : match;
-  });
 }

@@ -93,6 +93,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     delete this._value;
     delete this._violated;
     clearDebounce(this.onNext);
+    clearDebounce(this.onNextViolated);
   }
 
   // #endregion
@@ -302,10 +303,10 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the violated constraints */
-  onNextViolated() { 
+  onNextViolated = debounce(() => { 
     if (!this._violatedOb) return;
     this._violatedOb.onNext(this, this.isValid);
-  }
+  }, DEBOUNCE_TIME);
 
   /** Record subscription by source */
   recordSubscription(subscription: Function, source: unknown = undefined): void {
@@ -386,15 +387,9 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Validate the node. */
   async validate() {
-    this._violated = undefined;
-
     // validate static constraints
-    for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty)) {
-      const res = await (constraint as IConstraintProperty).validate(this);
-      if (res === false){
-        this._violated ??= [];
-        this._violated.push(constraint as IConstraintProperty);
-      }
+    for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty) as Generator<IConstraintProperty>) {
+      this.recordConstraint(constraint, await constraint.validate(this));
     }
 
     // validate dynamic constraints
@@ -417,8 +412,20 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
         }
       }
     }
+  }
 
-    // publish violated constraints
+  /** Record violated constraint property */
+  recordConstraint(constraint: IConstraintProperty, valid?: boolean): void {
+    if (valid || isNull(valid)) {
+      if (!this._violated?.length) return;
+      const index = this._violated.indexOf(constraint as IConstraintProperty);
+      if (index !== -1) this._violated.splice(index, 1);
+    }
+    else {
+      this._violated ??= [];
+      if (this._violated.indexOf(constraint as IConstraintProperty) !== -1) return;
+      this._violated.push(constraint as IConstraintProperty);
+    }
     this.onNextViolated();
   }
 

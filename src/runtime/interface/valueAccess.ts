@@ -1,4 +1,4 @@
-import { IProperty } from "../../property";
+import { IConstraintProperty, IProperty } from "../../property";
 import { RelationType, ValueType } from "../type";
 
 /** The value type access interface */
@@ -13,6 +13,9 @@ export interface IValueAccess {
 
   /** Whether this node holds no value. */
   get isEmpty(): boolean;
+
+  /** Gets the raw value to reduce the access cost */
+  get rawValue(): unknown;
 
   /** Sets the value. */
   setValue(value: unknown): void;
@@ -84,6 +87,19 @@ export interface IValueAccess {
 
   // #endregion
 
+  // #region ── Validation ────────────────────────────────────────────────────
+
+  /** Whether the value is valid */ 
+  get isValid(): boolean | undefined;
+
+  /** Gets the violated constraint properties */
+  violated(): Generator<IConstraintProperty>;
+
+  /** Record violated constraint property */
+  recordConstraint(constraint: IConstraintProperty, valid: boolean): void;
+
+  // #endregion
+
   // #region ── Utility ───────────────────────────────────────────────────────
 
   /** Confirm the value */
@@ -97,9 +113,6 @@ export interface IValueAccess {
 
   /** Whether the value has changed */
   get changed(): boolean | undefined;
-
-  /** Whether the value is valid */ 
-  get isValid(): boolean | undefined;
 
   // #endregion
 }
