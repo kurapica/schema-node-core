@@ -165,7 +165,7 @@ export const NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES = `${NS_SYSTEM_SCHEMA_REFL
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`;
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_ARGS = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withargs`;
 
-export const NS_SYSTEM_LOGIC_EQ = `${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.eq)}`;
+export const NS_SYSTEM_LOGIC_EQ = `${NS_SYSTEM_LOGIC}.eq`;
 
 // ── Expression Priority ────────────────────────────────────────────────────
 

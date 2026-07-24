@@ -109,7 +109,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
     let result: IValueAccess | undefined = undefined;
     if (first == ARRAY_PREVIOUS)
-      result = new SliceArrayNode(this, 0, eleIndex - 1); // for func call
+      result = new SliceArrayNode(this, 0, eleIndex); // for func call
     else 
     {
       result = this._elements[eleIndex];
