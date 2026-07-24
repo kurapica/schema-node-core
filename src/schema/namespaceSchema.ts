@@ -8,6 +8,7 @@ import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, 
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { NamespaceType } from '../runtime/type';
 import { Base } from '../property/core/base';
+import { buildFuncCall } from '../property/funcCallProperty';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_NAMESPACE])
@@ -19,5 +20,5 @@ class NamespaceSchemaMeta {}
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_NAMESPACE }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_NAMESPACE))
 class NamespaceTypeMeta {}

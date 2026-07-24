@@ -51,7 +51,7 @@ export class NodeType implements IPropertyProvider, INodeReference {
     if (!this.schema) return '';
     const baseName = combinePaths(this.schema.namespace ?? '', this.schema.name);
     if (this.genericParams && this.genericParams.length > 0) {
-      return `${baseName}<${this.genericParams.map(g => g.name).join(',')}>`;
+      return `${baseName}<${this.genericParams.map(g => g.name).join(', ')}>`;
     }
     return baseName;
   }

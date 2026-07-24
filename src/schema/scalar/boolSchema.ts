@@ -2,6 +2,7 @@ import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
 import { Display, OfSchema, SchemaGenerator, SchemaType, Valid } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
+import { buildFuncCall } from '../../property/funcCallProperty';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaKind } from '../../property/record/schemaKind';
@@ -24,7 +25,7 @@ class BoolSchemaMeta {}
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_BOOL_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_BOOL }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_BOOL))
 class BoolTypeMeta {}
 
 /** Generate the bool schema type */

@@ -1,6 +1,6 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { Attach, Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -18,19 +18,20 @@ export interface DecimalSchema {
   base?: string
 }
 
-/** the date schema meta */
+/** the decimal schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(RuntimeNodeType, DecimalType)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
+@Meta(Attach, SCHEMA_KIND_DECIMAL)
 @Meta(SchemaGenerator, generateDecimalSchema)
 class DecimalSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DECIMAL_TYPE)
   base?: string;
 }
 
-/** The date property for node schema */
+/** The decimal property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.decimal`)
@@ -57,7 +58,7 @@ export class DecimalProperty extends Property<DecimalSchema>
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_DECIMAL_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_DECIMAL }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_DECIMAL))
 class DecimalTypeMeta {}
 
 /** Generate the date schema */

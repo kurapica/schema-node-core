@@ -4,7 +4,8 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, ForSchema, Alias, Entry } from '../index';
+import { OfSchema, SchemaType, PropertyValueType, ForSchema, Alias } from '../index';
+import type { Entry } from '../../struct/entry';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_ENTRY, SCHEMA_KIND_STRING, NS_SYSTEM_LIST, SCHEMA_KIND_INT, NS_SYSTEM_STRING, NS_SYSTEM_INT, NS_SYSTEM_ENTRYS } from '../../utility/constant';
 
 /**

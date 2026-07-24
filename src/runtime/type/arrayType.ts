@@ -15,6 +15,10 @@ import { NodeType } from './nodeType';
 import { isEmpty } from '../../utility/toolset';
 import { Entry } from '../../struct/entry';
 import { IPropertyProvider, IRelationProvider, IValueAccess, joinProperties } from '../interfaces';
+import { Relations, RelationSchema } from '../../schema/relationSchema';
+import { EnumType } from './enumType';
+import { EnumArrayNode } from '../../node/enumArrayNode';
+import { DataNode } from '../../node/dataNode';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
@@ -33,6 +37,20 @@ export class ArrayType extends ValueType implements IRelationProvider {
       ? await getNodeType(this._arraySchema.element) as ValueType
       : undefined;
     this.primary = this.getProperty(Primary)?.getValue<string[]>() ?? [];
+
+    // Load relations from Relations property
+    const relations = getProperty(this._arraySchema, Relations)?.getValue<RelationSchema[]>();
+    if (relations?.length)
+    {
+      const rtypes: RelationType[] = [];
+      for (const r of relations)
+      {
+        const rtype = new RelationType(r, this);
+        rtypes.push(rtype);
+        await rtype.load();
+      }
+      this._relations = rtypes;
+    }
   }
 
   override loadProperties(): IProperty[]{
@@ -44,7 +62,9 @@ export class ArrayType extends ValueType implements IRelationProvider {
     this._relations = undefined;
   }
 
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): ArrayNode {
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
+    if (this.element instanceof EnumType)
+      return new EnumArrayNode(this, value, parent, propProvider);
     return new ArrayNode(this, value, parent, propProvider);
   }
 

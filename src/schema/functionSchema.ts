@@ -6,7 +6,7 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
@@ -181,6 +181,7 @@ class CallArgMeta implements CallArg {
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_FUNCTION))
 export class FuncProperty extends Property<FunctionSchema> {
   combine(other: IProperty): boolean {
@@ -211,21 +212,21 @@ export class FuncProperty extends Property<FunctionSchema> {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_FUNCTION }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_FUNCTION))
 class FunctionTypeMeta {}
 
 /** Represents the validation function type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valid`)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, args: [ { source: NODE_SELF }, { value: NS_SYSTEM_BOOL }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_BOOL))
 class ValidFuncTypeMeta {}
 
 /** Represents the function return value type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, args: [ { source: NODE_SELF }, { value: `{NS_SYSTEM_SCHEMA_NODE}.valuetype` }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE))
 class TypeFuncTypeMeta {}
 
 // #endregion

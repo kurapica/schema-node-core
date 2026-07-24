@@ -6,9 +6,11 @@
 
 import { Meta } from '../attribute/meta';
 import { ArrayNode } from '../node/arrayNode';
-import { DataNode } from '../node/dataNode';
+import { EnumArrayNode } from '../node/enumArrayNode';
 import { OfSchema, SchemaType, Return, Generics, ArgName, Require } from '../property/index';
+import { IValueAccess } from '../runtime/interfaces';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT } from '../utility/constant';
+import { isNull } from '../utility/toolset';
 
 // ── SystemCollection ───────────────────────────────────────────────────
 
@@ -66,7 +68,7 @@ export class SystemCollection {
     @Meta(ArgName, 'obj') 
     @Meta(SchemaType, NS_SYSTEM_OBJECT) 
     @Meta(Require, true)
-    obj: DataNode,
+    obj: Record<string, unknown>,
 
     @Meta(ArgName, 'field') 
     @Meta(SchemaType, NS_SYSTEM_STRING) 
@@ -78,10 +80,8 @@ export class SystemCollection {
     defaultValue: T = undefined as unknown as T,
   ): T | undefined {
     if (!obj) return defaultValue;
-    const fieldNode = obj.getAccessValue(field);
-    if (!fieldNode) return defaultValue;
-    const value = fieldNode.tryGetValue<T>();
-    return value === undefined ? defaultValue : value;
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? defaultValue : fieldNode as T;
   }
 
   /** Gets fields from the objects in the array to a new array */
@@ -91,24 +91,24 @@ export class SystemCollection {
     @Meta(ArgName, 'array') 
     @Meta(SchemaType, NS_SYSTEM_ARRAY) 
     @Meta(Require, true)
-    array: ArrayNode,
+    array: Record<string, unknown>[],
 
     @Meta(ArgName, 'field') 
     @Meta(SchemaType, NS_SYSTEM_STRING) 
     @Meta(Require, true)
     field: string
   ): T[] {
-    return array.elements.map((obj) => SystemCollection.getfield(obj, field)).filter((v): v is T => v !== undefined);
+    return array.map((obj) => obj[field]).filter((v): v is T => !isNull(v));
   }
 
   /** Orders the array by the specified field */
   @Meta(Return, NS_SYSTEM_ARRAY)
   @Meta(Generics, [{ name: 'T' }])
-  static orderby<T>(
+  static orderby(
     @Meta(ArgName, 'array')
     @Meta(SchemaType, NS_SYSTEM_ARRAY) 
     @Meta(Require, true)
-    array: ArrayNode,
+    array: Record<string, unknown>[],
 
     @Meta(ArgName, 'field') 
     @Meta(SchemaType, NS_SYSTEM_STRING)
@@ -118,16 +118,17 @@ export class SystemCollection {
     @Meta(ArgName, 'descending')
     @Meta(SchemaType, NS_SYSTEM_BOOL)
     descending: boolean = false
-  ): ArrayNode {
-    array.elements.sort((a, b) => {
-      const valueA = SystemCollection.getfield(a, field, undefined);
-      const valueB = SystemCollection.getfield(b, field, undefined);
-      if (valueA === undefined && valueB === undefined) return 0;
-      if (valueA === undefined) return 1;
-      if (valueB === undefined) return -1;
+  ): Record<string, unknown>[] {
+    const value = [...array];
+    value.sort((a, b) => {
+      const valueA: any = a[field];
+      const valueB: any = b[field];
+      if (isNull(valueA) && isNull(valueB)) return 0;
+      if (isNull(valueA)) return (descending ? -1 : 1);
+      if (isNull(valueB)) return (descending ? 1 : -1);
       return (valueA < valueB ? -1 : valueA > valueB ? 1 : 0) * (descending ? -1 : 1);
     });
-    return array;
+    return value;
   }
 
   /** Skips the first n elements of the array */

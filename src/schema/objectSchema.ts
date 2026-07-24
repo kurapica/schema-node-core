@@ -5,6 +5,7 @@
 import { getMetaPropertiesForSchema, Meta } from '../attribute/meta';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
+import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, OfSchema, SchemaType, Valid, Display } from '../property/index';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
 import { saveSystemSchema } from '../runtime/schemaRuntime';
@@ -24,7 +25,7 @@ class ObjectSchemaMeta {}
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_OBJECT_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_OBJECT }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_OBJECT))
 class ObjectTypeMeta {}
 
 /** Generate the object schema type */

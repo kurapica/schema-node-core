@@ -26,18 +26,16 @@ export {
 
 // ── Constraint properties ─────────────────────────────────────────────────
 export {
-  Require, Valid, Primary, PrimaryIndex as CPrimaryIndex,
-  UniqueIndex as CUniqueIndex, Indexes,
+  Require, Valid, Primary, Indexes,
   UpLimitString, UpLimitNumber, UpLimitInt, UpLimitDate,
   LowLimitString, LowLimitNumber, LowLimitInt, LowLimitDate,
   WhiteList, BlackList, SingleFlag, Cascade, LeafOnly, Root,
   StringEntries, IntEntries,
 } from './constraint/index';
-export type { Entry } from './constraint/entries';
 
 // ── Function properties ───────────────────────────────────────────────────
 export {
-  Arithmetic, Logic, Converter, Constant, NoCache, ServerOnly, Return, ArgName, Variadic,
+  Converter, Constant, NoCache, ServerOnly, Return, ArgName, Variadic,
 } from './function/index';
 
 // ── Record properties ─────────────────────────────────────────────────────

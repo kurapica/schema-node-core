@@ -4,7 +4,7 @@ import { OfSchema, SchemaType, PropertyValueType, Alias, ForSchema } from '../in
 import type { IConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_DATE, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, SCHEMA_KIND_INT } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
-import { parseDate } from '../../utility/toolset';
+import { isNull, parseDate } from '../../utility/toolset';
 
 @Meta(Alias, 'uplimit')
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -24,8 +24,8 @@ export class UpLimitString extends Property<number> implements IConstraintProper
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 export class UpLimitInt extends Property<number> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value) return undefined;
-    return node.getValue() as number <= this._value;
+    if (node.isEmpty || isNull(this._value)) return undefined;
+    return node.getValue() as number <= this._value!;
   }
 }
 
@@ -35,8 +35,8 @@ export class UpLimitInt extends Property<number> implements IConstraintProperty 
 @Meta(PropertyValueType, NS_SYSTEM_NUMBER)
 export class UpLimitNumber extends Property<number> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value) return undefined;
-    return node.getValue() as number <= this._value;
+    if (node.isEmpty || isNull(this._value)) return undefined;
+    return node.getValue() as number <= this._value!;
   }
 }
 

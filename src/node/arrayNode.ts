@@ -188,6 +188,8 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
     const remove = this._elements.splice(start, count);
     remove.forEach(r => r.dispose());
+    const rawValue = this.rawValue as unknown[];
+    rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
 
     this.onNext();
   }
@@ -206,6 +208,8 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
       }
     }
     this._elements[to] = temp;
+    const rawValue = this.rawValue as unknown[];
+    rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
 
     this.onNext();
   }
@@ -220,6 +224,10 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   forEach(callback: (value: IValueAccess, index: number) => void): void {
     this._elements.forEach(callback);
+  }
+
+  map<T>(callback: (value: IValueAccess, index: number) => T): T[] {
+    return this._elements.map(callback);
   }
 
   // #endregion

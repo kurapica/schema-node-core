@@ -1,6 +1,6 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { Attach, Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -25,6 +25,7 @@ export interface DateSchema {
 @Meta(RuntimeNodeType, DateType)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Meta(SchemaGenerator, generateDateSchema)
+@Meta(Attach, SCHEMA_KIND_DATE)
 class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;
@@ -57,7 +58,7 @@ export class DateProperty extends Property<DateSchema>
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_DATE }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_DATE))
 class DateTypeMeta {}
 
 /** Generate the date schema */

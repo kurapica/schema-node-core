@@ -32,6 +32,9 @@ export class EnumType extends ValueType {
   /** Gets the enum cascade */
   get cascade(): LocaleString[] | undefined { return this._enumSchema?.cascade }
 
+  /** Gets the max flags value for flags enum */
+  get maxFlags(): number | undefined { return this._maxFlags }
+
   override loadProperties(): IProperty[] {
     this._enumSchema = getProperty(this.schema, EnumProperty)?.getValue();
     return this._enumSchema ? getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM).toArray() : [];
@@ -42,8 +45,11 @@ export class EnumType extends ValueType {
     if (this._enumSchema?.type === EnumValueType.Flags)
     {
       this._maxFlags = 0;
-      for(let v of this._enumSchema.values)
-        this._maxFlags |= parseInt(v.value) ?? 0;
+      for(let v of this._enumSchema.values){
+        const value = parseInt(v.value) ?? 0;
+        if (isNaN(value)) continue;
+        this._maxFlags |= value;
+      }
     }
 
     // init

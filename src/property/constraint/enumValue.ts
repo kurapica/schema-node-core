@@ -7,6 +7,8 @@ import { IValueAccess } from '../../runtime/interfaces';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { EnumNode } from '../../node/enumNode';
 import { EnumType } from '../../runtime/type';
+import { EnumValueType } from '../../enum/enumValueType';
+import { isNull } from '../../utility/toolset';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
@@ -22,19 +24,30 @@ export class EnumValue extends Property<boolean> implements IConstraintProperty 
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty) return undefined;
     if (node instanceof EnumNode) {
-      const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
-      return access.length > 0;
+      return this.validateEnumValue(node.type as EnumType, node.getValue());
     }
     else if (node instanceof EnumArrayNode)
     {
       const values = node.getValue() as unknown[];
       for(let value of values)
       {
-        const access = await (node.type as EnumType).getEnumEntryAccess(`${value}`);
-        if (!access?.length) return false;
+        const valid = await this.validateEnumValue(node.type as EnumType, value);
+        if (!valid) return false;
       }
       return true;
     }
     return undefined;
+  }
+
+  private async validateEnumValue(enumType: EnumType, value: unknown): Promise<boolean | undefined> {
+    if (isNull(value)) return undefined;
+    if (enumType.type === EnumValueType.Flags)
+    {
+      if (!enumType.maxFlags) return undefined;
+      return typeof value === 'number' && value <= enumType.maxFlags;
+    }
+
+    const access = await enumType.getEnumEntryAccess(`${value}`);
+    return access.length > 0;
   }
 }

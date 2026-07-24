@@ -82,11 +82,16 @@ export class FunctionType extends NodeType {
 
     this._systemFn = this._funcSchema.func as ((...args: unknown[]) => unknown) | undefined;
     this._converter = this.getProperty(Converter)?.getValue() ?? false;
-    this._serverOnly = this.getProperty(ServerOnly)?.getValue() ?? this.exps.length === 0 && !this.isSystem;
+    this._serverOnly = this.getProperty(ServerOnly)?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
     this._noCache = this.getProperty(NoCache)?.getValue() ?? false;
 
     // Resolve return type
     this.returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
+  }
+
+  override unload(): void {
+    this._funcMap = undefined;
+    this._built = false;
   }
 
   // ── Call ────────────────────────────────────────────────────────────

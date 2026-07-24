@@ -29,6 +29,7 @@ export class BoolNode extends ScalarNode {
 export class StringNode extends ScalarNode {
   override getValue() {
     let value = this._value;
+    if (isNull(value)) return null;
     return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? JSON.stringify(value) : value}`
   }
 

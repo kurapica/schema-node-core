@@ -4,7 +4,7 @@
 
 import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
-import { SchemaKind, SchemaType, Attach, OfSchema, IProperty } from '../property/index';
+import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, PropertyValueType } from '../property/index';
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
 import { RelationType } from '../runtime/type';
@@ -35,10 +35,12 @@ export interface RelationSchema {
 class RelationSchemaMeta implements RelationSchema {
   /** The target of the relation */
   @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(PrimaryIndex, 0)
   target!: string;
 
   /** The property the relation applies to */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+  @Meta(PrimaryIndex, 1)
   property!: string;
 
   /** The stage of the realtion been applied */
@@ -53,6 +55,7 @@ class RelationSchemaMeta implements RelationSchema {
 /** The relations property */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.relations`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_RELATION}.schemas`)
 export class Relations extends Property<RelationSchema[]> {
   combine(other: IProperty): boolean {
     const otherSchema = other.getValue<RelationSchema[]>();

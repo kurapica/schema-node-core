@@ -94,6 +94,12 @@ export function *filterSchemaKindProperties(kind: string, predicate: (prop: IPro
 
 // #region ── System Schema Registration (NodeSchema family) ────────────────────────────
 
+/** The schema kind registry */
+const _schemaKindRegistry = new Map<string, Function>();
+
+/** The schema property registry */
+const _schemaPropertyRegistry = new Set<Function>();
+
 /** The type declared with schema type, the schema kind is also declare with node schema,
  * So we use this to track all
  */
@@ -105,11 +111,17 @@ const rootNamespace : NodeSchema = { namespace: "", name: "", kind : SCHEMA_KIND
 /** Schema lookups by full name for fast access. */
 const _schemaIndex = new Map<string, NodeSchema>();
 
-/**
- * Register the schema type for a class constructor
- * @param typeCtor The type constructor
- * @param type The schema type
- */
+/** Register the schema kind for a class constructor */
+export function registerSchemaKind(kind: string, kindCtor: Function): void {
+  _schemaKindRegistry.set(kind.toLowerCase(), kindCtor);
+}
+
+/** Register the schema property for a class constructor */
+export function registerSchemaProperty(propCtor: Function): void {
+  _schemaPropertyRegistry.add(propCtor);
+}
+
+/* Register the schema type for a class constructor */
 export function registerSchemaType(type: string, typeCtor: Function): void {
   _schemaTypeRegistry.set(type.toLowerCase(), typeCtor);
 }
@@ -488,44 +500,41 @@ function* splitGenericParams(input: string): Generator<string> {
 
 /** Scan all registered schema type to build the schema runtime, this is called to init the schema runtime */
 export function initSchemaRuntime(): void {
-  // schema kind & generator & properties
-  _schemaTypeRegistry.forEach((ctor, type) => {
-    // schema kinds
-    const schemaKind = getMetaProperty(ctor, SchemaKind);
-    if (schemaKind?.hasValue) {
-      const kind = schemaKind.getValue<string>()!;
-      _schemaKindHolder.set(kind, ctor);
+  // Scan schema kinds
+  _schemaKindRegistry.forEach((ctor, kind) => {
+    _schemaKindHolder.set(kind, ctor);
 
-      // generator check
-      const generator = getMetaProperty(ctor, SchemaGenerator);
-      if (generator?.hasValue) {
-        _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
-      }
-
-      // append properties to the schema kind registry
-      const appendProperties = getMetaProperty(ctor, Append);
-      if (appendProperties?.hasValue) {
-        let existed = _schemaKindPropertyTypes.get(kind) ?? [];
-        existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
-        _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
-      }
-
-      // node type check
-      const nodeSchemaKind = getMetaProperty(ctor, NodeSchemaKind);
-      if (nodeSchemaKind?.hasValue)
-      {
-        const nodeTypeGenerator = getMetaProperty(ctor, RuntimeNodeType);
-        if (nodeTypeGenerator)
-          _nodeTypeGenerator.set(nodeSchemaKind.getValue<string>()!, nodeTypeGenerator.getValue<Function>() as new () => NodeType)
-      }
-
-      // Prototype properties
-      const prototypeProps = getMetaProperties(ctor).filter(p => getMetaProperty(p.constructor, ForSchema)?.getValue<string[]>()?.includes(kind))
-      if (prototypeProps?.length)
-        _schemaKindProperties.set(kind, prototypeProps);
+    // generator check
+    const generator = getMetaProperty(ctor, SchemaGenerator);
+    if (generator?.hasValue) {
+      _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
     }
 
-    // properties for schema kind
+    // append properties to the schema kind registry
+    const appendProperties = getMetaProperty(ctor, Append);
+    if (appendProperties?.hasValue) {
+      let existed = _schemaKindPropertyTypes.get(kind) ?? [];
+      existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
+      _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
+    }
+
+    // node type check
+    const nodeSchemaKind = getMetaProperty(ctor, NodeSchemaKind);
+    if (nodeSchemaKind?.hasValue)
+    {
+      const nodeTypeGenerator = getMetaProperty(ctor, RuntimeNodeType);
+      if (nodeTypeGenerator)
+        _nodeTypeGenerator.set(nodeSchemaKind.getValue<string>()!, nodeTypeGenerator.getValue<Function>() as new () => NodeType)
+    }
+
+    // Prototype properties
+    const prototypeProps = getMetaProperties(ctor).filter(p => getMetaProperty(p.constructor, ForSchema)?.getValue<string[]>()?.includes(kind))
+    if (prototypeProps?.length)
+      _schemaKindProperties.set(kind, prototypeProps);
+  });
+
+  // Scan registered properties
+  _schemaPropertyRegistry.forEach((ctor) => {
     const forSchema = getMetaProperty(ctor, ForSchema);
     if (forSchema?.hasValue) {
       const kinds = forSchema.getValue<string[]>() ?? [];

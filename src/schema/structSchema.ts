@@ -104,8 +104,8 @@ export class StructProperty extends Property<StructSchema> {
             matched.add(ename);
             combineFields.push(existField);
           }
-          combineFields.push(combineProperties(selfSchema.fields[index], otherField, SCHEMA_KIND_STRUCT_FIELD));
         }
+        combineFields.push(combineProperties(selfSchema.fields[index], otherField, SCHEMA_KIND_STRUCT_FIELD));
       }
       else
         combineFields.push(otherField);
@@ -124,7 +124,7 @@ export class StructProperty extends Property<StructSchema> {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.type`)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, { func: NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, args: [ { source: NODE_SELF }, { value: SCHEMA_KIND_STRUCT }] } )
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_STRUCT))
 class StructTypeMeta {}
 
 // ── Helper ─────────────────────────────────────────────────────────────────

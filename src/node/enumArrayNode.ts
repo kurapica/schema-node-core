@@ -16,4 +16,8 @@ export class EnumArrayNode extends DataNode {
     if (!Array.isArray(value)) return [];
     return value.map((item) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
   }
+
+  get length() {
+    return (this.rawValue as unknown[]).length;
+  }
 }

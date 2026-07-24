@@ -17,7 +17,7 @@ export class Root extends Property<string> implements IConstraintProperty {
     if (node instanceof EnumNode) {
       const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
       if (!access?.length) return undefined;
-      return access.some((item) => `${item.entry?.value}` === node.toString());
+      return access.some((item) => `${item.entry?.value}` === this._value!);
     }
     else if (node instanceof EnumArrayNode)
     {
@@ -26,7 +26,7 @@ export class Root extends Property<string> implements IConstraintProperty {
       {
         const access = await (node.type as EnumType).getEnumEntryAccess(`${value}`);
         if (!access?.length) continue;
-        if(!access.some((item) => `${item.entry?.value}` === `${value}`)) return false;
+        if(!access.some((item) => `${item.entry?.value}` === this._value!)) return false;
       }
       return true;
     }
