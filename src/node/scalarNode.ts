@@ -3,73 +3,80 @@
 // Mirrors C# SchemaNode.Core/Node/ScalarNode.cs
 // =============================================================================
 
+import { LowLimitDate, LowLimitInt, LowLimitNumber, LowLimitString, UpLimitDate, UpLimitInt, UpLimitNumber, UpLimitString } from '../property';
+import { isNull, parseDate } from '../utility/toolset';
 import { DataNode } from './dataNode';
-import type { NodeSchema } from '../schema/nodeSchema';
-import BigNumber from 'bignumber.js';
 
-/**
- * Abstract scalar node holding a value of type T.
- */
-export abstract class ScalarNode<T> extends DataNode {
-  protected _value: T | undefined;
-
-  get isEmpty(): boolean {
-    return this._value === undefined || this._value === null;
-  }
-
-  trySetValue<TValue>(value: TValue): boolean {
-    this._value = value as unknown as T;
-    return true;
-  }
-
-  tryGetValue<TV>(): TV | undefined {
-    return this._value as unknown as TV;
-  }
-}
+/** The data node represets the scalar types */
+export abstract class ScalarNode extends DataNode {}
 
 // ── Concrete scalar nodes ─────────────────────────────────────────────────
 
-export class AnyNode extends ScalarNode<unknown> {}
-export class BoolNode extends ScalarNode<boolean> {}
-export class StringNode extends ScalarNode<string> {}
+/** The data node represents the object type */
+export class AnyNode extends ScalarNode {}
 
-export class IntNode extends ScalarNode<BigNumber> {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof BigNumber) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
-      this._value = new BigNumber(value);
-    } else {
-      return false;
-    }
-    return true;
+/** The data node represents the bool node */
+export class BoolNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    if (typeof (value) === "string") value = value.toLowerCase() === "true"
+    if (!isNull(value)) value = value ? true : false
+    return value;
   }
 }
 
-export class NumericNode extends ScalarNode<BigNumber> {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof BigNumber) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'bigint') {
-      this._value = new BigNumber(value);
-    } else {
-      return false;
-    }
-    return true;
+/** The data node represents the string node */
+export class StringNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    if (isNull(value)) return null;
+    return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? JSON.stringify(value) : value}`
   }
+
+  /** The uplimit of string */
+  get upLimit(): number | undefined { return this.getPropertyValue(UpLimitString) as number }
+
+  /** The lowlimit of string */
+  get lowLimit(): number | undefined { return this.getPropertyValue(LowLimitString) as number }
 }
 
-export class DateNode extends ScalarNode<Date> {
-  override trySetValue<TValue>(value: TValue): boolean {
-    if (value instanceof Date) {
-      this._value = value;
-    } else if (typeof value === 'string' || typeof value === 'number') {
-      const d = new Date(value);
-      if (isNaN(d.getTime())) return false;
-      this._value = d;
-    } else {
-      return false;
-    }
-    return true;
+/** The int node represents the int node */
+export class IntNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    if (isNull(value)) return null;
+    if (typeof value === 'string') value = parseInt(value);
+    return Number.isFinite(value) ? value : null;
   }
+
+  /** The uplimit of int */
+  get upLimit(): number | undefined { return this.getPropertyValue(UpLimitInt) as number }
+
+  /** The lowlimit of int */
+  get lowLimit(): number | undefined { return this.getPropertyValue(LowLimitInt) as number }
+}
+
+export class DecimalNode extends ScalarNode {
+  override getValue() {
+    let value = this._value;
+    if (isNull(value)) return null;
+    if (typeof value === 'string') value = parseFloat(value);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  /** The uplimit of numeric */
+  get upLimit(): number | undefined { return this.getPropertyValue(UpLimitNumber) as number }
+
+  /** The lowlimit of numeric */
+  get lowLimit(): number | undefined { return this.getPropertyValue(LowLimitNumber) as number }
+}
+
+export class DateNode extends ScalarNode {
+  override getValue(){ return parseDate(this._value); }
+
+  /** The uplimit of numeric */
+  get upLimit(): Date | undefined { return parseDate(this.getPropertyValue(UpLimitDate)) }
+
+  /** The lowlimit of numeric */
+  get lowLimit(): Date | undefined { return parseDate(this.getPropertyValue(LowLimitDate)) }
 }

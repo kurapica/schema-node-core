@@ -1,22 +1,24 @@
 // =============================================================================
-// NamespaceSchema — extension data under "namespace" key
+// Mirrors C# SchemaNode.Core/Schema/NamespaceSchema.cs
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKindRecord, NodeSchemaKindRecord, SchemaType, Attach, ForSchema, OfSchema } from '../property/index';
-import { Property } from '../property/property';
-import { NodeSchema } from './nodeSchema';
-import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_NS, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from '../utility/constant';
+import { SchemaKind, NodeSchemaKind, SchemaType, OfSchema, Valid } from '../property/index';
+import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_ORDER_NAMESPACE } from '../utility/constant';
+import { RuntimeNodeType } from '../property/core/runtimeNodeType';
+import { NamespaceType } from '../runtime/type';
+import { Base } from '../property/core/base';
+import { buildFuncCall } from '../property/funcCallProperty';
 
-@Meta(SchemaKindRecord, [SCHEMA_KIND_NAMESPACE, 1])
-@Meta(NodeSchemaKindRecord, [SCHEMA_KIND_NAMESPACE, 1])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NS}.schema`)
-@Meta(Attach, SCHEMA_KIND_NAMESPACE)
-export class NamespaceSchema {
-  schemas: NodeSchema[] = [];
-}
+/** Meta registration class (NOT exported). */
+@Meta(SchemaKind, [SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_NAMESPACE])
+@Meta(NodeSchemaKind, [SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_NAMESPACE])
+@Meta(RuntimeNodeType, NamespaceType)
+class NamespaceSchemaMeta {}
 
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.namespace`)
-export class NamespaceProperty extends Property<NamespaceSchema> {}
+/** Represents the namespace type */
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_NAMESPACE))
+class NamespaceTypeMeta {}

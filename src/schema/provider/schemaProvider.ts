@@ -3,20 +3,24 @@
 // =============================================================================
 
 import type { NodeSchema } from '../nodeSchema';
-import type { EnumValueAccess, EnumValueInfo } from '../enumSchema';
 
-/** Interface for loading NodeSchemas by name. */
+/** Interface for node schema familiy */
 export interface INodeSchemaProvider {
-  loadSchema(names: string[]): Promise<NodeSchema[]>;
+  /** Gets the node schemas */
+  getSchema(names: string[]): Promise<NodeSchema[]>;
+
+  /** Call the schema function */
+  callFunction(schemaName: string, args: unknown[], retType?: string): Promise<unknown>;
 }
 
-/** Interface for lazy-loading enum value sub-trees. */
-export interface IEnumSchemaProvider {
-  loadEnumSubList(schemaName: string, value?: string): Promise<EnumValueInfo[]>;
-  loadEnumAccessList(schemaName: string, value: string): Promise<EnumValueAccess[]>;
+let schemaProvider: INodeSchemaProvider | undefined;
+
+/** Sets the schema provider */
+export function useSchemaProvider(provider: INodeSchemaProvider): void {
+  schemaProvider = provider;
 }
 
-/** Interface for remote function call execution. */
-export interface IFunctionSchemaProvider {
-  callFunction(schemaName: string, args: unknown[], retType?: string, target?: string): Promise<unknown>;
+/** Gets the schema provider */
+export function getSchemaProvider(): INodeSchemaProvider | undefined {
+  return schemaProvider;
 }

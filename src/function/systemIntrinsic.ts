@@ -3,34 +3,62 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, Generics } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL } from '../utility/constant';
-
-function isNull(v: unknown): boolean { return v === null || v === undefined; }
-function isEmpty(v: unknown): boolean { if (isNull(v)) return true; if (typeof v === 'string' && v === '') return true; if (Array.isArray(v) && v.length === 0) return true; return false; }
-function deepClone<T>(v: T): T { return JSON.parse(JSON.stringify(v)); }
+import { ArgName } from '../property/function/argName';
+import { OfSchema, SchemaType, Return, Generics, Require } from '../property/index';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
+import { deepClone, isEmpty, isNull } from '../utility/toolset';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
-@Meta(SchemaType, 'system.intrinsic')
+@Meta(SchemaType, NS_SYSTEM_INTRINSIC)
 export class SystemIntrinsic {
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.assign') @Meta(Return, 'T') @Meta(Generics, [{ name: 'T' }])
-  static assign<T>(@Meta(SchemaType, 'T') input: T): T { return deepClone(input); }
+  /** Assign value */
+  @Meta(Return, 'T') 
+  @Meta(Generics, [{ name: 'T' }])
+  static assign<T>(
+    @Meta(ArgName, 'input') @Meta(SchemaType, 'T') input: T
+  ): T { return deepClone(input); }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.default') @Meta(Return, 'T') @Meta(Generics, [{ name: 'T' }])
-  static defaultValue<T>(@Meta(SchemaType, 'T') a: T, @Meta(SchemaType, 'T') d: T): T { return (isNull(a) ? d : a) as T; }
+  /** Default value */
+  @Meta(Return, 'T') 
+  @Meta(Generics, [{ name: 'T' }])
+  static default<T>(
+    @Meta(ArgName, 'value') @Meta(SchemaType, 'T') v: T, 
+    @Meta(ArgName, 'default') @Meta(SchemaType, 'T') @Meta(Require, true) d: T
+  ): T { return (isNull(v) ? d : v) as T; }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.null') @Meta(Return, 'T')
-  static nullValue<T>(): T | null { return null; }
+  /** Return null of the given type */
+  @Meta(Return, 'T')
+  static null<T>(): T | null { return null; }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.ifret') @Meta(Return, 'T') @Meta(Generics, [{ name: 'T' }])
-  static ifret<T>(@Meta(SchemaType, NS_SYSTEM_BOOL) cond: boolean, @Meta(SchemaType, 'T') value: T): T | null { return cond ? value : null; }
+  /** if match the condition, return the value and stop the execution*/
+  @Meta(Return, 'T') 
+  @Meta(Generics, [{ name: 'T' }])
+  static ifret<T>(
+    @Meta(ArgName, 'cond') @Meta(SchemaType, NS_SYSTEM_BOOL) @Meta(Require, true) cond: boolean, 
+    @Meta(ArgName, 'value') @Meta(SchemaType, 'T') value: T
+  ): T | null { return cond ? value : null; }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.ifnot') @Meta(Return, 'T') @Meta(Generics, [{ name: 'T' }])
-  static ifnot<T>(@Meta(SchemaType, NS_SYSTEM_BOOL) cond: boolean, @Meta(SchemaType, 'T') value: T): T | null { return !cond ? value : null; }
+  /** if not match the condition, return the value and stop the execution */
+  @Meta(Return, 'T') 
+  @Meta(Generics, [{ name: 'T' }])
+  static ifnot<T>(
+    @Meta(ArgName, 'cond')  @Meta(SchemaType, NS_SYSTEM_BOOL)  @Meta(Require, true)  cond: boolean, 
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T')  value: T
+  ): T | null { return !cond ? value : null; }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.ifnull') @Meta(Return, 'T1') @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
-  static ifnull<T1, T2>(@Meta(SchemaType, 'T2') val: T2, @Meta(SchemaType, 'T1') value: T1): T1 | null { return isNull(val) ? value : null; }
+  /** if the value is null, return the value and stop the execution */
+  @Meta(Return, 'T1') 
+  @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
+  static ifnull<T1, T2>( 
+    @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+  ): T1 | null { return isNull(val) ? value : null; }
 
-  @Meta(OfSchema, SCHEMA_KIND_FUNCTION) @Meta(SchemaType, 'system.intrinsic.ifempty') @Meta(Return, 'T1') @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
-  static ifempty<T1, T2>(@Meta(SchemaType, 'T2') val: T2, @Meta(SchemaType, 'T1') value: T1): T1 | null { return isEmpty(val) ? value : null; }
+  /** if the value is empty, return the value and stop the execution */
+  @Meta(Return, 'T1') 
+  @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
+  static ifempty<T1, T2>( 
+    @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+  ): T1 | null { return isEmpty(val) ? value : null; }
 }

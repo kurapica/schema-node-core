@@ -6,48 +6,11 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
+import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
+
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
-
-/** Cache for stackable flags — lazy from constructor metadata. */
-const _stackableCache = new Map<Function, boolean>();
-
-/** Cache for alias names. */
-const _aliasCache = new Map<Function, string | undefined>();
-
-function derivePropertyName(ctor: Function): string {
-  let name = ctor.name;
-  if (name.endsWith('Property')) name = name.slice(0, -8);
-  if (name.length === 0) return name;
-  return name[0].toLowerCase() + name.slice(1);
-}
-
-/** Read @Meta(Stackable) from constructor metadata — string-based, no circular import. */
-function resolveStackable(ctor: Function): boolean {
-  const META_KEY = Symbol.for('schema-node:meta');
-  const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
-  if (!entries) return false;
-  for (const entry of entries) {
-    if (entry.property.name === 'stackable') {
-      return entry.property.getValue<boolean>() ?? false;
-    }
-  }
-  return false;
-}
-
-/** Read @Meta(Alias) from constructor metadata — string-based, no circular import. */
-function resolveAlias(ctor: Function): string | undefined {
-  const META_KEY = Symbol.for('schema-node:meta');
-  const entries = (ctor as unknown as Record<symbol, Array<{ property: IProperty }>>)[META_KEY];
-  if (!entries) return undefined;
-  for (const entry of entries) {
-    if (entry.property.name === 'alias') {
-      const raw = entry.property.getValue<string>();
-      return raw === null || raw === undefined ? undefined : String(raw);
-    }
-  }
-  return undefined;
-}
+const _saveableCache = new Map<Function, boolean>();
 
 /**
  * Base interface for all property instances attached to a schema.
@@ -59,11 +22,14 @@ export interface IProperty {
   /** Whether duplicates from different sources stack (accumulate) vs override. */
   readonly stackable: boolean;
 
+  /** Whether the property is static, which means the property value cannot be modified by relation system. */
+  readonly static: boolean;
+
   /** Whether the property carries a non-empty value. */
   readonly hasValue: boolean;
 
-  /** The TypeScript constructor used as a type token (≈ C# Type). */
-  readonly type: Function;
+  /** Whether the property value is savable (persisted) in schema. */
+  readonly savable: boolean;
 
   /** Set the raw value onto this property instance. */
   setValue<T>(value: T): void;
@@ -71,8 +37,14 @@ export interface IProperty {
   /** Get the typed value. If matchType is true, returns undefined on type mismatch. */
   getValue<T>(matchType?: boolean): T | undefined;
 
+  /** Combine the value of another property into this one. */
+  combine(other: IProperty): boolean;
+
+  /** Compare this property to another for equality, used for stackable properties. */
+  equal(other: IProperty): boolean;
+
   /** Apply the property to the target, or register the target */
-  apply(target: object, field?: string | symbol): void;
+  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
 }
 
 /**
@@ -84,31 +56,29 @@ export abstract class Property<T> implements IProperty {
   protected _hasValue = false;
 
   get name(): string {
-    const ctor = this.constructor as Function;
-    let n = _nameCache.get(ctor);
-    if (!n) {
-      n = resolveAlias(ctor) ?? derivePropertyName(ctor);
-      _nameCache.set(ctor, n);
-    }
-    return n;
+    return getPropertyName(this.constructor as new () => IProperty);
   }
 
   get stackable(): boolean {
     const ctor = this.constructor as Function;
-    let s = _stackableCache.get(ctor);
-    if (s === undefined) {
-      s = resolveStackable(ctor);
-      _stackableCache.set(ctor, s);
-    }
-    return s;
+    return (ctor as unknown as Record<string, boolean>).stackable ?? false;
+  }
+
+  get static(): boolean {
+    const ctor = this.constructor as Function;
+    return (ctor as unknown as Record<string, boolean>).static ?? false;
+  }
+
+  get savable(): boolean {
+    const ctor = this.constructor as Function;
+    if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
+    const savable = getPropertyTypeSupportSchemas(this.constructor as new () => IProperty).length > 0;
+    _saveableCache.set(ctor, savable);
+    return savable;
   }
 
   get hasValue(): boolean {
     return this._hasValue;
-  }
-
-  get type(): Function {
-    return this.constructor;
   }
 
   /** Override in subclasses for custom coercion. */
@@ -122,6 +92,47 @@ export abstract class Property<T> implements IProperty {
     return this._value as unknown as TV;
   }
 
+  combine(other: IProperty): boolean {
+    if (this.constructor !== other.constructor) return false;
+    if (this.hasValue || !other.hasValue) return false;
+    this.setValue(other.getValue());
+    return true;
+  }
+
+  equal(other: IProperty): boolean {
+    if (this.constructor !== other.constructor) return false;
+    if (this.hasValue !== other.hasValue) return false;
+    return !this.hasValue || this.getValue() === other.getValue();
+  }
+
   // do nothing by default, subclasses can override to apply the property to the target
-  apply(target: object, field?: string | symbol): void {}
+  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
+}
+
+export interface ITypeRefProperty extends IProperty {
+  /** Return the referenced type name for type-reference resolution. */
+  getRefTypes(): Generator<string>;
+}
+
+/** Check if the property has ref type */
+export function isTypeRefProperty(prop: IProperty)
+{
+  return typeof (prop as any).getRefTypes === 'function'
+}
+
+/** Get the property name of the property constructor. */
+export function getPropertyName(ctor: new () => IProperty): string {
+  let n = _nameCache.get(ctor);
+  if (!n) {
+    n = (ctor as unknown as Record<string, string>).alias;
+    if (!n)
+    {
+      let name = ctor.name;
+      if (name.endsWith('Property')) name = name.slice(0, -8);
+      if (name.length === 0) return name;
+      n = name[0].toLowerCase() + name.slice(1);
+    }
+    _nameCache.set(ctor, n);
+  }
+  return n;
 }

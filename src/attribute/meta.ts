@@ -9,11 +9,17 @@
 
 import type { IProperty } from '../property/property';
 import { Default } from '../property/common/default';
+import { isSchemaKindPropertyType } from '../runtime/schemaRuntime';
+import { isEmpty, isNull } from '../utility/toolset';
 
 const META_KEY = Symbol('schema-node:meta');
 
 interface MetaEntry {
   property: IProperty;
+  _memberKey?: string | symbol; 
+  _func?: Function;
+  _paramIndex?: number; 
+  _paramKey?: string | symbol 
 }
 
 /** Resolve the canonical constructor for storing metadata. */
@@ -21,7 +27,7 @@ function getConstructor(target: object): Function {
   return typeof target === 'function' ? target : target.constructor;
 }
 
-function ensureConstructorStore(ctor: Function): MetaEntry[] {
+function ensureStore(ctor: Function): MetaEntry[] {
   const rec = ctor as unknown as Record<symbol, MetaEntry[]>;
   let store = rec[META_KEY];
   if (!store) {
@@ -47,7 +53,7 @@ export function Meta(
   return ((target: object, _propertyKey?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const prop = new propCtor();
 
-    if (value !== undefined) {
+    if (!isEmpty(value)) {
       prop.setValue(value);
     } else {
       // Check if propCtor has @Meta(Default) on itself
@@ -59,19 +65,26 @@ export function Meta(
     if (prop.hasValue === false) return; // Don't store empty metadata
 
     const ctor = getConstructor(target);
-    const metaProp = prop as IProperty & { _memberKey?: string | symbol; _paramIndex?: number; _paramKey?: string | symbol };
+    const metaProp = prop as IProperty;
+    const entry : MetaEntry = { property: metaProp };
 
     if (typeof descriptorOrIndex === 'number') {
       // Parameter decorator
-      metaProp._paramIndex = descriptorOrIndex;
-      metaProp._paramKey = _propertyKey;
-      if (_propertyKey !== undefined) metaProp._memberKey = _propertyKey;
-    } else if (_propertyKey !== undefined) {
+      entry._paramIndex = descriptorOrIndex;
+      entry._paramKey = _propertyKey;
+      if (_propertyKey !== undefined) entry._memberKey = _propertyKey;
+    } 
+    else if (_propertyKey !== undefined) {
       // Field/method decorator
-      metaProp._memberKey = _propertyKey;
+      entry._memberKey = _propertyKey;
+
+      // Record the function
+      if (descriptorOrIndex)
+        entry._func = descriptorOrIndex.value as Function;
     }
 
-    ensureConstructorStore(ctor).push({ property: metaProp });
+    ensureStore(ctor).push(entry);
+    metaProp.apply(target, _propertyKey, descriptorOrIndex);
   }) as ClassDecorator & PropertyDecorator & ParameterDecorator & MethodDecorator;
 }
 
@@ -81,88 +94,82 @@ function getMetaEntriesRaw(ctor: Function): MetaEntry[] {
   return (ctor as unknown as Record<symbol, MetaEntry[]>)[META_KEY] ?? [];
 }
 
-/**
- * Walk the prototype chain: [ctor, ctor.prototype, Object.getPrototypeOf(ctor), ...]
- * collecting all Meta entries.
- */
-function* walkChain(ctor: Function): Generator<MetaEntry> {
-  const seen = new Set<Function>();
-  let current: Function | null = ctor;
-  while (current && !seen.has(current)) {
-    seen.add(current);
-    for (const e of getMetaEntriesRaw(current)) yield e;
-    // Also check prototype for instance-level metadata
-    const proto = (current as { prototype?: object }).prototype;
-    if (proto && proto !== current && !seen.has(proto as Function)) {
-      seen.add(proto as Function);
-      for (const e of getMetaEntriesRaw(proto as Function)) yield e;
-    }
-    current = Object.getPrototypeOf(current);
+/** Gets the fields declared with meta attributes */
+export function getMetaFields(ctor: Function) : string[]
+{
+  const fields : string[] = []
+  for (const entry of getMetaEntriesRaw(ctor))
+  {
+    if (entry._memberKey && typeof entry._memberKey === 'string' && !entry._paramKey && !entry._func && !fields.includes(entry._memberKey))
+      fields.push(entry._memberKey);
   }
+  return fields;
 }
 
-/**
- * Get all Meta properties of type T from a constructor, optionally scoped to a field.
- * Walks the prototype chain (inheritance support).
- * @param ctor   The constructor (class)
- * @param propCtor The property type to filter
- * @param field  Optional field/method name to scope to
- */
-export function getMetaProperties<T extends IProperty>(
-  ctor: Function,
-  propCtor: new () => T,
-  field?: string | symbol,
-): T[] {
-  const results: T[] = [];
-  for (const entry of walkChain(ctor)) {
-    const p = entry.property;
-    if (!(p instanceof propCtor)) continue;
-    if (field !== undefined) {
-      const mp = p as IProperty & { _memberKey?: string | symbol };
-      if (mp._memberKey !== field) continue;
-    }
-    results.push(p as unknown as T);
+/** Gets the methods declared with meta attributes */
+export function getMetaMethods(ctor: Function) : string[]
+{
+  const methods : string[] = []
+  for (const entry of getMetaEntriesRaw(ctor))
+  {
+    if (entry._memberKey && typeof entry._memberKey === 'string' && !entry._paramKey && entry._func && !methods.includes(entry._memberKey))
+      methods.push(entry._memberKey);
   }
-  return results;
+  return methods;
 }
 
-/**
- * Get the first Meta property of type T, optionally scoped to a field.
- */
+/** Get the first Meta property of type T, optionally scoped to a field. */
 export function getMetaProperty<T extends IProperty>(
   ctor: Function,
   propCtor: new () => T,
   field?: string | symbol,
+  index?: number
 ): T | undefined {
-  for (const entry of walkChain(ctor)) {
+  for (const entry of getMetaEntriesRaw(ctor)) {
+    if (field ? entry._memberKey != field : entry._memberKey) continue;
+    if (!isNull(index) ? entry._paramIndex != index : !isNull(entry._paramIndex)) continue;
+
     const p = entry.property;
     if (!(p instanceof propCtor)) continue;
-    if (field !== undefined) {
-      const mp = p as IProperty & { _memberKey?: string | symbol };
-      if (mp._memberKey !== field) continue;
-    }
     return p as unknown as T;
   }
   return undefined;
 }
 
 /**
- * Get Meta properties filtered by ForSchema kind. 
- * @TODO: wrong, need check the schema kind registerion
+ * Get all Meta properties of type T from a constructor, optionally scoped to a field.
+ * @param ctor   The constructor (class)
+ * @param propCtor The property type to filter
+ * @param field  Optional field/method name to scope to
  */
-export function getMetaPropertiesForSchema<T extends IProperty>(
+export function getMetaProperties<T extends IProperty>(
   ctor: Function,
-  propCtor: new () => T,
-  kind: string,
+  propCtor?: new () => T,
+  field?: string | symbol,
+  index?: number
 ): T[] {
-  return getMetaProperties(ctor, propCtor).filter((p) => {
-    // Check if the property's own class has @Meta(ForSchema, [kind])
-    const pCtor = p.constructor as Function;
-    const forSchema = getMetaProperty(pCtor, ForSchema) as ForSchema | undefined;
-    if (!forSchema?.hasValue) return false;
-    const kinds = forSchema.getValue<string[]>();
-    return kinds?.includes(kind) ?? false;
-  });
+  const results: T[] = [];
+  for (const entry of getMetaEntriesRaw(ctor)) {
+    if (field ? entry._memberKey != field : entry._memberKey) continue;
+    if (!isNull(index) ? entry._paramIndex != index : !isNull(entry._paramIndex)) continue;
+
+    const p = entry.property;
+    if (propCtor != null && !(p instanceof propCtor)) continue;
+    results.push(p as unknown as T);
+  }
+  return results;
 }
 
-import { ForSchema } from '../property/core/forSchema';
+/**
+ * Get Meta properties filtered by ForSchema kind. 
+ */
+export function getMetaPropertiesForSchema<T extends IProperty>(
+  kind: string,
+  ctor: Function,
+  propCtor?: new () => T,
+  field?: string | symbol,
+  index?: number
+): T[] {
+  return getMetaProperties(ctor, propCtor, field, index)
+    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as new () => IProperty));
+}

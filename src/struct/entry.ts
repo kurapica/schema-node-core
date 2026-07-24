@@ -1,0 +1,179 @@
+import { Meta } from "../attribute/meta";
+import { OfSchema, SchemaType, Generics, SchemaKind, Attach, Require, PrimaryIndex, combineProperties } from "../property";
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY, NS_SYSTEM_ENTRY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS } from "../utility/constant";
+import { isEqual, isNull } from "../utility/toolset";
+
+/** The entry interface */
+export interface Entry<T> {
+    /** The entry value */
+    value: T;
+
+    /** Whether has child entries */
+    hasChildren: boolean;
+}
+
+/** The entry access interface */
+export interface EntryAccess<T> {
+  /** The entry in the path */
+  entry?: Entry<T>;
+
+  /** The children entries of the <see cref='entry'> */
+  children?: Entry<T>[];
+}
+
+/** The runtime entry  */
+@Meta(SchemaKind, [SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY])
+@Meta(OfSchema, SCHEMA_KIND_STRUCT)
+@Meta(SchemaType, NS_SYSTEM_ENTRY)
+@Meta(Attach, SCHEMA_KIND_ENTRY)
+@Meta(Generics, [{ name: 'T' }])
+export class EntryType<T> implements Entry<T> {
+  /** The value of the entry */
+  @Meta(Require, true)
+  @Meta(SchemaType, "T")
+  @Meta(PrimaryIndex)
+  value!: T;
+
+  /** Has children entries */
+  @Meta(SchemaType, NS_SYSTEM_BOOL)
+  hasChildren: boolean = false;
+
+  /** The children entries of the entry */
+  private _children?: EntryType<T>[];
+
+  /** The parent of the enum value */
+  private _parent?: EntryType<T>;
+
+  /** The value map */
+  private _valueMaps?: Map<T, EntryType<T>>;
+
+  /** The entry is root */
+  get isRoot() { return !this._parent };
+
+  /** The entry is fully loaded */
+  private _isFullyLoaded?: boolean;
+  get isFullyLoaded() { return this._isFullyLoaded ?? false }
+
+  /** Gets the entry as a plain object */
+  get entry(): Entry<T> {
+    const entry = { value: this.value, hasChildren: this.hasChildren };
+    combineProperties(entry, this, SCHEMA_KIND_ENTRY);
+    return entry;
+  }
+
+  /** Gets the child entry by value */
+  getEntry(value: T | null | undefined): EntryType<T> | undefined {
+    value = (typeof(value) === 'string' ? value.toLowerCase() : value) as T; // case ignore
+    const entry = isNull(value) ? (this.isRoot ? this : undefined) : this._valueMaps?.get(value!);
+    return entry && this.isDescendant(entry) ? entry : undefined;
+  }
+
+  /** Gets the entry access list if fully loaded */
+  getAccessList(value: T | null | undefined): EntryAccess<T>[] | undefined {
+    let entry: EntryType<T> | undefined = isNull(value) ? this : this.getEntry(value);
+    if (!entry || entry.hasChildren && !entry._children?.length) return undefined;
+
+    // build entry access list
+    const accesses: EntryAccess<T>[] = [];
+    let inBranch = false;
+    while (entry)
+    {
+      accesses.unshift({
+        entry: !entry.isRoot ? entry.entry : undefined,
+        children: entry._children?.map(c => c.entry)
+      });
+      if (entry == this)
+      {
+        inBranch = true;
+        break;
+      }
+      entry = entry._parent;
+    }
+    if (!inBranch) return undefined;
+    return accesses;
+  }
+
+  /** Save the access list */
+  saveAccessList(accesses: EntryAccess<T>[]): void
+  {
+    this._valueMaps ??= new Map();
+    let root: EntryType<T> | undefined = this;
+
+    for(let current of accesses)
+    {
+      root = root?.getEntry(current.entry?.value);
+      if (!root) return;
+
+      // replace
+      root._children?.forEach(c => c.unregister());
+      root._children = current.children?.map(c => {
+        const entry = new EntryType<T>();
+        entry.value = c.value;
+        entry.hasChildren = c.hasChildren;
+        entry._parent = root;
+        entry._valueMaps = this._valueMaps;
+        entry._children = root?._children?.find(e => isEqual(c.value, e.value))?._children;
+        entry.register();
+        return entry;
+      })
+    }
+
+    // update load state
+    while (root._parent) root = root?._parent;
+    root.updateLoadState();
+  }
+
+  /** Whether the given entry is a descendant */
+  isDescendant(desc: EntryType<T>): boolean {
+    while (desc._parent && desc._parent != this) desc = desc._parent;
+    return desc._parent === this;
+  }
+
+  /** Refresh the loading state */
+  private updateLoadState(): void {
+    if (this._children?.length)
+    {
+      for (let child of this._children)
+        child.updateLoadState();
+      this._isFullyLoaded = !this._children.some(c => !c.isFullyLoaded);
+    }
+    else
+    {
+      this._isFullyLoaded = !this.hasChildren;
+    }
+  }
+
+  /** remove this from value map */
+  private unregister(): void  {
+    const v = (typeof (this.value) === 'string' ? this.value.toLowerCase() : this.value) as T;
+    this._valueMaps?.delete(v);
+    this._children?.forEach(c => c.unregister());
+    delete this._valueMaps;
+    delete this._parent;
+  }
+
+  /** register this to the value map */
+  private register(): void {
+    const v = (typeof (this.value) === 'string' ? this.value.toLowerCase() : this.value) as T;
+    this._valueMaps?.set(v, this);
+    this._children?.forEach(c => {
+      c._valueMaps = this._valueMaps;
+      c._parent = this;
+      c.register();
+    })
+  }
+}
+
+/** The entry access, works for cascade selection */
+@Meta(SchemaType, NS_SYSTEM_ENTRY_ACCESS)
+@Meta(OfSchema, SCHEMA_KIND_STRUCT)
+@Meta(Generics, [{ name: 'T' }])
+class EntryAccessMeta<T> implements EntryAccess<T> {
+  /** The entry in the path */
+  @Meta(SchemaType, `${NS_SYSTEM_ENTRY}<T>`)
+  entry?: Entry<T>;
+  
+  /** The children entries of the <see cref='entry'> */
+  @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<T>`)
+  children?: Entry<T>[];
+}

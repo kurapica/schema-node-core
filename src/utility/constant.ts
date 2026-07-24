@@ -19,8 +19,9 @@ export const SCHEMA_KIND_ARRAY = 'array';
 export const SCHEMA_KIND_FUNCTION = 'function';
 export const SCHEMA_KIND_PROPERTY = 'property';
 export const SCHEMA_KIND_STRUCT_FIELD = 'structfield';
-export const SCHEMA_KIND_ENUM_VALUE = 'enumvalue';
 export const SCHEMA_KIND_RELATION = 'relation';
+export const SCHEMA_KIND_FUNC_ARG = 'functionarg';
+export const SCHEMA_KIND_ENTRY = 'entry';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
 
@@ -38,8 +39,9 @@ export const SCHEMA_KIND_ORDER_ARRAY = 10;
 export const SCHEMA_KIND_ORDER_FUNC = 11;
 export const SCHEMA_KIND_ORDER_PROP = 12;
 export const SCHEMA_KIND_ORDER_RELATION = 13;
-export const SCHEMA_KIND_ORDER_ENUM_VALUE = 14;
-export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 15;
+export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 14;
+export const SCHEMA_KIND_ORDER_FUNC_ARG = 15;
+export const SCHEMA_KIND_ORDER_ENTRY = 16;
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 
@@ -47,6 +49,8 @@ export const RELATION_OWNER = '$owner';
 export const ARRAY_PREVIOUS = '$previous';
 export const ARRAY_ELEMENT = '$element';
 export const NODE_SELF = '$self';
+export const NODE_TYPE = '$type';
+export const ENTRY_ROOT = '$root';
 
 // ── Generic Pattern ────────────────────────────────────────────────────────
 
@@ -90,27 +94,46 @@ export const NS_SYSTEM_LOCALE_TRAN = 'system.localetran';
 
 // entry for white list
 export const NS_SYSTEM_ENTRY = 'system.entry';
+export const NS_SYSTEM_ENTRYS = 'system.entrys';
+export const NS_SYSTEM_ENTRY_ACCESS = 'system.entryaccess';
 
 // ── Schema Namespace ───────────────────────────────────────────────────────
 
 export const NS_SYSTEM_SCHEMA = 'system.schema';
 export const NS_SYSTEM_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA}.kind`;
 export const NS_SYSTEM_SCHEMA_NODE = `${NS_SYSTEM_SCHEMA}.node`;
+export const NS_SYSTEM_SCHEMA_NODE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.type`;
+export const NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.valuetype`;
 export const NS_SYSTEM_SCHEMA_NODE_VALUE_KIND = `${NS_SYSTEM_SCHEMA}.node.valuekind`;
-export const NS_SYSTEM_SCHEMA_NS = `${NS_SYSTEM_SCHEMA}.namespace`;
+export const NS_SYSTEM_SCHEMA_NAMESPACE = `${NS_SYSTEM_SCHEMA}.namespace`;
+export const NS_SYSTEM_SCHEMA_NAMESPACE_TYPE = `${NS_SYSTEM_SCHEMA_NAMESPACE}.type`;
 export const NS_SYSTEM_SCHEMA_OBJECT = `${NS_SYSTEM_SCHEMA}.object`;
+export const NS_SYSTEM_SCHEMA_OBJECT_TYPE = `${NS_SYSTEM_SCHEMA_OBJECT}.type`;
 export const NS_SYSTEM_SCHEMA_BOOL = `${NS_SYSTEM_SCHEMA}.bool`;
+export const NS_SYSTEM_SCHEMA_BOOL_TYPE = `${NS_SYSTEM_SCHEMA_BOOL}.type`;
 export const NS_SYSTEM_SCHEMA_INT = `${NS_SYSTEM_SCHEMA}.int`;
+export const NS_SYSTEM_SCHEMA_INT_TYPE = `${NS_SYSTEM_SCHEMA_INT}.type`;
 export const NS_SYSTEM_SCHEMA_DECIMAL = `${NS_SYSTEM_SCHEMA}.decimal`;
+export const NS_SYSTEM_SCHEMA_DECIMAL_TYPE = `${NS_SYSTEM_SCHEMA_DECIMAL}.type`;
 export const NS_SYSTEM_SCHEMA_STRING = `${NS_SYSTEM_SCHEMA}.string`;
+export const NS_SYSTEM_SCHEMA_STRING_TYPE = `${NS_SYSTEM_SCHEMA_STRING}.type`;
 export const NS_SYSTEM_SCHEMA_DATE = `${NS_SYSTEM_SCHEMA}.date`;
+export const NS_SYSTEM_SCHEMA_DATE_TYPE = `${NS_SYSTEM_SCHEMA_DATE}.type`;
 export const NS_SYSTEM_SCHEMA_ENUM = `${NS_SYSTEM_SCHEMA}.enum`;
 export const NS_SYSTEM_SCHEMA_STRUCT = `${NS_SYSTEM_SCHEMA}.struct`;
 export const NS_SYSTEM_SCHEMA_STRUCT_FIELD = `${NS_SYSTEM_SCHEMA_STRUCT}.field`;
 export const NS_SYSTEM_SCHEMA_ARRAY = `${NS_SYSTEM_SCHEMA}.array`;
+export const NS_SYSTEM_SCHEMA_ARRAY_TYPE = `${NS_SYSTEM_SCHEMA_ARRAY}.type`;
+export const NS_SYSTEM_SCHEMA_ARRAY_ELEMENT = `${NS_SYSTEM_SCHEMA_ARRAY}.elementtype`;
 export const NS_SYSTEM_SCHEMA_FUNC = `${NS_SYSTEM_SCHEMA}.func`;
+export const NS_SYSTEM_SCHEMA_FUNC_TYPE = `${NS_SYSTEM_SCHEMA_FUNC}.type`;
+export const NS_SYSTEM_SCHEMA_FUNC_CALL_ARG = `${NS_SYSTEM_SCHEMA_FUNC}.callarg`;
 export const NS_SYSTEM_SCHEMA_RELATION = `${NS_SYSTEM_SCHEMA}.relation`;
+export const NS_SYSTEM_SCHEMA_RELATION_STAGE = `${NS_SYSTEM_SCHEMA_RELATION}.stage`;
+export const NS_SYSTEM_SCHEMA_RELATION_TYPE = `${NS_SYSTEM_SCHEMA_RELATION}.type`;
+export const NS_SYSTEM_SCHEMA_RELATION_KIND = `${NS_SYSTEM_SCHEMA_RELATION}.kind`;
 export const NS_SYSTEM_SCHEMA_PROPERTY = `${NS_SYSTEM_SCHEMA}.prop`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_TYPE = `${NS_SYSTEM_SCHEMA_PROPERTY}.type`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_CORE = `${NS_SYSTEM_SCHEMA_PROPERTY}.core`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_COMMON = `${NS_SYSTEM_SCHEMA_PROPERTY}.common`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT = `${NS_SYSTEM_SCHEMA_PROPERTY}.constraint`;
@@ -127,10 +150,22 @@ export const NS_SYSTEM_LOGIC = 'system.logic';
 export const NS_SYSTEM_CALENDAR = 'system.calendar';
 export const NS_SYSTEM_COLLECTION = 'system.collection';
 export const NS_SYSTEM_DATA = 'system.data';
+export const NS_SYSTEM_DATA_ENUM = 'system.data.enum';
 export const NS_SYSTEM_STR = 'system.str';
 
 export const NS_SYSTEM_SCHEMA_REFLECT = `${NS_SYSTEM_SCHEMA}.reflect`;
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC = `${NS_SYSTEM_SCHEMA}.func`;
+
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`;
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`;
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE = `${NS_SYSTEM_SCHEMA_REFLECT}.isarrayele`;
+export const NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES = `${NS_SYSTEM_SCHEMA_REFLECT}.getsubentries`;
+
+
+export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`;
+export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_ARGS = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withargs`;
+
+export const NS_SYSTEM_LOGIC_EQ = `${NS_SYSTEM_LOGIC}.eq`;
 
 // ── Expression Priority ────────────────────────────────────────────────────
 
@@ -145,3 +180,4 @@ export const EXP_DATA_SOURCE_PRIORITY = 60;
 export const LANGUAGE_MAX_LEN = 8;
 export const PRIMARY_KEY_MAX_LEN = 128;
 export const ENTITY_PRIMARY_KEY_MAX_LEN = 128;
+

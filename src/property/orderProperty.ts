@@ -3,6 +3,8 @@
 // Mirrors C# SchemaNode.Core/Property/OrderProperty.cs
 // =============================================================================
 
+import { getMetaProperty } from '../attribute/meta';
+import { Default } from './common';
 import { Property } from './property';
 import type { IProperty } from './property';
 
@@ -11,10 +13,7 @@ import type { IProperty } from './property';
  */
 export interface IOrderProperty extends IProperty {
   /** The sort order (lower = earlier). */
-  order: number;
-
-  /** Set the order value. */
-  setOrder(order: number): void;
+  readonly order: number;
 }
 
 /**
@@ -24,20 +23,21 @@ export interface IOrderProperty extends IProperty {
 export abstract class OrderProperty<T> extends Property<T> implements IOrderProperty {
   private _order = 0;
 
-  get order(): number {
-    return this._order;
-  }
-
-  setOrder(order: number): void {
-    this._order = order;
-  }
+  get order(): number { return this._order; }
 
   /** Accept [value, order] tuple or plain value. */
   override setValue<TValue>(value: TValue): void {
-    if (Array.isArray(value) && value.length === 2 && typeof value[1] === 'number') {
-      const v = value as unknown as [unknown, number];
-      super.setValue(v[0] as TValue);
-      this._order = v[1];
+    if (Array.isArray(value) && value.length > 0) {
+      if (value.length === 1 && typeof(value[0]) === 'number') {
+        const defaultProp = getMetaProperty(this.constructor, Default);
+        if (defaultProp)
+          super.setValue(defaultProp.getValue());
+        this._order = value[0];
+        return;
+      }
+
+      super.setValue(value[0] as TValue);
+      this._order = parseInt(value[1] || '0');
     } else {
       super.setValue(value);
     }

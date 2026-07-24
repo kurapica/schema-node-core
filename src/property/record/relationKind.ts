@@ -1,9 +1,9 @@
 import { RecordProperty } from '../recordProperty';
 import { Meta } from '../../attribute/meta';
 import { OfSchema, SchemaType, PropertyValueType } from '../index';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_STRING } from '../../utility/constant';
 
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.relationkind`)
+@Meta(OfSchema, SCHEMA_KIND_ENUM)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.kind`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
-export class RelationKindRecord extends RecordProperty<string> {}
+export class RelationKind extends RecordProperty<string> {}
