@@ -38,7 +38,7 @@ export class StructType extends ValueType implements IRelationProvider {
 
   override loadProperties(): IProperty[] {
     this._structSchema = getProperty(this.getNodeSchema(), StructProperty)?.getValue();
-    return this._structSchema ? getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT).toArray() : [];
+    return this._structSchema ? Array.from(getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT)) : [];
   }
 
   override async load(): Promise<void> {
@@ -216,7 +216,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Get all constraints. */
   get constraints(): IConstraintProperty[] { 
-    const constraints = this.filterProperties(isConstraintProperty).toArray() as IConstraintProperty[];
+    const constraints = Array.from(this.filterProperties(isConstraintProperty)) as IConstraintProperty[];
     constraints.reverse();
     return constraints;
   };
@@ -251,7 +251,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     if (!this.type) return;
 
     // Collect properties from schema kind registries
-    const props = getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD).toArray();
+    const props = Array.from(getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD));
     props.push(...getPropertiesBySchemaKind(field, this.type.kind));
     if (this.type instanceof ArrayType && this.type.element)
       props.push(...getPropertiesBySchemaKind(field, this.type.element.kind));

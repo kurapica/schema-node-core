@@ -37,7 +37,7 @@ export class EnumType extends ValueType {
 
   override loadProperties(): IProperty[] {
     this._enumSchema = getProperty(this.schema, EnumProperty)?.getValue();
-    return this._enumSchema ? getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM).toArray() : [];
+    return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM)) : [];
   }
 
   override async load()

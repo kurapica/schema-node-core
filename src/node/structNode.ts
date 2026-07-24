@@ -35,7 +35,7 @@ export class StructNode extends DataNode {
     });
 
     // attach relations from type
-    this.attachRelations([{owner: this, relations: type.getRelations().toArray()}]);
+    this.attachRelations([{owner: this, relations: Array.from(type.getRelations())}]);
   }
 
   override dispose() {

@@ -16,7 +16,7 @@ export class IntType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._intSchema = getProperty(this.schema, IntProperty)?.getValue();
-    return this._intSchema ? getPropertiesBySchemaKind(this._intSchema, SCHEMA_KIND_INT).toArray() : [];
+    return this._intSchema ? Array.from(getPropertiesBySchemaKind(this._intSchema, SCHEMA_KIND_INT)) : [];
   }
 
   override async load() {

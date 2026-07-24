@@ -14,7 +14,7 @@ export class DecimalType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._decimalSchema = getProperty(this.schema, DecimalProperty)?.getValue();
-    return this._decimalSchema ? getPropertiesBySchemaKind(this._decimalSchema, SCHEMA_KIND_DECIMAL).toArray() : [];
+    return this._decimalSchema ? Array.from(getPropertiesBySchemaKind(this._decimalSchema, SCHEMA_KIND_DECIMAL)) : [];
   }
 
   override async load() {

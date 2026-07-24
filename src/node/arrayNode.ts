@@ -24,7 +24,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     this.confirm();
 
     this._elements.forEach(f => f.recordSubscription(f.subscribe(this.writeBackRawValue, true), this));
-    this.attachRelations([{owner: this, relations: (type as ArrayType).getRelations().toArray()}]);
+    this.attachRelations([{owner: this, relations: Array.from((type as ArrayType).getRelations())}]);
   }
 
   override dispose() {

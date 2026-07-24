@@ -96,10 +96,10 @@ export function combineProperties(owner: any, other: any | undefined, kind: stri
   if (!kind || !other) return owner;
 
   for (const propCtor of getSchemaKindPropertyTypes(kind)) {
-    const otherProps = getProperties(other, propCtor).toArray();
+    const otherProps = Array.from(getProperties(other, propCtor));
     if (otherProps.length === 0) continue;
 
-    const selfProps = getProperties(owner, propCtor).toArray();
+    const selfProps = Array.from(getProperties(owner, propCtor));
     const otherProp = otherProps[0];
     if (otherProp.stackable) {
       if (selfProps.length === 0) {
@@ -123,10 +123,10 @@ export function combineProperties(owner: any, other: any | undefined, kind: stri
       }
       else
       {
-        // combine the values of the two properties
         const selfProp = selfProps[0];
-        selfProp.combine(otherProp);
-        owner[selfProp.name] = selfProp.getValue();
+        if (selfProp.combine(otherProp)) {
+          owner[selfProp.name] = selfProp.getValue();
+        }
       }
     }
   }

@@ -49,7 +49,7 @@ export function *getSchemaKindPropertyTypes(kind: string): Generator<(new () => 
 
 /** Gets the schema kinds the property can works with */
 export function getPropertyTypeSupportSchemas(prop: new () => IProperty) : string[] {
-  return _schemaKindPropertyTypes.keys().filter(e => _schemaKindPropertyTypes.get(e)?.includes(prop)).toArray()
+  return Array.from(_schemaKindPropertyTypes.keys().filter(e => _schemaKindPropertyTypes.get(e)?.includes(prop)))
 }
 
 /** Whether the property works for the schema kind */
@@ -555,7 +555,7 @@ export function initSchemaRuntime(): void {
     if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
 
     // Split the schema type into namespace and name
-    type = type.toLocaleLowerCase();
+    type = type.toLowerCase();
     const lastDot = type.lastIndexOf('.');
     const ns = lastDot >= 0 ? type.substring(0, lastDot) : '';
     const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;

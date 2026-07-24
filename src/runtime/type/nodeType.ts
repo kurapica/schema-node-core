@@ -82,7 +82,7 @@ export class NodeType implements IPropertyProvider, INodeReference {
     this.loaded = true;
 
     // load properties
-    this._props = getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE).toArray().concat(this.loadProperties());
+    this._props = Array.from(getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE)).concat(this.loadProperties());
 
     // Generic check
     this.generics = this.getProperty(Generics)?.getValue();

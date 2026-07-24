@@ -26,7 +26,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   /** The constraint properties */
   get constraints(): IConstraintProperty[] {
-    const constraints = this.filterProperties(isConstraintProperty).toArray() as IConstraintProperty[];
+    const constraints = Array.from(this.filterProperties(isConstraintProperty)) as IConstraintProperty[];
     constraints.reverse();
     return constraints;
   }
