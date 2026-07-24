@@ -5,10 +5,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { ArrayNode } from '../node/arrayNode';
-import { EnumArrayNode } from '../node/enumArrayNode';
 import { OfSchema, SchemaType, Return, Generics, ArgName, Require } from '../property/index';
-import { IValueAccess } from '../runtime/interfaces';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT } from '../utility/constant';
 import { isNull } from '../utility/toolset';
 
