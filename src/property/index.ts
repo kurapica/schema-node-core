@@ -1,45 +1,22 @@
 // ── Base classes ──────────────────────────────────────────────────────────
-export { Property } from './property';
-export type { IProperty } from './property';
+export * from './property';
 export * from './propertyOwner';
-export type { IConstraintProperty } from './constraintProperty';
-export type { IOrderProperty } from './orderProperty';
-export { OrderProperty } from './orderProperty';
-export { FuncCallProperty } from './funcCallProperty';
-export type { FuncCall } from './funcCallProperty';
-export { RecordProperty, getRecordedValues } from './recordProperty';
+export * from './constraintProperty';
+export * from './orderProperty';
+export * from './funcCallProperty';
+export * from './recordProperty';
 
 // ── Core properties ───────────────────────────────────────────────────────
-export {
-  ForSchema, OfSchema, SchemaType, SchemaGenerator,
-  Generics, Attach, Append, OverrideType,
-  PropertyValueType, Stackable, Static, Alias,
-  PrimaryIndex, UniqueIndex, Index,
-} from './core/index';
-export type { GenericParameter } from './core/generics';
+export * from './core/index';
 
 // ── Common properties ─────────────────────────────────────────────────────
-export {
-  Default, Display, Visible, InVisible, ReadOnly, Disable,
-  DisplayOnly, Immutable, ErrorMessage, StringSuggest, IntSuggest, EntrySource, Unpack, StackUpLimit,
-} from './common/index';
+export * from './common/index';
 
 // ── Constraint properties ─────────────────────────────────────────────────
-export {
-  Require, Valid, Primary, Indexes,
-  UpLimitString, UpLimitNumber, UpLimitInt, UpLimitDate,
-  LowLimitString, LowLimitNumber, LowLimitInt, LowLimitDate,
-  WhiteList, BlackList, SingleFlag, Cascade, LeafOnly, Root,
-  StringEntries, IntEntries,
-} from './constraint/index';
+export * from './constraint/index';
 
 // ── Function properties ───────────────────────────────────────────────────
-export {
-  Converter, Constant, NoCache, ServerOnly, Return, ArgName, Variadic,
-} from './function/index';
+export * from './function/index';
 
 // ── Record properties ─────────────────────────────────────────────────────
-export {
-  SchemaKind, NodeSchemaKind, ValueSchemaKind,
-  RelationKind, ErrorCode,
-} from './record/index';
+export * from './record/index';

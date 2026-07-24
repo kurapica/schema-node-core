@@ -15,7 +15,6 @@ import type { IProperty } from '../property/property';
 import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType } from '../property/index';
 import { getMetaProperties, getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
-import { SchemaKind } from '../property/record/schemaKind';
 import { NamespaceType, NodeType, GenericType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
