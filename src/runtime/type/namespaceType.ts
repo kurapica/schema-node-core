@@ -6,6 +6,7 @@
 import { NodeType } from './nodeType';
 import type { NodeSchema } from '../../schema/nodeSchema';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
+import { SCHEMA_KIND_NAMESPACE } from '../../utility';
 
 export class NamespaceType extends NodeType {
   /** Sub types by name. */
@@ -34,17 +35,39 @@ export class NamespaceType extends NodeType {
   // ── NodeSchema management (for reload detection & provider merging) ─────
 
   /** Cache a NodeSchema keyed by name (used for reload detection). */
-  saveSubNodeSchema(schema: NodeSchema): void {
+  saveSubNodeSchema(schema: NodeSchema | NodeSchema[]): void {
+    if (Array.isArray(schema)) {
+      schema.forEach((s) => this.saveSubNodeSchema(s));
+      return;
+    }
+
+    // Ignore the schema if the namespace is not the same
+    if (this.name.toLowerCase() != (schema.namespace ?? '').toLowerCase()) return;
+
     const name = schema.name.toLowerCase();
+    const schemas = schema.schemas;
+    delete schema.schemas;
 
     // The system schema don't need reload
-    if (this._subSchemas.has(name) && schema.loadState === SchemaLoadState.System) return;
+    if (!(this._subSchemas.has(name) && schema.loadState === SchemaLoadState.System)) {
+      this._subSchemas.set(name, schema);
 
-    this._subSchemas.set(name, schema);
+      // mark the type need reload
+      const type = this._subTypes.get(name);
+      if (type) type.loaded = false;
+    }
 
-    // mark the type need reload
-    const type = this._subTypes.get(name);
-    if (type) type.loaded = false;
+    // Create sub namespace types to save the schemas
+    if (schemas?.length && schema.kind == SCHEMA_KIND_NAMESPACE)
+    {
+      let type = this._subTypes.get(name);
+      if (!type) {
+        type = new NamespaceType();
+        type.namespace = this;
+        type.loadType(schema).then(() => type!.loaded = false);
+      }
+      (type as NamespaceType).saveSubNodeSchema(schemas);
+    }
   }
 
   /** Remove a sub node schema */

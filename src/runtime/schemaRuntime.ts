@@ -21,7 +21,7 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { getSchemaProvider } from '../schema/provider/schemaProvider';
 import { combineProperties } from '../property/propertyOwner';
 
-// #region ── Schema Kind Configuration ─────────────────────────────────────────────
+// #region ── Schema Kind Configuration ───────────────────────────────────────
 
 /** The schema kind holder */
 let _schemaKindHolder = new Map<string, Function>();
@@ -91,7 +91,7 @@ export function *filterSchemaKindProperties(kind: string, predicate: (prop: IPro
 
 // #endregion
 
-// #region ── System Schema Registration (NodeSchema family) ────────────────────────────
+// #region ── System Schema Registration (NodeSchema family) ──────────────────
 
 /** The schema kind registry */
 const _schemaKindRegistry = new Map<string, Function>();
@@ -156,7 +156,7 @@ export function saveSystemSchema(schema: NodeSchema, loadStage: SchemaLoadState 
 /** Look up a schema by full name. */
 function getSystemSchema(fullName: string): NodeSchema | undefined {
   fullName = fullName.toLowerCase();
-  const schema = _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
+  const schema = !fullName ? rootNamespace : _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
   if (!schema) return undefined;
 
   const { schemas, ...clone } = schema
@@ -231,16 +231,12 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 
 // #endregion
 
-// #region ── Node Type Resolution ─────────────────────────────────────────────────
+// #region ── Node Type Resolution ────────────────────────────────────────────
 
 const _nodeTypeGenerator = new Map<string, new () => NodeType>();
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: NamespaceType | undefined;
-
-function isNamespaceType(node: NodeType): boolean {
-  return node instanceof NamespaceType;
-}
 
 /**
  * Resolve a runtime NodeType by full schema name.
@@ -291,15 +287,22 @@ export async function getNodeType(
 
   // Load nodes
   if (!rootNamespaceType) rootNamespaceType = new NamespaceType();
-  let node: NodeType | undefined = rootNamespaceType as unknown as NodeType;
-  let currentPath = '';
+  let node: NodeType | undefined = await loadNodeTypeAsync(rootNamespaceType, '') as unknown as NodeType;
 
+  // Try loading ignore loading the unload namespace types
   for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (!node) return undefined;
-    currentPath = currentPath ? `${currentPath}.${part}` : part;
-    node = await loadNodeTypeAsync(node, part, currentPath, generics, genericParams, reload, i + 1 == parts.length);
-    if (!node) return undefined;
+    node = await loadNodeTypeAsync(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, true);
+    if (!node) break;
+  }
+
+  // Try loading with full namespace types
+  if (!node)
+  {
+    node = rootNamespaceType;
+    for (let i = 0; i < parts.length; i++) {
+      node = await loadNodeTypeAsync(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
+      if (!node) break;
+    }
   }
 
   return node;
@@ -309,20 +312,33 @@ export async function getNodeType(
 async function loadNodeTypeAsync(
   parent: NodeType,
   segment: string,
-  fullPath: string,
   generics?: GenericParameter[],
   genericParams?: NodeType[],
   reload = false,
-  isLast = false
+  isLast = false,
+  onlyCache = false, // to avoid loading full namespace if the cached schema provided in other ways, the frontend doesn't require full picture
 ): Promise<NodeType | undefined> {
-  // Generic types: segment starts with '<', e.g. "list<system.string>"
-  if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
+  const nsParent = parent instanceof NamespaceType ? parent as NamespaceType : undefined;
+  let result: NodeType | undefined = nsParent;
+  if (segment.length) {
+    // Generic types: segment starts with '<', e.g. "list<system.string>"
+    if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
+    result = nsParent?.getNodeType(segment);
+  }
 
   // Already loaded?
-  const nsParent = isNamespaceType(parent) ? (parent as unknown as NamespaceType) : undefined;
-  let result: NodeType | undefined = nsParent?.getNodeType(segment);
-  if (result && result.loaded && !(isLast && reload)) return result;
-  if (reload && !result) return undefined; // reload only on existing types
+  if (result)
+  {
+    if (isLast && reload) {
+      result.loaded = false;
+    }
+    else if (result.loaded || !isLast && onlyCache)
+      return result;
+  }
+  else if(reload)
+  {
+    return undefined; // reload only on existing types
+  }
 
   // Load the NodeSchema
   const schema = await loadNodeSchema(nsParent, segment, reload);
@@ -331,12 +347,12 @@ async function loadNodeTypeAsync(
   // Resolve NodeType class from _nodeTypeGenerator
   const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? NodeType;
   result ??= new NodeTypeCtor();
-  result.namespace = nsParent;
 
   // Cache in parent namespace (strip sub-schemas first — they're saved separately)
   const schemas = schema.schemas;
   delete schema.schemas;
   if (nsParent !== result) {
+    result.namespace = nsParent;
     nsParent?.saveSubNodeSchema(schema);
     nsParent?.saveNodeType(segment, result);
   }
@@ -346,7 +362,7 @@ async function loadNodeTypeAsync(
 
   // Save sub-schemas into NamespaceType
   if (result instanceof NamespaceType && schemas?.length)
-    for (const s of schemas) result.saveSubNodeSchema(s);
+    result.saveSubNodeSchema(schemas);
 
   // Generic types reloading (clone schema to avoid mutation)
   for (const g of result.getGenericTypes())
@@ -398,20 +414,16 @@ async function loadNodeSchema(
   name: string,
   reload = false,
 ): Promise<NodeSchema | undefined> {
-  const schemaName = ns ? `${ns.name}.${name}`.replace(/^\./, '') : name;
+  const schemaName = ns ? (name ? `${ns.name}.${name}`.replace(/^\./, '') : ns.name) : name;
 
   // 1. Check namespace cache (unless reloading)
-  if (!reload) {
+  if (!reload && name.length) {
     const cachedNodeSchema = ns?.getSubNodeSchema(name);
     if (cachedNodeSchema) return cachedNodeSchema;
   }
 
   // 2. Try system (built-in) schema
   let schema = getSystemSchema(schemaName);
-  if (schema) {
-    // Shallow clone so provider merges don't mutate the cached system schema
-    schema = { ...schema, schemas: schema.schemas ? [...schema.schemas] : undefined };
-  }
 
   // 3. Try loading from providers and combine
   const provider = getSchemaProvider();
@@ -495,7 +507,7 @@ function* splitGenericParams(input: string): Generator<string> {
 
 // #endregion
 
-// #region ── Schema Runtime Setup ─────────────────────────────────────────────
+// #region ── Schema Runtime Setup ────────────────────────────────────────────
 
 /** Scan all registered schema type to build the schema runtime, this is called to init the schema runtime */
 export function initSchemaRuntime(): void {

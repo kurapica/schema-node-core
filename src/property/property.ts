@@ -115,7 +115,7 @@ export interface ITypeRefProperty extends IProperty {
 }
 
 /** Check if the property has ref type */
-export function isTypeRefProperty(prop: IProperty)
+export function isTypeRefProperty(prop: IProperty): prop is ITypeRefProperty
 {
   return typeof (prop as any).getRefTypes === 'function'
 }
