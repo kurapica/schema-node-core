@@ -101,19 +101,19 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── Shortcuts ──────────────────────────────────────────────────
 
   /** Shortcut to gets the node name */
-  get name(): string | undefined { return this.getPropertyValue(Name) as string }
+  get name(): string | undefined { return this.getPropertyValue<string>(Name) }
 
   /** Shortcut to gets whether the node is require */
-  get require() { return this.getPropertyValue(Require) }
+  get require() { return this.getPropertyValue<boolean>(Require) }
 
   /** Shortcut to gets whether the node is readonly */
-  get readonly() { return this.getPropertyValue(ReadOnly) || this.getPropertyValue(DisplayOnly) || this.getPropertyValue(Immutable) && !isEmpty(this._original) }
+  get readonly() { return this.getPropertyValue<boolean>(ReadOnly) || this.getPropertyValue<boolean>(DisplayOnly) || this.getPropertyValue<boolean>(Immutable) && !isEmpty(this._original) || this.parent?.getPropertyValue<boolean>(ReadOnly) || false }
 
   /** shortcut to gets visiblity */
-  get visible() { return !this.getPropertyValue(InVisible) && this.getPropertyValue(Visible) != false }
+  get visible() { return !this.getPropertyValue<boolean>(InVisible) && this.getPropertyValue<boolean>(Visible) != false }
 
   /** shortcut to check if the node is display-only */
-  get displayOnly() { return this.getPropertyValue(DisplayOnly) }
+  get displayOnly() { return this.getPropertyValue<boolean>(DisplayOnly) }
 
   // #endregion
 
@@ -166,7 +166,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property value */
-  getPropertyValue(propCtor: new() => IProperty): unknown { return this.getProperty(propCtor)?.getValue(); }
+  getPropertyValue<T>(propCtor: new() => IProperty): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
 
   /** Gets the properties */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
@@ -174,7 +174,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property values */
-  *getPropertyValues(propCtor: new() => IProperty): Generator<unknown>{ for (let prop of this.getProperties(propCtor)) yield prop.getValue(); }
+  *getPropertyValues<T>(propCtor: new() => IProperty): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {

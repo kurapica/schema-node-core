@@ -13,7 +13,7 @@ import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  private _elements: IValueAccess[] = [];
+  private _elements: DataNode[] = [];
   private _relations?: IRelationInfo[]; // the merged relations from types
 
   constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
@@ -101,7 +101,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     let branch: IValueAccess | undefined = node;
 
     while (branch){
-      eleIndex = this._elements.indexOf(branch);
+      eleIndex = this._elements.indexOf(branch as DataNode);
       if (eleIndex !== -1) break;
       branch = branch?.parent;
     }

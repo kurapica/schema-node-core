@@ -31,13 +31,13 @@ export interface IValueAccess {
   getProperty(propCtor: new() => IProperty): IProperty | undefined;
 
   /** Gets the property value */
-  getPropertyValue(propCtor: new() => IProperty): unknown;
+  getPropertyValue<T>(propCtor: new() => IProperty): T | undefined;
 
   /** Gets the properties */
   getProperties(propCtor: new() => IProperty): Generator<IProperty>;
 
   /** Gets the properties */
-  getPropertyValues(propCtor: new() => IProperty): Generator<unknown>;
+  getPropertyValues<T>(propCtor: new() => IProperty): Generator<T>;
 
   /** Sets the value of the given property from relations */
   setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void;
@@ -48,15 +48,6 @@ export interface IValueAccess {
 
   /** Subscribe the data change and return the function for un-subsribe */
   subscribe(func: Function, immediate?: boolean): Function;
-
-  /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
-  subscribeState(func: Function, immediate?: boolean): Function;
-
-  /** Subscribe the node property change and return the function for un-subscribe */
-  subscribeProperty(propCtor: new() => IProperty, func: Function, immediate?: boolean): Function;
-
-  /** Subscribe the violated constraints and return the function for un-subscribe */  
-  subscribeViolated(func: Function, immediate?: boolean): Function;
 
   /** Record subscription by source */
   recordSubscription(subscription: Function, source: unknown): void;
@@ -97,22 +88,6 @@ export interface IValueAccess {
 
   /** Record violated constraint property */
   recordConstraint(constraint: IConstraintProperty, valid: boolean): void;
-
-  // #endregion
-
-  // #region ── Utility ───────────────────────────────────────────────────────
-
-  /** Confirm the value */
-  confirm(): void;
-
-  /** Reset the value */
-  reset(): void;
-
-  /** Dispose the node */
-  dispose(): void;
-
-  /** Whether the value has changed */
-  get changed(): boolean | undefined;
 
   // #endregion
 }
