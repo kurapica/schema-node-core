@@ -71,9 +71,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
   override *getRefTypes(): Generator<NodeType> {
     if (this.element)
       yield this.element;
-
-    for(const type of super.getRefTypes())
-      yield type;
+    yield* super.getRefTypes();
   }
 
   override getAccessValueType(path: string): ValueType | undefined {
@@ -111,7 +109,6 @@ export class ArrayType extends ValueType implements IRelationProvider {
 
   *getRelations(): Generator<RelationType> {
     if (!this._relations?.length) return;
-    for(const relation of this._relations)
-      yield relation;
+    yield* this._relations;
   }
 }

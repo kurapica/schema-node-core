@@ -15,10 +15,11 @@ import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { getNodeType } from '../schemaRuntime';
 import { INodeReference, IPropertyProvider } from '../interfaces';
+import { NamespaceType } from './namespaceType';
 
 export class NodeType implements IPropertyProvider, INodeReference {
   /** The parent namespace (set once the type is loaded into a namespace). */
-  namespace?: NodeType;
+  readonly namespace?: NamespaceType;
 
   /** The backing NodeSchema — set during loadType. */
   protected schema?: NodeSchema;
@@ -43,6 +44,10 @@ export class NodeType implements IPropertyProvider, INodeReference {
 
   // Used-by tracking
   private _usedBy?: Set<NodeType>;
+
+  constructor(parent?: NamespaceType) {
+    this.namespace = parent;
+  }
 
   // ── Identity ────────────────────────────────────────────────────────
 
@@ -139,8 +144,7 @@ export class NodeType implements IPropertyProvider, INodeReference {
   /** Gets the references types */
   *getRefTypes(): Generator<NodeType> {
     if (!this._refTypes?.length) return;
-    for(const type of this._refTypes)
-      yield type;
+    yield* this._refTypes;
   }
 
   // ── Property Access ──────────────────────────────────────────────────

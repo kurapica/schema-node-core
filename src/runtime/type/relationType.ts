@@ -84,10 +84,7 @@ export class RelationType implements INodeReference, IErrorProvider {
       yield this.property;
 
     if (hasNodeReferences(this.process))
-    {
-      for (const type of (this.process as unknown as INodeReference).getRefTypes())
-        yield type;
-    }
+      yield* (this.process as unknown as INodeReference).getRefTypes();
   }
 
   /** Attach the relation to target with the owner */

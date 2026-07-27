@@ -138,11 +138,9 @@ export class StructType extends ValueType implements IRelationProvider {
 
   override *getRefTypes(): Generator<NodeType> {
     for (const field of this._fields) {
-      for (const type of field.getRefTypes())
-        yield type;
+      yield* field.getRefTypes();
     }
-    for (const type of super.getRefTypes())
-      yield type;
+    yield* super.getRefTypes();
   }
 
   // ── Type Compatibility ──────────────────────────────────────────────
@@ -184,8 +182,7 @@ export class StructType extends ValueType implements IRelationProvider {
   /** Get all relation types. */
   *getRelations(): Generator<RelationType> {
     if (!this._relations?.length) return;
-    for(const relation of this._relations)
-      yield relation;
+    yield* this._relations;
   }
 
   /** Get relations for a specific field name. */
@@ -285,10 +282,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     if (this.type) 
       yield this.type;
     if (this._refTypes)
-    {
-      for (const type of this._refTypes)
-        yield type;
-    }
+      yield* this._refTypes;
   }
 
   // ── Property Access ─────────────────────────────────────────────────

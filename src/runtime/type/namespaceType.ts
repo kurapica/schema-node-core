@@ -62,8 +62,7 @@ export class NamespaceType extends NodeType {
     {
       let type = this._subTypes.get(name);
       if (!type) {
-        type = new NamespaceType();
-        type.namespace = this;
+        type = new NamespaceType(this);
         type.loadType(schema).then(() => type!.loaded = false);
       }
       (type as NamespaceType).saveSubNodeSchema(schemas);

@@ -34,7 +34,6 @@ export class PropertyType extends NodeType {
   override *getRefTypes(): Generator<NodeType> {
     if (this._valueType)
       yield this._valueType;
-    for(const type of super.getRefTypes())
-      yield type;
+    yield* super.getRefTypes();
   }
 }

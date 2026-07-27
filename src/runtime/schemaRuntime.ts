@@ -233,7 +233,7 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 
 // #region ── Node Type Resolution ────────────────────────────────────────────
 
-const _nodeTypeGenerator = new Map<string, new () => NodeType>();
+const _nodeTypeGenerator = new Map<string, new (parent?: NamespaceType) => NodeType>();
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: NamespaceType | undefined;
@@ -287,20 +287,20 @@ export async function getNodeType(
 
   // Load nodes
   if (!rootNamespaceType) rootNamespaceType = new NamespaceType();
-  let node: NodeType | undefined = await loadNodeTypeAsync(rootNamespaceType, '') as unknown as NodeType;
+  let node: NodeType | undefined = rootNamespaceType;
 
-  // Try loading ignore loading the unload namespace types
+  // Try loading cached types first
   for (let i = 0; i < parts.length; i++) {
-    node = await loadNodeTypeAsync(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, true);
+    node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, true);
     if (!node) break;
   }
 
-  // Try loading with full namespace types
+  // Try loading full namespace types if not cached
   if (!node)
   {
-    node = rootNamespaceType;
+    node = await loadNodeType(rootNamespaceType, '') as unknown as NodeType;
     for (let i = 0; i < parts.length; i++) {
-      node = await loadNodeTypeAsync(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
+      node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
       if (!node) break;
     }
   }
@@ -309,7 +309,7 @@ export async function getNodeType(
 }
 
 /** Load a single namespace segment. */
-async function loadNodeTypeAsync(
+async function loadNodeType(
   parent: NodeType,
   segment: string,
   generics?: GenericParameter[],
@@ -322,7 +322,7 @@ async function loadNodeTypeAsync(
   let result: NodeType | undefined = nsParent;
   if (segment.length) {
     // Generic types: segment starts with '<', e.g. "list<system.string>"
-    if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
+    if (segment.startsWith('<')) return loadGenericType(parent, segment, generics, genericParams);
     result = nsParent?.getNodeType(segment);
   }
 
@@ -346,13 +346,12 @@ async function loadNodeTypeAsync(
 
   // Resolve NodeType class from _nodeTypeGenerator
   const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? NodeType;
-  result ??= new NodeTypeCtor();
+  result ??= new NodeTypeCtor(nsParent);
 
   // Cache in parent namespace (strip sub-schemas first — they're saved separately)
   const schemas = schema.schemas;
   delete schema.schemas;
   if (nsParent !== result) {
-    result.namespace = nsParent;
     nsParent?.saveSubNodeSchema(schema);
     nsParent?.saveNodeType(segment, result);
   }
@@ -372,7 +371,7 @@ async function loadNodeTypeAsync(
 }
 
 /** Load a generic type like "list<system.string>". */
-async function loadGenericTypeAsync(
+async function loadGenericType(
   node: NodeType,
   segment: string,
   generics?: GenericParameter[],
@@ -396,9 +395,8 @@ async function loadGenericTypeAsync(
   if (node.generics.length !== genParams.length) return undefined;
 
   // Create generic type instance
-  const NodeTypeCtor = node.constructor as new () => NodeType;
-  genType = new NodeTypeCtor();
-  genType.namespace = node.namespace;
+  const NodeTypeCtor = node.constructor as new (parent?: NamespaceType) => NodeType;
+  genType = new NodeTypeCtor(node.namespace);
   node.setGenericType(inner, genType);
 
   await genType.loadType(node.getNodeSchema()!, genParams);
@@ -469,8 +467,8 @@ async function loadNodeSchema(
           }
         }
       }
-    } catch {
-      // Provider failed, continue with what we have
+    } catch (error) {
+      console.error(`Failed to load schema from provider: ${schemaName}`, error);
     }
   }
 

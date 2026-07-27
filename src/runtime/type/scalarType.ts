@@ -20,8 +20,7 @@ export abstract class ScalarType extends ValueType {
   override *getRefTypes(): Generator<NodeType> {
     if (this.baseNode)
       yield this.baseNode;
-    for (const type of super.getRefTypes())
-      yield type;
+    yield* super.getRefTypes();
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
