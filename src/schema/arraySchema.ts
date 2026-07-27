@@ -4,6 +4,7 @@
 
 import { Meta } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
+import { ArrayValue } from '../property/constraint/arrayValue';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { buildFuncCall } from '../property/funcCallProperty';
@@ -27,6 +28,7 @@ export interface ArraySchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Meta(RuntimeNodeType, ArrayType)
 @Meta(Attach, SCHEMA_KIND_ARRAY)
+@Meta(ArrayValue)
 @Meta(Append, [Relations])
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)

@@ -2,6 +2,8 @@ export * from './blackList';
 export * from './cascade';
 export * from './entries';
 export * from './enumValue';
+export * from './structValue';
+export * from './arrayValue';
 export * from './indexes';
 export * from './leafOnly';
 export * from './lowLimit';

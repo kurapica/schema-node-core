@@ -48,11 +48,10 @@ export class StructNode extends DataNode {
 
   // #region Core Features  ───────────────────────────────────────────────────
 
-  *fields(): Generator<DataNode> {
-    for (const f of this._fields) {
-      yield f;
-    }
-  }
+  private *_getFields(): Generator<DataNode>{ yield* this._fields; }
+
+  /** Get the fields of the struct. */
+  get fields(): Iterable<DataNode> { return this._getFields(); }
 
   // #endregion
 

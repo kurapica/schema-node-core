@@ -41,9 +41,14 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   get length(): number { return this._elements.length; }
 
-  at(index: number): IValueAccess | undefined {
+  at(index: number): DataNode | undefined {
     return this._elements[index];
   }
+
+  private *_getElements() { yield* this._elements; }
+
+  /** Get the elements of the array. */
+  get elements(): Iterable<DataNode> { return this._getElements(); }
 
   // #endregion
 

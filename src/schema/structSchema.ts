@@ -8,7 +8,7 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
 import { DataIndex, Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, getProperty, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { StructType } from '../runtime/type';
@@ -43,6 +43,7 @@ export interface StructFieldSchema {
 @Meta(SchemaGenerator, generateStructSchema)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
+@Meta(StructValue)
 @Meta(Append, [Relations])
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
