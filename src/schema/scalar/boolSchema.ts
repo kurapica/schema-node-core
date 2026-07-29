@@ -7,7 +7,7 @@ import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { saveSystemSchema } from '../../runtime/schemaRuntime';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { BoolType } from '../../runtime/type/scalar/boolType';
 import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
@@ -34,5 +34,5 @@ function generateBoolSchema(namespace: string, name: string, ctor: Function)
     const nodeschema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_BOOL }
     setPropertyValue(nodeschema, Display, { key : combinePaths(namespace, name)})
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => { setProperty(nodeschema, p) });
-    saveSystemSchema(nodeschema);
+    saveNodeSchema(nodeschema);
 }

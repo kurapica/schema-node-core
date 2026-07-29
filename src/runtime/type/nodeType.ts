@@ -127,6 +127,8 @@ export class NodeType implements IPropertyProvider, INodeReference {
     else
       this.getRefTypes().forEach(g => g.removeUsedBy(this));
     this.unload();
+    this._props = undefined;
+    this._refTypes = undefined;
   }
 
   // ── Virtual ──────────────────────────────────────────────────────────

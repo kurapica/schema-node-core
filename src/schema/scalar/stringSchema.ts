@@ -6,7 +6,7 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { Call } from '../../relation/call';
-import { saveSystemSchema } from '../../runtime/schemaRuntime';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { StringType } from '../../runtime/type';
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_STRING_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
@@ -71,5 +71,5 @@ function generateStringSchema(namespace: string, name: string, ctor: Function)
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_STRING, ctor).forEach(p => setProperty(StringSchema, p));
   setPropertyValue(nodeSchema, StringProperty, StringSchema);
-  saveSystemSchema(nodeSchema);
+  saveNodeSchema(nodeSchema);
 }

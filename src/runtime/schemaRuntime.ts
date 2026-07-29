@@ -141,16 +141,32 @@ export function getTypeSchemaName(typeCtor: Function): string | undefined {
 
 /**
  * Save a NodeSchema into the namespace tree.
- * This is THE public API for schema registration — mirrors C# SchemaRuntime.SaveSystemSchema().
+ * This is THE public API for schema registration — mirrors C# SchemaRuntime.saveNodeSchema().
  */
-export function saveSystemSchema(schema: NodeSchema, loadStage: SchemaLoadState = SchemaLoadState.System): void {
-  const ns = schema.namespace ?? '';
-
+export function saveNodeSchema(schema: NodeSchema | NodeSchema[], loadStage: SchemaLoadState = SchemaLoadState.System): void {
+  if (Array.isArray(schema)) {
+    for (const s of schema) {
+      saveNodeSchema(s, loadStage);
+    }
+    return;
+  }
+  if (!(schema)) return;
+  
   // Set the load state flags for the schema
   _setLoadState(schema, loadStage);
 
-  _registerInNamespace(ns, schema);
-  _schemaIndex.set(getNodeSchemaName(schema), schema);
+  if (loadStage & SchemaLoadState.System)
+  {
+    // System schema, register in the namespace tree
+    _registerInNamespace(schema.namespace ?? '', schema);
+    _schemaIndex.set(getNodeSchemaName(schema), schema);
+  }
+  else
+  {
+    // User schema, register in the namespace tree
+    rootNamespaceType ??= new NamespaceType();
+    rootNamespaceType.saveSubNodeSchema(schema);
+  }
 }
 
 /** Look up a schema by full name. */
@@ -241,6 +257,7 @@ let rootNamespaceType: NamespaceType | undefined;
 /** Get the cached NodeType type by full schema name. */
 export function getCachedNodeType(fullName: string): NodeType | undefined {
   const split = fullName.split('.');
+  rootNamespaceType ??= new NamespaceType();
   let node: NodeType | undefined = rootNamespaceType;
   for (let i = 0; i < split.length; i++) {
     node = node instanceof NamespaceType ? node.getNodeType(split[i]) : undefined;

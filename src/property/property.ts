@@ -87,7 +87,7 @@ export abstract class Property<T> implements IProperty {
     this._hasValue = value !== undefined && value !== null;
   }
 
-  getValue<TV>(matchType?: boolean): TV | undefined {
+  getValue<TV>(): TV | undefined {
     if (!this._hasValue) return undefined;
     return this._value as unknown as TV;
   }

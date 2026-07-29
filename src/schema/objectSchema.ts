@@ -8,7 +8,7 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, NodeSchemaKind, ValueSchemaKind, OfSchema, SchemaType, Valid, Display } from '../property/index';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
-import { saveSystemSchema } from '../runtime/schemaRuntime';
+import { saveNodeSchema } from '../runtime/schemaRuntime';
 import { ObjectType } from '../runtime/type';
 import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_NODE, SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT, SCHEMA_KIND_STRING } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
@@ -34,5 +34,5 @@ function generateObjectSchema(namespace: string, name: string, ctor: Function)
     const nodeschema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_OBJECT }
     setPropertyValue(nodeschema, Display, { key : combinePaths(namespace, name)})
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => { setProperty(nodeschema, p) });
-    saveSystemSchema(nodeschema);
+    saveNodeSchema(nodeschema);
 }

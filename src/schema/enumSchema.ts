@@ -16,7 +16,7 @@ import { combineProperties, setProperty, setPropertyValue } from '../property/pr
 import { NodeSchema } from './nodeSchema';
 import { FromEnum } from '../property/core/fromEnum';
 import { combinePaths } from '../utility/toolset';
-import { saveSystemSchema } from '../runtime/schemaRuntime';
+import { saveNodeSchema } from '../runtime/schemaRuntime';
 import { Base } from '../property/core/base';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
@@ -127,7 +127,7 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_ENUM, ctor).forEach(p => setProperty(enumSchema, p));  
   setPropertyValue(nodeSchema, EnumProperty, enumSchema);
-  saveSystemSchema(nodeSchema);
+  saveNodeSchema(nodeSchema);
 }
 
 function buildEnumValues(enumName: string, target: object): Entry<string>[] {

@@ -6,7 +6,7 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
 import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { Call } from '../../relation/call';
-import { saveSystemSchema } from '../../runtime/schemaRuntime';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { DateType } from '../../runtime/type';
 import { NODE_SELF, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
@@ -71,5 +71,5 @@ function generateDateSchema(namespace: string, name: string, ctor: Function)
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
   getMetaPropertiesForSchema(SCHEMA_KIND_DATE, ctor).forEach(p => setProperty(dateSchema, p));
   setPropertyValue(nodeSchema, DateProperty, dateSchema);
-  saveSystemSchema(nodeSchema);
+  saveNodeSchema(nodeSchema);
 }

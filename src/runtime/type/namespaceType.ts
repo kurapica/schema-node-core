@@ -35,9 +35,9 @@ export class NamespaceType extends NodeType {
   // ── NodeSchema management (for reload detection & provider merging) ─────
 
   /** Cache a NodeSchema keyed by name (used for reload detection). */
-  saveSubNodeSchema(schema: NodeSchema | NodeSchema[]): void {
+  saveSubNodeSchema(schema: NodeSchema | NodeSchema[], reload= false): void {
     if (Array.isArray(schema)) {
-      schema.forEach((s) => this.saveSubNodeSchema(s));
+      schema.forEach((s) => this.saveSubNodeSchema(s, reload));
       return;
     }
 
@@ -49,7 +49,7 @@ export class NamespaceType extends NodeType {
     delete schema.schemas;
 
     // The system schema don't need reload
-    if (!(this._subSchemas.has(name) && schema.loadState === SchemaLoadState.System)) {
+    if (!(this._subSchemas.has(name) && (!reload || schema.loadState === SchemaLoadState.System))) {
       this._subSchemas.set(name, schema);
 
       // mark the type need reload
@@ -65,7 +65,7 @@ export class NamespaceType extends NodeType {
         type = new NamespaceType(this);
         type.loadType(schema).then(() => type!.loaded = false);
       }
-      (type as NamespaceType).saveSubNodeSchema(schemas);
+      (type as NamespaceType).saveSubNodeSchema(schemas, reload);
     }
   }
 

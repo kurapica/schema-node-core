@@ -19,7 +19,7 @@ import { Relations } from './relationSchema';
 import { ArraySchema, ArrayProperty } from './arraySchema';
 import { getRelationSchemas, Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
-import { saveSystemSchema } from '../runtime/schemaRuntime';
+import { saveNodeSchema } from '../runtime/schemaRuntime';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
 
@@ -190,7 +190,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
   
   // save struct schema
   setPropertyValue(nodeSchema, StructProperty, structSchema);
-  saveSystemSchema(nodeSchema);
+  saveNodeSchema(nodeSchema);
 
   // Companion ArraySchema
   const primaryFields = buildOrderedFields(primaries);
@@ -214,7 +214,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
     setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });
     setPropertyValue(arrayNode, ArrayProperty, arraySchema);
-    saveSystemSchema(arrayNode);
+    saveNodeSchema(arrayNode);
   }
 }
 
