@@ -11,7 +11,7 @@
 // =============================================================================
 
 import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
-import type { IProperty } from '../property/property';
+import type { IProperty, PropertyCtor } from '../property/property';
 import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType } from '../property/index';
 import { getMetaProperties, getMetaProperty } from '../attribute/meta';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
@@ -27,7 +27,7 @@ import { combineProperties } from '../property/propertyOwner';
 let _schemaKindHolder = new Map<string, Function>();
 
 /** The schema kind property types */
-let _schemaKindPropertyTypes = new Map<string, (new () => IProperty)[]>();
+let _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
 
 /** The schema kind prototype properties */
 let _schemaKindProperties = new Map<string, IProperty[]>();
@@ -40,29 +40,29 @@ let _schemaGenerators = new Map<string, (namespace: string, name: string, target
  * @param kind The schema kind
  * @returns An array of property factory functions
  */
-export function *getSchemaKindPropertyTypes(kind: string): Generator<(new () => IProperty)> {
+export function *getSchemaKindPropertyTypes(kind: string): Generator<PropertyCtor> {
   const props = _schemaKindPropertyTypes.get(kind);
   if (!props) return;
   for (let prop of props) yield prop;
 }
 
 /** Gets the schema kinds the property can works with */
-export function getPropertyTypeSupportSchemas(prop: new () => IProperty) : string[] {
+export function getPropertyTypeSupportSchemas(prop: PropertyCtor) : string[] {
   return Array.from(_schemaKindPropertyTypes.keys().filter(e => _schemaKindPropertyTypes.get(e)?.includes(prop)))
 }
 
 /** Whether the property works for the schema kind */
-export function isSchemaKindPropertyType(kind: string, prop: new () => IProperty) : boolean {
+export function isSchemaKindPropertyType(kind: string, prop: PropertyCtor) : boolean {
   return _schemaKindPropertyTypes.get(kind)?.includes(prop) ?? false;
 }
 
 /** Gets the schema kind prototype property */
-export function getSchemaKindProperty<T extends IProperty>(kind: string, propCtor: new () => IProperty): T | undefined {
+export function getSchemaKindProperty<T extends IProperty>(kind: string, propCtor: PropertyCtor): T | undefined {
   return _schemaKindProperties.get(kind)?.find(p => p instanceof propCtor) as T;
 }
 
 /** Gets the schema kind prototype properties */
-export function *getSchemaKindProperties<T extends IProperty>(kind: string, propCtor: new () => IProperty): Generator<T> {
+export function *getSchemaKindProperties<T extends IProperty>(kind: string, propCtor: PropertyCtor): Generator<T> {
   const props = _schemaKindProperties.get(kind);
   if (!props?.length) return;
   for (let prop of props)
@@ -237,6 +237,17 @@ const _nodeTypeGenerator = new Map<string, new (parent?: NamespaceType) => NodeT
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: NamespaceType | undefined;
+
+/** Get the cached NodeType type by full schema name. */
+export function getCachedNodeType(fullName: string): NodeType | undefined {
+  const split = fullName.split('.');
+  let node: NodeType | undefined = rootNamespaceType;
+  for (let i = 0; i < split.length; i++) {
+    node = node instanceof NamespaceType ? node.getNodeType(split[i]) : undefined;
+    if (!node) break;
+  }
+  return node;
+}
 
 /**
  * Resolve a runtime NodeType by full schema name.
@@ -523,7 +534,7 @@ export function initSchemaRuntime(): void {
     const appendProperties = getMetaProperty(ctor, Append);
     if (appendProperties?.hasValue) {
       let existed = _schemaKindPropertyTypes.get(kind) ?? [];
-      existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
+      existed.push(...appendProperties.getValue<PropertyCtor[]>()!);
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
     }
 
@@ -550,7 +561,7 @@ export function initSchemaRuntime(): void {
       for (const kind of kinds) {
         let existed = _schemaKindPropertyTypes.get(kind) ?? [];
         if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
-        existed.push(ctor as unknown as new () => IProperty);
+        existed.push(ctor as unknown as PropertyCtor);
         _schemaKindPropertyTypes.set(kind, existed);
       }
     }

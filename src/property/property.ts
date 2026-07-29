@@ -56,7 +56,7 @@ export abstract class Property<T> implements IProperty {
   protected _hasValue = false;
 
   get name(): string {
-    return getPropertyName(this.constructor as new () => IProperty);
+    return getPropertyName(this.constructor as PropertyCtor);
   }
 
   get stackable(): boolean {
@@ -72,7 +72,7 @@ export abstract class Property<T> implements IProperty {
   get savable(): boolean {
     const ctor = this.constructor as Function;
     if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
-    const savable = getPropertyTypeSupportSchemas(this.constructor as new () => IProperty).length > 0;
+    const savable = getPropertyTypeSupportSchemas(this.constructor as PropertyCtor).length > 0;
     _saveableCache.set(ctor, savable);
     return savable;
   }
@@ -121,7 +121,7 @@ export function isTypeRefProperty(prop: IProperty): prop is ITypeRefProperty
 }
 
 /** Get the property name of the property constructor. */
-export function getPropertyName(ctor: new () => IProperty): string {
+export function getPropertyName(ctor: PropertyCtor): string {
   let n = _nameCache.get(ctor);
   if (!n) {
     n = (ctor as unknown as Record<string, string>).alias;
@@ -136,3 +136,6 @@ export function getPropertyName(ctor: new () => IProperty): string {
   }
   return n;
 }
+
+/** The property constructor */
+export type PropertyCtor<T extends IProperty = IProperty> = new () => T;

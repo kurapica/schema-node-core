@@ -5,7 +5,7 @@
 
 import { RelationStage } from '../enum/relationStage';
 import { RelationKind } from '../property';
-import type { IProperty } from '../property/property';
+import type { IProperty, PropertyCtor } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 import { RelationSchema } from '../schema/relationSchema';
 import { NODE_SELF } from '../utility/constant';
@@ -35,8 +35,8 @@ function ensureStore(ctor: Function): RelationSchema[] {
  * Declare that a property's value is computed by calling a function.
  */
 export function Relation(
-  propClass: new () => IProperty,
-  kind: string | (new() => IProperty),
+  propClass: PropertyCtor,
+  kind: string | PropertyCtor,
   value: unknown,
   target?: string,
   stage?: RelationStage

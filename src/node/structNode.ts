@@ -183,8 +183,8 @@ export class StructNode extends DataNode {
   
   // #region ── Utility ────────────────────────────────────────────────────
 
-  private writeBackRawValue(field: DataNode, value: unknown) {
-    (this._value as any)[field.name!] = value;
+  private writeBackRawValue(field: IValueAccess, value: unknown) {
+    (this._value as any)[(field as DataNode).name!] = value;
     this.onNext();
   }
 

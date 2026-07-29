@@ -8,16 +8,20 @@ import { getProperty } from "../property/propertyOwner";
 import { IErrorProvider, IValueAccess } from "../runtime/interfaces";
 import { getNodeType } from "../runtime/schemaRuntime";
 import { FunctionType, RelationType } from "../runtime/type";
+import { CallArg } from "../schema";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
-import { isEmpty } from "../utility/toolset";
+import { deepClone, isEmpty } from "../utility/toolset";
 
 /** The call relation process */
-class CallProcess implements IRelationProcess, IErrorProvider {
+export class CallProcess implements IRelationProcess, IErrorProvider {
   /** The function call settings */
   private _call?: FuncCall;
   private _error?: string;
   private _func?: FunctionType;
+
+  /** The arguments */
+  get args(): CallArg[] { return deepClone(this._call?.args || []); }
 
   /** The error */
   get error() { return this._error }

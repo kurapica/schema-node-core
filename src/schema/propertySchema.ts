@@ -7,7 +7,7 @@ import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/
 import { Relation } from '../attribute/relation';
 import { Base } from '../property/core/base';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, PropertyValueType, Visible, Alias, Valid, Display, IProperty, Stackable, Static } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, PropertyValueType, Visible, Alias, Valid, Display, IProperty, Stackable, Static, PropertyCtor } from '../property/index';
 import { getPropertyName, Property } from '../property/property';
 import { setPropertyValue, setProperty } from '../property/propertyOwner';
 import { Call } from '../relation/call';
@@ -92,8 +92,8 @@ function generatePropertySchema(namespace: string, name: string, ctor: Function)
 
     const isStatic = getMetaProperty(ctor, Static)?.getValue<boolean>();
     const stackable = getMetaProperty(ctor, Stackable)?.getValue<boolean>();
-    const forSchemas = getPropertyTypeSupportSchemas(ctor as new () => IProperty);
-    const propSchema : PropertySchema = { property: getPropertyName(ctor as new () => IProperty), type, static: isStatic, stackable, forSchemas };
+    const forSchemas = getPropertyTypeSupportSchemas(ctor as PropertyCtor);
+    const propSchema : PropertySchema = { property: getPropertyName(ctor as PropertyCtor), type, static: isStatic, stackable, forSchemas };
     
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
     getMetaPropertiesForSchema(SCHEMA_KIND_PROPERTY, ctor).forEach(p => setProperty(propSchema, p));

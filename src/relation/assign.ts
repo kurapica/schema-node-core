@@ -10,7 +10,8 @@ import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
 import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 import { Call } from "./call";
 
-class AssignProcess implements IRelationProcess {
+/** The assign relation process */
+export class AssignProcess implements IRelationProcess {
     private _value?: unknown
 
     async load(schema: RelationSchema) {

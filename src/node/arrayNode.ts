@@ -9,12 +9,13 @@ import type { ArrayType } from '../runtime/type/arrayType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
 import { isNull } from '../utility/toolset';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
+import { Observer } from '../utility';
 
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  private _elements: DataNode[] = [];
-  private _relations?: IRelationInfo[]; // the merged relations from types
+  protected _elements: DataNode[] = [];
+  protected _relations?: IRelationInfo[]; // the merged relations from types
 
   constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, undefined, parent, propProvider);
@@ -239,11 +240,11 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   // #region ── Utility ───────────────────────────────────────────────────────
 
-  private writeBackRawValue(element: DataNode, value: unknown) {
+  private writeBackRawValue(element: IValueAccess, value: unknown) {
     const arr = this._value as unknown[];
     if (!Array.isArray(arr)) return;
 
-    const idx = this._elements.indexOf(element);
+    const idx = this._elements.indexOf(element as DataNode);
     if (idx >= 0) {
       arr[idx] = value;
       this.onNext();
@@ -274,7 +275,7 @@ export class SliceArrayNode extends DataNode {
     return (this._arrayNode.rawValue as unknown[])?.slice(this._start, this._end) ?? [];
   }
 
-  override subscribe(func: Function, immediate?: boolean): Function {
+  override subscribe(func: Observer<[IValueAccess, unknown]>, immediate?: boolean): Function {
     return this._arrayNode.subscribe(func, immediate);
   }
 

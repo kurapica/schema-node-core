@@ -1,17 +1,18 @@
+export type Observer<TArgs extends any[] = []> = (...args: TArgs) => void;
+
 /** A simple observable. */
-export class Observable
-{
-    private observers: Set<Function> = new Set()
+export class Observable<TArgs extends any[] = []> {
+    private observers: Set<Observer<TArgs>> = new Set()
 
     /** Subscribe */
-    public subscribe(observer: Function): Function
+    public subscribe(observer: Observer<TArgs>): Function
     {
         this.observers.add(observer)
         return () => this.unsubscribe(observer)
     }
 
     /** Un-subscribe */
-    unsubscribe(observer: Function): void
+    unsubscribe(observer: Observer<TArgs>): void
     {
         this.observers.delete(observer)
     }
@@ -20,8 +21,7 @@ export class Observable
      * Notify all observers with the given arguments.
      * @param args The arguments to pass to the observers.
      */
-    public onNext(...args: any[]): void
-    {
+    public onNext(...args: TArgs): void {
         this.observers.forEach(observer => {
             try {
                 observer(...args)

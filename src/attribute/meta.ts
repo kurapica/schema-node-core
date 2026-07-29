@@ -7,7 +7,7 @@
 // Query supports optional field filter and prototype-chain inheritance.
 // =============================================================================
 
-import type { IProperty } from '../property/property';
+import type { IProperty, PropertyCtor } from '../property/property';
 import { Default } from '../property/common/default';
 import { isSchemaKindPropertyType } from '../runtime/schemaRuntime';
 import { isEmpty, isNull } from '../utility/toolset';
@@ -47,7 +47,7 @@ function ensureStore(ctor: Function): MetaEntry[] {
  *   @Meta(Stackable, true)            — on Property subclass (read by Property system)
  */
 export function Meta(
-  propCtor: new () => IProperty,
+  propCtor: PropertyCtor,
   value?: unknown,
 ): ClassDecorator & PropertyDecorator & ParameterDecorator & MethodDecorator {
   return ((target: object, _propertyKey?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
@@ -171,5 +171,5 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
   index?: number
 ): T[] {
   return getMetaProperties(ctor, propCtor, field, index)
-    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as new () => IProperty));
+    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as PropertyCtor));
 }

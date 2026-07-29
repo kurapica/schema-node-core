@@ -1,4 +1,5 @@
-import { IConstraintProperty, IProperty } from "../../property";
+import { IConstraintProperty, IProperty, PropertyCtor } from "../../property";
+import { Observer } from "../../utility";
 import { RelationType, ValueType } from "../type";
 
 /** The value type access interface */
@@ -28,26 +29,26 @@ export interface IValueAccess {
   // #region ── Property Access ───────────────────────────────────────────────
 
   /** Gets the property */
-  getProperty(propCtor: new() => IProperty): IProperty | undefined;
+  getProperty(propCtor: PropertyCtor): IProperty | undefined;
 
   /** Gets the property value */
-  getPropertyValue<T>(propCtor: new() => IProperty): T | undefined;
+  getPropertyValue<T>(propCtor: PropertyCtor): T | undefined;
 
   /** Gets the properties */
-  getProperties(propCtor: new() => IProperty): Generator<IProperty>;
+  getProperties(propCtor: PropertyCtor): Generator<IProperty>;
 
   /** Gets the properties */
-  getPropertyValues<T>(propCtor: new() => IProperty): Generator<T>;
+  getPropertyValues<T>(propCtor: PropertyCtor): Generator<T>;
 
   /** Sets the value of the given property from relations */
-  setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void;
+  setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void;
 
   // #endregion
 
   // #region ── Subscription ──────────────────────────────────────────────────
 
   /** Subscribe the data change and return the function for un-subsribe */
-  subscribe(func: Function, immediate?: boolean): Function;
+  subscribe(func: Observer<[IValueAccess, unknown]>, immediate?: boolean): Function;
 
   /** Record subscription by source */
   recordSubscription(subscription: Function, source: unknown): void;

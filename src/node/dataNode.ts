@@ -4,10 +4,10 @@
 // =============================================================================
 
 import type { ValueType } from '../runtime/type/valueType';
-import type { IProperty } from '../property/property';
+import type { IProperty, PropertyCtor } from '../property/property';
 import { IPropertyProvider, IRelationInfo, IValueAccess, joinProperties } from '../runtime/interfaces';
 import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
-import { Observable } from '../utility/observable';
+import { Observable, Observer } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
 import { DisplayOnly, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
@@ -41,19 +41,19 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   private _violated?: IConstraintProperty[];
 
   /** The override properties(from relations) */
-  private _props?: Map<(new () => IProperty), IPropertyRecord[]>;
+  private _props?: Map<PropertyCtor, IPropertyRecord[]>;
 
   /** The data observable */
-  private _dataOb?: Observable;
+  private _dataOb?: Observable<[IValueAccess, unknown]>;
 
   /** The state observable */
-  private _stateOb?: Observable;
+  private _stateOb?: Observable<[IValueAccess, PropertyCtor?, unknown?]>;
 
   /** The violated observable */
-  private _violatedOb?: Observable;
+  private _violatedOb?: Observable<[IValueAccess, boolean]>;
 
   /** The property observable */
-  private _propObs?: Map<(new () => IProperty), Observable>;
+  private _propObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown]>>;
 
   /** The subscrptions */
   private _subs?: Map<unknown, Set<Function>>;
@@ -149,6 +149,9 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** Whether the data node changed */
   get changed(): boolean { return !isEqual(this._original, this._value) }
 
+  /** Gets the submit value */
+  get submitValue(): unknown { return this.getValue() }
+
   /** Confirm the changes and save to original */
   confirm(): void { this._original = this.value }
 
@@ -166,7 +169,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property value */
-  getPropertyValue<T>(propCtor: new() => IProperty): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
+  getPropertyValue<T>(propCtor: PropertyCtor): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
 
   /** Gets the properties */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
@@ -174,7 +177,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Gets the property values */
-  *getPropertyValues<T>(propCtor: new() => IProperty): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
+  *getPropertyValues<T>(propCtor: PropertyCtor): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
@@ -182,7 +185,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Sets the value of the given property */
-  setPropertyValue(propCtor: new () => IProperty, value?: unknown, source?: IValueAccess): void {
+  setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void {
     source ??= this;
 
     let props = this._props?.get(propCtor);
@@ -246,7 +249,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── Subscription ──────────────────────────────────────────────────
 
   /** Subscribe the data change and return the function for un-subsribe */
-  subscribe(func: Function, immediate?: boolean): Function {
+  subscribe(func: Observer<[IValueAccess, unknown]>, immediate?: boolean): Function {
     this._dataOb ??= new Observable();
     const sub = this._dataOb.subscribe(func);
     if (immediate) func(this, this.rawValue);
@@ -260,7 +263,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }, DEBOUNCE_TIME);
 
   /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
-  subscribeState(func: Function, immediate?: boolean): Function {
+  subscribeState(func: Observer<[IValueAccess, PropertyCtor?, unknown?]>, immediate?: boolean): Function {
     this._stateOb ??= new Observable();
     const sub = this._stateOb.subscribe(func);
     if (immediate) func(this);
@@ -268,13 +271,13 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the state change */
-  onNextState(propCtor?: (new() => IProperty)) {
+  onNextState(propCtor?: PropertyCtor) {
     if (!this._stateOb) return;
     this._stateOb.onNext(this, propCtor, propCtor ? this.getPropertyValue(propCtor) : undefined); 
   }
 
   /** Subscribe the node property change and return the function for un-subscribe */
-  subscribeProperty(propCtor: new () => IProperty, func: Function, immediate?: boolean): Function {
+  subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown]>, immediate?: boolean): Function {
     this._propObs ??= new Map();
     let ob = this._propObs.get(propCtor);
     if (!ob){
@@ -287,7 +290,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the property value change */
-  onNextProperty(propCtor: new() => IProperty)
+  onNextProperty(propCtor: PropertyCtor)
   {
     const ob = this._propObs?.get(propCtor);
     if (ob) ob.onNext(this, propCtor, this.getPropertyValue(propCtor));
@@ -295,7 +298,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Subscribe the violated constraints and return the function for un-subscribe */
-  subscribeViolated(func: Function, immediate?: boolean): Function {
+  subscribeViolated(func: Observer<[IValueAccess, boolean]>, immediate?: boolean): Function {
     this._violatedOb ??= new Observable();
     const sub = this._violatedOb.subscribe(func);
     if (immediate) func(this, this.isValid);

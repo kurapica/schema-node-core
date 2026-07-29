@@ -6,7 +6,7 @@
 import { getMetaProperty } from '../../attribute/meta';
 import { RelationKind } from '../../property';
 import { RelationProcess } from '../../property/core/relationProcess';
-import type { IProperty } from '../../property/property';
+import type { IProperty, PropertyCtor } from '../../property/property';
 import { IRelationProcess, RelationSchema } from '../../schema/relationSchema';
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
 import { generateGuid } from '../../utility/toolset';
@@ -30,7 +30,7 @@ export class RelationType implements INodeReference, IErrorProvider {
   private _relationSchema: RelationSchema;
   private _owner: IValueTypeAccess;
   private _property?: PropertyType;
-  private _propCtor?: new() => IProperty;
+  private _propCtor?: PropertyCtor;
   private _process?: IRelationProcess;
 
   /** A guid */
@@ -54,11 +54,14 @@ export class RelationType implements INodeReference, IErrorProvider {
   /** The error message */
   get error() { return this._relationSchema.error }
 
+  /** The processer */
+  get processer(): IRelationProcess | undefined { return this._process };
+
   // ── Methods ────────────────────────────────────────────────────────────
 
   async load() {
     this._property = await getNodeType(this._relationSchema.property) as PropertyType;
-    this._propCtor = this._property ? getSchemaType(this._property.name) as new() => IProperty : undefined;
+    this._propCtor = this._property ? getSchemaType(this._property.name) as PropertyCtor : undefined;
 
     // load process
     for(const propCtor of getSchemaKindPropertyTypes(SCHEMA_KIND_RELATION))
