@@ -14,6 +14,9 @@
   "keywords": [
     "schema",
     "metadata",
+    "property",
+    "relation",
+    "function",
     "declarative",
     "typescript",
     "property-composition"
@@ -22,7 +25,7 @@
     "dist"
   ],
   "author": "kurapica125@outlook.com",
-  "license": "MIT",
+  "license": "Apache License 2.0",
   "dependencies": {
     "bignumber.js": "^9.3.0"
   },
@@ -30,6 +33,10 @@
     "typescript": "^5.9.3",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kurapica/schema-node-core.git"
   },
   "publishConfig": {
     "access": "public"
