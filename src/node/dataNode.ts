@@ -10,9 +10,10 @@ import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isN
 import { Observable, Observer } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
+import { Display, DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
 import { getSchemaKindPropertyTypes } from '../runtime';
+import { sformat } from '../utility';
 
 const DEBOUNCE_TIME = 20;
 
@@ -428,9 +429,14 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
   /** The error message if the node is invalid. */
   get error(): string | undefined {
-    const generator = this.violated();
-    if (generator.next().done) return undefined;
-    return (generator.next().value as IConstraintProperty).error(this);
+    let hasError = false;
+    for (const prop of this.violated())
+    {
+      const msg = prop.error(this);
+      if (msg) return msg;
+      hasError = true;
+    }
+    return hasError ? sformat("VALUE_NOT_VALID", this.getPropertyValue(Display) ?? this.getPropertyValue(Name)) : undefined;
   }
 
   /** Whether the node passed all constraint validations. */

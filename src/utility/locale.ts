@@ -71,15 +71,18 @@ export function _LS(key: string | LocaleString): LocaleString
 
 /** Get the locale proxy */
 export function getLocaleProxy() {  
-  return new Proxy(function(key: string) { return currLocale[key] ?? key } as LocaleFunction, {
-  get (target, prop) {
-    return typeof(prop) === "string" && prop in currLocale ? currLocale[prop] : prop
-  },
-  apply(target, thisArg, args) {
-    const [key] = args
-    return localeStringToString(key)
-  }
-})
+  return new Proxy(function(key: string) { 
+    return currLocale[key] ?? key } as LocaleFunction, 
+    {
+      get (target, prop) {
+        return typeof(prop) === "string" && prop in currLocale ? currLocale[prop] : prop
+      },
+      apply(target, thisArg, args) {
+        const [key] = args
+        return localeStringToString(key)
+      }
+    }
+  );
 }
 
 /** Get the default local proxy */
@@ -130,13 +133,12 @@ function localeStringToString(value: LocaleString | string | null | undefined): 
   }
   
   const tran = value.trans?.find(t => currLang.startsWith(t.lang) || t.lang.startsWith(currLang))
-  return tran?.tran || (currLocale[value.key] !== undefined && currLocale[value.key] !== null ? currLocale[value.key] : value.key || "")
+  return tran?.tran ?? currLocale[value.key] ?? value.key ?? ""
 }
 
 /** format string */
-export function sformat(template: string | LocaleString, ...args: any[]): string | undefined {
-  const result = _L(template);
-  return isNull(result) ? undefined : result.replace(/{(\d+)}/g, (match, index) => {
+export function sformat(template: string | LocaleString, ...args: any[]): string {
+  return _L(template).replace(/{(\d+)}/g, (match, index) => {
     return typeof args[index] !== 'undefined' ? _L(args[index]) : match;
   });
 }

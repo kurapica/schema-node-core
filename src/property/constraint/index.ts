@@ -8,7 +8,6 @@ export * from './entries';
 export * from './enumValue';
 export * from './indexes';
 export * from './intValue';
-export * from './indexes';
 export * from './leafOnly';
 export * from './lowLimit';
 export * from './primary';

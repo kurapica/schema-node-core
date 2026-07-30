@@ -6,9 +6,13 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
+import { getMetaProperty } from "../attribute";
 import { IPropertyProvider, IValueAccess } from "../runtime";
 import { getPropertyTypeSupportSchemas, getSchemaKindPropertyTypes } from "../runtime/schemaRuntime";
-import { isEmpty } from "../utility";
+import { LocaleString } from "../struct";
+import { isEmpty, sformat } from "../utility";
+import { Display, Error } from "./common";
+import { Name } from "./core";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -111,7 +115,16 @@ export abstract class Property<T> implements IProperty {
   }
 
   /** The error message if the property is invalid(for constraint properties only) */
-  error(node: IValueAccess): string | undefined { return undefined; }
+  error(node: IValueAccess): string | undefined {
+    const error = getMetaProperty(this.constructor, Error);
+    if (error?.hasValue)
+    {
+      const errorMsg = error.getValue<LocaleString>()!;
+      const msg = sformat(errorMsg, node.getPropertyValue(Display) ?? node.getPropertyValue(Name) );
+      if (msg && msg !== errorMsg?.key) return msg
+    }
+    return sformat("VALUE_NOT_VALID", node.getPropertyValue(Display) ?? node.getPropertyValue(Name));
+  }
 
   // do nothing by default, subclasses can override to apply the property to the target
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
