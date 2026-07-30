@@ -134,8 +134,9 @@ function localeStringToString(value: LocaleString | string | null | undefined): 
 }
 
 /** format string */
-export function sformat(template: string | LocaleString, ...args: any[]) {
-return `${_L(template)}`.replace(/{(\d+)}/g, (match, index) => {
-  return typeof args[index] !== 'undefined' ? _L(args[index]) : match;
-});
+export function sformat(template: string | LocaleString, ...args: any[]): string | undefined {
+  const result = _L(template);
+  return isNull(result) ? undefined : result.replace(/{(\d+)}/g, (match, index) => {
+    return typeof args[index] !== 'undefined' ? _L(args[index]) : match;
+  });
 }

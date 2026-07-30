@@ -108,6 +108,19 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** Shortcut to gets the node name */
   get name(): string | undefined { return this.getPropertyValue<string>(Name) }
 
+  /** Shortcut to gets the full access path */
+  get access(): string {
+    let node: DataNode | undefined = this;
+    const names: string[] = [];
+    while (node) {
+      const name = node.name;
+      if (!name) break;
+      names.push(name);
+      node = node.parent as DataNode | undefined;
+    }
+    return names.reverse().join('.');
+  }
+
   /** Shortcut to gets whether the node is require */
   get require() { return this.getPropertyValue<boolean>(Require) }
 
@@ -411,6 +424,13 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
         yield prop;
       }
     }
+  }
+
+  /** The error message if the node is invalid. */
+  get error(): string | undefined {
+    const generator = this.violated();
+    if (generator.next().done) return undefined;
+    return (generator.next().value as IConstraintProperty).error(this);
   }
 
   /** Whether the node passed all constraint validations. */

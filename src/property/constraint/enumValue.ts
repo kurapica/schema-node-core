@@ -9,6 +9,7 @@ import { EnumNode } from '../../node/enumNode';
 import { EnumType } from '../../runtime/type';
 import { EnumValueType } from '../../enum/enumValueType';
 import { isNull } from '../../utility/toolset';
+import { Error } from '../common';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
@@ -18,6 +19,7 @@ import { isNull } from '../../utility/toolset';
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.enum.error`)
 export class EnumValue extends Property<boolean> implements IConstraintProperty {
   override get hasValue(): boolean { return true; }
 

@@ -1,6 +1,7 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { Attach, Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { DateValue } from '../../property/constraint/dateValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -26,6 +27,7 @@ export interface DateSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Meta(SchemaGenerator, generateDateSchema)
 @Meta(Attach, SCHEMA_KIND_DATE)
+@Meta(DateValue)
 class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;

@@ -1,5 +1,6 @@
 import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
 import { Display, OfSchema, SchemaGenerator, SchemaType, Valid } from '../../property';
+import { BoolValue } from '../../property/constraint/boolValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -19,6 +20,7 @@ import { NodeSchema } from '../nodeSchema';
 @Meta(ValueSchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
 @Meta(RuntimeNodeType, BoolType)
 @Meta(SchemaGenerator, generateBoolSchema)
+@Meta(BoolValue)
 class BoolSchemaMeta {}
 
 /** Represents the bool value type */

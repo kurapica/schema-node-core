@@ -1,6 +1,7 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { Attach, Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { DecimalValue } from '../../property/constraint/decimalValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -26,6 +27,7 @@ export interface DecimalSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
 @Meta(Attach, SCHEMA_KIND_DECIMAL)
 @Meta(SchemaGenerator, generateDecimalSchema)
+@Meta(DecimalValue)
 class DecimalSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DECIMAL_TYPE)
   base?: string;

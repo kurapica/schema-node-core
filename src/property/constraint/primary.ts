@@ -7,12 +7,14 @@ import { IValueAccess } from '../../runtime/interfaces';
 import { ArrayNode } from '../../node/arrayNode';
 import { isNull } from '../../utility/toolset';
 import { StructNode } from '../../node/structNode';
+import { Error } from '../common';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.primary`)
 @Meta(Static, true)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.primary.error`)
 export class Primary extends Property<string[]> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.length) return undefined;

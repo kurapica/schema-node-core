@@ -10,7 +10,7 @@ import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/inter
 import { isNull } from '../utility/toolset';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
 import { Observer } from '../utility';
-import { getPropertiesBySchemaKind } from '../property';
+import { getPropertiesBySchemaKind, Name } from '../property';
 
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
@@ -80,6 +80,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
       node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
       if (this._relations?.length) node.attachRelations(this._relations);
     }
+    this.refreshElementNames();
   }
 
   override getValue(): unknown { return this._elements.map(e => e.getValue()); }
@@ -199,6 +200,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   
     if (this._relations?.length) node.attachRelations(this._relations);
     node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
+    this.refreshElementNames();
     return node;
   }
 
@@ -209,7 +211,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     remove.forEach(r => r.dispose());
     const rawValue = this.rawValue as unknown[];
     rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
-
+    this.refreshElementNames();
     this.onNext();
   }
 
@@ -229,7 +231,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     this._elements[to] = temp;
     const rawValue = this.rawValue as unknown[];
     rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
-
+    this.refreshElementNames();
     this.onNext();
   }
 
@@ -262,6 +264,12 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
       arr[idx] = value;
       this.onNext();
     }
+  }
+
+  private refreshElementNames() {
+    this._elements.forEach((e, i) => {
+      e.setPropertyValue(Name, `${this.name}[${i}]`);
+    });
   }
 
   // #endregion

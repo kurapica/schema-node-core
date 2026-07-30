@@ -7,10 +7,12 @@ import { IValueAccess } from '../../runtime/interfaces';
 import { EnumNode } from '../../node/enumNode';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { EnumType } from '../../runtime/type';
+import { Error } from '../common';
 
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.leafonly`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.leafonly.error`)
 export class LeafOnly extends Property<boolean> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

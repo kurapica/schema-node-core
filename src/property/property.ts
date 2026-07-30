@@ -110,6 +110,9 @@ export abstract class Property<T> implements IProperty {
     return !this.hasValue || this.getValue() === other.getValue();
   }
 
+  /** The error message if the property is invalid(for constraint properties only) */
+  error(node: IValueAccess): string | undefined { return undefined; }
+
   // do nothing by default, subclasses can override to apply the property to the target
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 

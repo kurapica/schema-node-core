@@ -1,6 +1,7 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { Attach, Display, ForSchema, IProperty, NodeSchemaKind, OfSchema, Property, PropertyValueType, SchemaGenerator, SchemaKind, SchemaType, Valid, ValueSchemaKind, Visible } from '../../property';
+import { StringValue } from '../../property/constraint/stringValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
@@ -26,6 +27,7 @@ export interface StringSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRING)
 @Meta(SchemaGenerator, generateStringSchema)
+@Meta(StringValue)
 class StringSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_STRING_TYPE)
   base?: string;

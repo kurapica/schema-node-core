@@ -13,3 +13,4 @@ export { IntSuggest, StringSuggest } from './suggest';
 export { Unit } from './unit';
 export { Unpack } from './unpack';
 export { Visible } from './visible';
+export { Error } from './error';

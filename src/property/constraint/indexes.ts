@@ -4,10 +4,12 @@ import { OfSchema, SchemaType, PropertyValueType } from '../index';
 import type { IConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
+import { Error } from '../common';
 
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes.error`)
 export class Indexes extends Property<DataIndex[]> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     return undefined; // do nothing

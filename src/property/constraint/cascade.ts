@@ -7,11 +7,13 @@ import { IValueAccess } from '../../runtime/interfaces';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { EnumNode } from '../../node/enumNode';
 import { EnumType } from '../../runtime/type';
+import { Error } from '../common';
 
 /** Limit the cascade level of the enum entry. */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade.error`)
 export class Cascade extends Property<number> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

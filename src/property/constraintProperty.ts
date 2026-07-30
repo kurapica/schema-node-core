@@ -16,6 +16,9 @@ import type { IProperty } from './property';
 export interface IConstraintProperty extends IProperty {
   /** validate the data node */
   validate(node: IValueAccess): Promise<boolean | undefined>;
+
+  /** The error message if the property is invalid. */
+  error(node: IValueAccess): string | undefined;
 }
 
 /** Check if the property is constraint */
