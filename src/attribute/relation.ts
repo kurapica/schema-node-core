@@ -5,11 +5,10 @@
 
 import { RelationStage } from '../enum/relationStage';
 import { RelationKind } from '../property';
-import type { IProperty, PropertyCtor } from '../property/property';
+import type { PropertyCtor } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 import { RelationSchema } from '../schema/relationSchema';
 import { NODE_SELF } from '../utility/constant';
-import { isEmpty } from '../utility/toolset';
 import { getMetaProperty } from './meta';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');

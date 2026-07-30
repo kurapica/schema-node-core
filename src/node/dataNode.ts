@@ -4,7 +4,7 @@
 // =============================================================================
 
 import type { ValueType } from '../runtime/type/valueType';
-import type { IProperty, PropertyCtor } from '../property/property';
+import type { IProperty, Property, PropertyCtor } from '../property/property';
 import { IPropertyProvider, IRelationInfo, IValueAccess, joinProperties } from '../runtime/interfaces';
 import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
 import { Observable, Observer } from '../utility/observable';
@@ -53,7 +53,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   private _violatedOb?: Observable<[IValueAccess, boolean]>;
 
   /** The property observable */
-  private _propObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown]>>;
+  private _propObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown, unknown]>>;
 
   /** The subscrptions */
   private _subs?: Map<unknown, Set<Function>>;
@@ -72,6 +72,10 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       this.setValue(value);
       this.confirm();
     }
+
+    // init properties effect
+    for(const prop of Array.from(this.filterProperties(() => true)))
+      prop.effect(this, undefined, prop.getValue());
   }
 
   /** Dipose the data node, release references */
@@ -185,9 +189,10 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Sets the value of the given property */
-  setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void {
+  setPropertyValue<T>(propCtor: new () => Property<T>, value?: T, source?: IValueAccess): void {
     source ??= this;
 
+    let oldValue = this.getPropertyValue<T>(propCtor);
     let props = this._props?.get(propCtor);
     let record = props?.find(p => p.source === source);
 
@@ -240,8 +245,10 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     }
 
     // public property change
-    if (!props?.length || props[0].level <= record.level)
-      this.onNextProperty(propCtor);
+    if (!props?.length || props[0].level <= record.level) {
+      record.property.effect(this, oldValue, record.property.getValue()); // apply side effect
+      this.onNextProperty(propCtor, oldValue, record.property.getValue());
+    }
   }
 
   // #endregion
@@ -277,7 +284,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Subscribe the node property change and return the function for un-subscribe */
-  subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown]>, immediate?: boolean): Function {
+  subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function {
     this._propObs ??= new Map();
     let ob = this._propObs.get(propCtor);
     if (!ob){
@@ -285,15 +292,15 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       this._propObs.set(propCtor, ob);
     }
     const sub = ob.subscribe(func);
-    if (immediate) func(this, propCtor, this.getPropertyValue(propCtor))
+    if (immediate) func(this, propCtor, undefined, this.getPropertyValue(propCtor))
     return sub;
   }
 
   /** Publish the property value change */
-  onNextProperty(propCtor: PropertyCtor)
+  onNextProperty(propCtor: PropertyCtor, oldValue?: unknown, newValue?: unknown)
   {
     const ob = this._propObs?.get(propCtor);
-    if (ob) ob.onNext(this, propCtor, this.getPropertyValue(propCtor));
+    if (ob) ob.onNext(this, propCtor, oldValue, newValue);
     this.onNextState(propCtor);
   }
 
@@ -336,6 +343,19 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       subs.forEach(s => s());
       subs.clear();
     }
+  }
+
+  /** Move subscriptions to new node before destroying this node */
+  moveSubscription(newNode: DataNode): void {
+    newNode._dataOb = this._dataOb;
+    newNode._stateOb = this._stateOb;
+    newNode._propObs = this._propObs;
+    newNode._violatedOb = this._violatedOb;
+
+    this._dataOb = undefined;
+    this._stateOb = undefined;
+    this._propObs = undefined;
+    this._violatedOb = undefined;
   }
 
   // #endregion

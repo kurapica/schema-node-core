@@ -6,6 +6,7 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 
+import { IPropertyProvider, IValueAccess } from "../runtime";
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
@@ -43,8 +44,11 @@ export interface IProperty {
   /** Compare this property to another for equality, used for stackable properties. */
   equal(other: IProperty): boolean;
 
-  /** Apply the property to the target, or register the target */
+  /** Apply the property to the target, or register the target, only works as a decorator. */
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
+
+  /** Apply the property effect to the target. */
+  effect(target: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined): void;
 }
 
 /**
@@ -107,6 +111,9 @@ export abstract class Property<T> implements IProperty {
 
   // do nothing by default, subclasses can override to apply the property to the target
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
+
+  /** Apply the property effect to the target. */
+  effect(target: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined): void {}
 }
 
 export interface ITypeRefProperty extends IProperty {

@@ -6,14 +6,17 @@
 import { DataNode } from './dataNode';
 import type { StructType } from '../runtime/type/structType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
-import { isNull } from '../utility/toolset';
-import { Unpack } from '../property';
+import { isEqual, isNull } from '../utility/toolset';
+import { OverrideType, Unpack } from '../property';
 import { NODE_SELF } from '../utility/constant';
+import { getNodeType, StructFieldType, ValueType } from '../runtime';
 
 export class StructNode extends DataNode {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
   private _fields: DataNode[] = [];
+  private _fieldRelations?: Map<string, IRelationInfo[]>;
+  private _fieldTypeTrack?: Map<string, Function>;
 
   constructor(type: StructType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, undefined, parent, propProvider);
@@ -176,7 +179,34 @@ export class StructNode extends DataNode {
     });
 
     // attach relations from children
-    this._fields.forEach(f => f.attachRelations(fieldRelations.get(f.name!.toLowerCase()) ?? []));
+    this._fields.forEach(f => {
+      const name = f.name!.toLowerCase();
+      const infos = fieldRelations.get(name) ?? [];
+      if (infos.length)
+      {
+        // keep track of field relations
+        this._fieldRelations ??= new Map();
+        if (this._fieldRelations?.get(name))
+        {
+          this._fieldRelations.get(name)!.push(...infos);
+        }
+        else
+        {
+          this._fieldRelations.set(name, infos);
+        }
+
+        // track override type
+        if (infos.some(i => i.relations.some(r => r.propertyCtor === OverrideType && i.owner.getAccessValue(r.target, f) === f)))
+        {
+          this._fieldTypeTrack ??= new Map();
+          if (!this._fieldTypeTrack.has(name))
+            this._fieldTypeTrack.set(name, f.subscribeProperty(OverrideType, this.trackOverrideType));
+        }
+
+        // attach relations to child
+        f.attachRelations(infos);
+      }
+    });
   }
   
   // #endregion
@@ -186,6 +216,33 @@ export class StructNode extends DataNode {
   private writeBackRawValue(field: IValueAccess, value: unknown) {
     (this._value as any)[(field as DataNode).name!] = value;
     this.onNext();
+  }
+
+  private async trackOverrideType(field: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined) {
+    if (!isEqual(oldValue, newValue))
+    {
+      const node = field as DataNode;
+      const strutField = (this.type as StructType).getField(node.name!)!;
+      const index = this._fields.indexOf(node);
+      if (index === -1) return;
+
+      const type = newValue ? await getNodeType(newValue as string) as ValueType : strutField.type;
+      if (!type || type == node.type) return;
+      
+      const newNode = type.create(node.original, this, strutField);
+      newNode.value = node.rawValue;
+      node.moveSubscription(newNode);
+
+      // replace old node with new node
+      this._fields[index] = newNode;
+      node.dispose();
+
+      // attach relations to new node
+      newNode.attachRelations(this._fieldRelations?.get(node.name!.toLowerCase()) ?? []);
+
+      // write back raw value
+      this.writeBackRawValue(newNode, newNode.rawValue);
+    }
   }
 
   // #endregion

@@ -45,6 +45,9 @@ export class RelationType implements INodeReference, IErrorProvider {
   /** The property type */
   get property() { return this._property };
 
+  /** The property constructor */
+  get propertyCtor() { return this._propCtor };
+
   /** Stage bit flags. */
   get stage() { return this._relationSchema.stage };
 
