@@ -380,7 +380,7 @@ async function loadNodeType(
   const schemas = schema.schemas;
   delete schema.schemas;
   if (nsParent !== result) {
-    nsParent?.saveSubNodeSchema(schema);
+    nsParent?.saveSubNodeSchema(schema, true);
     nsParent?.saveNodeType(segment, result);
   }
 
