@@ -43,7 +43,7 @@ let _schemaGenerators = new Map<string, (namespace: string, name: string, target
 export function *getSchemaKindPropertyTypes(kind: string): Generator<PropertyCtor> {
   const props = _schemaKindPropertyTypes.get(kind);
   if (!props) return;
-  for (let prop of props) yield prop;
+  yield* props;
 }
 
 /** Gets the schema kinds the property can works with */

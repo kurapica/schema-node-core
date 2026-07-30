@@ -20,7 +20,7 @@ export class IntType extends ScalarType {
   }
 
   override async load() {
-    this.baseNode = this._intSchema?.base
+    this.baseType = this._intSchema?.base
       ? await getNodeType(this._intSchema.base) as IntType
       : undefined;
   }

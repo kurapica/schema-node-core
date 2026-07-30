@@ -7,7 +7,8 @@
 // =============================================================================
 
 import { IPropertyProvider, IValueAccess } from "../runtime";
-import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
+import { getPropertyTypeSupportSchemas, getSchemaKindPropertyTypes } from "../runtime/schemaRuntime";
+import { isEmpty } from "../utility";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -121,6 +122,9 @@ export interface ITypeRefProperty extends IProperty {
   getRefTypes(): Generator<string>;
 }
 
+/** The property constructor */
+export type PropertyCtor<T extends IProperty = IProperty> = new () => T;
+
 /** Check if the property has ref type */
 export function isTypeRefProperty(prop: IProperty): prop is ITypeRefProperty
 {
@@ -143,6 +147,3 @@ export function getPropertyName(ctor: PropertyCtor): string {
   }
   return n;
 }
-
-/** The property constructor */
-export type PropertyCtor<T extends IProperty = IProperty> = new () => T;

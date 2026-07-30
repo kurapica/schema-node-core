@@ -11,28 +11,34 @@ import { ValueType } from "./valueType";
 
 export abstract class ScalarType extends ValueType {
   /** Base type for scalar inheritance. */
-  baseNode?: ScalarType;
+  private _baseType?: ScalarType;
+
+  /** Base type for scalar inheritance. */
+  get baseType(): ScalarType | undefined { return this._baseType; }
+
+  /** Base type for scalar inheritance. */
+  protected set baseType(value: ScalarType | undefined) { this._baseType = value; }
 
   override isAssignableTo(other: ValueType): boolean {
     return this.kind.toLowerCase() === other.kind.toLowerCase() || super.isAssignableTo(other);
   }
 
   override *getRefTypes(): Generator<NodeType> {
-    if (this.baseNode)
-      yield this.baseNode;
+    if (this._baseType)
+      yield this._baseType;
     yield* super.getRefTypes();
   }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
-    return super.getProperty(propCtor) ?? (this.baseNode ? this.baseNode.getProperty(propCtor) : getSchemaKindProperty(this.kind, propCtor));
+    return super.getProperty(propCtor) ?? (this._baseType ? this._baseType.getProperty(propCtor) : getSchemaKindProperty(this.kind, propCtor));
   }
 
   override *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
     // self -> base -> prototype
-    return joinProperties(super.getProperties(propCtor), (this.baseNode ? this.baseNode.getProperties(propCtor) : getSchemaKindProperties(this.kind, propCtor)));
+    return joinProperties(super.getProperties(propCtor), (this._baseType ? this._baseType.getProperties(propCtor) : getSchemaKindProperties(this.kind, propCtor)));
   }
 
   override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(super.filterProperties(predicate), (this.baseNode ? this.baseNode.filterProperties(predicate) : filterSchemaKindProperties(this.kind, predicate)));
+    return joinProperties(super.filterProperties(predicate), (this._baseType ? this._baseType.filterProperties(predicate) : filterSchemaKindProperties(this.kind, predicate)));
   }
 }

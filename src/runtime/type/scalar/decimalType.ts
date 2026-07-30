@@ -18,7 +18,7 @@ export class DecimalType extends ScalarType {
   }
 
   override async load() {
-    this.baseNode = this._decimalSchema?.base
+    this.baseType = this._decimalSchema?.base
       ? await getNodeType(this._decimalSchema.base) as DecimalType
       : undefined;
   }  

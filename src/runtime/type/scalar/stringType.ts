@@ -23,7 +23,7 @@ export class StringType extends ScalarType {
   }
 
   override async load() {
-    this.baseNode = this._stringSchema?.base
+    this.baseType = this._stringSchema?.base
       ? await getNodeType(this._stringSchema.base) as StringType
       : undefined;
   }

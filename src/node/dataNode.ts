@@ -10,8 +10,9 @@ import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isN
 import { Observable, Observer } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { DisplayOnly, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
+import { DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
+import { getSchemaKindPropertyTypes } from '../runtime';
 
 const DEBOUNCE_TIME = 20;
 
@@ -186,6 +187,13 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
     return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this.propertyProvider ?? this.type).filterProperties(predicate));
+  }
+
+  /** Sets the property values */
+  setPropertyValues(props: Record<string, unknown>) {
+    for (const prop of getPropertiesBySchemaKind(props, this.type.kind)) {
+      this.setPropertyValue(prop.constructor as any, prop.getValue());
+    }
   }
 
   /** Sets the value of the given property */

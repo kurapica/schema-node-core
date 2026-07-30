@@ -20,7 +20,7 @@ export class DateType extends ScalarType {
   }
 
   override async load() {
-    this.baseNode = this._dateSchema?.base
+    this.baseType = this._dateSchema?.base
       ? await getNodeType(this._dateSchema.base) as DateType
       : undefined;
   }

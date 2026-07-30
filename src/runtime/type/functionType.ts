@@ -620,7 +620,7 @@ async function _resolveStructReturnFields(
 
   if (lastExpType.isAssignableTo(returnType)) return undefined;
 
-  const fields = returnType.getFields();
+  const fields = [...returnType.getFields()];
   if (!fields.length) return undefined;
 
   return fields.map(f => f.name);

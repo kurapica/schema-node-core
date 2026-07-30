@@ -10,6 +10,7 @@ import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/inter
 import { isNull } from '../utility/toolset';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
 import { Observer } from '../utility';
+import { getPropertiesBySchemaKind } from '../property';
 
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
@@ -90,6 +91,18 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   override confirm(): void {
     this._elements.forEach(e => e?.confirm());
     super.confirm();
+  }
+
+  // #endregion
+
+  // #region ── Property ──────────────────────────────────────────────────────
+
+  override setPropertyValues(props: Record<string, unknown>): void {
+    super.setPropertyValues(props);
+    
+    for (const prop of getPropertiesBySchemaKind(props, (this.type as ArrayType).element!.kind)) {
+      this.setPropertyValue(prop.constructor as any, prop.getValue());
+    }
   }
 
   // #endregion

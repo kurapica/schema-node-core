@@ -78,7 +78,7 @@ export class StructType extends ValueType implements IRelationProvider {
   // ── Field Access ────────────────────────────────────────────────────
 
   /** Get all field type definitions. */
-  getFields(): StructFieldType[] { return this._fields; }
+  *getFields(): Generator<StructFieldType> { yield* this._fields; }
 
   /** Get a field by name (case-insensitive). */
   getField(name: string): StructFieldType | undefined {
