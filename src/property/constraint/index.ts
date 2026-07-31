@@ -4,7 +4,6 @@ export * from './boolValue';
 export * from './cascade';
 export * from './dateValue';
 export * from './decimalValue';
-export * from './entries';
 export * from './enumValue';
 export * from './indexes';
 export * from './intValue';

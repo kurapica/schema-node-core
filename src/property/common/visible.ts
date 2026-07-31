@@ -14,4 +14,5 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPER
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.visible`)
 @Meta(InVisible, true)
+@Meta(PropertyValueType, NS_SYSTEM_BOOL)
 export class Visible extends Property<boolean> {}

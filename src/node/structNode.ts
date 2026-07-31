@@ -218,7 +218,7 @@ export class StructNode extends DataNode {
     this.onNext();
   }
 
-  private async trackOverrideType(field: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined) {
+  private async trackOverrideType(field: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
     if (!isEqual(oldValue, newValue))
     {
       const node = field as DataNode;

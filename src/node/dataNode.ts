@@ -12,7 +12,7 @@ import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
 import { Display, DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
-import { getSchemaKindPropertyTypes } from '../runtime';
+import { getSchemaKindPropertyTypes, RelationType } from '../runtime';
 import { sformat } from '../utility';
 
 const DEBOUNCE_TIME = 20;
@@ -49,7 +49,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   private _dataOb?: Observable<[IValueAccess, unknown]>;
 
   /** The state observable */
-  private _stateOb?: Observable<[IValueAccess, PropertyCtor?, unknown?]>;
+  private _stateOb?: Observable<[IValueAccess, PropertyCtor?, unknown?, unknown?]>;
 
   /** The violated observable */
   private _violatedOb?: Observable<[IValueAccess, boolean]>;
@@ -77,7 +77,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
     // init properties effect
     for(const prop of Array.from(this.filterProperties(() => true)))
-      prop.effect(this, undefined, prop.getValue());
+      prop.effect(this, prop.getValue());
   }
 
   /** Dipose the data node, release references */
@@ -268,8 +268,8 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
     // public property change
     if (!props?.length || props[0].level <= record.level) {
-      record.property.effect(this, oldValue, record.property.getValue()); // apply side effect
-      this.onNextProperty(propCtor, oldValue, record.property.getValue());
+      record.property.effect(this, record.property.getValue(), oldValue); // apply side effect
+      this.onNextProperty(propCtor, record.property.getValue(), oldValue);
     }
   }
 
@@ -300,9 +300,9 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the state change */
-  onNextState(propCtor?: PropertyCtor) {
+  onNextState(propCtor?: PropertyCtor, newValue?: unknown, oldValue?: unknown) {
     if (!this._stateOb) return;
-    this._stateOb.onNext(this, propCtor, propCtor ? this.getPropertyValue(propCtor) : undefined); 
+    this._stateOb.onNext(this, propCtor, newValue, oldValue); 
   }
 
   /** Subscribe the node property change and return the function for un-subscribe */
@@ -314,16 +314,16 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       this._propObs.set(propCtor, ob);
     }
     const sub = ob.subscribe(func);
-    if (immediate) func(this, propCtor, undefined, this.getPropertyValue(propCtor))
+    if (immediate) func(this, propCtor, this.getPropertyValue(propCtor), undefined);
     return sub;
   }
 
   /** Publish the property value change */
-  onNextProperty(propCtor: PropertyCtor, oldValue?: unknown, newValue?: unknown)
+  onNextProperty(propCtor: PropertyCtor, newValue?: unknown, oldValue?: unknown)
   {
     const ob = this._propObs?.get(propCtor);
-    if (ob) ob.onNext(this, propCtor, oldValue, newValue);
-    this.onNextState(propCtor);
+    if (ob) ob.onNext(this, propCtor, newValue, oldValue);
+    this.onNextState(propCtor, newValue, oldValue);
   }
 
   /** Subscribe the violated constraints and return the function for un-subscribe */
@@ -352,6 +352,16 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       subs = new Set();
       subs.add(subscription);
       this._subs.set(source, subs);
+    }
+  }
+
+  /** Get attached relations */
+  *getAttachedRelations(predicate?: (relation: RelationType) => boolean): Generator<RelationType> {
+    if (!this._subs) return;
+    for(const source of this._subs.keys())
+    {
+      if (source instanceof RelationType && (!predicate || predicate(source)))
+        yield source;
     }
   }
 

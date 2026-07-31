@@ -17,8 +17,5 @@ import { Alias, ForSchema, OfSchema, SchemaType, PropertyValueType, Static } fro
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.bool.error`)
 export class BoolValue extends Property<boolean> implements IConstraintProperty {
   override get hasValue(): boolean { return true; }
-
-  async validate(node: IValueAccess): Promise<boolean | undefined> 
-  {
-  }
+  async validate(node: IValueAccess): Promise<boolean | undefined>{ return undefined }
 }

@@ -46,7 +46,7 @@ export class EnumValue extends Property<boolean> implements IConstraintProperty 
     if (enumType.type === EnumValueType.Flags)
     {
       if (!enumType.maxFlags) return undefined;
-      return typeof value === 'number' && value <= enumType.maxFlags;
+      return typeof value === 'number' && value <= enumType.maxFlags && value >= 0;
     }
 
     const access = await enumType.getEnumEntryAccess(`${value}`);

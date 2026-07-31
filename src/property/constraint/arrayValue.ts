@@ -2,13 +2,13 @@ import { Property } from "..";
 import { Meta } from "../../attribute";
 import { ArrayNode } from "../../node";
 import { IValueAccess } from "../../runtime/interfaces";
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL } from "../../utility";
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_ARRAY } from "../../utility";
 import { InVisible, Default, Error } from "../common";
 import { IConstraintProperty } from "../constraintProperty";
 import { Alias, ForSchema, OfSchema, SchemaType, PropertyValueType, Static } from "../core";
 
 @Meta(Alias, 'array')
-@Meta(ForSchema, [SCHEMA_KIND_ENUM])
+@Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.array`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)

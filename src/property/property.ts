@@ -53,7 +53,7 @@ export interface IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined): void;
+  effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void;
 }
 
 /**
@@ -116,7 +116,7 @@ export abstract class Property<T> implements IProperty {
 
   /** The error message if the property is invalid(for constraint properties only) */
   error(node: IValueAccess): string | undefined {
-    const error = getMetaProperty(this.constructor, Error);
+    const error = node.getProperty(Error) ?? getMetaProperty(this.constructor, Error);
     if (error?.hasValue)
     {
       const errorMsg = error.getValue<LocaleString>()!;
@@ -130,7 +130,7 @@ export abstract class Property<T> implements IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined): void {}
+  effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {}
 }
 
 export interface ITypeRefProperty extends IProperty {

@@ -3,7 +3,10 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
+import { Meta } from '../attribute';
 import { CallArg } from '../schema/functionSchema';
+import { NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON } from '../utility';
+import { SchemaType } from './core';
 import { Property } from './property';
 import type { ITypeRefProperty } from './property';
 
@@ -29,6 +32,15 @@ export abstract class FuncCallProperty extends Property<FuncCall> implements ITy
     if (this._value?.func)
       yield this._value.func;
   }
+}
+
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
+class FuncCallMeta implements FuncCall {
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+   func!: string;
+
+  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
+  args!: CallArg[];
 }
 
 /** build the function call for simple */

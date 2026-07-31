@@ -6,11 +6,12 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_
 import { IValueAccess } from '../../runtime/interfaces';
 import { getNodeType } from '../../runtime/schemaRuntime';
 import { FunctionType } from '../../runtime/type';
-import { isEmpty } from '../../utility/toolset';
+import { isEmpty, isNull } from '../../utility/toolset';
 import { Error } from '../common';
+import { StructNode } from '../../node';
 
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
+@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_SCHEMA_FUNC)
 @Meta(Stackable, true)
@@ -18,6 +19,8 @@ import { Error } from '../common';
 export class Valid extends FuncCallProperty implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.func) return undefined;
+    if (!(node instanceof StructNode) && isNull(node.getValue())) return undefined;
+    
     const func = await getNodeType(this._value.func) as FunctionType;
     if (!func) {
       console.error(`Valid property function ${this._value.func} is not a function type`);

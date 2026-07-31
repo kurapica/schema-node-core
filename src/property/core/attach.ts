@@ -14,9 +14,9 @@ import { OfSchema, PropertyValueType, Static } from '../..';
  * Attach the properties of a schema kind to the struct type
  */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT])
+@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.attach`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA}.kind`)
 @Meta(ReadOnly, true)
 @Meta(Static, true)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.attach`)
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA}.kind`)
 export class Attach extends Property<string> {}

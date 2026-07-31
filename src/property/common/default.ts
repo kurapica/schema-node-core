@@ -15,7 +15,7 @@ import { isEmpty, isEqual } from '../../utility';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 export class Default extends Property<unknown> {
-    override effect(target: IValueAccess, oldValue?: unknown | undefined, newValue?: unknown | undefined): void {
+    override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
         const origin = target.getValue();
         if (isEmpty(origin) || isEqual(origin, oldValue))
             target.setValue(newValue);
