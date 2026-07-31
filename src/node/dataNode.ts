@@ -12,7 +12,7 @@ import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
 import { Display, DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
-import { getSchemaKindPropertyTypes, RelationType } from '../runtime';
+import { RelationType } from '../runtime';
 import { sformat } from '../utility';
 
 const DEBOUNCE_TIME = 20;
@@ -271,6 +271,12 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
       record.property.effect(this, record.property.getValue(), oldValue); // apply side effect
       this.onNextProperty(propCtor, record.property.getValue(), oldValue);
     }
+  }
+
+  /** Gets the property value source */
+  getPropertySource(propCtor: PropertyCtor): IValueAccess {
+    const props = this._props?.get(propCtor);
+    return props?.[0].source ?? this;;
   }
 
   // #endregion

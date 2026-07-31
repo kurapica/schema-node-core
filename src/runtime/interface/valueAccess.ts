@@ -43,6 +43,9 @@ export interface IValueAccess {
   /** Sets the value of the given property from relations */
   setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void;
 
+  /** Gets the property value source */
+  getPropertySource(propCtor: PropertyCtor): IValueAccess;
+
   // #endregion
 
   // #region ── Subscription ──────────────────────────────────────────────────
