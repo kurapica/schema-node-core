@@ -129,11 +129,6 @@ export class EntryType<T> implements Entry<T> {
     return desc._parent === this;
   }
 
-  /** mask the white list of the entry */
-  maskWhiteList(whiteList: string[]): void {
-    this._children?.forEach(c => c.maskWhiteList(whiteList));
-  }
-
   /** Refresh the loading state */
   private updateLoadState(): void {
     if (this._children?.length)
