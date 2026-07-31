@@ -6,7 +6,7 @@
 import { getMetaProperty } from '../../attribute/meta';
 import { RelationKind } from '../../property';
 import { RelationProcess } from '../../property/core/relationProcess';
-import type { IProperty, PropertyCtor } from '../../property/property';
+import type { PropertyCtor } from '../../property/property';
 import { IRelationProcess, RelationSchema } from '../../schema/relationSchema';
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
 import { generateGuid } from '../../utility/toolset';

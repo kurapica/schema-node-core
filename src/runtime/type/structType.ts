@@ -17,7 +17,7 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { DisplayOnly, Require, Unpack } from '../../property';
+import { DisplayOnly, PropertyCtor, Require, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
 
@@ -291,6 +291,9 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
   getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
     return this._props?.find(p => p instanceof propCtor) as T ?? this._type?.getProperty(propCtor);
   }
+
+  /** Gets the property value */
+  getPropertyValue<T>(propCtor: PropertyCtor): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
 
   /** Get properties by type */
   *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {

@@ -28,6 +28,11 @@ export function getProperty(owner: any, propCtor: PropertyCtor): IProperty | und
   return temp;
 }
 
+/** Gets the property value from the owner */
+export function getPropertyValue<T>(owner: any, propCtor: PropertyCtor): T | undefined {
+  return getProperty(owner, propCtor)?.getValue<T>();
+}
+
 /** Get all properties with given property types. */
 export function *getProperties(owner: any, propCtor: PropertyCtor): Generator<IProperty> {
   if (owner === null) return;  
