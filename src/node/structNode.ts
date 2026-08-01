@@ -56,6 +56,11 @@ export class StructNode extends DataNode {
   /** Get the fields of the struct. */
   get fields(): Iterable<DataNode> { return this._getFields(); }
 
+  /** Check if the field is changable. */
+  isFieldChangable(field: string): boolean {
+    return this._fieldTypeTrack?.has(field.toLowerCase()) || false;
+  }
+
   // #endregion
 
   // #region ── Value Access ──────────────────────────────────────────────────
