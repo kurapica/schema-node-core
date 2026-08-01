@@ -10,7 +10,7 @@ import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isN
 import { Observable, Observer } from '../utility/observable';
 import { NODE_SELF } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { Display, DisplayOnly, getPropertiesBySchemaKind, getPropertyName, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
+import { Display, DisplayOnly, getPropertiesBySchemaKind, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
 import { RelationType } from '../runtime';
 import { sformat } from '../utility';
