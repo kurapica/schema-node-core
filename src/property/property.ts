@@ -12,7 +12,7 @@ import { getPropertyTypeSupportSchemas, getSchemaKindPropertyTypes } from "../ru
 import { LocaleString } from "../struct";
 import { isEmpty, sformat } from "../utility";
 import { Display, Error } from "./common";
-import { Name } from "./core";
+import { ForSchema, Name } from "./core";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -36,6 +36,9 @@ export interface IProperty {
 
   /** Whether the property value is savable (persisted) in schema. */
   readonly savable: boolean;
+
+  /** Whether the property is applicable to the given schema kind. */
+  forSchema(...kinds: string[]): boolean;
 
   /** Set the raw value onto this property instance. */
   setValue<T>(value: T): void;
@@ -88,6 +91,12 @@ export abstract class Property<T> implements IProperty {
 
   get hasValue(): boolean {
     return this._hasValue;
+  }
+
+  /** Whether the property is applicable to the given schema kind. */
+  forSchema(...kinds: string[]): boolean {
+    const forSchema = getMetaProperty(this.constructor, ForSchema)?.getValue<string[]>();
+    return forSchema?.some((k) => kinds.includes(k)) ?? false;
   }
 
   /** Override in subclasses for custom coercion. */

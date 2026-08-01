@@ -9,7 +9,7 @@ import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/inter
 import { isEqual, isNull } from '../utility/toolset';
 import { OverrideType, Unpack } from '../property';
 import { NODE_SELF } from '../utility/constant';
-import { getNodeType, StructFieldType, ValueType } from '../runtime';
+import { getNodeType, ValueType } from '../runtime';
 
 export class StructNode extends DataNode {
   // #region ── ctor & dtor ───────────────────────────────────────────────────

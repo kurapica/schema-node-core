@@ -6,20 +6,22 @@
 import { ValueType } from './valueType';
 import { StructNode } from '../../node/structNode';
 import { StructProperty, StructSchema, type StructFieldSchema } from '../../schema/structSchema';
-import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getProperty, setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { IRelationProvider, joinProperties, type INodeReference, type IPropertyProvider, type IValueAccess } from '../interfaces';
 import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
 import { IConstraintProperty, isConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
-import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
+import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes } from '../schemaRuntime';
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { DisplayOnly, PropertyCtor, Require, Unpack } from '../../property';
+import { Attach, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
+import { getMetaProperty } from '../../attribute';
+import { PropertyType } from '..';
 
 // ── StructType ────────────────────────────────────────────────────────────
 
@@ -67,6 +69,42 @@ export class StructType extends ValueType implements IRelationProvider {
         await rtype.load();
       }
       this._relations = rtypes;
+    }
+
+    // attach properties from type
+    const attachKind = getProperty(this._structSchema, Attach)?.getValue<string>();
+    if (attachKind) {
+      for(const propCtor of getSchemaKindPropertyTypes(attachKind))
+      {
+        const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
+        if (!schemaType) continue;
+        const propType = await getNodeType(schemaType) as PropertyType;
+        if (!propType?.valueType) continue;
+        
+        const fieldType = new StructFieldType();
+        const fieldSchema = { name: propType.property!, type: propType.valueType.name };
+
+        // copy properties from property type
+        for (const prop of propType.filterProperties((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
+          setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
+
+        await fieldType.load(fieldSchema);
+        this._fields.push(fieldType);
+
+        // save property relations
+        const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
+        if (propRelations?.length)
+        {
+          const rtypes: RelationType[] = [];
+          for (const r of propRelations)
+          {
+            const rtype = new RelationType(r, this);
+            rtypes.push(rtype);
+            await rtype.load();
+          }
+          this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
+        }
+      }
     }
   }
 
