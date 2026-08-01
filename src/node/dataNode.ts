@@ -126,7 +126,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   get require() { return this.getPropertyValue<boolean>(Require) }
 
   /** Shortcut to gets whether the node is readonly */
-  get readonly() { return this.getPropertyValue<boolean>(ReadOnly) || this.getPropertyValue<boolean>(DisplayOnly) || this.getPropertyValue<boolean>(Immutable) && !isEmpty(this._original) || this.parent?.getPropertyValue<boolean>(ReadOnly) || false }
+  get readonly() { return this.getPropertyValue<boolean>(ReadOnly) || this.getPropertyValue<boolean>(DisplayOnly) || this.getPropertyValue<boolean>(Immutable) && !isEmpty(this._original) || false }
 
   /** shortcut to gets visiblity */
   get visible() { return !this.getPropertyValue<boolean>(InVisible) && this.getPropertyValue<boolean>(Visible) != false }
