@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, ArgName, Require } from '../property/index';
+import { OfSchema, SchemaType, Return, ArgName, Require, Variadic } from '../property/index';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_FUNC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST } from '../utility/constant';
 import { getNodeType } from '../runtime/schemaRuntime';
 import { Entry } from '../struct/entry';
@@ -89,19 +89,22 @@ export class SystemReflect {
     @Meta(Require, true)
     name: string,
 
+    @Meta(ArgName, 'matchArrayElement')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    matchArrayElement: boolean,
+
     @Meta(ArgName, 'kind')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
     @Meta(Require, true)
-    kind: string,
-
-    @Meta(ArgName, 'matchArrayElement')
-    @Meta(SchemaType, NS_SYSTEM_BOOL)
-    matchArrayElement: boolean = false,
+    @Meta(Variadic, true)
+    kinds: string[],
   ): Promise<boolean> {
     const nodeType = !name ? undefined : await getNodeType(name);
     if (!nodeType) return false;
-    if (nodeType.kind.toLowerCase() === kind.toLowerCase()) return true;
-    return matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.kind.toLowerCase() === kind.toLowerCase();
+    return kinds.some(kind => {
+      if (nodeType.kind.toLowerCase() === kind.toLowerCase()) return true;
+      return matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.kind.toLowerCase() === kind.toLowerCase();
+    });
   }
 
   /** Checks if the schema kind of the schema node with the given name is a value schema kind */
