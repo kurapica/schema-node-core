@@ -20,6 +20,9 @@ export class PropertyType extends NodeType {
   /** the property value type */
   get valueType(): ValueType | undefined { return this._valueType; }
 
+  /** The property works for schema kind */
+  get forSchemas(): string[] | undefined { return this._propertySchema?.forSchemas ? [...this._propertySchema.forSchemas] : []; }
+
   override loadProperties(): IProperty[] {
     this._propertySchema = getProperty(this.schema, PropertyProperty)?.getValue();
     return this._propertySchema ? Array.from(getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_PROPERTY)) : [];

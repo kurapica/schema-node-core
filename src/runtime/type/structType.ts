@@ -12,18 +12,48 @@ import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../
 import { IConstraintProperty, isConstraintProperty } from '../../property/constraintProperty';
 import { NodeType } from './nodeType';
 import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes } from '../schemaRuntime';
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF } from '../../utility/constant';
+import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { Attach, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
+import { Attach, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { getMetaProperty } from '../../attribute';
 import { PropertyType } from '..';
 
 // ── StructType ────────────────────────────────────────────────────────────
+const VALUE_TYPE_PRIORITY: Record<string, number> = {
+  [SCHEMA_KIND_BOOL]: 9000,
+  [SCHEMA_KIND_ENUM]: 8000,
+  [SCHEMA_KIND_STRING]: 7000,
+  [SCHEMA_KIND_DECIMAL]: 6000,
+  [SCHEMA_KIND_DATE]: 5000,
+  [SCHEMA_KIND_OBJECT]: 4000,
+  [SCHEMA_KIND_STRUCT]: 3000,
+  [SCHEMA_KIND_ARRAY]: 2000,
+}
+
+const STRUCT_TYPE_PRIORITY: Record<string, number> = {
+  [NS_SYSTEM_LOCALE_STRING]: 900,
+  [NS_SYSTEM_RANGE_YEAR]: 800,
+  [NS_SYSTEM_RANGE_MONTH]: 700,
+  [NS_SYSTEM_RANGE_DATE]: 600,
+  [NS_SYSTEM_RANGE_FULL_DATE]: 500,
+}
+
+/** Get the priority of attach property */
+function getAttachPropertyPriority(propType: PropertyType)
+{
+  let priority = VALUE_TYPE_PRIORITY[propType.valueType?.kind ?? ''] ?? 0;
+  if (propType.valueType instanceof ArrayType)
+    priority += (VALUE_TYPE_PRIORITY[propType.valueType.element?.kind ?? ''] ?? 0) / 10;
+  else if (propType.valueType instanceof StructType)
+    return priority + (STRUCT_TYPE_PRIORITY[propType.valueType?.name ?? ''] ?? Array.from(propType.valueType.getFields()).length * -10);
+  priority += propType.forSchemas?.length ?? 0; // more usable, higher priority
+  return priority;
+}
 
 /** The runtime struct type */
 export class StructType extends ValueType implements IRelationProvider {
@@ -74,6 +104,9 @@ export class StructType extends ValueType implements IRelationProvider {
     // attach properties from type
     const attachKind = getProperty(this._structSchema, Attach)?.getValue<string>();
     if (attachKind) {
+      const attachFields: { field: StructFieldType, priority: number }[] = [];
+      const attachRelations: RelationSchema[] = [];
+
       for(const propCtor of getSchemaKindPropertyTypes(attachKind))
       {
         const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
@@ -89,22 +122,34 @@ export class StructType extends ValueType implements IRelationProvider {
           setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
 
         await fieldType.load(fieldSchema);
-        this._fields.push(fieldType);
+        attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
 
         // save property relations
         const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
         if (propRelations?.length)
         {
-          const rtypes: RelationType[] = [];
-          for (const r of propRelations)
-          {
-            const rtype = new RelationType(r, this);
-            rtypes.push(rtype);
-            await rtype.load();
-          }
-          this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
+          attachRelations.push(...propRelations);
         }
       }
+
+      // Attach sorted fields
+      attachFields.sort((a, b) => {
+        if (a.priority > b.priority) return -1;
+        if (a.priority < b.priority) return 1;
+        return a.field.name.localeCompare(b.field.name);
+      });
+      for (const field of attachFields)
+        this._fields.push(field.field);
+
+      // Attach relations from attach properties
+      const rtypes: RelationType[] = [];
+      for (const r of attachRelations)
+      {
+        const rtype = new RelationType(r, this);
+        rtypes.push(rtype);
+        await rtype.load();
+      }
+      this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
     }
   }
 

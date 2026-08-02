@@ -5,7 +5,7 @@
 
 import { Meta } from '../attribute/meta';
 import { OfSchema, SchemaType, Return, ArgName, Require } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_FUNC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_FUNC_TYPE } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_FUNC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST } from '../utility/constant';
 import { getNodeType } from '../runtime/schemaRuntime';
 import { Entry } from '../struct/entry';
 import { NamespaceType } from '../runtime/type/namespaceType';
@@ -195,5 +195,50 @@ export class SystemReflectFunction {
     }
     
     return true;
+  }
+}
+
+@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ARRAY)
+export class SystemReflectArray {
+  /** Generates the array name for the given element type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarrayname`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async genarrayname(
+    @Meta(ArgName, 'element')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
+    @Meta(Require, true)
+    element: string,
+  ): Promise<string> {
+    const split = element.split('<')[0].split('.');
+    return `${split[split.length - 1]}s`;
+  }
+
+  /** Generates the array display name for the given element type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarraydisplay`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async genarraydisplay(
+    @Meta(ArgName, 'element')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
+    @Meta(Require, true)
+    element: string,
+  ): Promise<string> {
+    return `{LIST.PREFIX}{${element}}{LIST.SUFFIX}`;
+  }
+
+  /** Gets the array type for the given element type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getarraytype(
+    @Meta(ArgName, 'element')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
+    @Meta(Require, true)
+    element: string,
+  ): Promise<string> {
+    const elementType = await getNodeType(element) as ValueType | undefined;
+    if (!elementType) return "";
+    if (elementType instanceof ArrayType) return elementType.name;
+    if (elementType?.arrayType) return elementType.arrayType.name;
+    return `${NS_SYSTEM_LIST}<${elementType.name}>`;
   }
 }

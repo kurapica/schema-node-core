@@ -154,7 +154,8 @@ export const NS_SYSTEM_DATA_ENUM = 'system.data.enum';
 export const NS_SYSTEM_STR = 'system.str';
 
 export const NS_SYSTEM_SCHEMA_REFLECT = `${NS_SYSTEM_SCHEMA}.reflect`;
-export const NS_SYSTEM_SCHEMA_REFLECT_FUNC = `${NS_SYSTEM_SCHEMA}.func`;
+export const NS_SYSTEM_SCHEMA_REFLECT_FUNC = `${NS_SYSTEM_SCHEMA_REFLECT}.func`;
+export const NS_SYSTEM_SCHEMA_REFLECT_ARRAY = `${NS_SYSTEM_SCHEMA_REFLECT}.array`;
 
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`;
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`;

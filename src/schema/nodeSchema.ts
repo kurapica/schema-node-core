@@ -2,12 +2,14 @@
 // Mirrors C# SchemaNode.Core/Schema/NodeSchema.cs
 // =============================================================================
 
+import { Relation } from '../attribute';
 import { Meta } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { Base } from '../property/core/base';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid, Require } from '../property/index';
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE } from '../utility/constant';
+import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid, Require, ReadOnly, Immutable } from '../property/index';
+import { Call } from '../relation';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 
 /** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
@@ -51,11 +53,13 @@ export interface CompatibleSchema {
 class NodeSchemaMeta implements NodeSchema {
   @Meta(PrimaryIndex, 0)
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
+  @Relation(ReadOnly, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.notempty)}`, "@name"))
   namespace?: string;
 
   @Meta(PrimaryIndex, 1)
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
   @Meta(Require, true)
+  @Meta(Immutable, true)
   name: string = '';
 
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
@@ -63,7 +67,6 @@ class NodeSchemaMeta implements NodeSchema {
   kind: string = '';
 
   /** The error status */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_ERROR)
   error?: string;
 
   /** Sub-schemas — only for namespace schemas. */

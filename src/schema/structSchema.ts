@@ -212,7 +212,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     }
 
     const arrayNode: NodeSchema = { namespace, name: `${name}s`, kind: SCHEMA_KIND_ARRAY };
-    setPropertyValue(arrayNode, Display, { key: `{[LIST.PREFIX]}{${structName}}{[LIST.SUFFIX]}` });
+    setPropertyValue(arrayNode, Display, { key: `{LIST.PREFIX}{${structName}}{LIST.SUFFIX}` });
     setPropertyValue(arrayNode, ArrayProperty, arraySchema);
     saveNodeSchema(arrayNode);
   }

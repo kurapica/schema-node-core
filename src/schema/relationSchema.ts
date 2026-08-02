@@ -8,7 +8,7 @@ import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, Prop
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
 import { RelationType } from '../runtime/type';
-import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND } from '../utility/constant';
+import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND } from '../utility/constant';
 
 /** Pure data interface. */
 export interface RelationSchema {
@@ -23,6 +23,9 @@ export interface RelationSchema {
 
   /** The relation kind */
   kind: string;
+
+  /** The relation only works for the given schema kind(for property relation only) */
+  forSchema?: string;
 
   /** The error message */
   error?: string;
@@ -50,6 +53,10 @@ class RelationSchemaMeta implements RelationSchema {
   /** The relation kind */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_RELATION_KIND)
   kind!: string;
+
+  /** The relation only works for the given schema kind(for property relation only) */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+  forSchema?: string;
 }
 
 /** The relations property */
