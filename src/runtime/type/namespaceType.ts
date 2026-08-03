@@ -81,6 +81,11 @@ export class NamespaceType extends NodeType {
     return this._subSchemas.get(name.toLowerCase());
   }
 
+  /** Get all sub node schemas */
+  *getSubNodeSchemas(): Generator<NodeSchema> {
+    yield* this._subSchemas.values();
+  }
+
   /** Whether the namespace type is used */
   get isUsed(): boolean {
     return this._subSchemas?.size > 0

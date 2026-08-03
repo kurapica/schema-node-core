@@ -191,14 +191,14 @@ export class StructType extends ValueType implements IRelationProvider {
 
   override getAccessEntries(): Entry<string>[] {
     return this._fields
-      .filter(f => f.type != null)
+      .filter(f => f.type != null && this._structSchema?.fields.some(sf => f.name == sf.name)) // no property field
       .map(f => {
         const entry = { value: f.name, hasChildren: f.type?.hasAccessEntries } as Entry<string>;
         return setPropertyValue(entry, Display, f.getPropertyValue(Display) ?? _LS(f.name));
       });
   }
 
-  override get hasAccessEntries(): boolean { return !!this._fields.length; }
+  override get hasAccessEntries(): boolean { return !!this._structSchema?.fields.length; }
 
   // ── Property ────────────────────────────────────────────────────────
 

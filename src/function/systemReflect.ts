@@ -5,7 +5,7 @@
 
 import { Meta } from '../attribute/meta';
 import { OfSchema, SchemaType, Return, ArgName, Require, Variadic } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_FUNC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_DESIGN } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_STRING, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_FUNC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY_ACCESS } from '../utility/constant';
 import { getNodeType } from '../runtime/schemaRuntime';
 import { Entry, EntryAccess } from '../struct/entry';
 import { NamespaceType } from '../runtime/type/namespaceType';
@@ -16,9 +16,12 @@ import { ValueType } from '../runtime/type/valueType';
 import { ValueSchemaKind } from '../property/record/valueSchemaKind';
 import { getRecordedValues } from '../property/recordProperty';
 import { Display } from '../property/common/index';
-import { combineProperties, setPropertyValue } from '../property/propertyOwner';
+import { combineProperties, getPropertyValue, setPropertyValue } from '../property/propertyOwner';
 import { EnumValueType } from '../enum';
 import { EnumType } from '../runtime';
+import { StructFieldSchema } from '../schema';
+import { combinePaths } from '../utility';
+import { LocaleString } from '../struct';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT)
@@ -36,28 +39,53 @@ export class SystemReflect {
   }
 
   /** Gets the full names and labels of the schema nodes under the namespace with the given name */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT}.gettypes`)
-  @Meta(Return, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
-  static async gettypes(
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT}.gettypeentries`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
+  static async gettypeentries(
     @Meta(ArgName, 'name')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     name?: string,
-  ): Promise<Entry<string>[]> {
-    const ns = await getNodeType(name ?? '');
-    if (!(ns instanceof NamespaceType)) return [];
-    const entries: Entry<string>[] = [];
-    for (const nodeType of ns.children.values()) {
-      const entry: Entry<string> = {
-        value: nodeType.name,
-        hasChildren: nodeType.kind === SCHEMA_KIND_NAMESPACE,
-      };
-      const display = nodeType.getProperty(Display);
-      if (display) {
-        combineProperties(entry, display, SCHEMA_KIND_NAMESPACE);
+
+    @Meta(ArgName, 'root')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    root?: string
+  ): Promise<EntryAccess<string>[]> {
+    name = name?.toLowerCase() ?? '';
+    root = root?.toLowerCase() ?? '';
+    if (!name && !root || name !== root && !name.startsWith(`${root}.`))
+      return [];
+
+    let ns = await getNodeType(name ?? root);
+    if (!ns) return [];
+
+    let result: EntryAccess<string>[] = [];
+    while (ns != null)
+    {
+      let access: EntryAccess<string> = {};
+      if (ns.namespace != null)
+      {
+        access.entry = setPropertyValue(
+          { value: ns.name, hasChildren: ns.kind === SCHEMA_KIND_NAMESPACE },
+          Display,
+          ns.getProperty(Display)?.getValue<LocaleString>()
+        );
       }
-      entries.push(entry);
+      if (ns instanceof NamespaceType)
+      {
+        access.children = Array.from(ns.getSubNodeSchemas().map(s => {
+          return setPropertyValue(
+            { value: combinePaths(ns!.name, s.name), hasChildren: s.kind === SCHEMA_KIND_NAMESPACE },
+            Display,
+            getPropertyValue(s, Display)
+          );
+        }));
+      }
+      result.push(access);
+      ns = ns.namespace;
+      if (root && ns?.name === root) break;
     }
-    return entries;
+    result.reverse();
+    return result;
   }
 
   /** Gets the property value type */
@@ -75,7 +103,7 @@ export class SystemReflect {
 
   /** Gets the sub entries of the value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT}.getaccessentries`)
-  @Meta(Return, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'name')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
@@ -85,13 +113,51 @@ export class SystemReflect {
     @Meta(ArgName, 'path')
     @Meta(SchemaType, NS_SYSTEM_STRING)
     path?: string,
-  ): Promise<Entry<string>[]> {
+
+    @Meta(ArgName, 'root')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    root?: string
+  ): Promise<EntryAccess<string>[]> {
     let valueType = !name ? undefined : await getNodeType(name) as ValueType | undefined;
     if (!valueType) return [];
-    
-    if (path)
-      valueType = valueType.getAccessValueType(path);
-    return valueType?.getAccessEntries() ?? [];
+    path = path?.toLowerCase() ?? '';
+    root = root?.toLowerCase() ?? '';
+    if (path && root && path !== root && !path.startsWith(`${root}.`))
+      return [];
+    const result: EntryAccess<string>[] = [];
+    let curr: Entry<string> | undefined;
+    while (valueType)
+    {
+      const accessEntry: EntryAccess<string> = {};
+      const accesses = valueType.getAccessEntries();
+      if (curr)
+      {
+        accessEntry.entry = setPropertyValue(
+          { value: curr.value, hasChildren: accesses.length > 0 },
+          Display,
+          getPropertyValue(curr, Display)
+        );
+      }
+      accessEntry.children = accesses;
+
+      // check next part
+      let next: ValueType | undefined;
+      for (const a of accesses)
+      {
+        const n = a.value;
+        if (curr) a.value = combinePaths(curr.value, n);
+        if (path && (path === a.value || path.startsWith(a.value + '.')))
+        {
+            next = valueType.getAccessValueType(n);
+            curr = a;
+        }
+      }
+      result.push(accessEntry);
+      valueType = next;
+    }
+
+    // cut
+    return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
   }
 
   /** Checks if the schema kind of the schema node with the given name is the same as the given kind */
@@ -283,6 +349,8 @@ export class SystemReflectArray {
   }
 }
 
+@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
 export class SystemReflectEnum {
   /** Gets the entry type for the given enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`)
@@ -486,4 +554,9 @@ export class SystemReflectEnum {
     }
     return access.length > 1 ? (access[access.length - 1].entry?.value as string) ?? '' : '';
   }
+}
+
+@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)
+export class SystemReflectStruct {
 }
