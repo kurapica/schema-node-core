@@ -1,4 +1,5 @@
 import { IConstraintProperty, IProperty, PropertyCtor } from "../../property";
+import { Entry } from "../../struct";
 import { Observer } from "../../utility";
 import { RelationType, ValueType } from "../type";
 
@@ -6,6 +7,12 @@ import { RelationType, ValueType } from "../type";
 export interface IValueTypeAccess {
   /** Gets the access value type */
   getAccessValueType(path: string): ValueType | undefined;
+
+  /** Gets the access entries */
+  getAccessEntries(): Entry<string>[];
+
+  /** Whether this node has access entries. */
+  get hasAccessEntries(): boolean;
 }
 
 /** Objects that provide path-based value access. */

@@ -23,6 +23,7 @@ import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { getMetaProperties, getMetaProperty } from '../../attribute';
 import { PropertyType } from '..';
 import { LocaleString } from '../../struct';
+import { _LS } from '../../utility';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -188,17 +189,16 @@ export class StructType extends ValueType implements IRelationProvider {
     return undefined;
   }
 
-  // ── Sub Entries ─────────────────────────────────────────────────────
-
   override getAccessEntries(): Entry<string>[] {
     return this._fields
-      .filter(f => f.type != null && !f.displayOnly)
-      .map(f => ({ value: f.name } as Entry<string>));
+      .filter(f => f.type != null)
+      .map(f => {
+        const entry = { value: f.name, hasChildren: f.type?.hasAccessEntries } as Entry<string>;
+        return setPropertyValue(entry, Display, f.getPropertyValue(Display) ?? _LS(f.name));
+      });
   }
 
-  override get hasSubEntries(): boolean {
-    return this._fields.length > 0;
-  }
+  override get hasAccessEntries(): boolean { return !!this._fields.length; }
 
   // ── Property ────────────────────────────────────────────────────────
 

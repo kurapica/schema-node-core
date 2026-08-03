@@ -51,11 +51,11 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
     return isEmpty(path) || path.toLowerCase() === NODE_SELF ? this : undefined;
   }
 
-  // ── Sub Entries ────────────────────────────────────────────────────────
-
+  /** Gets the access entries */
   getAccessEntries(): Entry<string>[] { return [] }
 
-  get hasSubEntries() { return false }
+  /** Whether this node has access entries. */
+  get hasAccessEntries(): boolean { return false }
 
   // ── Type compatibility ─────────────────────────────────────────────────
 

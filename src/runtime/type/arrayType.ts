@@ -91,9 +91,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
     .concat(this.element?.getAccessEntries() ?? []);
   }
 
-  override get hasSubEntries(): boolean {
-    return this.element?.hasSubEntries ?? false;
-  }
+  override get hasAccessEntries(): boolean { return true; }
 
   override getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
     return super.getProperty(propCtor) ?? this.element?.getProperty(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
