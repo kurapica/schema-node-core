@@ -17,11 +17,12 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { Attach, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
+import { Attach, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
-import { getMetaProperty } from '../../attribute';
+import { getMetaProperties, getMetaProperty } from '../../attribute';
 import { PropertyType } from '..';
+import { LocaleString } from '../../struct';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -87,6 +88,44 @@ export class StructType extends ValueType implements IRelationProvider {
         console.error(`The struct ${this.name}'s field ${fieldType.name}'s type ${field.type} cant be solved.`)
     }
 
+    // attach properties from type
+    const attachKind = getProperty(this._structSchema, Attach)?.getValue<string>();
+    const attachFields: { field: StructFieldType, priority: number }[] = [];
+    const attachRelations: RelationSchema[] = [];
+    if (attachKind) {
+      for(const propCtor of getSchemaKindPropertyTypes(attachKind))
+      {
+        const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
+        if (!schemaType) continue;
+        const propType = await getNodeType(schemaType) as PropertyType;
+        if (!propType?.valueType) continue;
+        
+        const fieldType = new StructFieldType();
+        const fieldSchema = { name: propType.property!, type: propType.valueType.name };
+        setPropertyValue(fieldSchema, Display, propType.getProperty(Display)?.getValue<LocaleString>());
+
+        // copy properties from meta property type
+        for (const prop of getMetaProperties(propCtor).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
+          setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
+
+        await fieldType.load(fieldSchema);
+        attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
+
+        // save property relations
+        const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
+        if (propRelations?.length) attachRelations.push(...propRelations);
+      }
+    }
+
+    // Attach sorted fields
+    attachFields.sort((a, b) => {
+      if (a.priority > b.priority) return -1;
+      if (a.priority < b.priority) return 1;
+      return a.field.name.localeCompare(b.field.name);
+    });
+    for (const field of attachFields)
+      this._fields.push(field.field);
+
     // Load relations from Relations property
     const relations = getProperty(this._structSchema, Relations)?.getValue<RelationSchema[]>();
     if (relations?.length)
@@ -101,56 +140,15 @@ export class StructType extends ValueType implements IRelationProvider {
       this._relations = rtypes;
     }
 
-    // attach properties from type
-    const attachKind = getProperty(this._structSchema, Attach)?.getValue<string>();
-    if (attachKind) {
-      const attachFields: { field: StructFieldType, priority: number }[] = [];
-      const attachRelations: RelationSchema[] = [];
-
-      for(const propCtor of getSchemaKindPropertyTypes(attachKind))
-      {
-        const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
-        if (!schemaType) continue;
-        const propType = await getNodeType(schemaType) as PropertyType;
-        if (!propType?.valueType) continue;
-        
-        const fieldType = new StructFieldType();
-        const fieldSchema = { name: propType.property!, type: propType.valueType.name };
-
-        // copy properties from property type
-        for (const prop of propType.filterProperties((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
-          setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
-
-        await fieldType.load(fieldSchema);
-        attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
-
-        // save property relations
-        const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
-        if (propRelations?.length)
-        {
-          attachRelations.push(...propRelations);
-        }
-      }
-
-      // Attach sorted fields
-      attachFields.sort((a, b) => {
-        if (a.priority > b.priority) return -1;
-        if (a.priority < b.priority) return 1;
-        return a.field.name.localeCompare(b.field.name);
-      });
-      for (const field of attachFields)
-        this._fields.push(field.field);
-
-      // Attach relations from attach properties
-      const rtypes: RelationType[] = [];
-      for (const r of attachRelations)
-      {
-        const rtype = new RelationType(r, this);
-        rtypes.push(rtype);
-        await rtype.load();
-      }
-      this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
+    // Attach relations from attach properties
+    const rtypes: RelationType[] = [];
+    for (const r of attachRelations)
+    {
+      const rtype = new RelationType(r, this);
+      rtypes.push(rtype);
+      await rtype.load();
     }
+    this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
   }
 
   override unload(): void {
@@ -192,7 +190,7 @@ export class StructType extends ValueType implements IRelationProvider {
 
   // ── Sub Entries ─────────────────────────────────────────────────────
 
-  override getSubEntries(): Entry<string>[] {
+  override getAccessEntries(): Entry<string>[] {
     return this._fields
       .filter(f => f.type != null && !f.displayOnly)
       .map(f => ({ value: f.name } as Entry<string>));

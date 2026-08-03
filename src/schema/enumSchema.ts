@@ -3,9 +3,9 @@
 // =============================================================================
 
 import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, Visible, getRecordedValues, Display, PropertyValueType, EntrySource } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, Visible, getRecordedValues, Display, PropertyValueType, EntrySource, Immutable, OverrideType, Default } from '../property/index';
 import { IProperty, Property } from '../property/property';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT } from '../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
 import { concatLocaleString, LocaleString } from '../struct';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
@@ -22,6 +22,7 @@ import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { Entry } from '../struct/entry';
 import { EnumValue } from '../property/constraint/enumValue';
+import { Assign } from '../relation';
 
 /** The enum schema */
 export interface EnumSchema {
@@ -44,7 +45,8 @@ export interface EnumSchema {
 @Meta(Attach, SCHEMA_KIND_ENUM)
 @Meta(EnumValue)
 @Meta(SchemaGenerator, generateEnumSchema)
-@Meta(EntrySource, buildFuncCall('system.data.enum.getenumaccess', NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+@Relation(Immutable, Assign, true, "values.value")
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.valuetype`)
@@ -58,6 +60,8 @@ class EnumSchemaMeta implements EnumSchema {
   /** The root enum values */
   @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
   @Meta(Require, true)
+  @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"))
+  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), "values.value")
   values!: Entry<string>[];
 }
 

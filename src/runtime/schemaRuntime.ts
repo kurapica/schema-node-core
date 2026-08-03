@@ -12,14 +12,16 @@
 
 import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty, PropertyCtor } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType } from '../property/index';
+import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType, Display, Attach } from '../property/index';
 import { getMetaProperties, getMetaProperty } from '../attribute/meta';
-import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { NamespaceType, NodeType, GenericType } from './type';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { getSchemaProvider } from '../schema/provider/schemaProvider';
-import { combineProperties } from '../property/propertyOwner';
+import { combineProperties, setPropertyValue } from '../property/propertyOwner';
+import { StructProperty, StructSchema } from '../schema/structSchema';
+import { combinePaths } from '../utility';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
@@ -568,6 +570,15 @@ export function initSchemaRuntime(): void {
     const prototypeProps = getMetaProperties(ctor).filter(p => getMetaProperty(p.constructor, ForSchema)?.getValue<string[]>()?.includes(kind))
     if (prototypeProps?.length)
       _schemaKindProperties.set(kind, prototypeProps);
+
+    // register struct with kind properties, special for schema creation
+    // system.schema.design.{kind} -> hold all properties for the kind
+    const nodeSchema: NodeSchema = { namespace: NS_SYSTEM_SCHEMA_DESIGN, name: kind, kind: SCHEMA_KIND_STRUCT };
+    const structSchema: StructSchema = { fields: [] };
+    setPropertyValue(nodeSchema, Display, { key: combinePaths(NS_SYSTEM_SCHEMA_DESIGN, kind)});
+    setPropertyValue(structSchema, Attach, kind);
+    setPropertyValue(nodeSchema, StructProperty, structSchema);
+    saveNodeSchema(nodeSchema);
   });
 
   // Scan registered properties

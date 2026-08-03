@@ -5,7 +5,8 @@ import type { IConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_DATE, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { isNull, parseDate } from '../../utility/toolset';
-import { Error } from '../common';
+import { Error, StackUpLimit } from '../common';
+import { DataNode } from '../../node';
 
 @Meta(Alias, 'uplimit')
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
@@ -28,9 +29,20 @@ export class UpLimitString extends Property<number> implements IConstraintProper
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.uplimitint.error`)
 export class UpLimitInt extends Property<number> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    const value = node.getValue();
+    const value = node.getValue() as number;
     if (isNull(value) || isNull(this._value)) return undefined;
-    return value as number <= this._value!;
+    if (node.getPropertyValue<boolean>(StackUpLimit))
+    {
+      let original = (node as DataNode).original;
+      if (!isNull(original))
+      {
+        original = parseInt(`${original}`);
+        if (!isNaN(original))
+          return value <= this._value! + original;
+      }
+    }
+
+    return value <= this._value!;
   }
 }
 
@@ -44,6 +56,16 @@ export class UpLimitNumber extends Property<number> implements IConstraintProper
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as number;
     if (isNull(value) || isNull(this._value)) return undefined;
+    if (node.getPropertyValue<boolean>(StackUpLimit))
+    {
+      let original = (node as DataNode).original;
+      if (!isNull(original))
+      {
+        original = parseFloat(`${original}`);
+        if (!isNaN(original))
+          return value <= this._value! + original;
+      }
+    }
     return value <= this._value!;
   }
 }

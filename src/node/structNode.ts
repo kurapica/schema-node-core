@@ -67,23 +67,50 @@ export class StructNode extends DataNode {
 
   override setValue(value: unknown): void {
     const data: Record<string, unknown> = typeof(value) === 'object' && !isNull(value) && !Array.isArray(value) ? value as Record<string, unknown> : {};
+    const consumed = new Set<string>();
+    let packFields: DataNode[] = [];
+
     // as raw
-    this._fields.forEach(f => {
+    for (const f of this._fields)
+    {
+      if (consumed.has(f.name!)) continue;
+      consumed.add(f.name!);
       let d = data[f.name!];
+
       // pack/unpack
       if (f.getPropertyValue(Unpack) && isNull(d))
       {
-          const names = this._fields.map(f => f.name);
-          d = {};
-          for (let k in data)
-          {
-            if (!names.includes(k))
-              (d as Record<string, unknown>)[k] = data[k];
-          }
-          data[f.name!] = d;
+        packFields.push(f);
+        continue;
       }
       f.setValue(d);
-    });
+    }
+
+    packFields.sort((a, b) => a instanceof StructNode ? -1 : 1);
+    for (const f of packFields)
+    {
+      if (f instanceof StructNode)
+      {
+        for (const sf of f._fields)
+        {
+          if (consumed.has(sf.name!)) continue;
+          consumed.add(sf.name!);
+          // ignore pack field in sub struct
+          sf.setValue(data[sf.name!]);
+        }
+      }
+      else
+      {
+        const record: Record<string, unknown> = {};
+        for (let k in data)
+        {
+          if (consumed.has(k)) continue;
+          consumed.add(k);
+          record[k] = data[k];
+        }
+        f.setValue(record);
+      }
+    }
     super.setValue(value);
   }
 
@@ -100,7 +127,7 @@ export class StructNode extends DataNode {
         {
           for (let k in d){
             const v = (d as Record<string, unknown>)[k];
-            if (!isNull(v)) result[k] = v;
+            if (!isNull(v) && isNull(result[k])) result[k] = v;
           }
         }
         else

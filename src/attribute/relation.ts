@@ -4,11 +4,11 @@
 // =============================================================================
 
 import { RelationStage } from '../enum/relationStage';
-import { RelationKind } from '../property';
+import { getPropertyName, OfSchema, RelationKind } from '../property';
 import type { PropertyCtor } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 import { RelationSchema } from '../schema/relationSchema';
-import { NODE_SELF } from '../utility/constant';
+import { NODE_SELF, SCHEMA_KIND_PROPERTY } from '../utility/constant';
 import { getMetaProperty } from './meta';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
@@ -48,7 +48,7 @@ export function Relation(
   return ((tar: object, _memberKey?: string) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : _memberKey ?? '',
+      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? getMetaProperty(ctor, OfSchema)?.getValue<string>() === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
       property: getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,

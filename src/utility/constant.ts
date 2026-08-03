@@ -101,6 +101,7 @@ export const NS_SYSTEM_ENTRY_ACCESS = 'system.entryaccess';
 
 export const NS_SYSTEM_SCHEMA = 'system.schema';
 export const NS_SYSTEM_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA}.kind`;
+export const NS_SYSTEM_SCHEMA_DESIGN = `${NS_SYSTEM_SCHEMA}.design`;
 export const NS_SYSTEM_SCHEMA_NODE = `${NS_SYSTEM_SCHEMA}.node`;
 export const NS_SYSTEM_SCHEMA_NODE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.type`;
 export const NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE = `${NS_SYSTEM_SCHEMA_NODE}.valuetype`;
@@ -150,17 +151,17 @@ export const NS_SYSTEM_LOGIC = 'system.logic';
 export const NS_SYSTEM_CALENDAR = 'system.calendar';
 export const NS_SYSTEM_COLLECTION = 'system.collection';
 export const NS_SYSTEM_DATA = 'system.data';
-export const NS_SYSTEM_DATA_ENUM = 'system.data.enum';
 export const NS_SYSTEM_STR = 'system.str';
 
 export const NS_SYSTEM_SCHEMA_REFLECT = `${NS_SYSTEM_SCHEMA}.reflect`;
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC = `${NS_SYSTEM_SCHEMA_REFLECT}.func`;
 export const NS_SYSTEM_SCHEMA_REFLECT_ARRAY = `${NS_SYSTEM_SCHEMA_REFLECT}.array`;
+export const NS_SYSTEM_SCHEMA_REFLECT_ENUM = `${NS_SYSTEM_SCHEMA_REFLECT}.enum`;
 
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`;
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT}.isvaluekind`;
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE = `${NS_SYSTEM_SCHEMA_REFLECT}.isarrayele`;
-export const NS_SYSTEM_SCHEMA_REFLECT_GET_SUB_ENTRIES = `${NS_SYSTEM_SCHEMA_REFLECT}.getsubentries`;
+export const NS_SYSTEM_SCHEMA_REFLECT_GET_ACCESS_ENTRIES = `${NS_SYSTEM_SCHEMA_REFLECT}.getaccessentries`;
 
 
 export const NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN = `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`;

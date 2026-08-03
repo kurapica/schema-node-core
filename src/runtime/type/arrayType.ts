@@ -79,7 +79,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
     return path === ARRAY_ELEMENT ? this.element : this.element?.getAccessValueType(path);
   }
 
-  override getSubEntries(): Entry<string>[] {
+  override getAccessEntries(): Entry<string>[] {
     return [
       {
         value: ARRAY_PREVIOUS
@@ -88,7 +88,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
         value: ARRAY_ELEMENT
       } as Entry<string>
     ]
-    .concat(this.element?.getSubEntries() ?? []);
+    .concat(this.element?.getAccessEntries() ?? []);
   }
 
   override get hasSubEntries(): boolean {

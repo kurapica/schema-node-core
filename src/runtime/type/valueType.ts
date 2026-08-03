@@ -53,7 +53,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   // ── Sub Entries ────────────────────────────────────────────────────────
 
-  getSubEntries(): Entry<string>[] { return [] }
+  getAccessEntries(): Entry<string>[] { return [] }
 
   get hasSubEntries() { return false }
 
