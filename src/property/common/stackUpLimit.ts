@@ -5,7 +5,7 @@
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { OfSchema, SchemaType, ForSchema, PropertyValueType, buildFuncCall, Visible } from '../index';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { Relation } from '../../attribute';
 import { Call } from '../../relation';
 
@@ -16,5 +16,5 @@ import { Call } from '../../relation';
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.StackUpLimit`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
-@Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`, "@type", false, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", false, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL))
 export class StackUpLimit extends Property<boolean> {}

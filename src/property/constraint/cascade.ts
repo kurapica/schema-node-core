@@ -2,7 +2,7 @@ import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { OfSchema, SchemaType, PropertyValueType, ForSchema, buildFuncCall, EntrySource } from '../index';
 import type { IConstraintProperty } from '../constraintProperty';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { EnumNode } from '../../node/enumNode';
@@ -17,7 +17,7 @@ import { Assign, Call } from '../../relation';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade.error`)
-@Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT}.isschemakind`, "@type", true, SCHEMA_KIND_ENUM))
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM))
 @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, "@type"))
 export class Cascade extends Property<number> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
