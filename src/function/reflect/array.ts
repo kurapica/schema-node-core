@@ -1,7 +1,8 @@
 import { Meta } from "../../attribute";
-import { OfSchema, SchemaType, Return, ArgName, Require, getRecordedValues, ValueSchemaKind } from "../../property";
+import { OfSchema, SchemaType, Return, ArgName, Require, getRecordedValues, ValueSchemaKind, Display, getPropertyValue, setPropertyValue } from "../../property";
 import { getNodeType, ValueType, ArrayType } from "../../runtime";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY } from "../../utility";
+import { EntryAccess, Entry } from "../../struct";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from "../../utility";
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -61,20 +62,90 @@ export class SystemReflectArray {
     if (!arrayType) return "";
     return (arrayType instanceof ArrayType) ? arrayType.element!.name : arrayType.name;
   }
+
+  /** Checks if the schema kind of the schema node with the given name is a value schema kind and not array schema kind */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.isarrayele`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isarrayele(
+    @Meta(ArgName, 'name')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(Require, true)
+    name: string,
+  ): Promise<boolean> {
+    const nodeType = !name ? undefined : await getNodeType(name);
+    if (!nodeType) return false;
+    if (nodeType.kind.toLowerCase() === SCHEMA_KIND_ARRAY.toLowerCase()) return false;
+    const valueKinds = getRecordedValues(ValueSchemaKind);
+    return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
+  }
   
-    /** Checks if the schema kind of the schema node with the given name is a value schema kind and not array schema kind */
-    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.isarrayele`)
-    @Meta(Return, NS_SYSTEM_BOOL)
-    static async isarrayele(
-      @Meta(ArgName, 'name')
-      @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-      @Meta(Require, true)
-      name: string,
-    ): Promise<boolean> {
-      const nodeType = !name ? undefined : await getNodeType(name);
-      if (!nodeType) return false;
-      if (nodeType.kind.toLowerCase() === SCHEMA_KIND_ARRAY.toLowerCase()) return false;
-      const valueKinds = getRecordedValues(ValueSchemaKind);
-      return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
+  /** Gets the sub entries of the value type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
+  static async getaccessentries(
+    @Meta(ArgName, 'element')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    element: string,
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path?: string,
+
+    @Meta(ArgName, 'root')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    root?: string
+  ): Promise<EntryAccess<string>[]> {
+    const elementType = element ? await getNodeType(element) as ValueType : undefined;
+    if (!elementType) return [];
+
+    path = path?.toLowerCase() ?? '';
+    root = root?.toLowerCase() ?? '';
+    if (path && root && path !== root && !path.startsWith(`${root}.`)) return [];
+    if (!root) root = path;
+
+    // first
+    const first: Entry<string>[] = [
+      { value: ARRAY_PREVIOUS, hasChildren: false },
+      { value: ARRAY_ELEMENT, hasChildren: false },
+    ];
+    for(const e of elementType.getAccessEntries())
+      first.push(e);
+
+    const result: EntryAccess<string>[] = [ { children: first} ];
+    let curr = result[0].children?.find(c => c.value.toLowerCase() === root || root.startsWith(`${c.value.toLowerCase()}.`));
+    let valueType = curr ? elementType.getAccessValueType(curr.value) : undefined;
+    while (valueType)
+    {
+      const accessEntry: EntryAccess<string> = {};
+      const accesses = valueType.getAccessEntries();
+      if (curr)
+      {
+        accessEntry.entry = setPropertyValue(
+          { value: curr.value, hasChildren: accesses.length > 0 },
+          Display,
+          getPropertyValue(curr, Display)
+        );
+      }
+      accessEntry.children = accesses;
+
+      // check next part
+      let next: ValueType | undefined;
+      for (const a of accesses)
+      {
+        const n = a.value;
+        if (curr) a.value = combinePaths(curr.value, n);
+        if (path && (path === a.value || path.startsWith(a.value + '.')))
+        {
+          next = valueType.getAccessValueType(n);
+          curr = a;
+        }
+      }
+      result.push(accessEntry);
+      valueType = next;
     }
+
+    // cut
+    return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
+  }
 }

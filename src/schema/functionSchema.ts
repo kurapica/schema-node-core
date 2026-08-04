@@ -6,7 +6,7 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, AccessConsumer } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveNodeSchema } from '../runtime/schemaRuntime';
@@ -163,7 +163,7 @@ export interface CallArg {
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG)
 class CallArgMeta implements CallArg {
   @Meta(SchemaType, NS_SYSTEM_STRING)
-  @Meta(AccessConsumer, true)
+  @Meta(EntrySourceConsumer, true)
   source?: string;
 
   /** The const value */

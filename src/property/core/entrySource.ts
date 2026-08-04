@@ -17,20 +17,20 @@ export class EntrySource extends FuncCallProperty {}
 
 /** The value access entry source */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.accesssource`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.EntrySourceProvider`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
-@Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`, true), "@accessSource.func")
-export class AccessSource extends FuncCallProperty {}
+@Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`, true), "@EntrySourceProvider.func")
+export class EntrySourceProvider extends FuncCallProperty {}
 
 /** The value access source consumer */
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.accessconsumer`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.EntrySourceConsumer`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
-export class AccessConsumer extends Property<boolean>{}
+export class EntrySourceConsumer extends Property<boolean>{}

@@ -8,12 +8,12 @@ import { ArrayValue } from '../property/constraint/arrayValue';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require, Default, AccessSource } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require, Default, EntrySourceProvider } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties } from '../property/propertyOwner';
 import { Call } from '../relation/call';
 import { ArrayType } from '../runtime/type';
-import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../utility/constant';
+import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, ENTRY_ROOT } from '../utility/constant';
 import { Relations } from './relationSchema';
 
 /** The array schema */
@@ -30,7 +30,7 @@ export interface ArraySchema {
 @Meta(Attach, SCHEMA_KIND_ARRAY)
 @Meta(ArrayValue)
 @Meta(Append, [Relations])
-@Meta(AccessSource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccess`, '@element', NODE_SELF))
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`, '@element', NODE_SELF, ENTRY_ROOT))
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
   @Meta(Require, true)

@@ -8,11 +8,11 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
 import { DataIndex, Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue, Default, AccessSource } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue, Default, EntrySourceProvider } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, getProperty, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { Relations } from './relationSchema';
@@ -44,8 +44,8 @@ export interface StructFieldSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(StructValue)
-@Meta(Append, [Relations, AccessSource])
-@Meta(AccessSource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccess`, '@fields', NODE_SELF))
+@Meta(Append, [Relations, EntrySourceProvider])
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];
@@ -59,6 +59,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   /** The field name */
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
   @Meta(Require, true)
+  @Meta(PrimaryIndex)
   @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypename`, '@type'))
   name!: string;
 
