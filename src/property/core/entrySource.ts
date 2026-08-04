@@ -5,32 +5,10 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND
 import { Relation } from '../../attribute/relation';
 import { Assign } from '../../relation/assign';
 
-/**
- * The white list declaration of the data
- */
+/** The entry source function */
 @Meta(ForSchema, [SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.entrysource`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
 @Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`, true), "@entrySource.func")
 export class EntrySource extends FuncCallProperty {}
-
-/** The value access entry source */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.EntrySourceProvider`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
-@Meta(Static, true)
-@Meta(ReadOnly, true)
-@Meta(InVisible, true)
-@Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`, true), "@EntrySourceProvider.func")
-export class EntrySourceProvider extends FuncCallProperty {}
-
-/** The value access source consumer */
-@Meta(ForSchema, [SCHEMA_KIND_STRING])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.EntrySourceConsumer`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
-@Meta(Static, true)
-@Meta(ReadOnly, true)
-@Meta(InVisible, true)
-export class EntrySourceConsumer extends Property<boolean>{}

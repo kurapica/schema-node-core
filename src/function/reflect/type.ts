@@ -183,6 +183,25 @@ export class SystemReflectType {
     return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
   }
 
+  /** Checks if the schema node with the given name is assignable to the schema node with the given target name */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isassignableto(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    type: string,
+
+    @Meta(ArgName, 'target')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    target: string,
+  ): Promise<boolean> {
+    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
+    if (!nodeType) return false;
+    const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
+    if (!targetNodeType) return false;
+    return nodeType.isAssignableTo(targetNodeType);
+  }
+
   /** Gets the design schema name of the given schema kind */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getdesignschema`)
   @Meta(Return, NS_SYSTEM_STRING)

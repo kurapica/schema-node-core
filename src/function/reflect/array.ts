@@ -2,7 +2,7 @@ import { Meta } from "../../attribute";
 import { OfSchema, SchemaType, Return, ArgName, Require, getRecordedValues, ValueSchemaKind, Display, getPropertyValue, setPropertyValue } from "../../property";
 import { getNodeType, ValueType, ArrayType } from "../../runtime";
 import { EntryAccess, Entry } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from "../../utility";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from "../../utility";
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -147,5 +147,26 @@ export class SystemReflectArray {
 
     // cut
     return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
+  }
+
+  /** Gets the value type of the array field */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessvaluetype`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getaccessvaluetype(
+    @Meta(ArgName, 'element')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    element: string,
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path: string
+  ): Promise<string | undefined> {
+    if (!path) return undefined;
+    const elementType = element ? await getNodeType(element) as ValueType : undefined;
+    if (!elementType) return undefined;
+    if (path.toLowerCase() === NODE_SELF || path.toLowerCase() === ARRAY_PREVIOUS) return `${NS_SYSTEM_LIST}<${elementType.name}>`;
+    if (path.toLowerCase() === ARRAY_ELEMENT) return elementType?.name;
+    return elementType.getAccessValueType(path)?.name;
   }
 }

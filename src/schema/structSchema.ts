@@ -8,7 +8,7 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
 import { Primary } from '../property/constraint/primary';
 import { DataIndex, Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue, Default, EntrySourceProvider } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue, Default, EntrySourceProvider, AccessValueTypeProvider } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties, getProperty, setProperty, setPropertyValue } from '../property/propertyOwner';
 import { StructType } from '../runtime/type';
@@ -44,8 +44,9 @@ export interface StructFieldSchema {
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(StructValue)
-@Meta(Append, [Relations, EntrySourceProvider])
+@Meta(Append, [Relations, EntrySourceProvider, AccessValueTypeProvider])
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
+@Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];

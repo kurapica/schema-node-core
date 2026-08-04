@@ -80,4 +80,25 @@ export class SystemReflectStruct {
     // cut
     return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
   }
+
+  /** Gets the value type of the struct field */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getaccessvaluetype(
+    @Meta(ArgName, 'fields')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
+    @Meta(Require, true)
+    fields: StructFieldSchema[],
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path: string
+  ): Promise<string | undefined> {
+    const dotIndex = path.indexOf('.');
+    const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
+    const field = fields.find(f => f.name === fieldName);
+    if (!field || !field.type) return undefined;
+    const valueType = await getNodeType(field.type) as ValueType;
+    return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
+  }
 }

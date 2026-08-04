@@ -6,12 +6,12 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessValueTypeConsumer, InVisible } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveNodeSchema } from '../runtime/schemaRuntime';
 import { FunctionType } from '../runtime/type';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 import { NodeSchema } from './nodeSchema';
 import { ExpType } from '../enum/expType';
@@ -19,6 +19,7 @@ import { Base } from '../property/core/base';
 import { ArgName } from '../property/function/argName';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
+import { LocaleString } from '../struct';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -162,16 +163,27 @@ export interface CallArg {
 /** Meta registration class for call argument (NOT exported). */
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG)
 class CallArgMeta implements CallArg {
+
+  /** The argument label. */
+  @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
+  @Meta(DisplayOnly, true)
+  label?: LocaleString;
+
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(ReadOnly, true)
+  type?: string;
+
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(EntrySourceConsumer, true)
+  @Meta(AccessValueTypeConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, '@type'))
+  @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@value'))
   source?: string;
 
   /** The const value */
   @Meta(SchemaType, NS_SYSTEM_OBJECT)
+  @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'))
+  @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
   value?: unknown;
-
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-  type?: string;
 }
 
 // #endregion

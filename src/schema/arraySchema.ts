@@ -8,7 +8,7 @@ import { ArrayValue } from '../property/constraint/arrayValue';
 import { Base } from '../property/core/base';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require, Default, EntrySourceProvider } from '../property/index';
+import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, Valid, Visible, PropertyValueType, Require, Default, EntrySourceProvider, AccessValueTypeProvider } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { combineProperties } from '../property/propertyOwner';
 import { Call } from '../relation/call';
@@ -31,6 +31,7 @@ export interface ArraySchema {
 @Meta(ArrayValue)
 @Meta(Append, [Relations])
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`, '@element', NODE_SELF, ENTRY_ROOT))
+@Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessvaluetype`, '@element', NODE_SELF))
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
   @Meta(Require, true)

@@ -2,11 +2,15 @@
 // Core property barrel — re-export all individual property files
 // =============================================================================
 
+export * from './accessValueTypeProvider';
+export * from './accessValueTypeConsumer';
 export * from './alias';
 export * from './append';
 export * from './attach';
 export * from './base';
 export * from './entrySource';
+export * from './entrySourceConsumer';
+export * from './entrySourceProvider';
 export * from './forSchema';
 export * from './fromEnum';
 export * from './generics';
