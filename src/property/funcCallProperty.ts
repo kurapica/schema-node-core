@@ -37,7 +37,7 @@ export abstract class FuncCallProperty extends Property<FuncCall> implements ITy
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
 class FuncCallMeta implements FuncCall {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-   func!: string;
+  func!: string;
 
   @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
   args!: CallArg[];

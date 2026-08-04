@@ -16,10 +16,9 @@ import { ValueType } from '../runtime/type/valueType';
 import { ValueSchemaKind } from '../property/record/valueSchemaKind';
 import { getRecordedValues } from '../property/recordProperty';
 import { Display } from '../property/common/index';
-import { combineProperties, getPropertyValue, setPropertyValue } from '../property/propertyOwner';
+import { getPropertyValue, setPropertyValue } from '../property/propertyOwner';
 import { EnumValueType } from '../enum';
 import { EnumType } from '../runtime';
-import { StructFieldSchema } from '../schema';
 import { combinePaths } from '../utility';
 import { LocaleString } from '../struct';
 

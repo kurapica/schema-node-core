@@ -4,7 +4,7 @@
 
 import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
-import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, PropertyValueType } from '../property/index';
+import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, PropertyValueType, AccessConsumer } from '../property/index';
 import { Property } from '../property/property';
 import { IValueAccess } from '../runtime/interfaces';
 import { RelationType } from '../runtime/type';
@@ -39,6 +39,7 @@ class RelationSchemaMeta implements RelationSchema {
   /** The target of the relation */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(PrimaryIndex, 0)
+  @Meta(AccessConsumer, true)
   target!: string;
 
   /** The property the relation applies to */

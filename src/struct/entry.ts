@@ -1,5 +1,5 @@
 import { Meta } from "../attribute/meta";
-import { OfSchema, SchemaType, Generics, SchemaKind, Attach, Require, PrimaryIndex, combineProperties } from "../property";
+import { OfSchema, SchemaType, Generics, SchemaKind, Attach, Require, PrimaryIndex, combineProperties, getPropertyValue, Disable } from "../property";
 import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY, NS_SYSTEM_ENTRY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS } from "../utility/constant";
 import { isEqual, isNull } from "../utility/toolset";
 
@@ -38,6 +38,9 @@ export class EntryType<T> implements Entry<T> {
   @Meta(SchemaType, NS_SYSTEM_BOOL)
   hasChildren: boolean = false;
 
+  /** The entry as a plain object */
+  private _entry?: Entry<T>;
+
   /** The children entries of the entry */
   private _children?: EntryType<T>[];
 
@@ -54,10 +57,13 @@ export class EntryType<T> implements Entry<T> {
   private _isFullyLoaded?: boolean;
   get isFullyLoaded() { return this._isFullyLoaded ?? false }
 
+  /** The entry is disabled */
+  get disabled() { return getPropertyValue(this._entry, Disable) ?? false }
+
   /** Gets the entry as a plain object */
   get entry(): Entry<T> {
     const entry = { value: this.value, hasChildren: this.hasChildren };
-    combineProperties(entry, this, SCHEMA_KIND_ENTRY);
+    combineProperties(entry, this._entry, SCHEMA_KIND_ENTRY);
     return entry;
   }
 
@@ -110,6 +116,7 @@ export class EntryType<T> implements Entry<T> {
         const entry = new EntryType<T>();
         entry.value = c.value;
         entry.hasChildren = c.hasChildren;
+        entry._entry = c;
         entry._parent = root;
         entry._valueMaps = this._valueMaps;
         entry._children = root?._children?.find(e => isEqual(c.value, e.value))?._children;
@@ -127,6 +134,28 @@ export class EntryType<T> implements Entry<T> {
   isDescendant(desc: EntryType<T>): boolean {
     while (desc._parent && desc._parent != this) desc = desc._parent;
     return desc._parent === this;
+  }
+
+  /** Drop the children entries */
+  dropChildren(): void {
+    this._children?.forEach(c => c.unregister());
+    this._children = undefined;
+    this.hasChildren = false;
+  }
+
+  /** Drop the entry */
+  drop(): void {
+    if (this._parent) {
+      this._parent._children = this._parent._children?.filter(c => c !== this);
+      if (!this._parent._children?.length)
+      {
+        if (this._parent.disabled)
+          this._parent.drop();
+        else
+          this._parent.dropChildren();
+      }
+    }
+    this.unregister();
   }
 
   /** Refresh the loading state */

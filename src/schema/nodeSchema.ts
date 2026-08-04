@@ -9,7 +9,7 @@ import { Base } from '../property/core/base';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { SchemaKind, SchemaType, Attach, PrimaryIndex, OfSchema, UpLimitString, EntrySource, Valid, Require, ReadOnly, Immutable } from '../property/index';
 import { Call } from '../relation';
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, ENTRY_ROOT } from '../utility/constant';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../utility/constant';
 import { combinePaths } from '../utility/toolset';
 
 /** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
@@ -87,7 +87,7 @@ class NodeSchemaMeta implements NodeSchema {
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
-@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT}.gettypeentries`, NODE_SELF, ENTRY_ROOT))
+@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypeentries`, NODE_SELF, ENTRY_ROOT))
 class AnyTypeMeta {}
 
 /** Represents the value type */
