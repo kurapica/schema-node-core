@@ -1,9 +1,9 @@
 import { Meta } from "../../attribute";
 import { EnumValueType } from "../../enum";
-import { OfSchema, SchemaType, Return, ArgName, Require, setPropertyValue, Display } from "../../property";
+import { OfSchema, SchemaType, Return, ArgName, Require, setPropertyValue, Display, EntrySource } from "../../property";
 import { getNodeType, EnumType } from "../../runtime";
 import { Entry, EntryAccess } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL } from "../../utility";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from "../../utility";
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
@@ -73,12 +73,12 @@ export class SystemReflectEnum {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async hascascade(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     @Meta(Require, true)
     type: string,
   ): Promise<boolean> {
-    const enumType = await getNodeType(type) as EnumType | undefined;
-    return !!enumType?.cascade?.length;
+    const nodeType = await getNodeType(type);
+    return nodeType instanceof EnumType ? !!nodeType.cascade?.length : (nodeType?.getProperty(EntrySource)?.hasValue ?? false);
   }
 
   /** Gets the cascades for the given enum type */

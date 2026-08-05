@@ -1,7 +1,8 @@
 import { Meta } from "../../attribute";
+import { ExpType } from "../../enum";
 import { OfSchema, SchemaType, Return, ArgName, Require } from "../../property";
-import { getNodeType, FunctionType, ValueType, ArrayType } from "../../runtime";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS } from "../../utility";
+import { getNodeType, FunctionType, ValueType, ArrayType, DecimalType, BoolType, IntType } from "../../runtime";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC } from "../../utility";
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
@@ -62,5 +63,23 @@ export class SystemReflectFunction {
     }
     
     return true;
+  }
+
+  /** Get the exp types for the given retunr type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexptypes`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC}.exptype>`)
+  static async getexptypes(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    type: string
+  ): Promise<ExpType[]> {
+    var returnType = type ? await getNodeType(type) as ValueType : undefined;
+    if (!returnType) return [];
+    if (returnType instanceof ArrayType) return [ExpType.Call, ExpType.Filter, ExpType.Map];
+    if (returnType instanceof BoolType) return [ExpType.Call, ExpType.All, ExpType.Any];
+    if (returnType instanceof IntType) return [ExpType.Call, ExpType.Count, ExpType.Reduce];
+    if (returnType instanceof DecimalType) return [ExpType.Call, ExpType.Reduce];
+    return [ExpType.Call, ExpType.First, ExpType.Last, ExpType.Reduce];
   }
 }

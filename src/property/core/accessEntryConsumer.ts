@@ -13,10 +13,10 @@ import { Static } from "./static";
 /** The access value consumer property */
 @Meta(ForSchema, SCHEMA_KIND_STRING)
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.AccessValueTypeConsumer`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.AccessEntryConsumer`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
 @Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_BOOL), "@accessValueTypeConsumer.func")
-export class AccessValueTypeConsumer extends FuncCallProperty {}
+export class AccessEntryConsumer extends FuncCallProperty {}

@@ -6,7 +6,7 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessValueTypeConsumer, InVisible } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessEntryConsumer, InVisible } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveNodeSchema } from '../runtime/schemaRuntime';
@@ -101,14 +101,14 @@ export interface FuncExp {
   /** The expression name (identifier). */
   name: string;
 
-  /** The function to call — schema type of the target function. */
-  func: string;
+  /** The return type of this expression. */
+  return: string;
 
   /** The expression evaluation type (Call / Map / Reduce / etc.). */
   type: ExpType;
 
-  /** The return type of this expression. */
-  return: string;
+  /** The function to call — schema type of the target function. */
+  func: string;
 
   /** Arguments — list of expression names or argument names. */
   args: CallArg[];
@@ -117,23 +117,33 @@ export interface FuncExp {
 /** Meta registration class for function expression (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exp`)
 class FuncExpMeta implements FuncExp {
+  /** The expression name */
   @Meta(PrimaryIndex, 0)
   @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(Require, true)
   name: string = '';
 
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
+  /** the return value type */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
-  func: string = '';
+  return: string = '';
 
+  /** the expression type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
   @Meta(Require, true)
   type: ExpType = ExpType.Call;
 
+  /** The expected function return type */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
+  funcReturn?: string;
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
   @Meta(Require, true)
-  return: string = '';
+  @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, '@funcReturn'))
+  func: string = '';
 
   @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
   @Meta(Require, true)
@@ -167,7 +177,7 @@ class CallArgMeta implements CallArg {
   /** The argument label. */
   @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
   @Meta(DisplayOnly, true)
-  label?: LocaleString;
+  display?: LocaleString;
 
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(ReadOnly, true)
@@ -175,7 +185,7 @@ class CallArgMeta implements CallArg {
 
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(EntrySourceConsumer, true)
-  @Meta(AccessValueTypeConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, '@type'))
+  @Meta(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, '@type'))
   @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@value'))
   source?: string;
 

@@ -1,16 +1,20 @@
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, ForSchema } from '../index';
+import { OfSchema, SchemaType, PropertyValueType, ForSchema, EntrySource, buildFuncCall } from '../index';
 import type { IConstraintProperty } from '../constraintProperty';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
-import { Error } from '../common';
+import { Error, Visible } from '../common';
+import { Relation } from '../../attribute';
+import { Call, Assign } from '../../relation';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.indexs`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes.error`)
+@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
+@Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `indexes.fields.${ARRAY_ELEMENT}`)
 export class Indexes extends Property<DataIndex[]> implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     return undefined; // do nothing

@@ -1,9 +1,9 @@
 import { Meta } from "../../attribute";
-import { ArgName, Display, getPropertyValue, OfSchema, Require, Return, SchemaType, setPropertyValue } from "../../property";
-import { getNodeType, ValueType } from "../../runtime";
+import { ArgName, Display, getPropertyValue, OfSchema, Require, Return, SchemaType, setPropertyValue, UpLimitString } from "../../property";
+import { getNodeType, StringType, StructType, ValueType } from "../../runtime";
 import { StructFieldSchema } from "../../schema";
 import { EntryAccess, Entry } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, _LS } from "../../utility";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, _LS, isNull, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from "../../utility";
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)
@@ -100,5 +100,44 @@ export class SystemReflectStruct {
     if (!field || !field.type) return undefined;
     const valueType = await getNodeType(field.type) as ValueType;
     return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
+  }
+
+  /** The field is indexable */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.isindexablefield`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isindexablefield(
+    @Meta(ArgName, "field")
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT_FIELD}.schema`)
+    field: StructFieldSchema)
+  {
+    const type = !field.type ? undefined : await getNodeType(field.type) as ValueType;
+    if (type?.isIndexable) return true;
+    if (type instanceof StringType)
+    {
+      let uplimit = getPropertyValue(field, UpLimitString);
+      if (!isNull(uplimit)) uplimit = parseInt(`${uplimit}`);
+      if (!isNull(uplimit) && isFinite(uplimit as number))
+        return uplimit as number <= PRIMARY_KEY_MAX_LEN;
+    }
+    return false;
+  }
+
+  /** get the struct indexable fields */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY}<${NS_SYSTEM_STRING}>>`)
+  static async getindexablefields(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    type: string
+  ): Promise<Entry<string>[]> {
+    var structType = type ? await getNodeType(type) as StructType : undefined;
+    if (!structType) return [];
+    const result: Entry<string>[] = [];
+    for (let f of structType.getFields())
+    {
+      if (f.type?.isIndexable || f.type instanceof StringType && !isNull(f.getPropertyValue(UpLimitString)) && f.getPropertyValue(UpLimitString) as number <= PRIMARY_KEY_MAX_LEN)
+        result.push(setPropertyValue({ value: f.name, hasChildren: false }, Display, f.getPropertyValue(Display) ?? _LS(f.name)));
+    }
+    return result;
   }
 }

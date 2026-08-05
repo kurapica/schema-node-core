@@ -155,6 +155,20 @@ export class SystemReflectType {
     });
   }
 
+  /** Gets the schema kind of the schema node with the given name */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`)
+  @Meta(Return, NS_SYSTEM_SCHEMA_KIND)
+  static async getschemakind(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(Require, true)
+    type: string,
+  ): Promise<string | undefined> {
+    const nodeType = !type ? undefined : await getNodeType(type);
+    if (!nodeType) return undefined;
+    return nodeType.kind;
+  }
+
   /** Checks if the schema kind of the schema node with the given name is a value schema kind */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isvaluekind`)
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -206,5 +220,17 @@ export class SystemReflectType {
     if (!nodeType) return '';
     const kind = nodeType.kind.toLowerCase();
     return `${NS_SYSTEM_SCHEMA_DESIGN}.${kind}`;
+  }
+
+  /** The value type is indexable */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isindexable`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isindexable(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    type: string
+  ): Promise<boolean> {
+    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
+    return nodeType?.isIndexable ?? false;
   }
 }

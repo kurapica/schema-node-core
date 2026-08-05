@@ -1,7 +1,7 @@
 import { Meta } from "../../attribute";
 import { ArgName, Require, Return, SchemaType, Stackable, Static } from "../../property";
 import { getNodeType, PropertyType } from "../../runtime";
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from "../../utility";
+import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from "../../utility";
 
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {
@@ -61,12 +61,30 @@ export class SystemReflectProperty {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getpropertyvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getvaluetype(
-    @Meta(ArgName, 'name')
+    @Meta(ArgName, 'type')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
     @Meta(Require, true)
-    name: string,
+    type: string,
   ): Promise<string | undefined> {
-    const prop = !name ? undefined : await getNodeType(name) as PropertyType | undefined;
+    const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
     return prop?.valueType?.name;
+  }
+
+  /** Whether the property is for schema */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.forschema`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async forschema(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    type: string,
+
+    @Meta(ArgName, 'kind')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+    kind: string
+  ): Promise<boolean>
+  {
+    const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
+    if (!prop) return false;
+    return prop.forSchemas?.some(k => k.toLowerCase() === kind.toLowerCase()) ?? false;
   }
 }
