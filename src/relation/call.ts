@@ -1,7 +1,7 @@
 import { Meta } from "../attribute/meta";
 import { Relation } from "../attribute/relation";
 import { RelationStage } from "../enum/relationStage";
-import { ForSchema, FuncCall, FuncCallProperty, OfSchema, RelationKind, SchemaType, Visible } from "../property";
+import { Default, ForSchema, FuncCall, FuncCallProperty, OfSchema, RelationKind, SchemaType, Visible } from "../property";
 import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
@@ -10,7 +10,7 @@ import { getNodeType } from "../runtime/schemaRuntime";
 import { FunctionType, RelationType } from "../runtime/type";
 import { CallArg } from "../schema";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
-import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 import { deepClone, isEmpty } from "../utility/toolset";
 
 /** The call relation process */
@@ -70,4 +70,5 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
 @Meta(RelationKind, 'call')
 @Meta(RelationProcess, CallProcess)
 @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'call'))
+@Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'), "@call.return")
 export class Call extends FuncCallProperty {}

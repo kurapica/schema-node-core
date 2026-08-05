@@ -35,16 +35,19 @@ export interface StructFieldSchema {
   error?: string;
 }
 
-/** Built-in struct type Meta registration (NOT exported). */
+/** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
 @Meta(RuntimeNodeType, StructType)
 @Meta(SchemaGenerator, generateStructSchema)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(StructValue)
 @Meta(Append, [Relations, EntrySourceProvider, AccessValueTypeProvider])
+class StructSchemaKind{}
+
+/** Built-in struct type Meta registration (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
+@Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
 class StructSchemaMeta implements StructSchema {

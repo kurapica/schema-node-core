@@ -9,5 +9,6 @@ export * from './reflect/struct';
 export * from './reflect/array';
 export * from './reflect/enum';
 export * from './reflect/function';
+export * from './reflect/property';
 
 

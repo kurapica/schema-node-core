@@ -2,13 +2,15 @@
 // RelationSchema — extension data under "relation" key
 // =============================================================================
 
+import { Relation } from '../attribute';
 import { Meta } from '../attribute/meta';
 import { RelationStage } from '../enum/relationStage';
-import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, PropertyValueType, EntrySourceConsumer } from '../property/index';
+import { SchemaKind, SchemaType, Attach, OfSchema, IProperty, PrimaryIndex, PropertyValueType, EntrySourceConsumer, Valid, buildFuncCall, Require, DisplayOnly, Default, InVisible } from '../property/index';
 import { Property } from '../property/property';
+import { Call } from '../relation';
 import { IValueAccess } from '../runtime/interfaces';
 import { RelationType } from '../runtime/type';
-import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND } from '../utility/constant';
+import { SCHEMA_KIND_RELATION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE } from '../utility/constant';
 
 /** Pure data interface. */
 export interface RelationSchema {
@@ -40,12 +42,22 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(PrimaryIndex, 0)
   @Meta(EntrySourceConsumer, true)
+  @Meta(Require, true)
   target!: string;
 
   /** The property the relation applies to */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
   @Meta(PrimaryIndex, 1)
+  @Meta(Require, true)
+  @Meta(Valid, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.notstatic`, NODE_SELF))
   property!: string;
+
+  /** The value type of the property */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
+  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property'))
+  valueType?: string;
 
   /** The stage of the realtion been applied */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_RELATION_TYPE)
@@ -54,10 +66,6 @@ class RelationSchemaMeta implements RelationSchema {
   /** The relation kind */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_RELATION_KIND)
   kind!: string;
-
-  /** The relation only works for the given schema kind(for property relation only) */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
-  forSchema?: string;
 }
 
 /** The relations property */

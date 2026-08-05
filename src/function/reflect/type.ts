@@ -69,19 +69,6 @@ export class SystemReflectType {
     return result;
   }
 
-  /** Gets the property value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getpropertyvaluetype`)
-  @Meta(Return, NS_SYSTEM_STRING)
-  static async getpropertyvaluetype(
-    @Meta(ArgName, 'name')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
-    @Meta(Require, true)
-    name: string,
-  ): Promise<string | undefined> {
-    const prop = !name ? undefined : await getNodeType(name) as PropertyType | undefined;
-    return prop?.valueType?.name;
-  }
-
   /** Gets the sub entries of the value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)

@@ -21,15 +21,18 @@ export interface ArraySchema {
   element: string;
 }
 
-/** Meta registration class (NOT exported). */
+/** The array schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Meta(RuntimeNodeType, ArrayType)
-@Meta(Attach, SCHEMA_KIND_ARRAY)
 @Meta(ArrayValue)
 @Meta(Append, [Relations])
+class ArraySchemaKind{}
+
+/** Meta registration class (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
+@Meta(Attach, SCHEMA_KIND_ARRAY)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`, '@element', NODE_SELF, ENTRY_ROOT))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessvaluetype`, '@element', NODE_SELF))
 class ArraySchemaMeta implements ArraySchema {

@@ -1,13 +1,13 @@
 import { Meta } from "../attribute/meta";
 import { Relation } from "../attribute/relation";
-import { ForSchema, FuncCallProperty, OfSchema, RelationKind, SchemaType, Visible } from "../property";
+import { ForSchema, FuncCallProperty, OfSchema, OverrideType, Property, RelationKind, SchemaType, Visible } from "../property";
 import { RelationProcess } from "../property/core/relationProcess";
 import { buildFuncCall } from "../property/funcCallProperty";
 import { getProperty } from "../property/propertyOwner";
 import { IValueAccess } from "../runtime/interfaces";
 import { RelationType } from "../runtime/type";
 import { IRelationProcess, RelationSchema } from "../schema/relationSchema";
-import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../utility/constant";
 import { Call } from "./call";
 
 /** The assign relation process */
@@ -32,4 +32,5 @@ export class AssignProcess implements IRelationProcess {
 @Meta(RelationKind, 'assign')
 @Meta(RelationProcess, AssignProcess)
 @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'assign'))
-export class Assign extends FuncCallProperty {}
+@Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'))
+export class Assign extends Property<unknown> {}

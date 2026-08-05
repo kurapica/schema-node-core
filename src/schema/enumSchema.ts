@@ -36,16 +36,19 @@ export interface EnumSchema {
   values: Entry<string>[];
 }
 
-/** Meta registration class (NOT exported). */
+/** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(RuntimeNodeType, EnumType)
-@Meta(Attach, SCHEMA_KIND_ENUM)
 @Meta(EnumValue)
 @Meta(SchemaGenerator, generateEnumSchema)
 @Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+class EnumSchemaKind{}
+
+/** Meta registration class (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
+@Meta(Attach, SCHEMA_KIND_ENUM)
 @Relation(Immutable, Assign, true, "values.value")
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
