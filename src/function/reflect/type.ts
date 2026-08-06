@@ -128,6 +128,25 @@ export class SystemReflectType {
     return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
   }
 
+  /** Gets the access type of the value type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccesstype`)
+  @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  static async getaccesstype(
+    @Meta(ArgName, 'name')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    name: string,
+
+    @Meta(ArgName, 'access')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(Require, true)
+    access: string,
+  ): Promise<string> {
+    let valueType = !name ? undefined : await getNodeType(name) as ValueType | undefined;
+    if (!valueType) return "";
+    return valueType.getAccessValueType(access)?.name ?? "";
+  }
+
   /** Checks if the schema kind of the schema node with the given name is the same as the given kind */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakind`)
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -236,6 +255,18 @@ export class SystemReflectType {
     return nodeType.isAssignableTo(targetNodeType);
   }
 
+  /** The value type is indexable */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isindexable`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isindexable(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    type: string
+  ): Promise<boolean> {
+    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
+    return nodeType?.isIndexable ?? false;
+  }
+
   /** Gets the design schema name of the given schema kind */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getdesignschema`)
   @Meta(Return, NS_SYSTEM_STRING)
@@ -253,17 +284,5 @@ export class SystemReflectType {
     if (!nodeType) return '';
     const kind = nodeType.kind.toLowerCase();
     return `${NS_SYSTEM_SCHEMA_DESIGN}.${kind}`;
-  }
-
-  /** The value type is indexable */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isindexable`)
-  @Meta(Return, NS_SYSTEM_BOOL)
-  static async isindexable(
-    @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    type: string
-  ): Promise<boolean> {
-    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
-    return nodeType?.isIndexable ?? false;
   }
 }

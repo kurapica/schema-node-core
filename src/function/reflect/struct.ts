@@ -1,6 +1,6 @@
 import { Meta } from "../../attribute";
 import { ArgName, Display, getPropertyValue, OfSchema, Require, Return, SchemaType, setPropertyValue, UpLimitString } from "../../property";
-import { getNodeType, StringType, StructType, ValueType } from "../../runtime";
+import { ArrayType, getNodeType, ObjectType, StringType, StructType, ValueType } from "../../runtime";
 import { StructFieldSchema } from "../../schema";
 import { EntryAccess, Entry } from "../../struct";
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, _LS, isNull, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from "../../utility";
@@ -139,5 +139,21 @@ export class SystemReflectStruct {
         result.push(setPropertyValue({ value: f.name, hasChildren: false }, Display, f.getPropertyValue(Display) ?? _LS(f.name)));
     }
     return result;
+  }
+
+  /// <summary>
+  /// Gets the the type has object type, should enable topology
+  /// </summary>
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.hasdynamicfield`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async hasdynamicfield(
+    @Meta(ArgName, "type")
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    type: string
+  ): Promise<boolean> {
+    let valueType = type ? await getNodeType(type) as ValueType : undefined;
+    if (valueType instanceof ArrayType) valueType = valueType.element;
+    if (valueType instanceof StructType) return valueType.getFields().some(f => f.type instanceof ObjectType);
+    return false;
   }
 }
