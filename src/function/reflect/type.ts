@@ -155,6 +155,39 @@ export class SystemReflectType {
     });
   }
 
+  /** hecks if value type of the give access from the type match the given schema kinds */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakind`)
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isschemakindaccess(
+    @Meta(ArgName, 'name')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(Require, true)
+    name: string,
+
+    @Meta(ArgName, 'access')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(Require, true)
+    access: string,
+
+    @Meta(ArgName, 'matchArrayElement')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    matchArrayElement: boolean,
+
+    @Meta(ArgName, 'kind')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+    @Meta(Require, true)
+    @Meta(Variadic, true)
+    kinds: string[],
+  ): Promise<boolean> {
+    let nodeType = !name ? undefined : await getNodeType(name) as ValueType;
+    nodeType = nodeType?.getAccessValueType(access);
+    if (!nodeType) return false;
+    return kinds.some(kind => {
+      if (nodeType.kind.toLowerCase() === kind.toLowerCase()) return true;
+      return matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.kind.toLowerCase() === kind.toLowerCase();
+    });
+  }
+
   /** Gets the schema kind of the schema node with the given name */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`)
   @Meta(Return, NS_SYSTEM_SCHEMA_KIND)

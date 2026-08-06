@@ -76,8 +76,14 @@ export class SystemReflectEnum {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     @Meta(Require, true)
     type: string,
+
+    @Meta(ArgName, 'onlyEnum')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    @Meta(Require, false)
+    onlyEnum: boolean = false
   ): Promise<boolean> {
     const nodeType = await getNodeType(type);
+    if (onlyEnum) return nodeType instanceof EnumType && !!nodeType.cascade?.length;
     return nodeType instanceof EnumType ? !!nodeType.cascade?.length : (nodeType?.getProperty(EntrySource)?.hasValue ?? false);
   }
 

@@ -82,4 +82,37 @@ export class SystemReflectFunction {
     if (returnType instanceof DecimalType) return [ExpType.Call, ExpType.Reduce];
     return [ExpType.Call, ExpType.First, ExpType.Last, ExpType.Reduce];
   }
+
+  /** Get the expected function return type for the given exp return type */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexpectreturn`)
+  @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  static async getexpectreturn(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    type: string,
+
+    @Meta(ArgName, 'expType')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
+    expType: ExpType,
+  ): Promise<string | undefined> {
+    const valueType = !type ? undefined : await getNodeType(type) as ValueType | undefined;
+    if (!valueType) return undefined;
+    switch(expType){
+      case ExpType.Call:
+      case ExpType.Reduce:
+        return valueType.name;
+      case ExpType.Map:
+        return valueType instanceof ArrayType ? valueType.element?.name : valueType.name;
+      case ExpType.First:
+      case ExpType.Last:
+      case ExpType.Filter:
+      case ExpType.Count:
+      case ExpType.All:
+      case ExpType.Any:
+        return NS_SYSTEM_BOOL;
+      default:
+        return undefined;
+    }
+  }
 }

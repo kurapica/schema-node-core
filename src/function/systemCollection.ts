@@ -5,8 +5,8 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, Generics, ArgName, Require } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT } from '../utility/constant';
+import { OfSchema, SchemaType, Return, Generics, ArgName, Require, Variadic } from '../property/index';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST } from '../utility/constant';
 import { isNull } from '../utility/toolset';
 
 // ── SystemCollection ───────────────────────────────────────────────────
@@ -14,6 +14,17 @@ import { isNull } from '../utility/toolset';
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_COLLECTION)
 export class SystemCollection {
+
+  /** Creates a new array */
+  @Meta(Return, `${NS_SYSTEM_LIST}<T>`)
+  @Meta(Generics, [{ name: 'T' }])
+  static newarray<T>(
+    @Meta(ArgName, 'items') 
+    @Meta(SchemaType, 'T') 
+    @Meta(Variadic, true)
+    ...items: T[]
+  ) : T[] { return items; }
+
   /**  Gets the array length */
   @Meta(SchemaType, `${NS_SYSTEM_COLLECTION}.length`) 
   @Meta(Return, NS_SYSTEM_INT)

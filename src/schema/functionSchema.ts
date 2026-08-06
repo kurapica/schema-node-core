@@ -6,7 +6,7 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessEntryConsumer, InVisible, WhiteList } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessEntryConsumer, InVisible, WhiteList, Default, Immutable } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveNodeSchema } from '../runtime/schemaRuntime';
@@ -48,6 +48,7 @@ export interface FunctionSchema {
 class FunctionSchemaMeta implements FunctionSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
+  @Meta(Immutable, true)
   return: string = '';
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
@@ -139,6 +140,7 @@ class FuncExpMeta implements FuncExp {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
+  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexpectreturn`, '@return', '@type'))
   funcReturn?: string;
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
