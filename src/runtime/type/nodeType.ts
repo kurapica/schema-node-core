@@ -10,7 +10,7 @@ import type { NodeSchema } from '../../schema/nodeSchema';
 import { isTypeRefProperty, type IProperty, type ITypeRefProperty } from '../../property/property';
 import { Generics, type GenericParameter } from '../../property/core/generics';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
-import { combinePaths } from '../../utility/toolset';
+import { combinePaths, deepClone } from '../../utility/toolset';
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { getNodeType } from '../schemaRuntime';
@@ -76,7 +76,7 @@ export class NodeType implements IPropertyProvider, INodeReference {
   // ── Schema ──────────────────────────────────────────────────────────
 
   /** Get the underlying NodeSchema (available after loadType). */
-  getNodeSchema(): NodeSchema | undefined { const { schemas, ...rest } = this.schema ?? {}; return rest as unknown as NodeSchema; }
+  getNodeSchema(): NodeSchema | undefined { const { schemas, ...rest } = this.schema ?? {}; return deepClone(rest) as unknown as NodeSchema; }
 
   /** Load type-specific data from the NodeSchema. Subclasses override. */
   async loadType(schema: NodeSchema, genericParams?: NodeType[]): Promise<void> {

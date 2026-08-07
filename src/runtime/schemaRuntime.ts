@@ -21,21 +21,21 @@ import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { getSchemaProvider } from '../schema/provider/schemaProvider';
 import { combineProperties, setPropertyValue } from '../property/propertyOwner';
 import { StructProperty, StructSchema } from '../schema/structSchema';
-import { combinePaths } from '../utility';
+import { combinePaths, deepClone, isEmpty } from '../utility';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
 /** The schema kind holder */
-let _schemaKindHolder = new Map<string, Function>();
+const _schemaKindHolder = new Map<string, Function>();
 
 /** The schema kind property types */
-let _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
+const _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
 
 /** The schema kind prototype properties */
-let _schemaKindProperties = new Map<string, IProperty[]>();
+const _schemaKindProperties = new Map<string, IProperty[]>();
 
 /** The node schema generators */
-let _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
+const _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
 
 /**
  * Get the properties associated with a specific schema kind.
@@ -181,6 +181,49 @@ function getSystemSchema(fullName: string): NodeSchema | undefined {
   if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
   return clone;
+}
+
+/** Export the node schemas by full names, for frontend-only mode schema download(system schema ignored) */
+export async function getExportNodeSchemas(fullNames: string[]): Promise<NodeSchema[]> {
+  const result: NodeSchema[] = [];
+  for (const fullName of fullNames) {
+    const nodeType = await getNodeType(fullName);
+    if (nodeType) { await exportNodeType(nodeType, result); }
+  }
+  return result;
+}
+
+/** Install the node schema and its references into the result array */
+export async function exportNodeType(nodeType: NodeType, result: NodeSchema[]): Promise<void> {
+  const schema = nodeType.getNodeSchema()!;
+  if ((schema.loadState ?? 0) & SchemaLoadState.System) return; // no system schema
+
+  const parents: NamespaceType[] = [];
+  let parent = nodeType.namespace;
+  while (parent) {
+    parents.unshift(parent);
+    parent = parent.namespace;
+  }
+
+  // Install the schema tree
+  for (const parent of parents) {
+    let exist = result.find(r => r.name === parent.name);
+    if (!exist) {
+      exist = parent.getNodeSchema()!;
+      exist.schemas ??= [];
+      result.push(exist);
+    }
+    result = exist.schemas!;
+  }
+
+  // Install the node schema
+  if (!result.find(r => r.name === nodeType.name)) {
+    result.push(nodeType.getNodeSchema()!);
+    for (let ref of nodeType.getRefTypes())
+    {
+      exportNodeType(ref, result);
+    }
+  }
 }
 
 // #region ── Internal ──
