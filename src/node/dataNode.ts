@@ -8,14 +8,12 @@ import type { IProperty, Property, PropertyCtor } from '../property/property';
 import { IPropertyProvider, IRelationInfo, IValueAccess, joinProperties } from '../runtime/interfaces';
 import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../utility/toolset';
 import { Observable, Observer } from '../utility/observable';
-import { NODE_SELF } from '../utility/constant';
+import { NODE_SELF, DEBOUNCE_TIME } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { Display, DisplayOnly, getPropertiesBySchemaKind, Immutable, InVisible, ReadOnly, Require, Visible } from '../property';
+import { Display, DisplayOnly, getPropertiesBySchemaKind, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
 import { RelationType } from '../runtime';
 import { sformat } from '../utility';
-
-const DEBOUNCE_TIME = 20;
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export abstract class DataNode implements IValueAccess, IPropertyProvider {
@@ -76,8 +74,8 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
     }
 
     // init properties effect
-    for(const prop of Array.from(this.filterProperties(() => true)))
-      prop.effect(this, prop.getValue());
+    if (!parent) // chilren node should be applied by its parent after confirmed
+      this.applyPropertyEffects();
   }
 
   /** Dipose the data node, release references */
@@ -126,7 +124,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   get require() { return this.getPropertyValue<boolean>(Require) }
 
   /** Shortcut to gets whether the node is readonly */
-  get readonly() { return this.getPropertyValue<boolean>(ReadOnly) || this.getPropertyValue<boolean>(DisplayOnly) || this.getPropertyValue<boolean>(Immutable) && !isEmpty(this._original) || false }
+  get readonly() { return this.getPropertyValue<boolean>(ReadOnly) ?? false }
 
   /** shortcut to gets visiblity */
   get visible() { return !this.getPropertyValue<boolean>(InVisible) && this.getPropertyValue<boolean>(Visible) != false }
@@ -180,6 +178,12 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #endregion
   
   // #region ── Property Access ───────────────────────────────────────────────
+
+  /** Apply property effects */
+  applyPropertyEffects() {
+    for(const prop of Array.from(this.filterProperties(() => true)))
+      prop.effect(this, prop.getValue());
+  }
 
   /** Gets the property */
   getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {

@@ -8,6 +8,7 @@ export * from './alias';
 export * from './append';
 export * from './attach';
 export * from './base';
+export * from './dataNodeType';
 export * from './entrySource';
 export * from './entrySourceProvider';
 export * from './entrySourceConsumer';

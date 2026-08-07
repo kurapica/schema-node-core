@@ -3,6 +3,8 @@
 // Mirrors C# SchemaNode.Core/Utility/Constant.cs
 // =============================================================================
 
+export const DEBOUNCE_TIME = 20;
+
 // ── Schema Kind ────────────────────────────────────────────────────────────
 
 export const SCHEMA_KIND_NODE = 'node';

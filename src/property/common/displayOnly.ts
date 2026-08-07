@@ -4,7 +4,7 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, ForSchema, Static, PropertyValueType, Default } from '../index';
+import { OfSchema, SchemaType, ForSchema, Static, PropertyValueType, Default, ReadOnly } from '../index';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
 import { IValueAccess } from '../../runtime';
 import { isEmpty } from '../../utility';
@@ -24,6 +24,7 @@ export class DisplayOnly extends Property<boolean> {
       const value = target.getValue();
       if (!isEmpty(value))
         target.setPropertyValue(Default, value);
+      target.setPropertyValue(ReadOnly, true);
     }
   }
 }

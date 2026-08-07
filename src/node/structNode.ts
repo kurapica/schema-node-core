@@ -33,6 +33,7 @@ export class StructNode extends DataNode {
 
     // keep raw data update
     this._fields.forEach(f => {
+      f.applyPropertyEffects();
       if (f.displayOnly) return;
       this.recordSubscription(f.subscribe(this.writeBackRawValue, true));
     });

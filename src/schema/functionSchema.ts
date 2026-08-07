@@ -6,7 +6,7 @@
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
 import { Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessValueTypeProvider, AccessEntryConsumer, InVisible, WhiteList, Default, Immutable } from '../property/index';
+import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessEntryConsumer, InVisible, WhiteList, Default, Immutable, DataNodeType } from '../property/index';
 import { IProperty, Property } from '../property/property';
 import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
 import { saveNodeSchema } from '../runtime/schemaRuntime';
@@ -20,6 +20,7 @@ import { ArgName } from '../property/function/argName';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { LocaleString } from '../struct';
+import { FunctionNode } from '../node/functionNode';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -38,13 +39,16 @@ export interface FunctionSchema {
   func?: Function; // runtime function reference (not part of schema)
 }
 
-/** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Meta(RuntimeNodeType, FunctionType)
-@Meta(Attach, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaGenerator, generateFunctionSchema)
+class FunctionKind {}
+
+/** Meta registration class (NOT exported). */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
+@Meta(Attach, SCHEMA_KIND_FUNCTION)
+@Meta(DataNodeType, FunctionNode)
 class FunctionSchemaMeta implements FunctionSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)

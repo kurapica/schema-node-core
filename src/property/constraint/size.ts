@@ -19,6 +19,14 @@ export class MinSize extends Property<number> implements IConstraintProperty {
     if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
     return node.length >= this._value!;
   }
+
+  /** Add elements to the array to meet the minimum size constraint */
+  override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
+    if (target instanceof ArrayNode && !this.hasValue) {
+      while (target.length < this._value!)
+        target.addRow();
+    }
+  }
 }
 
 /** The maximum size constraint property for array data node */

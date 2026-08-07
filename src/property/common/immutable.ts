@@ -4,8 +4,11 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, ForSchema, PropertyValueType, Static } from '../index';
+import { OfSchema, SchemaType, ForSchema, PropertyValueType, Static, Default, ReadOnly } from '../index';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { IValueAccess } from '../../runtime';
+import { isEmpty } from '../../utility';
+import { DataNode } from '../../node';
 
 /**
  * The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. 
@@ -15,4 +18,13 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STR
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.Immutable`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
-export class Immutable extends Property<boolean> {}
+export class Immutable extends Property<boolean> {
+  override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
+    if (newValue && target instanceof DataNode) // static property only effect once
+    {
+        const value = target.original;
+        if (!isEmpty(value))
+            target.setPropertyValue(ReadOnly, true);
+    }
+  }
+}

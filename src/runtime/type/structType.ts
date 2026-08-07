@@ -17,13 +17,14 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { Attach, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
+import { Attach, DataNodeType, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { getMetaProperties, getMetaProperty } from '../../attribute';
 import { PropertyType } from '..';
 import { LocaleString } from '../../struct';
 import { _LS } from '../../utility';
+import { DataNode } from '../../node';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -254,7 +255,9 @@ export class StructType extends ValueType implements IRelationProvider {
 
   // ── DataNode Factory ────────────────────────────────────────────────
 
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): StructNode {
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
+    const dataNodeType = this.getProperty(DataNodeType)?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>();
+    if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
     return new StructNode(this, value, parent, propProvider);
   }
 

@@ -9,14 +9,17 @@ import type { ArrayType } from '../runtime/type/arrayType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
 import { isNull } from '../utility/toolset';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
-import { Observer } from '../utility';
+import { Observable, Observer } from '../utility';
 import { getPropertiesBySchemaKind, Name } from '../property';
+import { MaxSize, MinSize } from '../property/constraint/size';
 
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
   protected _elements: DataNode[] = [];
   protected _relations?: IRelationInfo[]; // the merged relations from types
+
+  private _arrayDataOb?: Observable<[IValueAccess, unknown, number]>;
 
   constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, undefined, parent, propProvider);
@@ -25,11 +28,18 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     this.setValue(arrValue);
     this.confirm();
 
-    this._elements.forEach(f => f.recordSubscription(f.subscribe(this.writeBackRawValue, true), this));
+    this._elements.forEach(f => 
+    {
+      f.applyPropertyEffects();
+      f.recordSubscription(f.subscribe(this.writeBackRawValue, true), this);
+    });
     this.attachRelations([{owner: this, relations: Array.from((type as ArrayType).getRelations())}]);
   }
 
   override dispose() {
+    this._arrayDataOb?.dispose();
+    delete this._arrayDataOb;
+
     this._elements.forEach(f => f?.dispose());
     this._elements = [];
     delete this._relations;
@@ -51,6 +61,18 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   /** Get the elements of the array. */
   get elements(): Iterable<DataNode> { return this._getElements(); }
+
+  /** Get the maximum size constraint of the array. */
+  get maxSize(): number | undefined { return this.getPropertyValue<number>(MaxSize); }
+
+  /** Get the minimum size constraint of the array. */
+  get minSize(): number { return this.getPropertyValue<number>(MinSize) ?? 0; }
+
+  /** Get the addable status of the array. */
+  get addAble(): boolean { return this.maxSize === undefined || this.length < this.maxSize; }
+
+  /** Get the deletable status of the array. */
+  get delAble(): boolean { return this.minSize < this.length; }
 
   // #endregion
 
@@ -108,6 +130,24 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   // #endregion
 
+  // #region ── Subscription ──────────────────────────────────────────────────
+
+  /** Subscribe the array item change and return the function for un-subsribe, normally for element subscribe previous nodes */
+  subscribeItem(func: Observer<[IValueAccess, unknown, number]>, immediate?: boolean): Function {
+    this._arrayDataOb ??= new Observable();
+    const sub = this._arrayDataOb.subscribe(func);
+    if (immediate) func(this, this.rawValue, this.length);
+    return sub;
+  }
+
+  /** Publish the array item change */
+  onNextItem(index: number) {
+    this._arrayDataOb?.onNext(this, this.rawValue, index);
+    this.onNext();
+  }
+
+  //#endregion
+  
   // #region ── Path Navigation ───────────────────────────────────────────────
 
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
@@ -129,7 +169,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
     let result: IValueAccess | undefined = undefined;
     if (first == ARRAY_PREVIOUS)
-      result = new SliceArrayNode(this, 0, eleIndex); // for func call
+      result = new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
     else 
     {
       result = this._elements[eleIndex];
@@ -188,9 +228,10 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   // #region ── Array Operations ──────────────────────────────────────────────
 
+  /** Add a new element to the array */
   addRow(index?: number, data?: unknown): DataNode | undefined {
     const elementType = (this.type as ArrayType).element;
-    if (!elementType) return undefined;
+    if (!elementType || !this.addAble) return undefined;
 
     const node = elementType.create(data, this, this.propertyProvider);
     if (!node) return undefined;
@@ -198,23 +239,31 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     if (isNull(index)) index = this._elements.length;
     this._elements.splice(index!, 0, node);
   
+    node.applyPropertyEffects();
     if (this._relations?.length) node.attachRelations(this._relations);
     node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
+    for (let i = index! + 1; i < this._elements.length; i++)
+    {
+      const item = this._elements[i];
+      this.writeBackRawValue(item, item.rawValue);
+    }
     this.refreshElementNames();
     return node;
   }
 
+  /** Delete elements from the array */
   delRows(start: number, count = 1): void {
-    if (start < 0 || start >= this._elements.length) return;
+    if (start < 0 || start >= this._elements.length || !this.delAble) return;
 
     const remove = this._elements.splice(start, count);
     remove.forEach(r => r.dispose());
     const rawValue = this.rawValue as unknown[];
     rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
     this.refreshElementNames();
-    this.onNext();
+    this.onNextItem(start);
   }
 
+  /** Move elements in the array */
   moveRow(from: number, to: number): void {
     if (from === to || from < 0 || to < 0 || from >= this._elements.length || to >= this._elements.length) return;
 
@@ -231,8 +280,12 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     this._elements[to] = temp;
     const rawValue = this.rawValue as unknown[];
     rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
+    for (let i = Math.min(from, to); i <= Math.max(from, to); i++)
+    {
+      const item = this._elements[i];
+      this.writeBackRawValue(item, item.rawValue);
+    }
     this.refreshElementNames();
-    this.onNext();
   }
 
   // #endregion
@@ -251,6 +304,9 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     return this._elements.map(callback);
   }
 
+  /** Get the index of the element node */
+  indexOf(node: DataNode): number { return this._elements.indexOf(node); }
+
   // #endregion
 
   // #region ── Utility ───────────────────────────────────────────────────────
@@ -262,14 +318,12 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     const idx = this._elements.indexOf(element as DataNode);
     if (idx >= 0) {
       arr[idx] = value;
-      this.onNext();
+      this.onNextItem(idx);
     }
   }
 
   private refreshElementNames() {
-    this._elements.forEach((e, i) => {
-      e.setPropertyValue(Name, `${this.name}[${i}]`);
-    });
+    this._elements.forEach((e, i) => e.setPropertyValue(Name, `${this.name}[${i}]`));
   }
 
   // #endregion
@@ -280,12 +334,14 @@ export class SliceArrayNode extends DataNode {
   private _arrayNode: ArrayNode;
   private _start: number;
   private _end: number;
+  private _sourceNode?: DataNode;
 
-  constructor(arrayNode: ArrayNode, start?: number, end?: number) {
+  constructor(arrayNode: ArrayNode, start?: number, end?: number, sourceNode?: DataNode) {
     super(arrayNode.type, undefined);
     this._arrayNode = arrayNode;
     this._start = start ?? 0;
     this._end = end ?? arrayNode.length;
+    this._sourceNode = sourceNode;
   }
 
   override getValue(): unknown[] {
@@ -297,7 +353,18 @@ export class SliceArrayNode extends DataNode {
   }
 
   override subscribe(func: Observer<[IValueAccess, unknown]>, immediate?: boolean): Function {
-    return this._arrayNode.subscribe(func, immediate);
+    const arrayNode = this._arrayNode;
+    const sourceNode = this._sourceNode;
+    if (sourceNode)
+    {
+      return arrayNode.subscribeItem((node, item, index) => {
+        // only emit items before the source node
+        const sidx = arrayNode.indexOf(sourceNode!);
+        if (index < sidx) func(node, Array.isArray(item) ? item.slice(0, index + 1) : item);
+      });
+    }
+    else
+      return this._arrayNode.subscribe(func, immediate);
   }
 
   override recordSubscription(subscription: Function, source: unknown): void {
