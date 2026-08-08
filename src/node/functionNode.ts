@@ -83,13 +83,50 @@ export class FuncExpNode extends StructNode
     this.refreshFunc();
   }
 
+  // #region ── Utility ─────────────────────────────────────────────────────────
+  private _funcType: FunctionType | undefined;
+  private _expType: string | undefined;
+  private _returnType: string | undefined;
+
   private async refreshFunc(){
-    const returnType = this.return.value;
-    const expType = this.expType.value;
-    const func = this.func.value;
-    if (!returnType || !expType) {
-      this.func.setPropertyValue(InVisible, true, this);
-      this.args.splice(0, this.args.length);
+    const returnType = this.return.value as string;
+    const expType = this.expType.value as string;
+    const func = this.func.value as string;
+
+    if (this._expType !== expType || this._returnType !== returnType) {
+      this._expType = expType;
+      this._returnType = returnType;
+
+      // return type & exp type is required
+      if (!returnType || !expType) {
+        this._funcType = undefined;
+        this.func.setPropertyValue(InVisible, true, this);
+        this.resizeArgs(0);
+        return;
+      }
     }
+
+    // check function type
+    const funcType = func ? await getNodeType(func) as FunctionType : undefined;
+    if (funcType === this._funcType) return;
+    this._funcType = funcType;
+
+    if (!funcType) {
+      this.resizeArgs(0);
+      return;
+    }
+
+    const generics = funcType.generics;
+    const arglength = funcType.args.length;
+    if (arglength !== this.args.length)
+      this.resizeArgs(arglength);
   }
+
+  private resizeArgs(maxLength: number)
+  {
+    while (this.args.length > maxLength)
+      this.args.pop()?.dispose();
+  }
+
+  //#endregion
 }
