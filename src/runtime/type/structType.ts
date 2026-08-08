@@ -105,6 +105,7 @@ export class StructType extends ValueType implements IRelationProvider {
         const fieldType = new StructFieldType();
         const fieldSchema = { name: propType.property!, type: propType.valueType.name };
         setPropertyValue(fieldSchema, Display, propType.getProperty(Display)?.getValue<LocaleString>());
+        setPropertyValue(fieldSchema, Attach, attachKind); // attach kind
 
         // copy properties from meta property type
         for (const prop of getMetaProperties(propCtor).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))

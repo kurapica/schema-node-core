@@ -1,8 +1,10 @@
 import { Meta } from "../../attribute";
 import { ExpType } from "../../enum";
-import { OfSchema, SchemaType, Return, ArgName, Require } from "../../property";
+import { OfSchema, SchemaType, Return, ArgName, Require, Display, getPropertyValue, setPropertyValue } from "../../property";
 import { getNodeType, FunctionType, ValueType, ArrayType, DecimalType, BoolType, IntType } from "../../runtime";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC } from "../../utility";
+import { FuncArg, FuncExp, StructFieldSchema } from "../../schema";
+import { EntryAccess, Entry, LocaleString } from "../../struct";
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_STRING } from "../../utility";
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
@@ -63,6 +65,130 @@ export class SystemReflectFunction {
     }
     
     return true;
+  }
+
+  /** Gets the sub entries of the struct fields */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
+  static async getaccessentries(
+    @Meta(ArgName, 'args')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
+    @Meta(Require, true)
+    args: FuncArg[],
+
+    @Meta(ArgName, 'exps')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
+    @Meta(Require, true)
+    exps: FuncExp[],
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path?: string,
+
+    @Meta(ArgName, 'root')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    root?: string
+  ): Promise<EntryAccess<string>[]> {
+    path = path?.toLowerCase() ?? '';
+    root = root?.toLowerCase() ?? '';
+    if (path && root && path !== root && !path.startsWith(`${root}.`)) return [];
+    if (!root) root = path;
+
+    // first
+    const first: Entry<string>[] = [];
+    let curr: Entry<string> | undefined;
+    let valueType: ValueType | undefined;
+
+    // args
+    for (let a of args)
+    {
+      if (!a.name || !a.type) continue;
+      const ftype = await getNodeType(a.type) as ValueType;
+      if (!ftype) continue;
+      const entry: Entry<string> = { value: a.name, hasChildren: ftype.hasAccessEntries };
+      setPropertyValue(entry, Display, getPropertyValue(a, Display) ?? _LS(a.name));
+      first.push(entry);
+      if (!curr && path && (path === a.name.toLowerCase() || path.startsWith(`${a.name.toLowerCase()}.`))) {
+        curr = entry;
+        valueType = ftype;
+      }
+    }
+
+    // exps
+    for(let e of exps)
+    {
+      if (!e.name || !e.return) continue;
+      const ftype = await getNodeType(e.return) as ValueType;
+      if (!ftype) continue;
+      const entry: Entry<string> = { value: e.name, hasChildren: ftype.hasAccessEntries };
+      setPropertyValue(entry, Display, getPropertyValue(e, Display) ?? _LS(e.name));
+      first.push(entry);
+      if (!curr && path && (path === e.name.toLowerCase() || path.startsWith(`${e.name.toLowerCase()}.`))) {
+        curr = entry;
+        valueType = ftype;
+      }
+    }
+
+    const result: EntryAccess<string>[] = [ { children: first} ];
+    while (valueType)
+    {
+      const accessEntry: EntryAccess<string> = {};
+      const accesses = valueType.getAccessEntries();
+      if (curr)
+      {
+        accessEntry.entry = setPropertyValue(
+          { value: curr.value, hasChildren: accesses.length > 0 },
+          Display,
+          getPropertyValue(curr, Display)
+        );
+      }
+      accessEntry.children = accesses;
+
+      // check next part
+      let next: ValueType | undefined;
+      for (const a of accesses)
+      {
+        const n = a.value;
+        if (curr) a.value = combinePaths(curr.value, n);
+        if (path && (path === a.value || path.startsWith(a.value + '.')))
+        {
+          next = valueType.getAccessValueType(n);
+          curr = a;
+        }
+      }
+      result.push(accessEntry);
+      valueType = next;
+    }
+
+    // cut
+    return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
+  }
+
+  /** Gets the value type of the struct field */
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`)
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getaccessvaluetype(
+    @Meta(ArgName, 'args')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
+    @Meta(Require, true)
+    args: FuncArg[],
+
+    @Meta(ArgName, 'exps')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
+    @Meta(Require, true)
+    exps: FuncExp[],
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path: string
+  ): Promise<string | undefined> {
+    path = path.toLowerCase();
+    if (!path) return undefined;
+    const dotIndex = path.indexOf('.');
+    const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
+    const type = args.find(a => a.name.toLowerCase() === fieldName)?.type ?? exps.find(e => e.name.toLowerCase() === fieldName)?.return;
+    const valueType = type ? await getNodeType(type) as ValueType : undefined;
+    return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
   }
 
   /** Get the exp types for the given retunr type */

@@ -4,18 +4,20 @@
 // =============================================================================
 
 import { DataNode } from './dataNode';
-import type { StructType } from '../runtime/type/structType';
+import { StructType } from '../runtime/type/structType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
-import { isEqual, isNull } from '../utility/toolset';
-import { OverrideType, Unpack } from '../property';
-import { NODE_SELF } from '../utility/constant';
+import { generateGuid, isEqual, isNull } from '../utility/toolset';
+import { OverrideType, PropertyCtor, setPropertyValue, Unpack } from '../property';
+import { NODE_SELF, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { getNodeType, ValueType } from '../runtime';
+import { OverrideFields } from '../property/core/overrideFields';
+import { NodeSchema, StructFieldSchema, StructProperty, StructSchema } from '../schema';
 
 export class StructNode extends DataNode {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  private _fields: DataNode[] = [];
-  private _fieldRelations?: Map<string, IRelationInfo[]>;
+  protected _fields: DataNode[] = [];
+  protected _fieldRelations?: Map<string, IRelationInfo[]>;
   private _fieldTypeTrack?: Map<string, Function>;
 
   constructor(type: StructType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
@@ -235,6 +237,12 @@ export class StructNode extends DataNode {
           if (!this._fieldTypeTrack.has(name))
             this._fieldTypeTrack.set(name, f.subscribeProperty(OverrideType, this.trackOverrideType));
         }
+        else if (infos.some(i => i.relations.some(r => r.propertyCtor === OverrideFields && i.owner.getAccessValue(r.target, f) === f)))
+        {
+          this._fieldTypeTrack ??= new Map();
+          if (!this._fieldTypeTrack.has(name))
+            this._fieldTypeTrack.set(name, f.subscribeProperty(OverrideFields, this.trackOverrideType));
+        }
 
         // attach relations to child
         f.attachRelations(infos);
@@ -251,7 +259,7 @@ export class StructNode extends DataNode {
     this.onNext();
   }
 
-  private async trackOverrideType(field: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
+  private async trackOverrideType(field: IValueAccess, propCtor: PropertyCtor, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
     if (!isEqual(oldValue, newValue))
     {
       const node = field as DataNode;
@@ -259,15 +267,30 @@ export class StructNode extends DataNode {
       const index = this._fields.indexOf(node);
       if (index === -1) return;
 
-      const type = newValue ? await getNodeType(newValue as string) as ValueType : strutField.type;
-      if (!type || type == node.type) return;
-      
+      let type: ValueType | undefined;
+      if (propCtor == OverrideType)
+      {
+        type = newValue ? await getNodeType(newValue as string) as ValueType : strutField.type;
+        if (!type || type == node.type) return;
+      }
+      else
+      {
+        // Generate a random struct type for override fields
+        const nodeSchema: NodeSchema = { name: '__randomStructType', kind: SCHEMA_KIND_STRUCT };
+        const structSchema: StructSchema = { fields: newValue as StructFieldSchema[] ?? [] };
+        setPropertyValue(nodeSchema, StructProperty, structSchema);
+        const newStrucType = new StructType();
+        await newStrucType.loadType(nodeSchema);
+        type = newStrucType;
+      }
       const newNode = type.create(node.original, this, strutField);
       newNode.value = node.rawValue;
       node.moveSubscription(newNode);
-
+      
       // replace old node with new node
       this._fields[index] = newNode;
+      if (node.type.name === '__randomStructType')
+        node.type.unloadType();
       node.dispose();
 
       // attach relations to new node
