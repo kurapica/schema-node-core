@@ -18,7 +18,7 @@ import { isEmpty } from '../../utility';
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class DisplayOnly extends Property<boolean> {
-  override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
+  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
     if (newValue) // static property only effect once
     {
       const value = target.getValue();

@@ -21,7 +21,7 @@ export class MinSize extends Property<number> implements IConstraintProperty {
   }
 
   /** Add elements to the array to meet the minimum size constraint */
-  override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
+  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess) {
     if (target instanceof ArrayNode && !this.hasValue) {
       while (target.length < this._value!)
         target.addRow();

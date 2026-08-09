@@ -14,10 +14,10 @@ import { getPropertiesBySchemaKind, Name } from '../property';
 import { MaxSize, MinSize } from '../property/constraint/size';
 
 /** The array node contains the array data values */
-export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
+export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements Iterable<T> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  protected _elements: DataNode[] = [];
+  protected _elements: T[] = [];
   protected _relations?: IRelationInfo[]; // the merged relations from types
 
   private _arrayDataOb?: Observable<[IValueAccess, unknown, number]>;
@@ -99,7 +99,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
     for (let i = this._elements.length; i < data.length; i++) {
       const node = elementType.create(data[i], this, this.propertyProvider);
-      this._elements.push(node);
+      this._elements.push(node as T);
       node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
       if (this._relations?.length) node.attachRelations(this._relations);
     }
@@ -162,7 +162,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     let branch: IValueAccess | undefined = node;
 
     while (branch){
-      eleIndex = this._elements.indexOf(branch as DataNode);
+      eleIndex = this._elements.indexOf(branch as T);
       if (eleIndex !== -1) break;
       branch = branch?.parent;
     }
@@ -238,7 +238,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     if (!node) return undefined;
 
     if (isNull(index)) index = this._elements.length;
-    this._elements.splice(index!, 0, node);
+    this._elements.splice(index!, 0, node as T);
   
     node.applyPropertyEffects();
     if (this._relations?.length) node.attachRelations(this._relations);
@@ -293,20 +293,20 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
 
   // #region ── Iterator ──────────────────────────────────────────────────────
 
-  [Symbol.iterator](): Iterator<IValueAccess> {
+  [Symbol.iterator](): Iterator<T> {
     return this._elements[Symbol.iterator]();
   }
 
-  forEach(callback: (value: IValueAccess, index: number) => void): void {
+  forEach(callback: (value: T, index: number) => void): void {
     this._elements.forEach(callback);
   }
 
-  map<T>(callback: (value: IValueAccess, index: number) => T): T[] {
+  map<V>(callback: (value: T, index: number) => V): V[] {
     return this._elements.map(callback);
   }
 
   /** Get the index of the element node */
-  indexOf(node: DataNode): number { return this._elements.indexOf(node); }
+  indexOf(node: T): number { return this._elements.indexOf(node); }
 
   // #endregion
 
@@ -316,7 +316,7 @@ export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
     const arr = this._value as unknown[];
     if (!Array.isArray(arr)) return;
 
-    const idx = this._elements.indexOf(element as DataNode);
+    const idx = this._elements.indexOf(element as T);
     if (idx >= 0) {
       arr[idx] = value;
       this.onNextItem(idx);
@@ -378,3 +378,6 @@ export class SliceArrayNode extends DataNode {
 
   override attachRelations(relationInfos: IRelationInfo[]): void {}
 }
+
+/** The array node contains the array data values */
+export class ArrayNode extends ArrayNodeTemplate<DataNode> {}

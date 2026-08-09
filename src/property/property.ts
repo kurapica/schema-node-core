@@ -56,7 +56,7 @@ export interface IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void;
+  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void;
 }
 
 /**
@@ -139,7 +139,7 @@ export abstract class Property<T> implements IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {}
+  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {}
 }
 
 export interface ITypeRefProperty extends IProperty {

@@ -20,7 +20,7 @@ import { Static } from "./static";
 @Meta(InVisible, true)
 @Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "@AccessValueTypeResolver.func")
 export class AccessValueTypeResolver extends Property<string> {
-  effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
+  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
     if (!newValue || !this._value) return; // static only effect once
     let provider: IValueAccess | undefined = target;
 

@@ -21,7 +21,7 @@ import { Attach, DataNodeType, Display, DisplayOnly, PropertyCtor, Require, Sche
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { getMetaProperties, getMetaProperty } from '../../attribute';
-import { PropertyType } from '..';
+import { getSchemaType, PropertyType } from '..';
 import { LocaleString } from '../../struct';
 import { _LS } from '../../utility';
 import { DataNode } from '../../node';
@@ -257,7 +257,8 @@ export class StructType extends ValueType implements IRelationProvider {
   // ── DataNode Factory ────────────────────────────────────────────────
 
   override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
-    const dataNodeType = this.getProperty(DataNodeType)?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>();
+    const schemaType = getSchemaType(this.name);
+    const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType)?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>() : undefined;
     if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
     return new StructNode(this, value, parent, propProvider);
   }

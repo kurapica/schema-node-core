@@ -19,12 +19,12 @@ import { DataNode } from '../../node';
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class Immutable extends Property<boolean> {
-  override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
+  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
     if (newValue && target instanceof DataNode) // static property only effect once
     {
-        const value = target.original;
-        if (!isEmpty(value))
-            target.setPropertyValue(ReadOnly, true);
+      const value = target.original;
+      if (!isEmpty(value))
+        target.setPropertyValue(ReadOnly, true);
     }
   }
 }

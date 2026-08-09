@@ -25,7 +25,7 @@ import { Call } from '../../relation';
 @Relation(Cascade, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascade'))
 @Relation(SingleFlag, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@singleFlag'))
 export class Default extends Property<unknown> {
-    override effect(target: IValueAccess, newValue?: unknown | undefined, oldValue?: unknown | undefined): void {
+    override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
         const origin = target.getValue();
         if (isEmpty(origin) || isEqual(origin, oldValue))
             target.setValue(newValue);

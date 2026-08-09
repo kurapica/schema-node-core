@@ -208,9 +208,9 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Sets the property values */
-  setPropertyValues(props: Record<string, unknown>) {
+  setPropertyValues(props: Record<string, unknown>, source?: IValueAccess) {
     for (const prop of getPropertiesBySchemaKind(props, this.type.kind)) {
-      this.setPropertyValue(prop.constructor as any, prop.getValue());
+      this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
     }
   }
 
@@ -272,7 +272,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
 
     // public property change
     if (!props?.length || props[0].level <= record.level) {
-      record.property.effect(this, record.property.getValue(), oldValue); // apply side effect
+      record.property.effect(this, record.property.getValue(), oldValue, source); // apply side effect
       this.onNextProperty(propCtor, record.property.getValue(), oldValue);
     }
   }

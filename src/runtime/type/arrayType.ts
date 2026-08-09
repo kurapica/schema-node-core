@@ -8,7 +8,7 @@ import { ArrayNode } from '../../node/arrayNode';
 import { ArrayProperty, ArraySchema } from '../../schema/arraySchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { RelationType } from './relationType';
-import { IProperty, Primary } from '../../property';
+import { DataNodeType, IProperty, Name, Primary } from '../../property';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { NodeType } from './nodeType';
@@ -19,6 +19,8 @@ import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { EnumType } from './enumType';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { DataNode } from '../../node/dataNode';
+import { getSchemaType } from '..';
+import { getMetaProperty } from '../../attribute';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
@@ -63,8 +65,19 @@ export class ArrayType extends ValueType implements IRelationProvider {
   }
 
   override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
+    // Check data node type
+    if (parent instanceof DataNode && propProvider?.getProperty(Name)?.hasValue) {
+      const schemaType = getSchemaType(parent.type.name);
+      const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType, propProvider.getProperty(Name)!.getValue<string>())?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>() : undefined;
+      if (dataNodeType)
+        return new dataNodeType(this, value, parent, propProvider);
+    }
+
+    // enum array node
     if (this.element instanceof EnumType)
       return new EnumArrayNode(this, value, parent, propProvider);
+
+    // default array node
     return new ArrayNode(this, value, parent, propProvider);
   }
 

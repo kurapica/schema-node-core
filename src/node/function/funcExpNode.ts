@@ -1,3 +1,14 @@
+import { StructNode } from "..";
+import { ExpType } from "../../enum";
+import { InVisible, Variadic } from "../../property";
+import { StructType, IValueAccess, IPropertyProvider, ArrayType, FunctionType, getNodeType } from "../../runtime";
+import { FuncExp, CallArg } from "../../schema";
+import { ArrayNode } from "../arrayNode";
+import { DataNode } from "../dataNode";
+import { EnumNode } from "../enumNode";
+import { StringNode } from "../scalarNode";
+import { FuncExpArgNode } from "./funcExpArgNode";
+import { FuncExpArgsNode } from "./funcExpArgsNode";
 
 
 /** The expression node contains the expression definition, used to apply the relations from the function argument */
@@ -18,23 +29,17 @@ export class FuncExpNode extends StructNode
   readonly func: StringNode;
 
   /** The arguments */
-  readonly args: DataNode[];
+  readonly args: FuncExpArgsNode;
 
   constructor(type: StructType, value: FuncExp | undefined, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    const { args, ...rest } = value || {};
-    super(type, rest, parent, propProvider);
+    super(type, undefined, parent, propProvider);
+    value ??= { name: "", return: "", type: ExpType.Call, func: "", args: [] };
     
-    const arrayNode = super.getAccessValue("args") as ArrayNode;
-    this._fields.splice(this._fields.indexOf(arrayNode), 1); // Remove the args field
-
-    this._argType = (type.getField("args")!.type as ArrayType)!.element as StructType;
-    this._initData = (Array.isArray(args) ? args : []) as CallArg[];
-
     this.expName = this.getAccessValue("name") as StringNode;
     this.return = this.getAccessValue("return") as StringNode;
     this.expType = this.getAccessValue("type") as EnumNode;
     this.func = this.getAccessValue("func") as StringNode;
-    this.args = [];
+    this.args = this.getAccessValue("args") as FuncExpArgsNode;
     
     this.recordSubscription(this.return.subscribe(this.refreshFunc));
     this.recordSubscription(this.expType.subscribe(this.refreshFunc));

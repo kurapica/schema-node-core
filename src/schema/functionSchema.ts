@@ -19,7 +19,7 @@ import { Base } from '../property/core/base';
 import { ArgName } from '../property/function/argName';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { FuncExpNode, FunctionNode } from '../node';
+import { ArrayNodeTemplate, FuncArgNode, FuncArgsNode, FuncExpArgsNode, FuncExpNode, FunctionNode } from '../node';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -57,9 +57,11 @@ class FunctionSchemaMeta implements FunctionSchema {
   return: string = '';
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
+  @Meta(DataNodeType, FuncArgsNode)
   args: FuncArg[] = [];
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
+  @Meta(DataNodeType, ArrayNodeTemplate<FuncExpNode>)
   exps: FuncExp[] = [];
 }
 
@@ -83,6 +85,7 @@ export interface FuncArg {
 @Meta(SchemaKind, [SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_ORDER_FUNC_ARG])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.arg`)
 @Meta(Attach, SCHEMA_KIND_FUNC_ARG)
+@Meta(DataNodeType, FuncArgNode)
 class FuncArgMeta implements FuncArg {
   @Meta(PrimaryIndex, 0)
   @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
@@ -156,6 +159,7 @@ class FuncExpMeta implements FuncExp {
 
   @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
   @Meta(Require, true)
+  @Meta(DataNodeType, FuncExpArgsNode)
   args: CallArg[] = [];
 }
 
