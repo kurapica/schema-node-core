@@ -1,6 +1,6 @@
-import { InVisible, ReadOnly } from "../property";
-import { FunctionType, getNodeType, IPropertyProvider, IValueAccess, StructType } from "../runtime";
-import { FuncExp, FunctionSchema } from "../schema";
+import { InVisible, ReadOnly, Variadic } from "../property";
+import { ArrayType, FunctionType, getNodeType, IPropertyProvider, IValueAccess, StructType } from "../runtime";
+import { CallArg, FuncExp, FunctionSchema } from "../schema";
 import { ArrayNode } from "./arrayNode";
 import { DataNode } from "./dataNode";
 import { EnumNode } from "./enumNode";
@@ -49,9 +49,47 @@ export class FunctionNode extends StructNode
   }
 }
 
+/** The function expression arguments data node */
+export class FunExpArgsNode extends StructNode implements Iterable<IValueAccess> {
+  // #region ── ctor & dtor ───────────────────────────────────────────────────
+
+  /** The arguments */
+  readonly args: DataNode[];
+
+  constructor(type: FunctionType, value: CallArg[] | unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+    // construct temp struct type
+
+    super(type, undefined, parent, propProvider);
+    this.args = [];
+  }
+  // #endregion
+
+  // #region ── Value Access ──────────────────────────────────────────────────
+
+  // #endregion
+
+  // #region ── Iterable ──────────────────────────────────────────────────────
+  /** The iterator for the arguments */
+  [Symbol.iterator](): Iterator<IValueAccess> {
+    return this.args[Symbol.iterator]();
+  }
+
+  forEach(callback: (value: IValueAccess, index: number) => void): void {
+    this._fields.forEach(callback);
+  }
+
+  map<T>(callback: (value: IValueAccess, index: number) => T): T[] {
+    return this._fields.map(callback);
+  }
+
+  // #endregion
+}
+
 /** The expression node contains the expression definition, used to apply the relations from the function argument */
 export class FuncExpNode extends StructNode
 {
+  // #region ── ctor & dtor ───────────────────────────────────────────────────
+
   /** The expression name */
   readonly expName: StringNode;
 
@@ -68,25 +106,59 @@ export class FuncExpNode extends StructNode
   readonly args: DataNode[];
 
   constructor(type: StructType, value: FuncExp | undefined, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, value, parent, propProvider);
-    const argsArray = this._fields.pop() as ArrayNode; // Remove the args field
+    const { args, ...rest } = value || {};
+    super(type, rest, parent, propProvider);
+    
+    const arrayNode = super.getAccessValue("args") as ArrayNode;
+    this._fields.splice(this._fields.indexOf(arrayNode), 1); // Remove the args field
+
+    this._argType = (type.getField("args")!.type as ArrayType)!.element as StructType;
+    this._initData = (Array.isArray(args) ? args : []) as CallArg[];
 
     this.expName = this.getAccessValue("name") as StringNode;
     this.return = this.getAccessValue("return") as StringNode;
     this.expType = this.getAccessValue("type") as EnumNode;
     this.func = this.getAccessValue("func") as StringNode;
-    this.args = Array.from(argsArray.elements);
+    this.args = [];
     
     this.recordSubscription(this.return.subscribe(this.refreshFunc));
     this.recordSubscription(this.expType.subscribe(this.refreshFunc));
     this.recordSubscription(this.func.subscribe(this.refreshFunc));
     this.refreshFunc();
   }
+  // #endregion
+
+  // #region ── Implementation ────────────────────────────────────────────────
+
+  override dispose(): void {
+    this.args.forEach(arg => arg.dispose());
+    super.dispose();
+  }
+
+  override getValue(): unknown {
+    const data: any = super.getValue();
+    return {
+      ...data,
+      args: this.args.map(arg => arg.value),
+    }
+  }
+
+  override get isEmpty(): boolean { return super.isEmpty && this.args.length === 0; }
+
+  override get changed(): boolean { return super.changed || this.args.some(arg => arg.changed); }
+  
+  override confirm(): void {
+    this.args.forEach(arg => arg.confirm());
+    super.confirm();
+  }
+  // #endregion
 
   // #region ── Utility ─────────────────────────────────────────────────────────
   private _funcType: FunctionType | undefined;
   private _expType: string | undefined;
   private _returnType: string | undefined;
+  private _argType: StructType;
+  private _initData?: CallArg[];
 
   private async refreshFunc(){
     const returnType = this.return.value as string;
@@ -118,8 +190,35 @@ export class FuncExpNode extends StructNode
 
     const generics = funcType.generics;
     const arglength = funcType.args.length;
-    if (arglength !== this.args.length)
-      this.resizeArgs(arglength);
+    const isInitData = this._initData !== undefined;
+    const argValues = this._initData ?? this.args.map(arg => arg.value) ?? [];
+    delete this._initData;
+
+    const isVariadic = (arglength && funcType.args[arglength - 1].getPropertyValue<boolean>(Variadic)) ?? false;
+    if (!isVariadic) this.resizeArgs(arglength);
+
+    // update arguments
+    for (let i = 0; i < (isVariadic ? Math.max(arglength, argValues.length) : arglength); i++)
+    {
+      const argType = i < arglength ? funcType.args[i] : funcType.args[arglength - 1];
+      let argNode = this.args[i];
+      if (!argNode) {
+        argNode = this._argType.create(argValues[i], this, argType);
+        this.args.push(argNode);
+      }
+      else if (argNode.propertyProvider !== argType)
+      {
+        argNode = this._argType.create(argValues[i], this, argType);
+        this.args[i] = argNode;
+      }
+      else 
+      {
+        argNode.value = argValues[i];
+      }
+
+      if (isInitData)
+        argNode.confirm();
+    }
   }
 
   private resizeArgs(maxLength: number)

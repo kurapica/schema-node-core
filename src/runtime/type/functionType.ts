@@ -19,8 +19,9 @@ import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyO
 import { getNodeType } from '../schemaRuntime';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
-import { Converter, IProperty, NoCache, ServerOnly } from '../../property';
-import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { Converter, IProperty, isTypeRefProperty, ITypeRefProperty, NoCache, PropertyCtor, ServerOnly } from '../../property';
+import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { INodeReference, IPropertyProvider, joinProperties } from '..';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -40,12 +41,13 @@ const REMOTE_CALL_DELAY = 50;
 /** Temporary dedup tree for complex-arg remote calls: schemaName → nested Map → "CALL_QUEUE". */
 const pendingComplexCall: Record<string, Map<any, any>> = {};
 
+/** Runtime type for function schemas. */
 export class FunctionType extends NodeType {
   /** Return value type (resolved at load time). */
   returnType?: ValueType;
 
   /** Argument definitions. */
-  get args(): FuncArg[] { return this._funcSchema?.args ?? [] } 
+  get args(): FuncArgType[] { return this._argTypes ?? [] } 
 
   /** Expression tree (for composite functions). */
   get exps(): FuncExp[] { return this._funcSchema?.exps ?? [] }
@@ -62,6 +64,7 @@ export class FunctionType extends NodeType {
   // ── Internals ───────────────────────────────────────────────────────
 
   private _funcSchema?: FunctionSchema;
+  private _argTypes?: FuncArgType[];
   private _systemFn?: (...args: unknown[]) => unknown;
   private _converter = false;
   private _serverOnly = false;
@@ -80,6 +83,9 @@ export class FunctionType extends NodeType {
   override async load() {
     if (!this._funcSchema) return;
 
+    // Load argument types
+    this._argTypes = this._funcSchema.args.map(arg => new FuncArgType(arg));
+    for(const argType of this._argTypes) await argType.load();
     this._systemFn = this._funcSchema.func as ((...args: unknown[]) => unknown) | undefined;
     this._converter = this.getProperty(Converter)?.getValue() ?? false;
     this._serverOnly = this.getProperty(ServerOnly)?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
@@ -92,6 +98,14 @@ export class FunctionType extends NodeType {
   override unload(): void {
     this._funcMap = undefined;
     this._built = false;
+  }
+
+  override *getRefTypes(): Generator<NodeType> {
+    if (this.returnType)
+      yield this.returnType;
+    for (const argType of this._argTypes ?? [])
+      yield* argType.getRefTypes();
+    yield* super.getRefTypes();
   }
 
   // ── Call ────────────────────────────────────────────────────────────
@@ -436,6 +450,74 @@ export class FunctionType extends NodeType {
 
       default:
         return fn(...val);
+    }
+  }
+}
+
+export class FuncArgType implements INodeReference, IPropertyProvider {
+  private _funcArg: FuncArg;
+  private _props: IProperty[];
+  private _refTypes?: NodeType[];
+
+  /** Get the name of the function argument */
+  get name() { return this._funcArg.name; }
+
+  /** Get the type of the function argument */
+  get type() { return this._funcArg.type; }
+
+  constructor(funcArg: FuncArg) {
+    this._funcArg = funcArg;
+    this._props = Array.from(getPropertiesBySchemaKind(funcArg, SCHEMA_KIND_FUNC_ARG));
+  }
+
+  async load(){
+    const refTypes: NodeType[] = []
+    for(let prop of this._props.filter(isTypeRefProperty))
+    {
+      for(let n of (prop as ITypeRefProperty).getRefTypes())
+      {
+        const type = await getNodeType(n);
+        if (type && !refTypes.includes(type))
+          refTypes.push(type);
+      }
+    }
+    this._refTypes = refTypes;
+  }
+
+  // ── Reference Types ─────────────────────────────────────────────────
+
+  *getRefTypes(): Generator<NodeType> {
+    if (this._refTypes)
+      yield* this._refTypes;
+  }
+
+  // ── Property Access ─────────────────────────────────────────────────
+
+  /** Get property by type */
+  getProperty<T extends IProperty>(propCtor: new () => T): T | undefined {
+    return this._props?.find(p => p instanceof propCtor) as T;
+  }
+
+  /** Gets the property value */
+  getPropertyValue<T>(propCtor: PropertyCtor): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
+
+  /** Get properties by type */
+  *getProperties<T extends IProperty>(propCtor: new () => T): Generator<T> {
+    if (!this._props) return;
+    for(let prop of this._props)
+    {
+      if (prop instanceof propCtor)
+        yield prop as T;
+    }
+  }
+
+  /** Filter properties by predicate */
+  *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    if (!this._props) return;
+    for(let prop of this._props)
+    {
+      if (predicate(prop))
+        yield prop;
     }
   }
 }

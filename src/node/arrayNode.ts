@@ -13,6 +13,7 @@ import { Observable, Observer } from '../utility';
 import { getPropertiesBySchemaKind, Name } from '../property';
 import { MaxSize, MinSize } from '../property/constraint/size';
 
+/** The array node contains the array data values */
 export class ArrayNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 

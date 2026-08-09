@@ -6,14 +6,14 @@
 import { DataNode } from './dataNode';
 import { StructType } from '../runtime/type/structType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
-import { generateGuid, isEqual, isNull } from '../utility/toolset';
+import { isEqual, isNull } from '../utility/toolset';
 import { OverrideType, PropertyCtor, setPropertyValue, Unpack } from '../property';
 import { NODE_SELF, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { getNodeType, ValueType } from '../runtime';
 import { OverrideFields } from '../property/core/overrideFields';
 import { NodeSchema, StructFieldSchema, StructProperty, StructSchema } from '../schema';
 
-export class StructNode extends DataNode {
+export class StructNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
   protected _fields: DataNode[] = [];
@@ -63,6 +63,22 @@ export class StructNode extends DataNode {
   isFieldChangable(field: string): boolean {
     return this._fieldTypeTrack?.has(field.toLowerCase()) || false;
   }
+
+  // #region ── Iterable ──────────────────────────────────────────────────────
+  /** The iterator for the arguments */
+  [Symbol.iterator](): Iterator<IValueAccess> {
+    return this._fields[Symbol.iterator]();
+  }
+
+  forEach(callback: (value: IValueAccess, index: number) => void): void {
+    this._fields.forEach(callback);
+  }
+
+  map<T>(callback: (value: IValueAccess, index: number) => T): T[] {
+    return this._fields.map(callback);
+  }
+
+  // #endregion
 
   // #endregion
 

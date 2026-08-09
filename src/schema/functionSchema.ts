@@ -169,14 +169,14 @@ class FuncExpMeta implements FuncExp {
  * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs CallArg.
  */
 export interface CallArg {
+  /** The runtime type hint. */
+  type?: string;
+
   /** The argument source path (e.g. field access path). */
   source?: string;
 
   /** The constant value. */
   value?: unknown;
-
-  /** The runtime type hint. */
-  type?: string;
 }
 
 /** Meta registration class for call argument (NOT exported). */
