@@ -4,3 +4,4 @@ export * from './enumArrayNode';
 export * from './enumNode';
 export * from './scalarNode';
 export * from './structNode';
+export * from './function/index';

@@ -19,7 +19,7 @@ import { Base } from '../property/core/base';
 import { ArgName } from '../property/function/argName';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
-import { FuncExpNode, FunctionNode } from '../node/functionNode';
+import { FuncExpNode, FunctionNode } from '../node';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
