@@ -63,7 +63,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   addUsedBy(type: NodeType): void {
     if (type instanceof FunctionType)
     {
-      if (type.isConverter && type.args.length === 1 && type.args[0].type === this.name && type.returnType)
+      if (type.isConverter && type.args.length === 1 && type.args.get(0)!.type === this.name && type.returnType)
       {
         this._isAssignableTo ??= new Map();
         this._isAssignableTo.set(type.returnType, type);
