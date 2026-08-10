@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
-import { Relation } from '../attribute/relation';
+import { getRelationSchemas, Relation } from '../attribute/relation';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessEntryConsumer, InVisible, WhiteList, Default, Immutable, DataNodeType, EntrySourceProvider, AccessValueTypeProvider, AccessValueTypeResolver } from '../property/index';
 import { IProperty, Property } from '../property/property';
@@ -20,6 +20,8 @@ import { ArgName } from '../property/function/argName';
 import { Call } from '../relation/call';
 import { buildFuncCall } from '../property/funcCallProperty';
 import { ArrayNodeTemplate, FuncArgNode, FuncArgsNode, FuncExpArgsNode, FuncExpNode, FunctionNode } from '../node';
+import { Relations } from './relationSchema';
+import { NoSmoking } from '@element-plus/icons-vue';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -298,6 +300,7 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
     const lastDot = fullName.lastIndexOf('.');
     const methodNs = lastDot >= 0 ? fullName.substring(0, lastDot) : '';
     const methodNameOnly = lastDot >= 0 ? fullName.substring(lastDot + 1) : fullName;
+    const argRelations = getRelationSchemas(ctor);
 
     // Return type — required
     const returnProp = getMetaProperty(ctor, Return, methodName);
@@ -323,6 +326,10 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
       };
       paramProps.filter(p => p.savable).forEach(p => setProperty(arg, p));
       args.push(arg);
+
+      // add argument relations
+      const argRelation = argRelations.filter(r => r.target.toLowerCase() === arg.name.toLowerCase() || r.target.toLowerCase() === `${arg.name.toLowerCase()}.${NODE_SELF}`);
+      if (argRelation?.length) setPropertyValue(arg, Relations, argRelation.map(r => ({...r, target: `${arg.name}.${NODE_SELF}`})));
     }
 
     // Build NodeSchema

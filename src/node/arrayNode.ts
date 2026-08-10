@@ -230,11 +230,13 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   // #region ── Array Operations ──────────────────────────────────────────────
 
   /** Add a new element to the array */
-  addRow(index?: number, data?: unknown): DataNode | undefined {
+  addRow(index?: number, data?: unknown, propertyProvider?: IPropertyProvider, ctor?: new (type: ValueType, data?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => T): T | undefined {
     const elementType = (this.type as ArrayType).element;
     if (!elementType || !this.addAble) return undefined;
 
-    const node = elementType.create(data, this, this.propertyProvider);
+    const node = ctor 
+      ? new ctor(elementType, data, this, propertyProvider ?? this.propertyProvider) as T 
+      : elementType.create(data, this, propertyProvider ?? this.propertyProvider) as T;
     if (!node) return undefined;
 
     if (isNull(index)) index = this._elements.length;

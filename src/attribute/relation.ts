@@ -39,13 +39,13 @@ export function Relation(
   value: unknown,
   target?: string,
   stage?: RelationStage
-): ClassDecorator & PropertyDecorator {
+): ClassDecorator & PropertyDecorator & ParameterDecorator {
   if (typeof kind !== 'string')
     kind = getMetaProperty(kind, RelationKind)?.getValue<string>() ?? '';
   if (!kind)
     throw new Error(`Can't figure out the relation kind of ${kind}`);
 
-  return ((tar: object, _memberKey?: string) => {
+  return ((tar: object, _memberKey?: string, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
       target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? getMetaProperty(ctor, OfSchema)?.getValue<string>() === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
@@ -55,7 +55,7 @@ export function Relation(
       [kind]: value
     };
     ensureStore(ctor).push(schema);
-  }) as ClassDecorator & PropertyDecorator;
+  }) as ClassDecorator & PropertyDecorator & ParameterDecorator;
 }
 
 // ── Retrieval ──────────────────────────────────────────────────────────────
