@@ -35,6 +35,11 @@ export function concatLocaleString(left: LocaleString, right: LocaleString): Loc
   return left;
 }
 
+/** Match the keyword in the locale string */
+export function matchKeyworkInLocaleString(keyword: string, localeString?: LocaleString): boolean {
+  return !localeString ? false : !!localeString?.key.match(keyword)?.length || localeString?.trans?.some(t => !!t.tran.match(keyword)?.length) || false;
+}
+
 @Meta(OfSchema, SCHEMA_KIND_STRUCT)
 @Meta(SchemaType, NS_SYSTEM_LOCALE_STRING)
 class LocaleStringMeta {

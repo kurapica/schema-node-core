@@ -13,7 +13,8 @@ import { Name } from '../property/core/name';
 import { Display, DisplayOnly, getPropertiesBySchemaKind, InVisible, ReadOnly, Require, Visible } from '../property';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
 import { RelationType } from '../runtime';
-import { sformat } from '../utility';
+import { _LS, sformat } from '../utility';
+import { LocaleString } from '../struct';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export abstract class DataNode implements IValueAccess, IPropertyProvider {
