@@ -3,12 +3,14 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
-import { Meta } from '../attribute';
+import { Meta } from '../attribute/meta';
 import { CallArg } from '../schema/functionSchema';
-import { NODE_SELF, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN } from '../utility';
-import { DisplayOnly, InVisible, ReadOnly } from './common';
-import { Valid } from './constraint';
-import { SchemaType } from './core';
+import { NODE_SELF, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN } from '../utility/constant';
+import { DisplayOnly } from './common/displayOnly';
+import { InVisible } from './common/invisible';
+import { ReadOnly } from './common/readOnly';
+import { Valid } from './constraint/valid';
+import { SchemaType } from './core/schemaType';
 import { Property } from './property';
 import type { ITypeRefProperty } from './property';
 

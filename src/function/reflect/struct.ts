@@ -1,9 +1,23 @@
-import { Meta } from "../../attribute";
-import { ArgName, Display, getPropertyValue, OfSchema, Require, Return, SchemaType, setPropertyValue, UpLimitString } from "../../property";
-import { ArrayType, getNodeType, ObjectType, StringType, StructType, ValueType } from "../../runtime";
-import { StructFieldSchema } from "../../schema";
-import { EntryAccess, Entry } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, _LS, isNull, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { ArgName } from '../../property/function/argName';
+import { Display } from '../../property/common/display';
+import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
+import { OfSchema } from '../../property/core/ofSchema';
+import { Require } from '../../property/constraint/require';
+import { Return } from '../../property/function/return';
+import { SchemaType } from '../../property/core/schemaType';
+import { UpLimitString } from '../../property/constraint/upLimit';
+import { ArrayType } from '../../runtime/type/arrayType';
+import { ObjectType } from '../../runtime/type/scalar/objectType';
+import { StringType } from '../../runtime/type/scalar/stringType';
+import { StructType } from '../../runtime/type/structType';
+import { ValueType } from '../../runtime/type/valueType';
+import { StructFieldSchema } from '../../schema/structSchema';
+import { EntryAccess, Entry } from '../../struct/entry';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from '../../utility/constant';
+import { combinePaths, isNull } from '../../utility/toolset';
+import { _LS } from '../../utility/locale';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)

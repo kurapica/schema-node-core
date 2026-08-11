@@ -4,7 +4,11 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, ForSchema, SchemaType, PropertyValueType, InVisible } from '../index';
+import { OfSchema } from '../core/ofSchema';
+import { ForSchema } from '../core/forSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { InVisible } from './invisible';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /**

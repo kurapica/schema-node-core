@@ -3,7 +3,8 @@
 // Mirrors C# SchemaNode.Core/Node/ScalarNode.cs
 // =============================================================================
 
-import { LowLimitDate, LowLimitInt, LowLimitNumber, LowLimitString, UpLimitDate, UpLimitInt, UpLimitNumber, UpLimitString } from '../property';
+import { LowLimitDate, LowLimitInt, LowLimitNumber, LowLimitString } from '../property/constraint/lowLimit';
+import { UpLimitDate, UpLimitInt, UpLimitNumber, UpLimitString } from '../property/constraint/upLimit';
 import { isNull, parseDate } from '../utility/toolset';
 import { DataNode } from './dataNode';
 

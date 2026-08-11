@@ -1,10 +1,15 @@
-import { ArrayNodeTemplate, StructNode } from "..";
-import { ReadOnly } from "../../property";
-import { StructType, IValueAccess, IPropertyProvider, getNodeType, FunctionType } from "../../runtime";
-import { FunctionSchema } from "../../schema";
+import { ArrayNodeTemplate } from '../arrayNode';
+import { StructNode } from '../structNode';
+import { ReadOnly } from '../../property/common/readOnly';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { IPropertyProvider } from '../../runtime/interface/propertyProvider';
+import { FunctionSchema } from '../../schema/functionSchema';
 import { StringNode } from "../scalarNode";
 import { FuncArgsNode } from "./funcArgsNode";
 import { FuncExpNode } from "./funcExpNode";
+import { StructType } from '../../runtime/type/structType';
+import { getNodeType } from '../../runtime/schemaRuntime';
+import { FunctionType } from '../../runtime/type/functionType';
 
 /** The function node contains the function definition */
 export class FunctionNode extends StructNode

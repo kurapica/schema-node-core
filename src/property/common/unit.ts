@@ -4,9 +4,12 @@
 
 import { IProperty, Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, ForSchema, SchemaType, PropertyValueType } from '../index';
+import { OfSchema } from '../core/ofSchema';
+import { ForSchema } from '../core/forSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
-import { concatLocaleString, LocaleString } from '../../struct';
+import { concatLocaleString, LocaleString } from '../../struct/localeString';
 
 /**
  * The unit property is used to define the unit of measurement

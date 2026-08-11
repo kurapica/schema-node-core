@@ -10,11 +10,16 @@ import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isN
 import { Observable, Observer } from '../utility/observable';
 import { NODE_SELF, DEBOUNCE_TIME } from '../utility/constant';
 import { Name } from '../property/core/name';
-import { Display, DisplayOnly, getPropertiesBySchemaKind, InVisible, ReadOnly, Require, Visible } from '../property';
+import { Display } from '../property/common/display';
+import { DisplayOnly } from '../property/common/displayOnly';
+import { InVisible } from '../property/common/invisible';
+import { ReadOnly } from '../property/common/readOnly';
+import { Require } from '../property/constraint/require';
+import { Visible } from '../property/common/visible';
 import { IConstraintProperty, isConstraintProperty } from '../property/constraintProperty';
-import { RelationType } from '../runtime';
-import { _LS, sformat } from '../utility';
-import { LocaleString } from '../struct';
+import { RelationType } from '../runtime/type/relationType';
+import { _LS, sformat } from '../utility/locale';
+import { getPropertiesBySchemaKind } from '../property/propertyOwner';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export abstract class DataNode implements IValueAccess, IPropertyProvider {

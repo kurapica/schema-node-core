@@ -4,10 +4,16 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, ForSchema, Static, PropertyValueType, Default, ReadOnly } from '../index';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { ForSchema } from '../core/forSchema';
+import { Static } from '../core/static';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Default } from './default';
+import { ReadOnly } from './readOnly';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
-import { IValueAccess } from '../../runtime';
-import { isEmpty } from '../../utility';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { isEmpty } from '../../utility/toolset';
 
 /**
  * The struct field is display only, meaning it is not editable in the UI and is not persisted to the database.

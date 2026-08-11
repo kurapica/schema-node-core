@@ -4,7 +4,11 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, ArgName, Converter } from '../property/index';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../property/function/return';
+import { ArgName } from '../property/function/argName';
+import { Converter } from '../property/function/converter';
 import { LocaleString } from '../struct/localeString';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
 

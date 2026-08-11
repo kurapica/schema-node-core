@@ -4,11 +4,17 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, ForSchema, PropertyValueType, Static, Default, ReadOnly } from '../index';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { ForSchema } from '../core/forSchema';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Static } from '../core/static';
+import { Default } from './default';
+import { ReadOnly } from './readOnly';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL } from '../../utility/constant';
-import { IValueAccess } from '../../runtime';
-import { isEmpty } from '../../utility';
-import { DataNode } from '../../node';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { isEmpty } from '../../utility/toolset';
+import { DataNode } from '../../node/dataNode';
 
 /**
  * The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. 

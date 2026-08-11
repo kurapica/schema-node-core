@@ -1,10 +1,18 @@
-import { buildFuncCall, ForSchema, IConstraintProperty, LowLimitInt, OfSchema, Property, PropertyValueType, SchemaType, UpLimitInt } from "..";
-import { Meta, Relation } from "../../attribute";
-import { ArrayNode } from "../../node";
-import { Call } from "../../relation";
-import { IValueAccess } from "../../runtime";
-import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from "../../utility";
-import { Error } from '../common';
+import { buildFuncCall } from '../funcCallProperty';
+import { ForSchema } from '../core/forSchema';
+import { ConstraintProperty } from '../constraintProperty';
+import { LowLimitInt } from './lowLimit';
+import { OfSchema } from '../core/ofSchema';
+import { PropertyValueType } from '../core/propertyValueType';
+import { SchemaType } from '../core/schemaType';
+import { UpLimitInt } from './upLimit';
+import { Meta } from '../../attribute/meta';
+import { Relation } from '../../attribute/relation';
+import { ArrayNode } from '../../node/arrayNode';
+import { Call } from '../../relation/call';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { Error } from '../common/error';
 
 /** The minimum size constraint property for array data node */
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
@@ -14,7 +22,7 @@ import { Error } from '../common';
 @Meta(LowLimitInt, 0)
 @Relation(UpLimitInt, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@maxSize'))
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.minsize.error`)
-export class MinSize extends Property<number> implements IConstraintProperty {
+export class MinSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
     return node.length >= this._value!;
@@ -36,7 +44,7 @@ export class MinSize extends Property<number> implements IConstraintProperty {
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(LowLimitInt, 0)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.maxsize.error`)
-export class MaxSize extends Property<number> implements IConstraintProperty {
+export class MaxSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
     return node.length >= this._value!;

@@ -1,9 +1,17 @@
-import { Meta } from "../../attribute";
-import { EnumValueType } from "../../enum";
-import { OfSchema, SchemaType, Return, ArgName, Require, setPropertyValue, Display, EntrySource } from "../../property";
-import { getNodeType, EnumType } from "../../runtime";
-import { Entry, EntryAccess } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { EnumValueType } from '../../enum/enumValueType';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaType } from '../../property/core/schemaType';
+import { Return } from '../../property/function/return';
+import { ArgName } from '../../property/function/argName';
+import { Require } from '../../property/constraint/require';
+import { setPropertyValue } from '../../property/propertyOwner';
+import { Display } from '../../property/common/display';
+import { EntrySource } from '../../property/core/entrySource';
+import { EnumType } from '../../runtime/type/enumType';
+import { Entry, EntryAccess } from '../../struct/entry';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)

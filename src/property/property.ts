@@ -5,14 +5,9 @@
 // NOTE: Does NOT import Stackable/Alias to avoid circular dependency.
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
-
-import { getMetaProperty } from "../attribute";
-import { IPropertyProvider, IValueAccess } from "../runtime";
-import { getPropertyTypeSupportSchemas, getSchemaKindPropertyTypes } from "../runtime/schemaRuntime";
-import { LocaleString } from "../struct";
-import { isEmpty, sformat } from "../utility";
-import { Display, Error } from "./common";
-import { ForSchema, Name } from "./core";
+;
+import { IValueAccess } from '../runtime/interface/valueAccess';
+import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -95,8 +90,8 @@ export abstract class Property<T> implements IProperty {
 
   /** Whether the property is applicable to the given schema kind. */
   forSchema(...kinds: string[]): boolean {
-    const forSchema = getMetaProperty(this.constructor, ForSchema)?.getValue<string[]>();
-    return forSchema?.some((k) => kinds.includes(k)) ?? false;
+    const ctor = this.constructor as Function;
+    return ((ctor as unknown as Record<string, string[]>).forSchema as string[])?.some((k) => kinds.includes(k)) ?? false;
   }
 
   /** Override in subclasses for custom coercion. */
@@ -121,18 +116,6 @@ export abstract class Property<T> implements IProperty {
     if (this.constructor !== other.constructor) return false;
     if (this.hasValue !== other.hasValue) return false;
     return !this.hasValue || this.getValue() === other.getValue();
-  }
-
-  /** The error message if the property is invalid(for constraint properties only) */
-  error(node: IValueAccess): string | undefined {
-    const error = node.getProperty(Error) ?? getMetaProperty(this.constructor, Error);
-    if (error?.hasValue)
-    {
-      const errorMsg = error.getValue<LocaleString>()!;
-      const msg = sformat(errorMsg, node.getPropertyValue(Display) ?? node.getPropertyValue(Name) );
-      if (msg && msg !== errorMsg?.key) return msg
-    }
-    return sformat("VALUE_NOT_VALID", node.getPropertyValue(Display) ?? node.getPropertyValue(Name));
   }
 
   // do nothing by default, subclasses can override to apply the property to the target

@@ -1,4 +1,4 @@
-import { MaxSize, MinSize } from "../../property";
+import { MaxSize, MinSize } from '../../property/constraint/size';
 import { ArrayNodeTemplate } from "../arrayNode";
 import { FuncArgNode } from "./funcArgNode";
 

@@ -1,7 +1,8 @@
-import { Property } from "..";
-import { Meta } from "../../attribute";
-import { SCHEMA_KIND_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY } from "../../utility";
-import { ReadOnly, InVisible } from "../common";
+import { Property } from '../property';
+import { Meta } from '../../attribute/meta';
+import { SCHEMA_KIND_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY } from '../../utility/constant';
+import { ReadOnly } from '../common/readOnly';
+import { InVisible } from '../common/invisible';
 import { ForSchema } from "./forSchema";
 import { OfSchema } from "./ofSchema";
 import { PropertyValueType } from "./propertyValueType";

@@ -3,8 +3,8 @@ export * from './property';
 export * from './propertyOwner';
 export * from './constraintProperty';
 export * from './orderProperty';
-export * from './funcCallProperty';
 export * from './recordProperty';
+export * from './funcCallProperty';
 
 // ── Core properties ───────────────────────────────────────────────────────
 export * from './core/index';

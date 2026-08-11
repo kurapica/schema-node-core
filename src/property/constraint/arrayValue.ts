@@ -1,11 +1,17 @@
-import { Property } from "..";
-import { Meta } from "../../attribute";
-import { ArrayNode } from "../../node";
+import { Meta } from '../../attribute/meta';
+import { ArrayNode } from '../../node/arrayNode';
 import { IValueAccess } from "../../runtime/interfaces";
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_ARRAY } from "../../utility";
-import { InVisible, Default, Error } from "../common";
-import { IConstraintProperty } from "../constraintProperty";
-import { Alias, ForSchema, OfSchema, SchemaType, PropertyValueType, Static } from "../core";
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_ARRAY } from '../../utility/constant';
+import { InVisible } from '../common/invisible';
+import { Default } from '../common/default';
+import { Error } from '../common/error';
+import { ConstraintProperty } from "../constraintProperty";
+import { Alias } from '../core/alias';
+import { ForSchema } from '../core/forSchema';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Static } from '../core/static';
 
 @Meta(Alias, 'array')
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
@@ -16,7 +22,7 @@ import { Alias, ForSchema, OfSchema, SchemaType, PropertyValueType, Static } fro
 @Meta(Default, true)
 @Meta(Static, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.array.error`)
-export class ArrayValue extends Property<boolean> implements IConstraintProperty {
+export class ArrayValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
 
   async validate(node: IValueAccess): Promise<boolean | undefined> {

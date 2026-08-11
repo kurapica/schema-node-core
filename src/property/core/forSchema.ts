@@ -10,7 +10,8 @@ import { Property } from '../property';
  */
 export class ForSchema extends Property<string[]> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        return registerSchemaProperty(typeof target === 'function' ? target : target.constructor);
+        registerSchemaProperty(typeof target === 'function' ? target : target.constructor);
+        (target as unknown as Record<string, string[]>).forSchema = this.getValue<string[]>()!;
     }
 }
 

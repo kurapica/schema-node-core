@@ -1,11 +1,17 @@
-import { Property } from "..";
-import { Meta } from "../../attribute";
+import { Meta } from '../../attribute/meta';
 import { IValueAccess } from "../../runtime/interfaces";
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL, isNull } from "../../utility";
-import { InVisible, Default } from "../common";
-import { IConstraintProperty } from "../constraintProperty";
-import { Alias, ForSchema, OfSchema, SchemaType, PropertyValueType, Static } from "../core";
-import { Error } from "../common";
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL } from '../../utility/constant';
+import { isNull } from '../../utility/toolset';
+import { InVisible } from '../common/invisible';
+import { Default } from '../common/default';
+import { ConstraintProperty } from "../constraintProperty";
+import { Alias } from '../core/alias';
+import { ForSchema } from '../core/forSchema';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Static } from '../core/static';
+import { Error } from '../common/error';
 
 @Meta(Alias, 'decimal')
 @Meta(ForSchema, [SCHEMA_KIND_DECIMAL])
@@ -16,7 +22,7 @@ import { Error } from "../common";
 @Meta(Default, true)
 @Meta(Static, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.decimal.error`)
-export class DecimalValue extends Property<number> implements IConstraintProperty {
+export class DecimalValue extends ConstraintProperty<number> {
   override get hasValue(): boolean { return true; }
 
   async validate(node: IValueAccess): Promise<boolean | undefined> { 

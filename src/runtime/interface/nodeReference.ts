@@ -1,4 +1,4 @@
-import { NodeType } from "../type";
+import { NodeType } from '../type/nodeType';
 
 /** The node reference interface */
 export interface INodeReference {

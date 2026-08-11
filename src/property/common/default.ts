@@ -4,12 +4,24 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, ForSchema, SchemaType, PropertyValueType, buildFuncCall, BlackList, Cascade, LeafOnly, OverrideType, Root, SingleFlag, Visible, WhiteList } from '../index';
+import { OfSchema } from '../core/ofSchema';
+import { ForSchema } from '../core/forSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { buildFuncCall } from '../funcCallProperty';
+import { BlackList } from '../constraint/blackList';
+import { Cascade } from '../constraint/cascade';
+import { LeafOnly } from '../constraint/leafOnly';
+import { OverrideType } from '../core/overrideType';
+import { Root } from '../constraint/root';
+import { SingleFlag } from '../constraint/singleFlag';
+import { Visible } from './visible';
+import { WhiteList } from '../constraint/whiteList';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_BOOL, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_OBJECT, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
-import { IValueAccess } from '../../runtime';
-import { isEmpty, isEqual } from '../../utility';
-import { Relation } from '../../attribute';
-import { Call } from '../../relation';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { isEmpty, isEqual } from '../../utility/toolset';
+import { Relation } from '../../attribute/relation';
+import { Call } from '../../relation/call';
 
 /** The Default property represents the default value */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])

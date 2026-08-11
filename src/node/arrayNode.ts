@@ -9,9 +9,10 @@ import type { ArrayType } from '../runtime/type/arrayType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
 import { isNull } from '../utility/toolset';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from '../utility/constant';
-import { Observable, Observer } from '../utility';
-import { getPropertiesBySchemaKind, Name } from '../property';
+import { Observable, Observer } from '../utility/observable';
+import { Name } from '../property/core/name';
 import { MaxSize, MinSize } from '../property/constraint/size';
+import { getPropertiesBySchemaKind } from '../property/propertyOwner';
 
 /** The array node contains the array data values */
 export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements Iterable<T> {

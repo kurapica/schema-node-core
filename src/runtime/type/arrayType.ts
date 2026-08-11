@@ -8,7 +8,10 @@ import { ArrayNode } from '../../node/arrayNode';
 import { ArrayProperty, ArraySchema } from '../../schema/arraySchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { RelationType } from './relationType';
-import { DataNodeType, IProperty, Name, Primary } from '../../property';
+import { DataNodeType } from '../../property/core/dataNodeType';
+import { IProperty } from '../../property/property';
+import { Name } from '../../property/core/name';
+import { Primary } from '../../property/constraint/primary';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 import { filterSchemaKindProperties, getNodeType, getSchemaKindProperties, getSchemaKindProperty } from '../schemaRuntime';
 import { NodeType } from './nodeType';
@@ -19,8 +22,8 @@ import { Relations, RelationSchema } from '../../schema/relationSchema';
 import { EnumType } from './enumType';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { DataNode } from '../../node/dataNode';
-import { getSchemaType } from '..';
-import { getMetaProperty } from '../../attribute';
+import { getSchemaType } from '../schemaRuntime';
+import { getMetaProperty } from '../../attribute/meta';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;

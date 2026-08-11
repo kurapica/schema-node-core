@@ -1,14 +1,18 @@
-import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, ForSchema, buildFuncCall } from '../index';
-import type { IConstraintProperty } from '../constraintProperty';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { ForSchema } from '../core/forSchema';
+import { buildFuncCall } from '../funcCallProperty';
+import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { EnumNode } from '../../node/enumNode';
-import { Error, Visible } from '../common';
-import { Relation } from '../../attribute';
-import { Call } from '../../relation';
-import { EnumValueType } from '../../enum';
+import { Error } from '../common/error';
+import { Visible } from '../common/visible';
+import { Relation } from '../../attribute/relation';
+import { Call } from '../../relation/call';
+import { EnumValueType } from '../../enum/enumValueType';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -16,7 +20,7 @@ import { EnumValueType } from '../../enum';
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.singleflag.error`)
 @Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, "@type", EnumValueType.Flags))
-export class SingleFlag extends Property<boolean> implements IConstraintProperty {
+export class SingleFlag extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value || !(node instanceof EnumNode)) return undefined;
     const val = parseInt(node.toString());

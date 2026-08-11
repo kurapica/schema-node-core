@@ -1,7 +1,7 @@
 import { ScalarType } from '../scalarType';
 import { IntNode } from '../../../node/scalarNode';
 import { IntProperty, IntSchema } from '../../../schema/scalar/intSchema';
-import { IProperty } from '../../../property';
+import { IProperty } from '../../../property/property';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
 import { SCHEMA_KIND_INT } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';

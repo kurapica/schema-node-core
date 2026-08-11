@@ -1,8 +1,20 @@
-import { Meta } from "../../attribute";
-import { OfSchema, SchemaType, Return, ArgName, Require, getRecordedValues, ValueSchemaKind, Display, getPropertyValue, setPropertyValue } from "../../property";
-import { getNodeType, ValueType, ArrayType } from "../../runtime";
-import { EntryAccess, Entry } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaType } from '../../property/core/schemaType';
+import { Return } from '../../property/function/return';
+import { ArgName } from '../../property/function/argName';
+import { Require } from '../../property/constraint/require';
+import { getRecordedValues } from '../../property/recordProperty';
+import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { Display } from '../../property/common/display';
+import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
+import { ValueType } from '../../runtime/type/valueType';
+import { ArrayType } from '../../runtime/type/arrayType';
+import { EntryAccess, Entry } from '../../struct/entry';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
+import { _LS } from '../../utility/locale';
+import { combinePaths } from '../../utility/toolset';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)

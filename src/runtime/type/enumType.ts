@@ -6,10 +6,12 @@
 import { ValueType } from './valueType';
 import { EnumProperty, type EnumSchema } from '../../schema/enumSchema';
 import { EnumValueType, EnumValueTypeValue } from '../../enum/enumValueType';
-import { EntrySource, FuncCall, IProperty } from '../../property';
+import { EntrySource } from '../../property/core/entrySource';
+import { FuncCall } from '../../property/funcCallProperty';
+import { IProperty } from '../../property/property';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
-import { LocaleString } from '../../struct';
+import { LocaleString } from '../../struct/localeString';
 import { ScalarType } from './scalarType';
 import { StringType } from './scalar/stringType';
 import { IntType } from './scalar/intType';

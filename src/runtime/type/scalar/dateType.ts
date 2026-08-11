@@ -2,7 +2,7 @@ import { ScalarType } from '../scalarType';
 import { DateNode } from '../../../node/scalarNode';
 import { DateProperty, DateSchema } from '../../../schema/scalar/dateSchema';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
-import { IProperty } from '../../../property';
+import { IProperty } from '../../../property/property';
 import { SCHEMA_KIND_DATE } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';
 import { IPropertyProvider, IValueAccess } from '../../interfaces';

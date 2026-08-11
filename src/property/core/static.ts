@@ -2,8 +2,8 @@
 // Mirrors C# SchemaNode.Core/Property/Core/Static.cs
 // =============================================================================
 
-import { Meta } from '../../attribute';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility';
+import { Meta } from '../../attribute/meta';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
 import { OfSchema } from './ofSchema';

@@ -7,11 +7,16 @@ import { DataNode } from './dataNode';
 import { StructType } from '../runtime/type/structType';
 import { IPropertyProvider, IRelationInfo, IValueAccess } from '../runtime/interfaces';
 import { isEqual, isNull } from '../utility/toolset';
-import { OverrideType, PropertyCtor, setPropertyValue, Unpack } from '../property';
+import { OverrideType } from '../property/core/overrideType';
+import { PropertyCtor } from '../property/property';
+import { setPropertyValue } from '../property/propertyOwner';
+import { Unpack } from '../property/common/unpack';
 import { NODE_SELF, SCHEMA_KIND_STRUCT } from '../utility/constant';
-import { getNodeType, ValueType } from '../runtime';
+import { ValueType } from '../runtime/type/valueType';
 import { OverrideFields } from '../property/core/overrideFields';
-import { NodeSchema, StructFieldSchema, StructProperty, StructSchema } from '../schema';
+import { NodeSchema } from '../schema/nodeSchema';
+import { StructFieldSchema, StructProperty, StructSchema } from '../schema/structSchema';
+import { getNodeType } from '../runtime/schemaRuntime';
 
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── ctor & dtor ───────────────────────────────────────────────────

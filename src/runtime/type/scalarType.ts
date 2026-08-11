@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/ScalarType.cs
 // =============================================================================
 
-import { IProperty } from "../../property";
+import { IProperty } from '../../property/property';
 import { joinProperties } from "../interfaces";
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from "../schemaRuntime";
 import { NodeType } from "./nodeType";

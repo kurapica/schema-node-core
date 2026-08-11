@@ -12,16 +12,26 @@
 
 import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
 import type { IProperty, PropertyCtor } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType, Display, Attach } from '../property/index';
+import { ForSchema } from '../property/core/forSchema';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaGenerator } from '../property/core/schemaGenerator';
+import { Append } from '../property/core/append';
+import { GenericParameter } from '../property/core/generics';
+import { NodeSchemaKind } from '../property/record/nodeSchemaKind';
+import { SchemaType } from '../property/core/schemaType';
+import { Display } from '../property/common/display';
+import { Attach } from '../property/core/attach';
 import { getMetaProperties, getMetaProperty } from '../attribute/meta';
 import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
-import { NamespaceType, NodeType, GenericType } from './type';
+import { NamespaceType } from './type/namespaceType';
+import { NodeType } from './type/nodeType';
+import { GenericType } from './type/genericType';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
 import { getSchemaProvider } from '../schema/provider/schemaProvider';
 import { combineProperties, setPropertyValue } from '../property/propertyOwner';
 import { StructProperty, StructSchema } from '../schema/structSchema';
-import { combinePaths, deepClone, isEmpty } from '../utility';
+import { combinePaths } from '../utility/toolset';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 

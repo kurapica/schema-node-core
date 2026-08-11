@@ -1,10 +1,14 @@
-import { StructNode } from "..";
-import { ExpType } from "../../enum";
-import { StructType, IValueAccess, IPropertyProvider, FunctionType, getNodeType } from "../../runtime";
-import { FuncExp } from "../../schema";
+import { StructNode } from '../structNode';
+import { ExpType } from '../../enum/expType';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { IPropertyProvider } from '../../runtime/interface/propertyProvider';
+import { FuncExp } from '../../schema/functionSchema';
 import { EnumNode } from "../enumNode";
 import { StringNode } from "../scalarNode";
 import { FuncExpArgsNode } from "./funcExpArgsNode";
+import { StructType } from '../../runtime/type/structType';
+import { getNodeType } from '../../runtime/schemaRuntime';
+import { FunctionType } from '../../runtime/type/functionType';
 
 
 /** The expression node contains the expression definition, used to apply the relations from the function argument */

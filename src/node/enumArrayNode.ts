@@ -1,6 +1,7 @@
 import { EnumValueType } from "../enum/enumValueType";
 import { IValueAccess, IPropertyProvider } from "../runtime/interfaces";
-import { ArrayType, EnumType } from "../runtime/type";
+import { ArrayType } from '../runtime/type/arrayType';
+import { EnumType } from '../runtime/type/enumType';
 import { DataNode } from "./dataNode";
 
 export class EnumArrayNode extends DataNode {

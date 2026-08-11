@@ -1,7 +1,8 @@
 import { ScalarType } from '../scalarType';
 import { StringNode } from '../../../node/scalarNode';
 import { StringProperty, StringSchema } from '../../../schema/scalar/stringSchema';
-import { IProperty, UpLimitString } from '../../../property';
+import { IProperty } from '../../../property/property';
+import { UpLimitString } from '../../../property/constraint/upLimit';
 import { ENTITY_PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_STRING } from '../../../utility/constant';
 import { getProperty, getPropertiesBySchemaKind } from '../../../property/propertyOwner';
 import { getNodeType } from '../../schemaRuntime';

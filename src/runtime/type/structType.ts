@@ -17,14 +17,22 @@ import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry';
 import { RelationType } from './relationType';
 import { ArrayType } from './arrayType';
-import { Attach, DataNodeType, Display, DisplayOnly, PropertyCtor, Require, SchemaType, Unpack } from '../../property';
+import { Attach } from '../../property/core/attach';
+import { DataNodeType } from '../../property/core/dataNodeType';
+import { Display } from '../../property/common/display';
+import { DisplayOnly } from '../../property/common/displayOnly';
+import { PropertyCtor } from '../../property/property';
+import { Require } from '../../property/constraint/require';
+import { SchemaType } from '../../property/core/schemaType';
+import { Unpack } from '../../property/common/unpack';
 import { Name } from '../../property/core/name';
 import { Relations, RelationSchema } from '../../schema/relationSchema';
-import { getMetaProperties, getMetaProperty } from '../../attribute';
-import { getSchemaType, PropertyType } from '..';
-import { LocaleString } from '../../struct';
-import { _LS } from '../../utility';
-import { DataNode } from '../../node';
+import { getMetaProperties, getMetaProperty } from '../../attribute/meta';
+import { getSchemaType } from '../schemaRuntime';
+import { PropertyType } from './propertyType';
+import { LocaleString } from '../../struct/localeString';
+import { _LS } from '../../utility/locale';
+import { DataNode } from '../../node/dataNode';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {

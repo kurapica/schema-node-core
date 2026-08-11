@@ -4,7 +4,11 @@
 
 import { Meta } from '../attribute/meta';
 import { ArgName } from '../property/function/argName';
-import { OfSchema, SchemaType, Return, Generics, Require } from '../property/index';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../property/function/return';
+import { Generics } from '../property/core/generics';
+import { Require } from '../property/constraint/require';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
 import { deepClone, isEmpty, isNull } from '../utility/toolset';
 

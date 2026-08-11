@@ -5,7 +5,7 @@
 
 import { DataNode } from './dataNode';
 import { EnumValueType } from '../enum/enumValueType';
-import { EnumType } from '../runtime/type';
+import { EnumType } from '../runtime/type/enumType';
 import { isNull } from '../utility/toolset';
 
 export class EnumNode extends DataNode {

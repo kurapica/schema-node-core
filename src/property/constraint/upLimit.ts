@@ -1,12 +1,16 @@
-import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, Alias, ForSchema } from '../index';
-import type { IConstraintProperty } from '../constraintProperty';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Alias } from '../core/alias';
+import { ForSchema } from '../core/forSchema';
+import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_DATE, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { isNull, parseDate } from '../../utility/toolset';
-import { Error, StackUpLimit } from '../common';
-import { DataNode } from '../../node';
+import { Error } from '../common/error';
+import { StackUpLimit } from '../common/stackUpLimit';
+import { DataNode } from '../../node/dataNode';
 
 @Meta(Alias, 'uplimit')
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
@@ -14,7 +18,7 @@ import { DataNode } from '../../node';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.UpLimitString`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.uplimitstring.error`)
-export class UpLimitString extends Property<number> implements IConstraintProperty {
+export class UpLimitString extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
     return node.toString().length <= this._value;
@@ -27,7 +31,7 @@ export class UpLimitString extends Property<number> implements IConstraintProper
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.UpLimitInt`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.uplimitint.error`)
-export class UpLimitInt extends Property<number> implements IConstraintProperty {
+export class UpLimitInt extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as number;
     if (isNull(value) || isNull(this._value)) return undefined;
@@ -52,7 +56,7 @@ export class UpLimitInt extends Property<number> implements IConstraintProperty 
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.UpLimitNumber`)
 @Meta(PropertyValueType, NS_SYSTEM_NUMBER)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.uplimitnumber.error`)
-export class UpLimitNumber extends Property<number> implements IConstraintProperty {
+export class UpLimitNumber extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as number;
     if (isNull(value) || isNull(this._value)) return undefined;
@@ -76,7 +80,7 @@ export class UpLimitNumber extends Property<number> implements IConstraintProper
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.UpLimitDate`)
 @Meta(PropertyValueType, NS_SYSTEM_DATE)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.uplimitdate.error`)
-export class UpLimitDate extends Property<Date> implements IConstraintProperty {
+export class UpLimitDate extends ConstraintProperty<Date> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as Date;
     if (isNull(value) || isNull(this._value)) return undefined;

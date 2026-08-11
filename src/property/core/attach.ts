@@ -8,7 +8,9 @@ import { NS_SYSTEM_SCHEMA, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, S
 import { Meta } from '../../attribute/meta';
 import { ReadOnly } from '../common/readOnly';
 import { SchemaType } from './schemaType';
-import { OfSchema, PropertyValueType, Static } from '../..';
+import { OfSchema } from './ofSchema';
+import { PropertyValueType } from './propertyValueType';
+import { Static } from './static';
 
 /**
  * Attach the properties of a schema kind to the struct type

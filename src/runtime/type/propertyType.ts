@@ -4,10 +4,10 @@
 
 import { NodeType } from './nodeType';
 import { PropertyProperty, PropertySchema } from '../../schema/propertySchema';
-import { IProperty } from '../../property';
+import { IProperty } from '../../property/property';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';
-import { ValueType } from '.';
+import { ValueType } from './valueType';
 import { getNodeType } from '../schemaRuntime';
 
 export class PropertyType extends NodeType {

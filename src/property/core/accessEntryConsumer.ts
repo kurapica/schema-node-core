@@ -1,8 +1,10 @@
-import { Meta, Relation } from "../../attribute";
-import { Assign } from "../../relation";
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, SCHEMA_KIND_STRING } from "../../utility";
-import { ReadOnly, InVisible } from "../common";
-import { Valid } from "../constraint";
+import { Meta } from '../../attribute/meta';
+import { Relation } from '../../attribute/relation';
+import { Assign } from '../../relation/assign';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { ReadOnly } from '../common/readOnly';
+import { InVisible } from '../common/invisible';
+import { Valid } from '../constraint/valid';
 import { buildFuncCall, FuncCallProperty } from "../funcCallProperty";
 import { ForSchema } from "./forSchema";
 import { OfSchema } from "./ofSchema";

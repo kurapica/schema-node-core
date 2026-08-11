@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { getMetaProperty } from '../../attribute/meta';
-import { RelationKind } from '../../property';
+import { RelationKind } from '../../property/record/relationKind';
 import { RelationProcess } from '../../property/core/relationProcess';
 import type { PropertyCtor } from '../../property/property';
 import { IRelationProcess, RelationSchema } from '../../schema/relationSchema';

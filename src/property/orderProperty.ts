@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { getMetaProperty } from '../attribute/meta';
-import { Default } from './common';
+import { Default } from './common/default';
 import { Property } from './property';
 import type { IProperty } from './property';
 

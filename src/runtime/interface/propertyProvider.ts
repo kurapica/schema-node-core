@@ -1,4 +1,4 @@
-import { IProperty } from "../../property";
+import { IProperty } from '../../property/property';
 
 /** Provider the properties */
 export interface IPropertyProvider {

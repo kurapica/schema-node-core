@@ -2,39 +2,45 @@
 // Mirros C# SchemaNode.Core/Schema/EnumSchema.cs
 // =============================================================================
 
-import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, ForSchema, OfSchema, SchemaGenerator, Visible, getRecordedValues, Display, PropertyValueType, EntrySource, Immutable, OverrideType, Default } from '../property/index';
-import { IProperty, Property } from '../property/property';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../utility/constant';
-import { EnumValueType, type EnumValueTypeValue } from '../enum/enumValueType';
-import { concatLocaleString, LocaleString } from '../struct';
-import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { EnumType } from '../runtime/type';
-import { Require, Valid } from '../property/constraint';
-import { Relation } from '../attribute/relation';
-import { combineProperties, setProperty, setPropertyValue } from '../property/propertyOwner';
-import { NodeSchema } from './nodeSchema';
-import { FromEnum } from '../property/core/fromEnum';
-import { combinePaths } from '../utility/toolset';
-import { saveNodeSchema } from '../runtime/schemaRuntime';
-import { Base } from '../property/core/base';
-import { Call } from '../relation/call';
-import { buildFuncCall } from '../property/funcCallProperty';
-import { Entry } from '../struct/entry';
-import { EnumValue } from '../property/constraint/enumValue';
-import { Assign } from '../relation';
-
-/** The enum schema */
-export interface EnumSchema {
-  /** The enum value type */
-  type: EnumValueTypeValue;
-
-  /** The cascade of the enum value */
-  cascade?: LocaleString[];
-  
-  /** The root enum values */
-  values: Entry<string>[];
-}
+import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../../attribute/meta';
+import { SchemaKind } from '../../property/record/schemaKind';
+import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { SchemaType } from '../../property/core/schemaType';
+import { Attach } from '../../property/core/attach';
+import { ForSchema } from '../../property/core/forSchema';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
+import { Visible } from '../../property/common/visible';
+import { getRecordedValues } from '../../property/recordProperty';
+import { Display } from '../../property/common/display';
+import { PropertyValueType } from '../../property/core/propertyValueType';
+import { EntrySource } from '../../property/core/entrySource';
+import { Immutable } from '../../property/common/immutable';
+import { OverrideType } from '../../property/core/overrideType';
+import { Default } from '../../property/common/default';
+import { IProperty, Property } from '../../property/property';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
+import { EnumValueType, type EnumValueTypeValue } from '../../enum/enumValueType';
+import { concatLocaleString, LocaleString } from '../../struct/localeString';
+import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
+import { EnumType } from '../../runtime/type/enumType';
+import { Require } from '../../property/constraint/require';
+import { Valid } from '../../property/constraint/valid';
+import { Relation } from '../../attribute/relation';
+import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
+import { FromEnum } from '../../property/core/fromEnum';
+import { combinePaths } from '../../utility/toolset';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
+import { Base } from '../../property/core/base';
+import { Call } from '../../relation/call';
+import { buildFuncCall } from '../../property/funcCallProperty';
+import { Entry } from '../../struct/entry';
+import { EnumValue } from '../../property/constraint/enumValue';
+import { Assign } from '../../relation/assign';
+import { EnumSchema } from './type';
+import { NodeSchema } from '../node/type';
+import { EnumProperty } from './enum';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
@@ -66,41 +72,6 @@ class EnumSchemaMeta implements EnumSchema {
   @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"))
   @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), "values.value")
   values!: Entry<string>[];
-}
-
-/** The enum property of node schema */
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
-@Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
-export class EnumProperty extends Property<EnumSchema> {
-  combine(other: IProperty): boolean {
-    const otherSchema = other?.getValue<EnumSchema>();
-    if (!otherSchema) return false;
-    const selfSchema = this.getValue<EnumSchema>();
-    if (!selfSchema)
-    {
-      this.setValue(otherSchema);
-      return true;
-    }
-
-    // combine cascade
-    if (selfSchema.cascade?.length && otherSchema.cascade?.length)
-    {
-      for (let i = 0; i < Math.min(selfSchema.cascade.length, otherSchema.cascade.length); i++)
-        selfSchema.cascade[i] = concatLocaleString(selfSchema.cascade[i], otherSchema.cascade[i]);
-    }
-
-    // combine enum values
-    for (let i = 0; i < Math.min(selfSchema.values.length, otherSchema.values.length); i++)
-      combineProperties(selfSchema.values[i], otherSchema.values[i], SCHEMA_KIND_ENTRY);
-
-    // combine properties
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_ENUM);
-    this.setValue(selfSchema);
-    return true;
-  }
 }
 
 /** Represents the enum value type */

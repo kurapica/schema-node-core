@@ -1,6 +1,7 @@
-import { Meta } from "../attribute";
-import { OfSchema, SchemaType } from "../property";
-import { SCHEMA_KIND_STRUCT, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_FULL_DATE, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_YEARMONTH, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_YEAR } from "../utility";
+import { Meta } from '../attribute/meta';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { SCHEMA_KIND_STRUCT, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_FULL_DATE, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_YEARMONTH, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_YEAR } from '../utility/constant';
 
 export interface RangeDate {
   start?: Date;

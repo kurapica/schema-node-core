@@ -1,12 +1,9 @@
 import { Observable, Observer } from "./observable"
 import enUS from '../locale/enUS.json'
 import zhCN from '../locale/zhCN.json'
-import { LocaleString } from "../struct"
-import { isNull } from "./toolset"
-import { getCachedNodeType, IValueTypeAccess } from "../runtime"
-import { Display } from "../property"
-
-const locales: {[key:string]: {[key:string]: string}} = { zhCN, enUS, 'zh': zhCN, 'en': enUS }
+import { LocaleString } from '../struct/localeString';import { isNull } from "./toolset"
+import { getCachedNodeType } from '../runtime/schemaRuntime';
+import { IValueTypeAccess } from '../runtime/interface/valueAccess';import { Display } from '../property/common/display';const locales: {[key:string]: {[key:string]: string}} = { zhCN, enUS, 'zh': zhCN, 'en': enUS }
 
 // language
 const langWatches = new Observable<[string]>()

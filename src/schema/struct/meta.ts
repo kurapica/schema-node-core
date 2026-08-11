@@ -3,37 +3,46 @@
 // StructProperty is the Property<StructSchema> bridge for getProperty/getProperties
 // =============================================================================
 
-import { Meta, getMetaFields, getMetaProperties, getMetaPropertiesForSchema } from '../attribute/meta';
-import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { PrimaryIndex, UniqueIndex, Index } from '../property/core/indexes';
-import { Primary } from '../property/constraint/primary';
-import { DataIndex, Indexes } from '../property/constraint/indexes';
-import { SchemaKind, NodeSchemaKind, ValueSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, Display, PropertyValueType, Visible, Valid, Generics, GenericParameter, StructValue, Default, EntrySourceProvider, AccessValueTypeProvider } from '../property/index';
-import { IProperty, Property } from '../property/property';
-import { combineProperties, getProperty, setProperty, setPropertyValue } from '../property/propertyOwner';
-import { StructType } from '../runtime/type';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../utility/constant';
-import { combinePaths } from '../utility/toolset';
-import { NodeSchema } from './nodeSchema';
-import { Relations } from './relationSchema';
-import { ArraySchema, ArrayProperty } from './arraySchema';
-import { getRelationSchemas, Relation } from '../attribute/relation';
-import { Base } from '../property/core/base';
-import { saveNodeSchema } from '../runtime/schemaRuntime';
-import { Call } from '../relation/call';
-import { buildFuncCall } from '../property/funcCallProperty';
-
-/** The struct schema */
-export interface StructSchema {
-  fields: StructFieldSchema[];
-}
-
-/** A single field definition within a struct. */
-export interface StructFieldSchema {
-  name: string;
-  type: string;
-  error?: string;
-}
+import { Meta, getMetaFields, getMetaProperties, getMetaPropertiesForSchema } from '../../attribute/meta';
+import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
+import { PrimaryIndex, UniqueIndex, Index } from '../../property/core/indexes';
+import { Primary } from '../../property/constraint/primary';
+import { DataIndex, Indexes } from '../../property/constraint/indexes';
+import { SchemaKind } from '../../property/record/schemaKind';
+import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { SchemaType } from '../../property/core/schemaType';
+import { Attach } from '../../property/core/attach';
+import { Append } from '../../property/core/append';
+import { ForSchema } from '../../property/core/forSchema';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
+import { Require } from '../../property/constraint/require';
+import { Display } from '../../property/common/display';
+import { PropertyValueType } from '../../property/core/propertyValueType';
+import { Visible } from '../../property/common/visible';
+import { Valid } from '../../property/constraint/valid';
+import { Generics, GenericParameter } from '../../property/core/generics';
+import { StructValue } from '../../property/constraint/structValue';
+import { Default } from '../../property/common/default';
+import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
+import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
+import { IProperty, Property } from '../../property/property';
+import { combineProperties, getProperty, setProperty, setPropertyValue } from '../../property/propertyOwner';
+import { StructType } from '../../runtime/type/structType';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
+import { getRelationSchemas, Relation } from '../../attribute/relation';
+import { Base } from '../../property/core/base';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
+import { Call } from '../../relation/call';
+import { buildFuncCall } from '../../property/funcCallProperty';
+import { Relations } from '../relation/relations';
+import { StructFieldSchema, StructSchema } from './type';
+import { NodeSchema } from '../node/type';
+import { StructProperty } from './struct';
+import { ArraySchema } from '../array/type';
+import { ArrayProperty } from '../array/array';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -71,61 +80,6 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
   type!: string;
-}
-
-/** Property bridge. */
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
-@Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRUCT))
-export class StructProperty extends Property<StructSchema> {
-  combine(other: IProperty): boolean {
-    const otherSchema = other?.getValue<StructSchema>();
-    if (!otherSchema) return false;
-    const selfSchema = this.getValue<StructSchema>();
-    if (!selfSchema)
-    {
-      this.setValue(otherSchema);
-      return true;
-    }
-
-    // combine fields
-    const combineFields : StructFieldSchema[] = []
-    const matched = new Set<string>();
-    for (let i = 0; i < otherSchema.fields.length; i++)
-    {
-      const otherField = otherSchema.fields[i];
-      const name = otherField.name.toLowerCase();
-      if (matched.has(name)) continue;
-      matched.add(name);
-
-      const index = selfSchema.fields.findIndex(f => f.name.toLowerCase() === name);
-      if (index >= 0)
-      {
-        for (let j = 0; j < index; j++)
-        {
-          const existField = selfSchema.fields[j];
-          const ename = existField.name.toLowerCase();
-          if (otherSchema.fields.findIndex(f => f.name.toLowerCase() === ename) < 0 && !matched.has(ename))
-          {
-            matched.add(ename);
-            combineFields.push(existField);
-          }
-        }
-        combineFields.push(combineProperties(selfSchema.fields[index], otherField, SCHEMA_KIND_STRUCT_FIELD));
-      }
-      else
-        combineFields.push(otherField);
-    }
-    combineFields.push(...selfSchema.fields.filter(f => !matched.has(f.name.toLowerCase())))
-    selfSchema.fields = combineFields;
-
-    // combine properties
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_STRUCT);
-    this.setValue(selfSchema);
-    return true;
-  }
 }
 
 /** Represents the struct value type */

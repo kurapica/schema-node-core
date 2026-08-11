@@ -3,24 +3,54 @@
 // Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs
 // =============================================================================
 
-import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../attribute/meta';
-import { getRelationSchemas, Relation } from '../attribute/relation';
-import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { SchemaKind, NodeSchemaKind, SchemaType, ForSchema, Attach, OfSchema, SchemaGenerator, Return, Display, Visible, PrimaryIndex, UpLimitString, Require, Valid, PropertyValueType, EntrySourceConsumer, DisplayOnly, ReadOnly, OverrideType, AccessEntryConsumer, InVisible, WhiteList, Default, Immutable, DataNodeType, EntrySourceProvider, AccessValueTypeProvider, AccessValueTypeResolver } from '../property/index';
-import { IProperty, Property } from '../property/property';
-import { setProperty, setPropertyValue, combineProperties } from '../property/propertyOwner';
-import { saveNodeSchema } from '../runtime/schemaRuntime';
-import { FunctionType } from '../runtime/type';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT } from '../utility/constant';
-import { combinePaths } from '../utility/toolset';
-import { NodeSchema } from './nodeSchema';
-import { ExpType } from '../enum/expType';
-import { Base } from '../property/core/base';
-import { ArgName } from '../property/function/argName';
-import { Call } from '../relation/call';
-import { buildFuncCall } from '../property/funcCallProperty';
-import { ArrayNodeTemplate, FuncArgNode, FuncArgsNode, FuncExpArgsNode, FuncExpNode, FunctionNode } from '../node';
-import { Relations } from './relationSchema';
+import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../../attribute/meta';
+import { getRelationSchemas, Relation } from '../../attribute/relation';
+import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
+import { SchemaKind } from '../../property/record/schemaKind';
+import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { SchemaType } from '../../property/core/schemaType';
+import { ForSchema } from '../../property/core/forSchema';
+import { Attach } from '../../property/core/attach';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
+import { Return } from '../../property/function/return';
+import { Display } from '../../property/common/display';
+import { Visible } from '../../property/common/visible';
+import { PrimaryIndex } from '../../property/core/indexes';
+import { UpLimitString } from '../../property/constraint/upLimit';
+import { Require } from '../../property/constraint/require';
+import { Valid } from '../../property/constraint/valid';
+import { PropertyValueType } from '../../property/core/propertyValueType';
+import { EntrySourceConsumer } from '../../property/core/entrySourceConsumer';
+import { DisplayOnly } from '../../property/common/displayOnly';
+import { ReadOnly } from '../../property/common/readOnly';
+import { OverrideType } from '../../property/core/overrideType';
+import { AccessEntryConsumer } from '../../property/core/accessEntryConsumer';
+import { InVisible } from '../../property/common/invisible';
+import { WhiteList } from '../../property/constraint/whiteList';
+import { Default } from '../../property/common/default';
+import { Immutable } from '../../property/common/immutable';
+import { DataNodeType } from '../../property/core/dataNodeType';
+import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
+import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
+import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
+import { IProperty, Property } from '../../property/property';
+import { setProperty, setPropertyValue, combineProperties } from '../../property/propertyOwner';
+import { saveNodeSchema } from '../../runtime/schemaRuntime';
+import { FunctionType } from '../../runtime/type/functionType';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
+import { ExpType } from '../../enum/expType';
+import { Base } from '../../property/core/base';
+import { ArgName } from '../../property/function/argName';
+import { Call } from '../../relation/call';
+import { buildFuncCall } from '../../property/funcCallProperty';
+import { ArrayNodeTemplate } from '../../node/arrayNode';
+import { FunctionNode } from '../../node/function/funcNode';
+import { FuncArgsNode } from '../../node/function/funcArgsNode';
+import { FuncExpNode } from '../../node/function/funcExpNode';
+import { FuncArgNode } from '../../node/function/funcArgNode';
+import { FuncExpArgsNode } from '../../node/function/funcExpArgsNode';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 

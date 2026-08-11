@@ -1,10 +1,26 @@
-import { Meta } from "../../attribute";
-import { ExpType } from "../../enum";
-import { OfSchema, SchemaType, Return, ArgName, Require, Display, getPropertyValue, setPropertyValue } from "../../property";
-import { getNodeType, FunctionType, ValueType, ArrayType, DecimalType, BoolType, IntType } from "../../runtime";
-import { FuncArg, FuncExp, StructFieldSchema } from "../../schema";
-import { EntryAccess, Entry, LocaleString } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, _LS, combinePaths, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_STRING } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { ExpType } from '../../enum/expType';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaType } from '../../property/core/schemaType';
+import { Return } from '../../property/function/return';
+import { ArgName } from '../../property/function/argName';
+import { Require } from '../../property/constraint/require';
+import { Display } from '../../property/common/display';
+import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
+import { FunctionType } from '../../runtime/type/functionType';
+import { ValueType } from '../../runtime/type/valueType';
+import { ArrayType } from '../../runtime/type/arrayType';
+import { DecimalType } from '../../runtime/type/scalar/decimalType';
+import { BoolType } from '../../runtime/type/scalar/boolType';
+import { IntType } from '../../runtime/type/scalar/intType';
+import { FuncArg, FuncExp } from '../../schema/functionSchema';
+import { StructFieldSchema } from '../../schema/structSchema';
+import { EntryAccess, Entry } from '../../struct/entry';
+import { LocaleString } from '../../struct/localeString';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_STRING } from '../../utility/constant';
+import { _LS } from '../../utility/locale';
+import { combinePaths } from '../../utility/toolset';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)

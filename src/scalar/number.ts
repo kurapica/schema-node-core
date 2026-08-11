@@ -1,7 +1,10 @@
-import { Meta } from "../attribute";
-import { LowLimitNumber, OfSchema, SchemaType, UpLimitNumber } from "../property";
-import { Base } from "../property/core";
-import { NS_SYSTEM_DOUBLE, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, NS_SYSTEM_PERCENT, NS_SYSTEM_YEAR, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT } from "../utility";
+import { Meta } from '../attribute/meta';
+import { LowLimitNumber } from '../property/constraint/lowLimit';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { UpLimitNumber } from '../property/constraint/upLimit';
+import { Base } from '../property/core/base';
+import { NS_SYSTEM_DOUBLE, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, NS_SYSTEM_PERCENT, NS_SYSTEM_YEAR, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT } from '../utility/constant';
 
 /** Represents the number type */
 @Meta(OfSchema, SCHEMA_KIND_DECIMAL)

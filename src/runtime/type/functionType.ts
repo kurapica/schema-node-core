@@ -19,11 +19,21 @@ import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyO
 import { getNodeType } from '../schemaRuntime';
 import { getSchemaProvider } from '../../schema/provider/schemaProvider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
-import { Converter, IProperty, isTypeRefProperty, ITypeRefProperty, Name, NoCache, PropertyCtor, Require, ServerOnly, Variadic } from '../../property';
+import { Converter } from '../../property/function/converter';
+import { IProperty, isTypeRefProperty, ITypeRefProperty, PropertyCtor } from '../../property/property';
+import { Name } from '../../property/core/name';
+import { NoCache } from '../../property/function/noCache';
+import { Require } from '../../property/constraint/require';
+import { ServerOnly } from '../../property/function/serverOnly';
+import { Variadic } from '../../property/function/variadic';
 import { NODE_SELF, NODE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
-import { INodeReference, IPropertyProvider, IValueTypeAccess, joinProperties, RelationType, StringType } from '..';
-import { Relations, RelationSchema } from '../../schema';
-import { Entry } from '../../struct';
+import { INodeReference } from '../interface/nodeReference';
+import { IPropertyProvider } from '../interface/propertyProvider';
+import { IValueTypeAccess } from '../interface/valueAccess';
+import { RelationType } from './relationType';
+import { StringType } from './scalar/stringType';
+import { Relations, RelationSchema } from '../../schema/relationSchema';
+import { Entry } from '../../struct/entry';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();

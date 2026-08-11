@@ -6,7 +6,7 @@
 import { NodeType } from './nodeType';
 import type { NodeSchema } from '../../schema/nodeSchema';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
-import { SCHEMA_KIND_NAMESPACE } from '../../utility';
+import { SCHEMA_KIND_NAMESPACE } from '../../utility/constant';
 
 export class NamespaceType extends NodeType {
   /** Sub types by name. */

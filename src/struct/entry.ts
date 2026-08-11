@@ -1,5 +1,13 @@
 import { Meta } from "../attribute/meta";
-import { OfSchema, SchemaType, Generics, SchemaKind, Attach, Require, PrimaryIndex, combineProperties, getPropertyValue, Disable } from "../property";
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { Generics } from '../property/core/generics';
+import { SchemaKind } from '../property/record/schemaKind';
+import { Attach } from '../property/core/attach';
+import { Require } from '../property/constraint/require';
+import { PrimaryIndex } from '../property/core/indexes';
+import { combineProperties, getPropertyValue } from '../property/propertyOwner';
+import { Disable } from '../property/common/disable';
 import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY, NS_SYSTEM_ENTRY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_BOOL, NS_SYSTEM_ENTRYS } from "../utility/constant";
 import { isEqual, isNull } from "../utility/toolset";
 

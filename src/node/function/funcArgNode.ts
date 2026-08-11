@@ -1,7 +1,10 @@
-import { BoolNode, StringNode, StructNode } from "..";
-import { ReadOnly } from "../../property";
-import { StructType, IValueAccess, IPropertyProvider } from "../../runtime";
-import { FuncArg } from "../../schema";
+import { BoolNode, StringNode } from '../scalarNode';
+import { StructNode } from '../structNode';
+import { ReadOnly } from '../../property/common/readOnly';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { IPropertyProvider } from '../../runtime/interface/propertyProvider';
+import { FuncArg } from '../../schema/functionSchema';
+import { StructType } from '../../runtime/type/structType';
 
 /** The function argument node */
 export class FuncArgNode extends StructNode

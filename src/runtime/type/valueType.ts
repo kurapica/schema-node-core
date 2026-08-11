@@ -9,7 +9,7 @@
 import { NodeType } from './nodeType';
 import type { DataNode } from '../../node/dataNode';
 import { IPropertyProvider, IValueAccess, IValueTypeAccess } from '../interfaces';
-import { IConstraintProperty } from '../../property';
+import { IConstraintProperty } from '../../property/constraintProperty';
 import { FunctionType } from './functionType';
 import { ArrayType } from './arrayType';
 import { isEmpty } from '../../utility/toolset';

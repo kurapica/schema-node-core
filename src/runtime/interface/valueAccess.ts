@@ -1,7 +1,9 @@
-import { IConstraintProperty, IProperty, PropertyCtor } from "../../property";
-import { Entry } from "../../struct";
-import { Observer } from "../../utility";
-import { RelationType, ValueType } from "../type";
+import { IConstraintProperty } from '../../property/constraintProperty';
+import { IProperty, PropertyCtor } from '../../property/property';
+import { Entry } from '../../struct/entry';
+import { Observer } from '../../utility/observable';
+import { RelationType } from '../type/relationType';
+import { ValueType } from '../type/valueType';
 
 /** The value type access interface */
 export interface IValueTypeAccess {

@@ -1,15 +1,21 @@
-import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, ForSchema, buildFuncCall, Cascade, OverrideType } from '../index';
-import type { IConstraintProperty } from '../constraintProperty';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { ForSchema } from '../core/forSchema';
+import { buildFuncCall } from '../funcCallProperty';
+import { Cascade } from './cascade';
+import { OverrideType } from '../core/overrideType';
+import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_INTRINSIC, NS_SYSTEM_MATH, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { EnumNode } from '../../node/enumNode';
 import { EnumArrayNode } from '../../node/enumArrayNode';
-import { EnumType } from '../../runtime/type';
-import { Error, Visible } from '../common';
-import { Relation } from '../../attribute';
-import { Call } from '../../relation';
+import { EnumType } from '../../runtime/type/enumType';
+import { Error } from '../common/error';
+import { Visible } from '../common/visible';
+import { Relation } from '../../attribute/relation';
+import { Call } from '../../relation/call';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -19,7 +25,7 @@ import { Call } from '../../relation';
 @Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, "@type"))
 @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@type"))
 @Relation(Cascade, Call, buildFuncCall(`${NS_SYSTEM_MATH}.subtract`, "@cascade", 1))
-export class Root extends Property<string> implements IConstraintProperty {
+export class Root extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
     if (node instanceof EnumNode) {

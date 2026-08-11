@@ -1,7 +1,13 @@
-import { Meta } from "../../attribute";
-import { ArgName, Require, Return, SchemaType, Stackable, Static } from "../../property";
-import { getNodeType, PropertyType } from "../../runtime";
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { ArgName } from '../../property/function/argName';
+import { Require } from '../../property/constraint/require';
+import { Return } from '../../property/function/return';
+import { SchemaType } from '../../property/core/schemaType';
+import { Stackable } from '../../property/core/stackable';
+import { Static } from '../../property/core/static';
+import { PropertyType } from '../../runtime/type/propertyType';
+import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from '../../utility/constant';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {

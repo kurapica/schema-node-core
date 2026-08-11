@@ -1,5 +1,7 @@
 import { Meta } from "../attribute/meta";
-import { OfSchema, Require, SchemaType } from "../property";
+import { OfSchema } from '../property/core/ofSchema';
+import { Require } from '../property/constraint/require';
+import { SchemaType } from '../property/core/schemaType';
 import { SCHEMA_KIND_STRUCT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_TRAN } from "../utility/constant";
 import { LocaleTran } from "./localeTran";
 

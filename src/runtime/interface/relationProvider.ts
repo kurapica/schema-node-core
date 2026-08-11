@@ -1,4 +1,4 @@
-import { RelationType } from "../type";
+import { RelationType } from '../type/relationType';
 
 /** The relations provider */
 export interface IRelationProvider {

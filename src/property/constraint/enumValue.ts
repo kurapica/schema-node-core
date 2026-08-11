@@ -1,15 +1,21 @@
-import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, SchemaType, PropertyValueType, Alias, ForSchema, InVisible, Default, Static } from '../index';
-import type { IConstraintProperty } from '../constraintProperty';
+import { OfSchema } from '../core/ofSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Alias } from '../core/alias';
+import { ForSchema } from '../core/forSchema';
+import { InVisible } from '../common/invisible';
+import { Default } from '../common/default';
+import { Static } from '../core/static';
+import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { EnumArrayNode } from '../../node/enumArrayNode';
 import { EnumNode } from '../../node/enumNode';
-import { EnumType } from '../../runtime/type';
+import { EnumType } from '../../runtime/type/enumType';
 import { EnumValueType } from '../../enum/enumValueType';
 import { isNull } from '../../utility/toolset';
-import { Error } from '../common';
+import { Error } from '../common/error';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
@@ -20,7 +26,7 @@ import { Error } from '../common';
 @Meta(Default, true)
 @Meta(Static, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.enum.error`)
-export class EnumValue extends Property<boolean> implements IConstraintProperty {
+export class EnumValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
 
   async validate(node: IValueAccess): Promise<boolean | undefined> {

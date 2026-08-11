@@ -1,8 +1,23 @@
-import { Meta } from "../../attribute";
-import { OfSchema, SchemaType, Return, ArgName, setPropertyValue, Display, getPropertyValue, Require, Variadic, getRecordedValues, ValueSchemaKind } from "../../property";
-import { getNodeType, NamespaceType, PropertyType, ValueType, ArrayType } from "../../runtime";
-import { EntryAccess, LocaleString, Entry } from "../../struct";
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, combinePaths, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from "../../utility";
+import { Meta } from '../../attribute/meta';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaType } from '../../property/core/schemaType';
+import { Return } from '../../property/function/return';
+import { ArgName } from '../../property/function/argName';
+import { setPropertyValue, getPropertyValue } from '../../property/propertyOwner';
+import { Display } from '../../property/common/display';
+import { Require } from '../../property/constraint/require';
+import { Variadic } from '../../property/function/variadic';
+import { getRecordedValues } from '../../property/recordProperty';
+import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { NamespaceType } from '../../runtime/type/namespaceType';
+import { PropertyType } from '../../runtime/type/propertyType';
+import { ValueType } from '../../runtime/type/valueType';
+import { ArrayType } from '../../runtime/type/arrayType';
+import { EntryAccess, Entry } from '../../struct/entry';
+import { LocaleString } from '../../struct/localeString';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
+import { getNodeType } from '../../runtime/schemaRuntime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)

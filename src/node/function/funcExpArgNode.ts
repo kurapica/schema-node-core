@@ -1,5 +1,9 @@
-import { StringNode, StructNode } from "..";
-import { IValueAccess, IPropertyProvider, ValueType, StructType } from "../../runtime";
+import { StringNode } from '../scalarNode';
+import { StructNode } from '../structNode';
+import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { IPropertyProvider } from '../../runtime/interface/propertyProvider';
+import { ValueType } from '../../runtime/type/valueType';
+import { StructType } from '../../runtime/type/structType';
 
 export class FuncExpArgNode extends StructNode {
   /** The argument type. */

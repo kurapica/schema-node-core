@@ -2,37 +2,37 @@
 // PropertySchema — extension data under "property" key
 // =============================================================================
 
-import { NodeSchema } from '..';
-import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../attribute/meta';
-import { Relation } from '../attribute/relation';
-import { Base } from '../property/core/base';
-import { buildFuncCall } from '../property/funcCallProperty';
-import { SchemaKind, NodeSchemaKind, SchemaType, Attach, Append, ForSchema, OfSchema, SchemaGenerator, Require, PropertyValueType, Visible, Alias, Valid, Display, IProperty, Stackable, Static, PropertyCtor } from '../property/index';
-import { getPropertyName, Property } from '../property/property';
-import { setPropertyValue, setProperty } from '../property/propertyOwner';
-import { Call } from '../relation/call';
-import { getPropertyTypeSupportSchemas, saveNodeSchema } from '../runtime/schemaRuntime';
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../utility/constant';
-import { combinePaths } from '../utility/toolset';
-import { Relations } from './relationSchema';
-
-/** Pure data interface. */
-export interface PropertySchema {
-  /** The property name, such as 'upLimit' */
-  property: string;
-
-  /** The property value type */
-  type: string;
-
-  /** the schema kinds that the property applies to */
-  forSchemas?: string[];
-
-  /** Whether the property value can't be changed by relations */
-  static?: boolean;
-
-  /** Whether the property is stackable */
-  stackable?: boolean;
-}
+import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../../attribute/meta';
+import { Relation } from '../../attribute/relation';
+import { Base } from '../../property/core/base';
+import { buildFuncCall } from '../../property/funcCallProperty';
+import { SchemaKind } from '../../property/record/schemaKind';
+import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { SchemaType } from '../../property/core/schemaType';
+import { Attach } from '../../property/core/attach';
+import { Append } from '../../property/core/append';
+import { ForSchema } from '../../property/core/forSchema';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
+import { Require } from '../../property/constraint/require';
+import { PropertyValueType } from '../../property/core/propertyValueType';
+import { Visible } from '../../property/common/visible';
+import { Alias } from '../../property/core/alias';
+import { Valid } from '../../property/constraint/valid';
+import { Display } from '../../property/common/display';
+import { IProperty, PropertyCtor } from '../../property/property';
+import { Stackable } from '../../property/core/stackable';
+import { Static } from '../../property/core/static';
+import { getPropertyName, Property } from '../../property/property';
+import { setPropertyValue, setProperty } from '../../property/propertyOwner';
+import { Call } from '../../relation/call';
+import { getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { combinePaths } from '../../utility/toolset';
+import { Relations } from '../relation/relations';
+import { PropertySchema } from './type';
+import { NodeSchema } from '../node/type';
+import { PropertyProperty } from './property';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])
@@ -64,15 +64,6 @@ class PropertySchemaMeta implements PropertySchema {
   @Meta(SchemaType, NS_SYSTEM_BOOL)
   stackable?: boolean;
 }
-
-/** The 'property' property in node schema */
-@Meta(Alias, 'property')
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.prop`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_PROPERTY))
-export class PropertyProperty extends Property<PropertySchema> {}
 
 /** Represents the property type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)

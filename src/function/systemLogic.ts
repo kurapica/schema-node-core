@@ -5,7 +5,13 @@
 
 import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, Generics, ArgName, Default, Require } from '../property/index';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../property/function/return';
+import { Generics } from '../property/core/generics';
+import { ArgName } from '../property/function/argName';
+import { Default } from '../property/common/default';
+import { Require } from '../property/constraint/require';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utility/constant';
 import { isNull, isEmpty } from '../utility/toolset';
 

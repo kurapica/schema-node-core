@@ -1,6 +1,7 @@
-import { Meta } from "../attribute";
-import { OfSchema, SchemaType } from "../property";
-import { SCHEMA_KIND_BOOL, NS_SYSTEM_BOOL } from "../utility";
+import { Meta } from '../attribute/meta';
+import { OfSchema } from '../property/core/ofSchema';
+import { SchemaType } from '../property/core/schemaType';
+import { SCHEMA_KIND_BOOL, NS_SYSTEM_BOOL } from '../utility/constant';
 
 /** Represents the boolean type */
 @Meta(OfSchema, SCHEMA_KIND_BOOL)

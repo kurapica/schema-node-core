@@ -1,5 +1,9 @@
 import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
-import { Display, OfSchema, SchemaGenerator, SchemaType, Valid } from '../../property';
+import { Display } from '../../property/common/display';
+import { OfSchema } from '../../property/core/ofSchema';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
+import { SchemaType } from '../../property/core/schemaType';
+import { Valid } from '../../property/constraint/valid';
 import { BoolValue } from '../../property/constraint/boolValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';

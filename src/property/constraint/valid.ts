@@ -1,14 +1,18 @@
 import { FuncCallProperty } from '../funcCallProperty';
 import { Meta } from '../../attribute/meta';
-import { OfSchema, ForSchema, SchemaType, PropertyValueType, Stackable } from '../index';
-import type { IConstraintProperty } from '../constraintProperty';
+import { OfSchema } from '../core/ofSchema';
+import { ForSchema } from '../core/forSchema';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Stackable } from '../core/stackable';
+import { getErrorMessage, type IConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 import { IValueAccess } from '../../runtime/interfaces';
 import { getNodeType } from '../../runtime/schemaRuntime';
-import { FunctionType } from '../../runtime/type';
+import { FunctionType } from '../../runtime/type/functionType';
 import { isEmpty, isNull } from '../../utility/toolset';
-import { Error } from '../common';
-import { StructNode } from '../../node';
+import { Error } from '../common/error';
+import { StructNode } from '../../node/structNode';
 
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -32,5 +36,9 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
       const source = owner?.getAccessValue(a.source!, node);
       return source?.getValue();
     })) as boolean;
+  }
+
+  error(node: IValueAccess): string | undefined {
+    return getErrorMessage(this, node);
   }
 }

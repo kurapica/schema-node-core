@@ -4,7 +4,9 @@
 // =============================================================================
 
 import { RelationStage } from '../enum/relationStage';
-import { getPropertyName, OfSchema, RelationKind } from '../property';
+import { getPropertyName } from '../property/property';
+import { OfSchema } from '../property/core/ofSchema';
+import { RelationKind } from '../property/record/relationKind';
 import type { PropertyCtor } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 import { RelationSchema } from '../schema/relationSchema';

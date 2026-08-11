@@ -3,10 +3,14 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { SchemaKind, NodeSchemaKind, SchemaType, OfSchema, Valid } from '../property/index';
+import { SchemaKind } from '../property/record/schemaKind';
+import { NodeSchemaKind } from '../property/record/nodeSchemaKind';
+import { SchemaType } from '../property/core/schemaType';
+import { OfSchema } from '../property/core/ofSchema';
+import { Valid } from '../property/constraint/valid';
 import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_ORDER_NAMESPACE } from '../utility/constant';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { NamespaceType } from '../runtime/type';
+import { NamespaceType } from '../runtime/type/namespaceType';
 import { Base } from '../property/core/base';
 import { buildFuncCall } from '../property/funcCallProperty';
 

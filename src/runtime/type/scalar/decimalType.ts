@@ -1,7 +1,7 @@
 import { ScalarType } from '../scalarType';
 import { DecimalNode } from '../../../node/scalarNode';
 import { DecimalProperty, DecimalSchema } from '../../../schema/scalar/decimalSchema';
-import { IProperty } from '../../../property';
+import { IProperty } from '../../../property/property';
 import { getPropertiesBySchemaKind, getProperty } from '../../../property/propertyOwner';
 import { SCHEMA_KIND_DECIMAL } from '../../../utility/constant';
 import { getNodeType } from '../../schemaRuntime';
