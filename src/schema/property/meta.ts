@@ -29,7 +29,7 @@ import { Call } from '../../relation/call';
 import { getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { Relations } from '../relation/relations';
+import { Relations } from '../relation/property';
 import { PropertySchema } from './type';
 import { NodeSchema } from '../node/type';
 import { PropertyProperty } from './property';

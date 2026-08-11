@@ -9,7 +9,6 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
-import { ForSchema } from '../../property/core/forSchema';
 import { Attach } from '../../property/core/attach';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
@@ -20,8 +19,6 @@ import { PrimaryIndex } from '../../property/core/indexes';
 import { UpLimitString } from '../../property/constraint/upLimit';
 import { Require } from '../../property/constraint/require';
 import { Valid } from '../../property/constraint/valid';
-import { PropertyValueType } from '../../property/core/propertyValueType';
-import { EntrySourceConsumer } from '../../property/core/entrySourceConsumer';
 import { DisplayOnly } from '../../property/common/displayOnly';
 import { ReadOnly } from '../../property/common/readOnly';
 import { OverrideType } from '../../property/core/overrideType';
@@ -34,11 +31,10 @@ import { DataNodeType } from '../../property/core/dataNodeType';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
 import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
-import { IProperty, Property } from '../../property/property';
-import { setProperty, setPropertyValue, combineProperties } from '../../property/propertyOwner';
+import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { FunctionType } from '../../runtime/type/functionType';
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { ExpType } from '../../enum/expType';
 import { Base } from '../../property/core/base';
@@ -51,23 +47,12 @@ import { FuncArgsNode } from '../../node/function/funcArgsNode';
 import { FuncExpNode } from '../../node/function/funcExpNode';
 import { FuncArgNode } from '../../node/function/funcArgNode';
 import { FuncExpArgsNode } from '../../node/function/funcExpArgsNode';
+import { CallArg, FuncArg, FuncExp, FunctionSchema } from './type';
+import { NodeSchema } from '../node/type';
+import { Relations } from '../relation/property';
+import { FuncProperty } from './property';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
-
-/** Pure data interface for function schema extension data. */
-export interface FunctionSchema {
-  /** The return type of the function. 'T', 'T1', 'T2' denote generic type params. */
-  return: string;
-
-  /** The function arguments. */
-  args: FuncArg[];
-
-  /** The function expressions (compiled body). */
-  exps: FuncExp[];
-
-  /** The runtime function reference (not part of schema). */
-  func?: Function; // runtime function reference (not part of schema)
-}
 
 @Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
@@ -100,18 +85,6 @@ class FunctionSchemaMeta implements FunctionSchema {
 
 // #region ── FuncArg ────────────────────────────────────────────────────────────
 
-/**
- * A single argument definition of a function.
- * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs FuncArg.
- */
-export interface FuncArg {
-  /** The argument name. */
-  name: string;
-
-  /** The argument type. 'T', 'T1', 'T2' denote generic type params. */
-  type: string;
-}
-
 /** Meta registration class for function argument (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_ORDER_FUNC_ARG])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.arg`)
@@ -132,27 +105,6 @@ class FuncArgMeta implements FuncArg {
 // #endregion
 
 // #region ── FuncExp ────────────────────────────────────────────────────────────
-
-/**
- * A single expression in the function body.
- * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs FuncExp.
- */
-export interface FuncExp {
-  /** The expression name (identifier). */
-  name: string;
-
-  /** The return type of this expression. */
-  return: string;
-
-  /** The expression evaluation type (Call / Map / Reduce / etc.). */
-  type: ExpType;
-
-  /** The function to call — schema type of the target function. */
-  func: string;
-
-  /** Arguments — list of expression names or argument names. */
-  args: CallArg[];
-}
 
 /** Meta registration class for function expression (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exp`)
@@ -198,21 +150,6 @@ class FuncExpMeta implements FuncExp {
 
 // #region ── CallArg ────────────────────────────────────────────────────────────
 
-/**
- * A single argument in a function call.
- * If source is set, the value is a source reference path; otherwise value is a constant.
- * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs CallArg.
- */
-export interface CallArg {
-  /** The runtime type hint. */
-  type?: string;
-
-  /** The argument source path (e.g. field access path). */
-  source?: string;
-
-  /** The constant value. */
-  value?: unknown;
-}
 
 /** Meta registration class for call argument (NOT exported). */
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG)
@@ -243,38 +180,7 @@ class CallArgMeta implements CallArg {
 
 // #endregion
 
-// #region ── FuncProperty ───────────────────────────────────────────────────────
-
-/** The function property for node schemas. */
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_FUNCTION))
-export class FuncProperty extends Property<FunctionSchema> {
-  combine(other: IProperty): boolean {
-    const otherSchema = other?.getValue<FunctionSchema>();
-    if (!otherSchema) return false;
-    const selfSchema = this.getValue<FunctionSchema>();
-    if (!selfSchema) {
-      this.setValue(otherSchema);
-      return true;
-    }
-
-    // Combine argument display
-    for (let i = 0; i < Math.min(selfSchema.args.length, otherSchema.args.length); i++) {
-      const arg = selfSchema.args[i];
-      const otherArg = otherSchema.args[i];
-      if (!otherArg || otherArg.type !== arg.type) continue;
-      combineProperties(arg, otherArg, SCHEMA_KIND_FUNC_ARG);
-    }
-
-    // Combine properties
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_FUNCTION);
-    this.setValue(selfSchema);
-    return true;
-  }
-}
+// #region ── FunType ───────────────────────────────────────────────────────
 
 /** Represents the function type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)

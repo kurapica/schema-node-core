@@ -1,35 +1,25 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
-import { Relation } from '../../attribute/relation';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
-import { ForSchema } from '../../property/core/forSchema';
-import { IProperty, Property } from '../../property/property';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';
-import { PropertyValueType } from '../../property/core/propertyValueType';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/constraint/valid';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { Visible } from '../../property/common/visible';
 import { DateValue } from '../../property/constraint/dateValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
-import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { Call } from '../../relation/call';
 import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { DateType } from '../../runtime/type/scalar/dateType';
-import { NODE_SELF, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { NODE_SELF, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { NodeSchema } from '../nodeSchema';
-
-/** The date schema */
-export interface DateSchema {
-  /** The base schema type */
-  base?: string;
-}
+import { NodeSchema } from '../node/type';
+import { setProperty, setPropertyValue } from '../../property/propertyOwner';
+import { DateProperty } from './property';
+import { DateSchema } from './type';
 
 /** the date schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DATE, SCHEMA_KIND_ORDER_DATE])
@@ -43,29 +33,6 @@ export interface DateSchema {
 class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;
-}
-
-/** The date property for node schema */
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.date`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DATE))
-export class DateProperty extends Property<DateSchema>
-{
-  combine(other: IProperty): boolean {
-    const otherSchema = other.getValue<DateSchema>();
-    if (!otherSchema) return false;
-    const selfSchema = this.getValue<DateSchema>();
-    if (!selfSchema)
-    {
-      this.setValue(otherSchema);
-      return true;
-    }
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_DATE);
-    this.setValue(selfSchema);
-    return true;
-  }
 }
 
 /** Represents the date value type */

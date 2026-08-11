@@ -28,7 +28,7 @@ import { NodeType } from './type/nodeType';
 import { GenericType } from './type/genericType';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { getSchemaProvider } from '../schema/provider/schemaProvider';
+import { getSchemaProvider } from '../schema/provider';
 import { combineProperties, setPropertyValue } from '../property/propertyOwner';
 import { StructProperty, StructSchema } from '../schema/structSchema';
 import { combinePaths } from '../utility/toolset';

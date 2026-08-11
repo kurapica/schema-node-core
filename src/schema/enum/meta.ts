@@ -40,7 +40,7 @@ import { EnumValue } from '../../property/constraint/enumValue';
 import { Assign } from '../../relation/assign';
 import { EnumSchema } from './type';
 import { NodeSchema } from '../node/type';
-import { EnumProperty } from './enum';
+import { EnumProperty } from './property';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])

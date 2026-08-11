@@ -17,7 +17,7 @@ import { FuncProperty, type FuncArg, type FuncExp, type CallArg, type FunctionSc
 import { ExpType } from '../../enum/expType';
 import { getPropertiesBySchemaKind, getProperty } from '../../property/propertyOwner';
 import { getNodeType } from '../schemaRuntime';
-import { getSchemaProvider } from '../../schema/provider/schemaProvider';
+import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
 import { Converter } from '../../property/function/converter';
 import { IProperty, isTypeRefProperty, ITypeRefProperty, PropertyCtor } from '../../property/property';

@@ -1,35 +1,22 @@
 import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
-import { Relation } from '../../attribute/relation';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
-import { ForSchema } from '../../property/core/forSchema';
-import { IProperty, Property } from '../../property/property';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';
-import { PropertyValueType } from '../../property/core/propertyValueType';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/constraint/valid';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { Visible } from '../../property/common/visible';
 import { StringValue } from '../../property/constraint/stringValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../property/funcCallProperty';
-import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { Call } from '../../relation/call';
+import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { StringType } from '../../runtime/type/scalar/stringType';
-import { NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_STRING_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
+import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { NodeSchema } from '../nodeSchema';
-
-/** The decimal schema */
-export interface StringSchema {
-  /** The base schema type  */
-  base?: string
-}
 
 /** the date schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
@@ -43,29 +30,6 @@ export interface StringSchema {
 class StringSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_STRING_TYPE)
   base?: string;
-}
-
-/** The date property for node schema */
-@Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.string`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRING))
-export class StringProperty extends Property<StringSchema>
-{
-  combine(other: IProperty): boolean {
-    const otherSchema = other.getValue<StringSchema>();
-    if (!otherSchema) return false;
-    const selfSchema = this.getValue<StringSchema>();
-    if (!selfSchema)
-    {
-      this.setValue(otherSchema);
-      return true;
-    }
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_STRING);
-    this.setValue(selfSchema);
-    return true;
-  }
 }
 
 /** Represents the string value type */

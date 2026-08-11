@@ -12,4 +12,4 @@ export * from './scalar/dateSchema';
 export * from './enumSchema';
 export * from './structSchema';
 export * from './arraySchema';
-export * from './provider/schemaProvider';
+export * from './provider';

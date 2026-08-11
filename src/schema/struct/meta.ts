@@ -37,12 +37,12 @@ import { Base } from '../../property/core/base';
 import { saveNodeSchema } from '../../runtime/schemaRuntime';
 import { Call } from '../../relation/call';
 import { buildFuncCall } from '../../property/funcCallProperty';
-import { Relations } from '../relation/relations';
+import { Relations } from '../relation/property';
 import { StructFieldSchema, StructSchema } from './type';
 import { NodeSchema } from '../node/type';
-import { StructProperty } from './struct';
+import { StructProperty } from './property';
 import { ArraySchema } from '../array/type';
-import { ArrayProperty } from '../array/array';
+import { ArrayProperty } from '../array/property';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
