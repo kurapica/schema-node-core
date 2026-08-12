@@ -1,8 +1,11 @@
 import { RelationStage } from "../enum/relationStage";
 import type { Observer } from "../utility/observable";
+import type { IValueTypeAccess } from "./valueTypeAccess";
 
 /** Objects that provide path-based value access. */
 export interface IValueAccess {
+  get type(): IValueTypeAccess;
+
   // #region ── Value Access ──────────────────────────────────────────────────
 
   /** Whether this node holds no value. */

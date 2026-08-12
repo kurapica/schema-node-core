@@ -126,6 +126,11 @@ export function registerSchemaType(type: string, typeCtor: Function): void {
   _schemaTypeRegistry.set(type.toLowerCase(), typeCtor);
 }
 
+/** Gets the schema type for a class constructor */
+export function getSchemaKindRegister(kind: string): Function | undefined {
+  return _schemaKindRegistry.get(kind.toLowerCase());
+}
+
 /**
  * Gets the schema type for a class constructor
  * @param typeCtor The type constructor or instance

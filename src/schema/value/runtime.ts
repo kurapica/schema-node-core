@@ -11,11 +11,14 @@ import { isEmpty } from '../../utility/toolset';
 import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 import type { Entry } from '../../struct/entry';
 import { NodeType } from '../node/runtime';
-import type { IValueTypeAccess } from '../../interface/valueTypeAccess';
+import type { IValueTypeAccess, ValueAccessFactory } from '../../interface/valueTypeAccess';
 import type { IValueAccess } from '../../interface/valueAccess';
 import type { IPropertyProvider } from '../../interface/propertyProvider';
 import type { DataNode } from './node';
 import type { INodeType } from '../../interface';
+import { getSchemaKindRegister, getSchemaType } from '../../runtime/schemaRuntime';
+import { getMetaProperty } from '../../attribute/meta';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** Represents the value schema type */
 export abstract class ValueType extends NodeType implements IValueTypeAccess {
@@ -39,7 +42,22 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
-  abstract create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode;
+  create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess {
+    // check parent given data node type
+    if (parent?.type instanceof ValueType && propProvider?.getProperty('name')?.hasValue) {
+      const schemaType = getSchemaType(parent.type.name);
+      const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType, propProvider.getProperty('name')!.getValue<string>())?.getValue<ValueAccessFactory>() : undefined;
+      if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
+    }
+
+    const schemaType = getSchemaType(this.name);
+    const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType)?.getValue<ValueAccessFactory>() : undefined;
+    if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
+    
+    const kindType = getSchemaKindRegister(this.kind)!;
+    const kindDataNodeType = getMetaProperty(kindType, DataNodeType)?.getValue<ValueAccessFactory>()!;
+    return new kindDataNodeType(this, value, parent, propProvider);
+  }
 
   // ── Virtual ────────────────────────────────────────────────────────────
 

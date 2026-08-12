@@ -5,7 +5,7 @@
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
-import { isEmpty, isEqual, isNull } from '../../utility/toolset';
+import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry/type';
 import { Attach } from '../../property/core/attach';
 import { DataNodeType } from '../../property/core/dataNodeType';
@@ -36,9 +36,6 @@ import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRef
 import type { GenericParameter } from '../generic/type';
 import type { INodeType } from '../../interface/nodeType';
 import { getNodeType } from '../../runtime/context';
-import { OverrideType } from '../../property/core/overrideType';
-import { OverrideFields } from '../../property/core/overrideFields';
-import type { NodeSchema } from '../node/type';
 import { StructNode } from './node';
 
 // ── StructType ────────────────────────────────────────────────────────────

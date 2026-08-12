@@ -25,7 +25,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
 
     const fields = type.getFields();
     for (const field of fields.filter(f => f.type)) {
-      const node = field.type!.create(undefined, this, field);
+      const node = field.type!.create(undefined, this, field) as DataNode;
       this._fields.push(node);
     }
 
@@ -297,7 +297,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         await newStrucType.loadType(nodeSchema);
         type = newStrucType;
       }
-      const newNode = type.create(node.original, this, strutField);
+      const newNode = type.create(node.original, this, strutField) as DataNode;
       newNode.value = node.rawValue;
       node.moveSubscription(newNode);
       
