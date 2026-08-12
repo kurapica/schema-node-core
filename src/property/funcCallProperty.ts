@@ -3,30 +3,9 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
-import { Meta } from '../attribute/meta';
-import { CallArg } from '../schema/functionSchema';
-import { NODE_SELF, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN } from '../utility/constant';
-import { DisplayOnly } from './common/displayOnly';
-import { InVisible } from './common/invisible';
-import { ReadOnly } from './common/readOnly';
-import { Valid } from './constraint/valid';
-import { SchemaType } from './core/schemaType';
+import type { FuncCall } from '../schema/function/type';
 import { Property } from './property';
-import type { ITypeRefProperty } from './property';
-
-/**
- * Represents a deferred function call: func(args...).
- */
-export interface FuncCall {
-  /** The return type of the function */
-   return?: string;
-
-  /** Fully qualified function schema name. */
-  func: string;
-  
-  /** Call arguments. */
-  args: CallArg[];
-}
+import type { ITypeRefProperty } from './typeRefProperty';
 
 /**
  * Property whose value is a FuncCall.
@@ -38,49 +17,5 @@ export abstract class FuncCallProperty extends Property<FuncCall> implements ITy
   *getRefTypes(): Generator<string> {
     if (this._value?.func)
       yield this._value.func;
-  }
-}
-
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
-class FuncCallMeta implements FuncCall {
-  /** The return type of the function */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-  @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
-  return?: string;
-
-  /** Fully qualified function schema name. */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-  @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, '@return'))
-  func!: string;
-
-  /** Call arguments. */
-  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
-  args!: CallArg[];
-}
-
-/** build the function call for simple */
-export function buildFuncCall(func: string, ...args: unknown[]): FuncCall
-{
-  return {
-    func,
-    args: args.map(a => {
-      if (typeof(a) === 'string')
-      {
-        if (a.startsWith('@'))
-        {
-          if (a.startsWith('@@'))
-            return { value: a.substring(1) }
-          return { source: a.substring(1) }
-        }
-        else if (a.startsWith('$'))
-        {
-          if (a.startsWith('$$'))
-            return { value: a.substring(1) }
-          return { source: a }
-        }
-      }
-      return { value: a }
-    })
   }
 }

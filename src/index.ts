@@ -20,9 +20,6 @@ export * from './relation/index';
 // ── Schema Types ────────────────────────────────────────────────────────────
 export * from './schema/index';
 
-// ── Node ────────────────────────────────────────────────────────────────────
-export * from './node/index';
-
 // ── Scalar Types ────────────────────────────────────────────────────────────
 export * from './scalar/index';
 

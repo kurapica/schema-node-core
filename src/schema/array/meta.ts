@@ -3,33 +3,25 @@
 // =============================================================================
 
 import { Meta } from '../../attribute/meta';
-import { Relation } from '../../attribute/relation';
-import { ArrayValue } from '../../property/constraint/arrayValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { buildFuncCall } from '../../property/funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
 import { Append } from '../../property/core/append';
-import { ForSchema } from '../../property/core/forSchema';
 import { OfSchema } from '../../property/core/ofSchema';
 import { Valid } from '../../property/constraint/valid';
-import { Visible } from '../../property/common/visible';
-import { PropertyValueType } from '../../property/core/propertyValueType';
 import { Require } from '../../property/constraint/require';
-import { Default } from '../../property/common/default';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
-import { IProperty, Property } from '../../property/property';
-import { combineProperties } from '../../property/propertyOwner';
-import { Call } from '../../relation/call';
-import { ArrayType } from '../../runtime/type/arrayType';
-import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, ENTRY_ROOT } from '../../utility/constant';
-import { ArraySchema } from './type';
+import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, ENTRY_ROOT } from '../../utility/constant';
+import type { ArraySchema } from './type';
 import { Relations } from '../relation/property';
+import { ArrayType } from './runtime';
+import { ArrayValue } from './valid';
 
 /** The array schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])

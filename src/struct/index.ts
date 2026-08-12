@@ -1,5 +1,4 @@
 // Struct helper types — Identifier, LocaleString, etc.
-export * from './localeTran';
+export * from './entry';
 export * from './localeString';
 export * from './rangeDate';
-export * from './entry';

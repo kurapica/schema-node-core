@@ -6,7 +6,7 @@ import { PropertyValueType } from '../core/propertyValueType';
 import { Alias } from '../core/alias';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, NS_SYSTEM_DATE, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE } from '../../utility/constant';
-import { IValueAccess } from '../../runtime/interfaces';
+import type { IValueAccess } from '../../interface/valueAccess';
 import { isNull, parseDate } from '../../utility/toolset';
 import { Error } from '../common/error';
 

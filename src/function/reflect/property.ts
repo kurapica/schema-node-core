@@ -5,9 +5,9 @@ import { Return } from '../../property/function/return';
 import { SchemaType } from '../../property/core/schemaType';
 import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';
-import { PropertyType } from '../../runtime/type/propertyType';
 import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from '../../utility/constant';
-import { getNodeType } from '../../runtime/schemaRuntime';
+import { getNodeType } from '../../runtime/context';
+import { PropertyType } from '../../schema/property/runtime';
 
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {

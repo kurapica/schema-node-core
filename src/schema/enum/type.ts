@@ -1,6 +1,6 @@
-import { EnumValueTypeValue } from "../../enum/enumValueType";
-import { Entry } from "../../struct/entry";
-import { LocaleString } from "../../struct/localeString";
+import type { EnumValueTypeValue } from "../../enum/enumValueType";
+import type { Entry } from "../../struct/entry/type";
+import type { LocaleString } from "../../struct/localeString/type";
 
 /** The enum schema */
 export interface EnumSchema {

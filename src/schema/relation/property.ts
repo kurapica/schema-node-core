@@ -2,9 +2,10 @@ import { Meta } from "../../attribute/meta";
 import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
-import { IProperty, Property } from "../../property/property";
+import type { IProperty } from "../../interface/valueAccess";
+import { Property } from "../../property/property";
 import { NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_PROPERTY } from "../../utility/constant";
-import { RelationSchema } from "./type";
+import type { RelationSchema } from "./type";
 
 /** The relations property */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

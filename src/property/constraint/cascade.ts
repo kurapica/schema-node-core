@@ -3,19 +3,19 @@ import { OfSchema } from '../core/ofSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { ForSchema } from '../core/forSchema';
-import { buildFuncCall } from '../funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { EntrySource } from '../core/entrySource';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
-import { IValueAccess } from '../../runtime/interfaces';
-import { EnumArrayNode } from '../../node/enumArrayNode';
-import { EnumNode } from '../../node/enumNode';
-import { EnumType } from '../../runtime/type/enumType';
+import type { IValueAccess } from '../../interface/valueAccess';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Assign } from '../../relation/assign';
-import { Call } from '../../relation/call';
+import { Assign } from '../../relation/assign/meta';
+import { Call } from '../../relation/call/meta';
+import { EnumNode } from '../../schema/enum/node';
+import { EnumType } from '../../schema/enum/runtime';
+import { EnumArrayNode } from '../../schema/enum/array';
 
 /** Limit the cascade level of the enum entry. */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])

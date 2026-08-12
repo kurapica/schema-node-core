@@ -5,7 +5,8 @@
 
 import { getSchemaKindPropertyTypes } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
-import { getPropertyName, ITypeRefProperty, PropertyCtor, type IProperty } from './property';
+import type { IProperty, PropertyCtor } from '../interface/valueAccess';
+import { getPropertyName } from './property';
 
 /**
  * Get a single property by its class constructor.
@@ -29,7 +30,8 @@ export function getProperty(owner: any, propCtor: PropertyCtor): IProperty | und
 }
 
 /** Gets the property value from the owner */
-export function getPropertyValue<T>(owner: any, propCtor: PropertyCtor): T | undefined {
+export function getPropertyValue<T>(owner: any, propCtor: PropertyCtor | string): T | undefined {
+  if (typeof propCtor === 'string') return owner[propCtor] as T; // for simple now
   return getProperty(owner, propCtor)?.getValue<T>();
 }
 

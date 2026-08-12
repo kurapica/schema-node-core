@@ -5,13 +5,10 @@
 
 import { RelationStage } from '../enum/relationStage';
 import { getPropertyName } from '../property/property';
-import { OfSchema } from '../property/core/ofSchema';
-import { RelationKind } from '../property/record/relationKind';
-import type { PropertyCtor } from '../property/property';
+import type { PropertyCtor } from '../interface/valueAccess';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
-import { RelationSchema } from '../schema/relationSchema';
 import { NODE_SELF, SCHEMA_KIND_PROPERTY } from '../utility/constant';
-import { getMetaProperty } from './meta';
+import type { RelationSchema } from '../schema/relation/type';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
 
@@ -43,14 +40,14 @@ export function Relation(
   stage?: RelationStage
 ): ClassDecorator & PropertyDecorator & ParameterDecorator {
   if (typeof kind !== 'string')
-    kind = getMetaProperty(kind, RelationKind)?.getValue<string>() ?? '';
+    kind = (kind as unknown as Record<string, string>).relationKind;
   if (!kind)
     throw new Error(`Can't figure out the relation kind of ${kind}`);
 
   return ((tar: object, _memberKey?: string, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? getMetaProperty(ctor, OfSchema)?.getValue<string>() === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
+      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? (ctor as unknown as Record<string, string>).ofSchema === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
       property: getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,

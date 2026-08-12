@@ -1,6 +1,6 @@
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { SCHEMA_KIND_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY } from '../../utility/constant';
+import { SCHEMA_KIND_STRING, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_FUNC } from '../../utility/constant';
 import { ReadOnly } from '../common/readOnly';
 import { InVisible } from '../common/invisible';
 import { ForSchema } from "./forSchema";
@@ -13,7 +13,7 @@ import { Static } from "./static";
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.EntrySourceConsumer`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.funccall`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)

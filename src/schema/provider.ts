@@ -2,7 +2,7 @@
 // Schema provider interfaces
 // =============================================================================
 
-import { NodeSchema } from "./node/type";
+import type { NodeSchema } from "./node/type";
 
 /** Interface for node schema familiy */
 export interface INodeSchemaProvider {

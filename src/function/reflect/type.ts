@@ -9,15 +9,14 @@ import { Require } from '../../property/constraint/require';
 import { Variadic } from '../../property/function/variadic';
 import { getRecordedValues } from '../../property/recordProperty';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { NamespaceType } from '../../runtime/type/namespaceType';
-import { PropertyType } from '../../runtime/type/propertyType';
-import { ValueType } from '../../runtime/type/valueType';
-import { ArrayType } from '../../runtime/type/arrayType';
-import { EntryAccess, Entry } from '../../struct/entry';
-import { LocaleString } from '../../struct/localeString';
+import type { EntryAccess, Entry } from '../../struct/entry/type';
+import type { LocaleString } from '../../struct/localeString/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { getNodeType } from '../../runtime/schemaRuntime';
+import { getNodeType } from '../../runtime/context';
+import { NamespaceType } from '../../schema/namespace/type';
+import { ValueType } from '../../schema/value/runtime';
+import { ArrayType } from '../../schema/array/runtime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)

@@ -4,9 +4,9 @@
 // =============================================================================
 
 import { getMetaProperty } from '../attribute/meta';
+import type { IProperty } from '../interface/valueAccess';
 import { Default } from './common/default';
 import { Property } from './property';
-import type { IProperty } from './property';
 
 /**
  * Interface for properties that carry an ordering index.

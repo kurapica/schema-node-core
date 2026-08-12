@@ -15,7 +15,6 @@ export * from './entrySourceConsumer';
 export * from './accessEntryConsumer';
 export * from './forSchema';
 export * from './fromEnum';
-export * from './generics';
 export * from './indexes';
 export * from './name';
 export * from './ofSchema';

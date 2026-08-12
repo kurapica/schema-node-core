@@ -6,53 +6,12 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 ;
-import { IValueAccess } from '../runtime/interface/valueAccess';
+import type { IValueAccess, IProperty, PropertyCtor } from "../interface/valueAccess";
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
 const _saveableCache = new Map<Function, boolean>();
-
-/**
- * Base interface for all property instances attached to a schema.
- */
-export interface IProperty {
-  /** Canonical property name, e.g. "upLimit", "require", "forSchema". */
-  readonly name: string;
-
-  /** Whether duplicates from different sources stack (accumulate) vs override. */
-  readonly stackable: boolean;
-
-  /** Whether the property is static, which means the property value cannot be modified by relation system. */
-  readonly static: boolean;
-
-  /** Whether the property carries a non-empty value. */
-  readonly hasValue: boolean;
-
-  /** Whether the property value is savable (persisted) in schema. */
-  readonly savable: boolean;
-
-  /** Whether the property is applicable to the given schema kind. */
-  forSchema(...kinds: string[]): boolean;
-
-  /** Set the raw value onto this property instance. */
-  setValue<T>(value: T): void;
-
-  /** Get the typed value. If matchType is true, returns undefined on type mismatch. */
-  getValue<T>(matchType?: boolean): T | undefined;
-
-  /** Combine the value of another property into this one. */
-  combine(other: IProperty): boolean;
-
-  /** Compare this property to another for equality, used for stackable properties. */
-  equal(other: IProperty): boolean;
-
-  /** Apply the property to the target, or register the target, only works as a decorator. */
-  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
-
-  /** Apply the property effect to the target. */
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void;
-}
 
 /**
  * Abstract base for typed property value holders.
@@ -123,20 +82,6 @@ export abstract class Property<T> implements IProperty {
 
   /** Apply the property effect to the target. */
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {}
-}
-
-export interface ITypeRefProperty extends IProperty {
-  /** Return the referenced type name for type-reference resolution. */
-  getRefTypes(): Generator<string>;
-}
-
-/** The property constructor */
-export type PropertyCtor<T extends IProperty = IProperty> = new () => T;
-
-/** Check if the property has ref type */
-export function isTypeRefProperty(prop: IProperty): prop is ITypeRefProperty
-{
-  return typeof (prop as any).getRefTypes === 'function'
 }
 
 /** Get the property name of the property constructor. */

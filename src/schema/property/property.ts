@@ -6,11 +6,11 @@ import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
-import { buildFuncCall } from "../../property/funcCallProperty";
+import { buildFuncCall } from '../../schema/function/type';
 import { Property } from "../../property/property";
-import { Call } from "../../relation/call";
+import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_LOGIC_EQ } from "../../utility/constant";
-import { PropertySchema } from "./type";
+import type { PropertySchema } from "./type";
 
 /** The 'property' property in node schema */
 @Meta(Alias, 'property')

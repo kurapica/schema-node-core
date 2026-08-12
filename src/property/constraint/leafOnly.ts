@@ -3,17 +3,17 @@ import { OfSchema } from '../core/ofSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { ForSchema } from '../core/forSchema';
-import { buildFuncCall } from '../funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
-import { IValueAccess } from '../../runtime/interfaces';
-import { EnumNode } from '../../node/enumNode';
-import { EnumArrayNode } from '../../node/enumArrayNode';
-import { EnumType } from '../../runtime/type/enumType';
+import type { IValueAccess } from '../../interface/valueAccess';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call';
+import { Call } from '../../relation/call/meta';
 import { ConstraintProperty } from '../constraintProperty';
+import { EnumNode } from '../../schema/enum/node';
+import { EnumType } from '../../schema/enum/runtime';
+import { EnumArrayNode } from '../../schema/enum/array';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

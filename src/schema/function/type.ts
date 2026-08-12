@@ -63,3 +63,43 @@ export interface CallArg {
   /** The constant value. */
   value?: unknown;
 }
+
+/**
+ * Represents a deferred function call: func(args...).
+ */
+export interface FuncCall {
+  /** The return type of the function */
+   return?: string;
+
+  /** Fully qualified function schema name. */
+  func: string;
+  
+  /** Call arguments. */
+  args: CallArg[];
+}
+
+/** build the function call for simple */
+export function buildFuncCall(func: string, ...args: unknown[]): FuncCall
+{
+  return {
+    func,
+    args: args.map(a => {
+      if (typeof(a) === 'string')
+      {
+        if (a.startsWith('@'))
+        {
+          if (a.startsWith('@@'))
+            return { value: a.substring(1) }
+          return { source: a.substring(1) }
+        }
+        else if (a.startsWith('$'))
+        {
+          if (a.startsWith('$$'))
+            return { value: a.substring(1) }
+          return { source: a }
+        }
+      }
+      return { value: a }
+    })
+  }
+}

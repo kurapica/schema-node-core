@@ -10,6 +10,7 @@ import { Property } from '../property';
  */
 export class SchemaType extends Property<string> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        return registerSchemaType(this.getValue<string>()!.toLowerCase(), typeof target === 'function' ? target : target.constructor);
+        registerSchemaType(this.getValue<string>()!.toLowerCase(), typeof target === 'function' ? target : target.constructor);
+        (target as unknown as Record<string, string>).schemaType = this.getValue<string>()!;
     }
 }

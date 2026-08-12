@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs
 // =============================================================================
 
-import { Meta, getMetaMethods, getMetaPropertiesForSchema, getMetaProperty, getMetaProperties } from '../../attribute/meta';
+import { Meta, getMetaMethods, getMetaProperty, getMetaProperties } from '../../attribute/meta';
 import { getRelationSchemas, Relation } from '../../attribute/relation';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { SchemaKind } from '../../property/record/schemaKind';
@@ -32,25 +32,24 @@ import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
 import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { saveNodeSchema } from '../../runtime/schemaRuntime';
-import { FunctionType } from '../../runtime/type/functionType';
+import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { ExpType } from '../../enum/expType';
 import { Base } from '../../property/core/base';
 import { ArgName } from '../../property/function/argName';
-import { Call } from '../../relation/call';
-import { buildFuncCall } from '../../property/funcCallProperty';
-import { ArrayNodeTemplate } from '../../node/arrayNode';
-import { FunctionNode } from '../../node/function/funcNode';
-import { FuncArgsNode } from '../../node/function/funcArgsNode';
-import { FuncExpNode } from '../../node/function/funcExpNode';
-import { FuncArgNode } from '../../node/function/funcArgNode';
-import { FuncExpArgsNode } from '../../node/function/funcExpArgsNode';
-import { CallArg, FuncArg, FuncExp, FunctionSchema } from './type';
-import { NodeSchema } from '../node/type';
+import { Call } from '../../relation/call/meta';
+import { FunctionNode } from './function/funcNode';
+import { FuncArgsNode } from './function/funcArgsNode';
+import { FuncExpNode } from './function/funcExpNode';
+import { FuncArgNode } from './function/funcArgNode';
+import { FuncExpArgsNode } from './function/funcExpArgsNode';
+import { buildFuncCall, type CallArg, type FuncArg, type FuncCall, type FuncExp, type FunctionSchema } from './type';
+import type { NodeSchema } from '../node/type';
 import { Relations } from '../relation/property';
 import { FuncProperty } from './property';
+import { FunctionType } from './runtime';
+import { ArrayNodeTemplate } from '../array/node';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -176,6 +175,24 @@ class CallArgMeta implements CallArg {
   @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
   @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', true, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM))
   value?: unknown;
+}
+
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
+class FuncCallMeta implements FuncCall {
+  /** The return type of the function */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
+  return?: string;
+
+  /** Fully qualified function schema name. */
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+  @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, '@return'))
+  func!: string;
+
+  /** Call arguments. */
+  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL_ARG}>`)
+  args!: CallArg[];
 }
 
 // #endregion

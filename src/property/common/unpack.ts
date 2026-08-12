@@ -11,8 +11,8 @@ import { Visible } from './visible';
 import { PropertyValueType } from '../core/propertyValueType';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_REFLECT, SCHEMA_KIND_OBJECT, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call';
-import { buildFuncCall } from '../funcCallProperty';
+import { Call } from '../../relation/call/meta';
+import { buildFuncCall } from '../../schema/function/type';
 
 /**
  * Declare the struct field is used for pack all non-struct fields data into it

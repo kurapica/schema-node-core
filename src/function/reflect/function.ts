@@ -7,20 +7,18 @@ import { ArgName } from '../../property/function/argName';
 import { Require } from '../../property/constraint/require';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
-import { FunctionType } from '../../runtime/type/functionType';
-import { ValueType } from '../../runtime/type/valueType';
-import { ArrayType } from '../../runtime/type/arrayType';
-import { DecimalType } from '../../runtime/type/scalar/decimalType';
-import { BoolType } from '../../runtime/type/scalar/boolType';
-import { IntType } from '../../runtime/type/scalar/intType';
-import { FuncArg, FuncExp } from '../../schema/functionSchema';
-import { StructFieldSchema } from '../../schema/structSchema';
-import { EntryAccess, Entry } from '../../struct/entry';
-import { LocaleString } from '../../struct/localeString';
+import type { EntryAccess, Entry } from '../../struct/entry/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_STRING } from '../../utility/constant';
 import { _LS } from '../../utility/locale';
 import { combinePaths } from '../../utility/toolset';
-import { getNodeType } from '../../runtime/schemaRuntime';
+import { getNodeType } from '../../runtime/context';
+import { FunctionType } from '../../schema/function/runtime';
+import { ValueType } from '../../schema/value/runtime';
+import { ArrayType } from '../../schema/array/runtime';
+import type { FuncArg, FuncExp } from '../../schema/function/type';
+import { BoolType } from '../../schema/bool';
+import { IntType } from '../../schema/int/runtime';
+import { DecimalType } from '../../schema/decimal/runtime';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)

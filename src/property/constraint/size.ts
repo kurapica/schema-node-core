@@ -1,4 +1,4 @@
-import { buildFuncCall } from '../funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { ForSchema } from '../core/forSchema';
 import { ConstraintProperty } from '../constraintProperty';
 import { LowLimitInt } from './lowLimit';
@@ -8,11 +8,11 @@ import { SchemaType } from '../core/schemaType';
 import { UpLimitInt } from './upLimit';
 import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { ArrayNode } from '../../node/arrayNode';
-import { Call } from '../../relation/call';
-import { IValueAccess } from '../../runtime/interface/valueAccess';
+import { Call } from '../../relation/call/meta';
+import type { IValueAccess } from '../../interface/valueAccess';
 import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
 import { Error } from '../common/error';
+import { ArrayNode } from '../../schema/array/node';
 
 /** The minimum size constraint property for array data node */
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])

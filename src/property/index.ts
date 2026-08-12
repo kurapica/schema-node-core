@@ -5,6 +5,7 @@ export * from './constraintProperty';
 export * from './orderProperty';
 export * from './recordProperty';
 export * from './funcCallProperty';
+export * from './typeRefProperty';
 
 // ── Core properties ───────────────────────────────────────────────────────
 export * from './core/index';

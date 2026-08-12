@@ -1,22 +1,22 @@
-import { getMetaPropertiesForSchema, Meta } from '../../attribute/meta';
+import { Meta } from '../../attribute/meta';
 import { Display } from '../../property/common/display';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/constraint/valid';
-import { BoolValue } from '../../property/constraint/boolValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { buildFuncCall } from '../../property/funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { saveNodeSchema } from '../../runtime/schemaRuntime';
-import { BoolType } from '../../runtime/type/scalar/boolType';
+import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { NodeSchema } from '../node/type';
+import type { NodeSchema } from '../node/type';
+import { BoolType } from './runtime';
+import { BoolValue } from './valid';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])

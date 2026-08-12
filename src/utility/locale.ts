@@ -1,9 +1,15 @@
-import { Observable, Observer } from "./observable"
-import enUS from '../locale/enUS.json'
-import zhCN from '../locale/zhCN.json'
-import { LocaleString } from '../struct/localeString';import { isNull } from "./toolset"
-import { getCachedNodeType } from '../runtime/schemaRuntime';
-import { IValueTypeAccess } from '../runtime/interface/valueAccess';import { Display } from '../property/common/display';const locales: {[key:string]: {[key:string]: string}} = { zhCN, enUS, 'zh': zhCN, 'en': enUS }
+import enUS from '../locale/enUS.json';
+import zhCN from '../locale/zhCN.json';
+
+import { Observable, type Observer } from "./observable";
+import { setLocaleStringFormat, type LocaleString } from '../struct/localeString/type';
+import { isNull } from "./toolset";
+import { getCachedNodeType } from '../runtime/context';
+import { Display } from '../property/common/display';
+import type { IValueTypeAccess } from "../interface/valueTypeAccess";
+import type { INodeType } from '../interface';
+
+const locales: {[key:string]: {[key:string]: string}} = { zhCN, enUS, 'zh': zhCN, 'en': enUS }
 
 // language
 const langWatches = new Observable<[string]>()
@@ -111,7 +117,7 @@ function localeStringToString(value: LocaleString | string | null | undefined): 
               const schema = getCachedNodeType(key)
               if (schema) {
                   if (!isNull(field)) {
-                      const f = (schema as unknown as IValueTypeAccess).getAccessValueType(field)
+                      const f = (schema as unknown as IValueTypeAccess).getAccessValueType(field) as unknown as INodeType;
                       const display = f?.getProperty(Display)?.getValue<LocaleString>();
                       return display?.key ? localeStringToString(display) : _L(f?.name || field)
                   }
@@ -134,8 +140,10 @@ function localeStringToString(value: LocaleString | string | null | undefined): 
 }
 
 /** format string */
-export function sformat(template: string | LocaleString, ...args: any[]): string {
+function sformat(template: string | LocaleString, ...args: any[]): string {
   return _L(template).replace(/{(\d+)}/g, (match, index) => {
     return typeof args[index] !== 'undefined' ? _L(args[index]) : match;
   });
 }
+
+setLocaleStringFormat(sformat)

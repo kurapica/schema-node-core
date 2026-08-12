@@ -2,45 +2,41 @@
 // Mirros C# SchemaNode.Core/Schema/EnumSchema.cs
 // =============================================================================
 
-import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../../attribute/meta';
+import { Meta, getMetaProperty } from '../../attribute/meta';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
-import { ForSchema } from '../../property/core/forSchema';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
-import { Visible } from '../../property/common/visible';
 import { getRecordedValues } from '../../property/recordProperty';
 import { Display } from '../../property/common/display';
-import { PropertyValueType } from '../../property/core/propertyValueType';
 import { EntrySource } from '../../property/core/entrySource';
 import { Immutable } from '../../property/common/immutable';
 import { OverrideType } from '../../property/core/overrideType';
 import { Default } from '../../property/common/default';
-import { IProperty, Property } from '../../property/property';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOGIC_EQ, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
 import { EnumValueType, type EnumValueTypeValue } from '../../enum/enumValueType';
-import { concatLocaleString, LocaleString } from '../../struct/localeString';
+import type { LocaleString } from '../../struct/localeString/type';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { EnumType } from '../../runtime/type/enumType';
 import { Require } from '../../property/constraint/require';
 import { Valid } from '../../property/constraint/valid';
 import { Relation } from '../../attribute/relation';
-import { combineProperties, setProperty, setPropertyValue } from '../../property/propertyOwner';
+import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { FromEnum } from '../../property/core/fromEnum';
 import { combinePaths } from '../../utility/toolset';
-import { saveNodeSchema } from '../../runtime/schemaRuntime';
+import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { Base } from '../../property/core/base';
-import { Call } from '../../relation/call';
-import { buildFuncCall } from '../../property/funcCallProperty';
-import { Entry } from '../../struct/entry';
-import { EnumValue } from '../../property/constraint/enumValue';
-import { Assign } from '../../relation/assign';
-import { EnumSchema } from './type';
-import { NodeSchema } from '../node/type';
+import { Call } from '../../relation/call/meta';
+import { buildFuncCall } from '../../schema/function/type';
+import { type Entry } from '../../struct/entry/type';
+import { Assign } from '../../relation/assign/meta';
+import type { EnumSchema } from './type';
+import type { NodeSchema } from '../node/type';
 import { EnumProperty } from './property';
+import { EnumType } from './runtime';
+import { EnumValue } from './valid';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])

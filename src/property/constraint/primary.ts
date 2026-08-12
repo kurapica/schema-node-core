@@ -4,19 +4,19 @@ import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { ForSchema } from '../core/forSchema';
 import { Static } from '../core/static';
-import { buildFuncCall } from '../funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { EntrySource } from '../core/entrySource';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, ARRAY_ELEMENT } from '../../utility/constant';
-import { IValueAccess } from '../../runtime/interfaces';
-import { ArrayNode } from '../../node/arrayNode';
+import type { IValueAccess } from '../../interface/valueAccess';
 import { isNull } from '../../utility/toolset';
-import { StructNode } from '../../node/structNode';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Assign } from '../../relation/assign';
-import { Call } from '../../relation/call';
+import { Assign } from '../../relation/assign/meta';
+import { Call } from '../../relation/call/meta';
+import { ArrayNode } from '../../schema/array/node';
+import { StructNode } from '../../schema/struct/node';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

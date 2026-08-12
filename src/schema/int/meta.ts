@@ -1,4 +1,4 @@
-import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
+import { getMetaProperty, Meta } from '../../attribute/meta';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
@@ -8,18 +8,18 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/constraint/valid';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { IntValue } from '../../property/constraint/intValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { buildFuncCall } from '../../property/funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { saveNodeSchema } from '../../runtime/schemaRuntime';
-import { IntType } from '../../runtime/type/scalar/intType';
+import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { NODE_SELF, NS_SYSTEM_SCHEMA_INT, NS_SYSTEM_SCHEMA_INT_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_INT, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_INT, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { NodeSchema } from '../node/type';
-import { IntSchema } from './type';
+import type { NodeSchema } from '../node/type';
+import type { IntSchema } from './type';
 import { IntProperty } from './property';
+import { IntType } from './runtime';
+import { IntValue } from './valid';
 
 /** the int schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])

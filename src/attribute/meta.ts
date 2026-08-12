@@ -7,9 +7,7 @@
 // Query supports optional field filter and prototype-chain inheritance.
 // =============================================================================
 
-import type { IProperty, PropertyCtor } from '../property/property';
-import { Default } from '../property/common/default';
-import { isSchemaKindPropertyType } from '../runtime/schemaRuntime';
+import type { IProperty, PropertyCtor } from '../interface/valueAccess';
 import { isEmpty, isNull } from '../utility/toolset';
 
 const META_KEY = Symbol('schema-node:meta');
@@ -57,9 +55,9 @@ export function Meta(
       prop.setValue(value);
     } else {
       // Check if propCtor has @Meta(Default) on itself
-      const defaultProp = getMetaProperty(propCtor, Default) as Default | undefined;
-      if (defaultProp?.hasValue) {
-        prop.setValue(defaultProp.getValue());
+      const defaultProp = (propCtor as unknown as Record<string, unknown>).default;
+      if (!isNull(defaultProp)) {
+        prop.setValue(defaultProp);
       }
     }
     if (prop.hasValue === false) return; // Don't store empty metadata
@@ -158,18 +156,4 @@ export function getMetaProperties<T extends IProperty>(
     results.push(p as unknown as T);
   }
   return results;
-}
-
-/**
- * Get Meta properties filtered by ForSchema kind. 
- */
-export function getMetaPropertiesForSchema<T extends IProperty>(
-  kind: string,
-  ctor: Function,
-  propCtor?: new () => T,
-  field?: string | symbol,
-  index?: number
-): T[] {
-  return getMetaProperties(ctor, propCtor, field, index)
-    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as PropertyCtor));
 }

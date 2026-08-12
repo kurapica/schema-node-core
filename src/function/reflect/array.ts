@@ -8,13 +8,13 @@ import { getRecordedValues } from '../../property/recordProperty';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
-import { ValueType } from '../../runtime/type/valueType';
-import { ArrayType } from '../../runtime/type/arrayType';
-import { EntryAccess, Entry } from '../../struct/entry';
+import type { EntryAccess, Entry } from '../../struct/entry/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
 import { _LS } from '../../utility/locale';
 import { combinePaths } from '../../utility/toolset';
-import { getNodeType } from '../../runtime/schemaRuntime';
+import { getNodeType } from '../../runtime/context';
+import { ValueType } from '../../schema/value/runtime';
+import { ArrayType } from '../../schema/array/runtime';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)

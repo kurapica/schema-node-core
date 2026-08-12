@@ -9,7 +9,7 @@ import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../property/function/return';
 import { ArgName } from '../property/function/argName';
 import { Converter } from '../property/function/converter';
-import { LocaleString } from '../struct/localeString';
+import type { LocaleString } from '../struct/localeString/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
 
 // ── Main class ─────────────────────────────────────────────────────────────

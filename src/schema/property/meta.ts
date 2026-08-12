@@ -2,36 +2,31 @@
 // PropertySchema — extension data under "property" key
 // =============================================================================
 
-import { Meta, getMetaPropertiesForSchema, getMetaProperty } from '../../attribute/meta';
-import { Relation } from '../../attribute/relation';
+import { Meta, getMetaProperty } from '../../attribute/meta';
 import { Base } from '../../property/core/base';
-import { buildFuncCall } from '../../property/funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
 import { Append } from '../../property/core/append';
-import { ForSchema } from '../../property/core/forSchema';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { Require } from '../../property/constraint/require';
 import { PropertyValueType } from '../../property/core/propertyValueType';
-import { Visible } from '../../property/common/visible';
-import { Alias } from '../../property/core/alias';
 import { Valid } from '../../property/constraint/valid';
 import { Display } from '../../property/common/display';
-import { IProperty, PropertyCtor } from '../../property/property';
+import { type PropertyCtor } from '../../interface/valueAccess';
 import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';
-import { getPropertyName, Property } from '../../property/property';
+import { getPropertyName } from '../../property/property';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
-import { Call } from '../../relation/call';
-import { getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { getMetaPropertiesForSchema, getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { Relations } from '../relation/property';
-import { PropertySchema } from './type';
-import { NodeSchema } from '../node/type';
+import type { PropertySchema } from './type';
+import type { NodeSchema } from '../node/type';
 import { PropertyProperty } from './property';
 
 /** Meta registration class (NOT exported). */

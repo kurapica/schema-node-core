@@ -1,4 +1,4 @@
-import { SchemaLoadState } from "../../enum/schemaLoadState";
+import type { SchemaLoadState } from "../../enum/schemaLoadState";
 import { combinePaths } from "../../utility/toolset";
 
 /** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
@@ -32,7 +32,6 @@ export interface NodeSchema {
 export interface CompatibleSchema {
   type: string;
 }
-
 
 /** Gets the node schema full name */
 export function getNodeSchemaName(nodeSchema: NodeSchema) {

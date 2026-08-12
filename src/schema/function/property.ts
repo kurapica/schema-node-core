@@ -5,12 +5,13 @@ import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
-import { buildFuncCall } from "../../property/funcCallProperty";
-import { IProperty, Property } from "../../property/property";
+import { buildFuncCall } from '../../schema/function/type';
+import type { IProperty } from "../../interface/valueAccess";
+import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { Call } from "../../relation/call";
+import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_FUNC_ARG } from "../../utility/constant";
-import { FunctionSchema } from "./type";
+import type { FunctionSchema } from "./type";
 
 /** The function property for node schemas. */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])

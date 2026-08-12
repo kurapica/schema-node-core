@@ -8,7 +8,7 @@ import { OfSchema } from '../core/ofSchema';
 import { ForSchema } from '../core/forSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
-import { buildFuncCall } from '../funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { BlackList } from '../constraint/blackList';
 import { Cascade } from '../constraint/cascade';
 import { LeafOnly } from '../constraint/leafOnly';
@@ -18,10 +18,10 @@ import { SingleFlag } from '../constraint/singleFlag';
 import { Visible } from './visible';
 import { WhiteList } from '../constraint/whiteList';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_BOOL, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_OBJECT, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
-import { IValueAccess } from '../../runtime/interface/valueAccess';
 import { isEmpty, isEqual } from '../../utility/toolset';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call';
+import { Call } from '../../relation/call/meta';
+import type { IValueAccess } from '../../interface/valueAccess';
 
 /** The Default property represents the default value */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
@@ -37,6 +37,10 @@ import { Call } from '../../relation/call';
 @Relation(Cascade, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascade'))
 @Relation(SingleFlag, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@singleFlag'))
 export class Default extends Property<unknown> {
+    apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
+        (target as unknown as Record<string, unknown>).default = this.getValue()!; // avoid cycle reference
+    }
+
     override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
         const origin = target.getValue();
         if (isEmpty(origin) || isEqual(origin, oldValue))

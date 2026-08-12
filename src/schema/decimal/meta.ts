@@ -1,4 +1,4 @@
-import { getMetaPropertiesForSchema, getMetaProperty, Meta } from '../../attribute/meta';
+import { getMetaProperty, Meta } from '../../attribute/meta';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
@@ -8,18 +8,18 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/constraint/valid';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { DecimalValue } from '../../property/constraint/decimalValue';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { buildFuncCall } from '../../property/funcCallProperty';
+import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { saveNodeSchema } from '../../runtime/schemaRuntime';
-import { DecimalType } from '../../runtime/type/scalar/decimalType';
+import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { NODE_SELF, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL,  SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import { NodeSchema } from '../node/type';
-import { DecimalSchema } from './type';
+import type { NodeSchema } from '../node/type';
+import type { DecimalSchema } from './type';
 import { DecimalProperty } from './property';
+import { DecimalType } from './runtime';
+import { DecimalValue } from './valid';
 
 /** the decimal schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])

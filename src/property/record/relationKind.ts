@@ -8,4 +8,8 @@ import { SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_RELATION, NS_SYSTEM_STRING } from '.
 @Meta(OfSchema, SCHEMA_KIND_ENUM)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.kind`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
-export class RelationKind extends RecordProperty<string> {}
+export class RelationKind extends RecordProperty<string> {
+    apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
+        (target as unknown as Record<string, string>).relationKind = this.getValue<string>()!;
+    }
+}
