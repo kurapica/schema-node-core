@@ -3,11 +3,9 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/ScalarType.cs
 // =============================================================================
 
-import type { INodeType } from '../../interface/nodeType';
-import { joinProperties } from '../../interface/propertyProvider';
-import type { IProperty, PropertyCtor } from '../../interface/valueAccess';
+import type { INodeType, IProperty, PropertyCtor } from '../../interface';
+import { joinProperties } from '../../interface';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
-import { NodeType } from '../node/runtime';
 import { ValueType } from './runtime';
 
 export abstract class ScalarType extends ValueType {

@@ -1,6 +1,5 @@
 import { ExpType } from "../../../enum/expType";
-import type { IPropertyProvider } from "../../../interface/propertyProvider";
-import type { IValueAccess } from "../../../interface/valueAccess";
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { NODE_SELF, NODE_TYPE } from "../../../utility/constant";
 import { isNull } from "../../../utility/toolset";
 import { ArrayType } from "../../array/runtime";

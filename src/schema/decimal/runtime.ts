@@ -1,17 +1,12 @@
-import type { IPropertyProvider } from "../../interface/propertyProvider";
-import type { IValueAccess } from "../../interface/valueAccess";
-import type { IProperty } from "../../interface/valueAccess";
+import type { IProperty } from "../../interface";
 import { getPropertiesBySchemaKind, getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
 import { SCHEMA_KIND_DECIMAL } from "../../utility/constant";
 import { ScalarType } from "../value/scalar";
-import { DecimalNode } from "./node";
 import type { DecimalSchema } from "./type";
 
 export class DecimalType extends ScalarType {
   private _decimalSchema: DecimalSchema | undefined
-
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DecimalNode { return new DecimalNode(this, value, parent, propProvider); }
 
   override loadProperties(): IProperty[] {
     this._decimalSchema = getPropertyValue<DecimalSchema>(this.schema, "decimal");

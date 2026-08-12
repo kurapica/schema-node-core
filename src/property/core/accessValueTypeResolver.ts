@@ -14,7 +14,7 @@ import { PropertyValueType } from "./propertyValueType";
 import { SchemaType } from "./schemaType";
 import { Static } from "./static";
 import { getNodeType } from '../../runtime/context';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 import { FunctionType } from '../../schema/function/runtime';
 
 /** The access value provider property */

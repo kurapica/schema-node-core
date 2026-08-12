@@ -2,7 +2,7 @@
 // Mirrors C# SchemaNode.Core/Property/Common/Unit.cs
 // =============================================================================
 
-import type { IProperty } from '../../interface/valueAccess';
+import type { IProperty } from '../../interface';
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { OfSchema } from '../core/ofSchema';

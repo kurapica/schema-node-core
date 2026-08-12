@@ -1,4 +1,4 @@
-import type { IRelation, IValueAccess } from "../../interface/valueAccess";
+import type { IRelation, IValueAccess } from "../../interface";
 import type { RelationSchema } from "./type";
 
 /** The handler to process the relations */

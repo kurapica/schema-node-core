@@ -1,5 +1,4 @@
-import type { IPropertyProvider } from "../../interface/propertyProvider";
-import type { IRelationInfo, IValueAccess, PropertyCtor } from "../../interface/valueAccess";
+import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
 import { Unpack } from "../../property/common/unpack";
 import { OverrideFields } from "../../property/core/overrideFields";
 import { OverrideType } from "../../property/core/overrideType";
@@ -303,8 +302,8 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       
       // replace old node with new node
       this._fields[index] = newNode;
-      if (node.type.name === '__randomStructType')
-        node.type.unloadType();
+      if (node.type.getProperty('name')?.getValue() === '__randomStructType')
+        (node.type as StructType)?.unloadType();
       node.dispose();
 
       // attach relations to new node

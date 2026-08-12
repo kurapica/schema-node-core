@@ -3,8 +3,7 @@
 // Mirrors C# SchemaNode.Core/Node/ArrayNode.cs
 // =============================================================================
 
-import type { IPropertyProvider } from "../../interface/propertyProvider";
-import type { IRelationInfo, IValueAccess } from "../../interface/valueAccess";
+import type { IPropertyProvider, IRelationInfo, IValueAccess } from "../../interface";
 import { MaxSize, MinSize } from "../../property/constraint/size";
 import { Name } from "../../property/core/name";
 import { getPropertiesBySchemaKind } from "../../property/propertyOwner";

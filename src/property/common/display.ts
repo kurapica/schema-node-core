@@ -10,7 +10,7 @@ import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_ENTRY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 import { concatLocaleString, type LocaleString } from '../../struct/localeString/type';
-import type { IProperty } from '../../interface/valueAccess';
+import type { IProperty } from '../../interface';
 
 /**
  * The display property

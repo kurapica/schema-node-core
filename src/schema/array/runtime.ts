@@ -4,30 +4,22 @@
 // =============================================================================
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
-import { DataNodeType } from '../../property/core/dataNodeType';
-import type { IProperty, PropertyCtor } from '../../interface/valueAccess';
-import { Name } from '../../property/core/name';
+import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
 import { Primary } from '../../property/constraint/primary';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry/type';
-import { getMetaProperty } from '../../attribute/meta';
 import { ValueType } from '../value/runtime';
-import type { IRelationProvider } from '../../interface/relationProvider';
 import type { ArraySchema } from './type';
-import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaType } from '../../runtime/schemaRuntime';
+import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import type { RelationSchema } from '../relation/type';
 import { RelationType } from '../relation';
-import type { IRelation, IValueAccess } from '../../interface/valueAccess';
-import type { IPropertyProvider } from '../../interface/propertyProvider';
-import { joinProperties } from '../../interface/propertyProvider';
+import { joinProperties } from '../../interface';
 import { DataNode } from '../value/node';
 import { EnumType } from '../enum/runtime';
-import { EnumArrayNode } from '../enum/array';
-import { ArrayNode } from './node';
 import { getNodeType } from '../../runtime/context';
-import type { INodeType } from '../../interface/nodeType';
+import { EnumValueType } from '../../enum/enumValueType';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;
@@ -74,21 +66,13 @@ export class ArrayType extends ValueType implements IRelationProvider {
     this._relations = undefined;
   }
 
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
-    // Check data node type
-    if (parent instanceof DataNode && propProvider?.getProperty(Name)?.hasValue) {
-      const schemaType = getSchemaType(parent.type.name);
-      const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType, propProvider.getProperty(Name)!.getValue<string>())?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>() : undefined;
-      if (dataNodeType)
-        return new dataNodeType(this, value, parent, propProvider);
-    }
-
+  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess {
     // enum array node
     if (this.element instanceof EnumType)
       return new EnumArrayNode(this, value, parent, propProvider);
 
     // default array node
-    return new ArrayNode(this, value, parent, propProvider);
+    return super.create(value, parent, propProvider);
   }
 
   override *getRefTypes(): Generator<INodeType> {
@@ -131,5 +115,25 @@ export class ArrayType extends ValueType implements IRelationProvider {
   *getRelations(): Generator<IRelation> {
     if (!this._relations?.length) return;
     yield* this._relations;
+  }
+}
+
+/** Enum array node */
+export class EnumArrayNode extends DataNode {
+  readonly enumType: EnumType;
+
+  constructor(type: ArrayType, value?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+      super(type, value, parent, propProvider);
+      this.enumType = type.element as EnumType;
+  }
+
+  override getValue(): unknown[] {
+    const value = this._value as unknown[];
+    if (!Array.isArray(value)) return [];
+    return value.map((item) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
+  }
+
+  get length() {
+    return (this.rawValue as unknown[]).length;
   }
 }

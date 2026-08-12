@@ -6,7 +6,7 @@ import { setLocaleStringFormat, type LocaleString } from '../struct/localeString
 import { isNull } from "./toolset";
 import { getCachedNodeType } from '../runtime/context';
 import { Display } from '../property/common/display';
-import type { IValueTypeAccess } from "../interface/valueTypeAccess";
+import type { IValueTypeAccess } from "../interface";
 import type { INodeType } from '../interface';
 
 const locales: {[key:string]: {[key:string]: string}} = { zhCN, enUS, 'zh': zhCN, 'en': enUS }

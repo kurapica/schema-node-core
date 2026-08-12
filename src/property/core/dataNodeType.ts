@@ -1,4 +1,4 @@
-import type { ValueAccessFactory } from '../../interface/valueTypeAccess';
+import type { ValueAccessFactory } from '../../interface';
 import { Property } from '../property';
 
 /** Declare the data node type */

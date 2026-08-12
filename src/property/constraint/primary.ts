@@ -8,15 +8,13 @@ import { buildFuncCall } from '../../schema/function/type';
 import { EntrySource } from '../core/entrySource';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, ARRAY_ELEMENT } from '../../utility/constant';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 import { isNull } from '../../utility/toolset';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
 import { Assign } from '../../relation/assign/meta';
 import { Call } from '../../relation/call/meta';
-import { ArrayNode } from '../../schema/array/node';
-import { StructNode } from '../../schema/struct/node';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -29,10 +27,10 @@ import { StructNode } from '../../schema/struct/node';
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.length) return undefined;
-    if (node instanceof ArrayNode)
+    if (node.type.kind === SCHEMA_KIND_ARRAY)
     {
       const keys = new Set<string>();
-      for (const item of node)
+      for (const item of (node as unknown as Iterable<IValueAccess>))
       {
         const data = item.rawValue;
         const key = typeof(data) === 'object' ? this.getPrimarys(data as Record<string, unknown>) : undefined;
@@ -49,7 +47,7 @@ export class Primary extends ConstraintProperty<string[]> {
   }
 
   private recordViolation(node: IValueAccess, result: boolean) {
-    if (node instanceof StructNode)
+    if (node.type.kind === SCHEMA_KIND_STRUCT)
     {
       for (let i = this._value!.length; i--;) {
         const last = node.getAccessValue(this._value![i]);

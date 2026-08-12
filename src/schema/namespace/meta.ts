@@ -12,7 +12,7 @@ import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, 
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { Base } from '../../property/core/base';
 import { buildFuncCall } from '../../schema/function/type';
-import { NamespaceType } from './type';
+import { NamespaceType } from './runtime';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_NAMESPACE])

@@ -14,13 +14,10 @@ import { isEmpty } from '../../utility/toolset';
 import { ValueType } from '../value/runtime';
 import type { EnumSchema } from './type';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
-import { joinProperties } from '../../interface/propertyProvider';
-import type { IPropertyProvider } from '../../interface/propertyProvider';
+import { joinProperties, type IProperty, type PropertyCtor } from '../../interface';
 import { ScalarType } from '../value/scalar';
 import { StringType } from '../string/runtime';
 import { IntType } from '../int/runtime';
-import type { IProperty, IValueAccess, PropertyCtor } from '../../interface/valueAccess';
-import { EnumNode } from './node';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
 
@@ -93,9 +90,7 @@ export class EnumType extends ValueType {
     return false;
   }
 
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): EnumNode { return new EnumNode(this, value, parent, propProvider); }
-
-  override get isIndexable() { return true; }   
+  override get isIndexable() { return true; }
 
   /** Gets the enum entry access by value and start value (Deprecated) */
   async getEnumEntryAccess(value: string | undefined = undefined, start: string | undefined = undefined): Promise<EntryAccess<string>[]>{

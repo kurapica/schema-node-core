@@ -10,7 +10,7 @@ import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
 import { SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 import { isNull } from '../../utility/toolset';
 
 @Meta(Alias, 'date')

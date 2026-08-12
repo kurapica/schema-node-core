@@ -8,7 +8,6 @@ import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_AR
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry/type';
 import { Attach } from '../../property/core/attach';
-import { DataNodeType } from '../../property/core/dataNodeType';
 import { Display } from '../../property/common/display';
 import { DisplayOnly } from '../../property/common/displayOnly';
 import { Require } from '../../property/constraint/require';
@@ -23,20 +22,14 @@ import { ArrayType } from '../array/runtime';
 import { ValueType } from '../value/runtime';
 import type { StructFieldSchema, StructSchema } from './type';
 import type { RelationSchema } from '../relation/type';
-import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
+import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
-import { isConstraintProperty, type IConstraintProperty, type IProperty, type IRelation, type IRelationInfo, type IValueAccess, type PropertyCtor } from '../../interface/valueAccess';
-import { joinProperties } from '../../interface/propertyProvider';
-import type { IPropertyProvider } from '../../interface/propertyProvider';
-import { DataNode } from '../value/node';
-import type { IRelationProvider } from '../../interface/relationProvider';
-import type { INodeReference } from '../../interface/nodeReference';
+import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, IRelationProvider, INodeReference, INodeType, IRelation } from '../../interface';
+import { isConstraintProperty, joinProperties } from '../../interface';
 import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
-import type { INodeType } from '../../interface/nodeType';
 import { getNodeType } from '../../runtime/context';
-import { StructNode } from './node';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -266,15 +259,6 @@ export class StructType extends ValueType implements IRelationProvider {
     }) && matched > 0;
   }
 
-  // ── DataNode Factory ────────────────────────────────────────────────
-
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): DataNode {
-    const schemaType = getSchemaType(this.name);
-    const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType)?.getValue<new (type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode>() : undefined;
-    if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
-    return new StructNode(this, value, parent, propProvider);
-  }
-
   // ── Relations ───────────────────────────────────────────────────────
 
   /** Get all relation types. */
@@ -355,7 +339,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     const refTypes: INodeType[] = []
     for(let prop of props.filter(isTypeRefProperty))
     {
-      for(let n of (prop as ITypeRefProperty).getRefTypes())
+      for(let n of (prop as unknown as ITypeRefProperty).getRefTypes())
       {
         const type = await getNodeType(n);
         if (type && !refTypes.includes(type))

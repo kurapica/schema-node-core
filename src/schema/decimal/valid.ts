@@ -11,7 +11,7 @@ import { Error } from '../../property/common/error';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL } from '../../utility/constant';
 import { isNull } from '../../utility/toolset';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 
 @Meta(Alias, 'decimal')
 @Meta(ForSchema, [SCHEMA_KIND_DECIMAL])

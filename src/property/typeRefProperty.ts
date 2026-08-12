@@ -1,4 +1,4 @@
-import type { IProperty } from "../interface/valueAccess";
+import type { IProperty } from "../interface";
 
 /** Interface for type-reference property components. */
 export interface ITypeRefProperty extends IProperty {

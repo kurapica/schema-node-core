@@ -1,5 +1,4 @@
-import type { IPropertyProvider } from "../../../interface/propertyProvider";
-import type { IValueAccess } from "../../../interface/valueAccess";
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { StringNode } from "../../string/node";
 import { StructNode } from "../../struct/node";
 import { StructType } from "../../struct/runtime";

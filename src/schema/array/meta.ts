@@ -22,6 +22,8 @@ import type { ArraySchema } from './type';
 import { Relations } from '../relation/property';
 import { ArrayType } from './runtime';
 import { ArrayValue } from './valid';
+import { DataNodeType } from '../../property';
+import { ArrayNode } from './node';
 
 /** The array schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
@@ -29,6 +31,7 @@ import { ArrayValue } from './valid';
 @Meta(ValueSchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(RuntimeNodeType, ArrayType)
 @Meta(ArrayValue)
+@Meta(DataNodeType, ArrayNode)
 @Meta(Append, [Relations])
 class ArraySchemaKind{}
 

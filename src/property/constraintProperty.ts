@@ -3,12 +3,11 @@
 // Mirrors C# SchemaNode.Core/Property/ConstraintProperty.cs
 // =============================================================================
 
-import type { IValueAccess } from '../interface/valueAccess';
 import { formatLocaleString, type LocaleString } from '../struct/localeString/type';
 import { Display } from './common/display';
 import { Name } from './core/name';
 import { Property } from './property';
-import type { IConstraintProperty } from '../interface/valueAccess';
+import type {IValueAccess, IConstraintProperty } from '../interface';
 
 export abstract class ConstraintProperty<T> extends Property<T> implements IConstraintProperty {
   abstract validate(node: IValueAccess): Promise<boolean | undefined>;

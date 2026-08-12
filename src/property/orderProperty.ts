@@ -3,9 +3,8 @@
 // Mirrors C# SchemaNode.Core/Property/OrderProperty.cs
 // =============================================================================
 
-import { getMetaProperty } from '../attribute/meta';
-import type { IProperty } from '../interface/valueAccess';
-import { Default } from './common/default';
+import type { IProperty } from '../interface';
+import { isNull } from '../utility';
 import { Property } from './property';
 
 /**
@@ -29,9 +28,9 @@ export abstract class OrderProperty<T> extends Property<T> implements IOrderProp
   override setValue<TValue>(value: TValue): void {
     if (Array.isArray(value) && value.length > 0) {
       if (value.length === 1 && typeof(value[0]) === 'number') {
-        const defaultProp = getMetaProperty(this.constructor, Default);
-        if (defaultProp)
-          super.setValue(defaultProp.getValue());
+        const defaultProp = (this.constructor as unknown as Record<string, unknown>).default;
+        if (!isNull(defaultProp))
+          super.setValue(defaultProp);
         this._order = value[0];
         return;
       }

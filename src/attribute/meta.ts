@@ -7,7 +7,7 @@
 // Query supports optional field filter and prototype-chain inheritance.
 // =============================================================================
 
-import type { IProperty, PropertyCtor } from '../interface/valueAccess';
+import type { IProperty, PropertyCtor } from '../interface';
 import { isEmpty, isNull } from '../utility/toolset';
 
 const META_KEY = Symbol('schema-node:meta');

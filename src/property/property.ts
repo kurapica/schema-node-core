@@ -6,7 +6,7 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 ;
-import type { IValueAccess, IProperty, PropertyCtor } from "../interface/valueAccess";
+import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */

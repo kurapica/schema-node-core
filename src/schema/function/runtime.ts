@@ -14,17 +14,13 @@ import { ExpType } from '../../enum/expType';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
-import { type IProperty, type IRelation, type PropertyCtor } from '../../interface/valueAccess';
+import type {  IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
 import { getNodeType } from '../../runtime/context';
-import type { INodeReference } from '../../interface/nodeReference';
-import type { IValueTypeAccess } from '../../interface/valueTypeAccess';
 import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRefProperty';
-import type { IPropertyProvider } from '../../interface/propertyProvider';
 import type { GenericParameter } from '../generic/type';
-import type { INodeType } from '../../interface/nodeType';
 import { Name } from '../../property/core/name';
 import type { RelationSchema } from '../relation/type';
 import { RelationType } from '../relation/runtime';
@@ -477,6 +473,12 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   constructor(args: FuncArg[]) {
     this._args = args.map(a => new FuncArgType(a));
   }
+  isAssignableTo(other: IValueTypeAccess): boolean { return false; }
+  get kind(): string { return SCHEMA_KIND_FUNC_ARG; }
+  getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined { return undefined }
+  *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> { return }
+  *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> { return }
+  create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess { throw new Error("Method not implemented."); }
 
   async load() {
     this._stringType = await getNodeType(NS_SYSTEM_STRING) as ValueType;
@@ -602,7 +604,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
     const refTypes: INodeType[] = []
     for(let prop of this._props.filter(isTypeRefProperty))
     {
-      for(let n of (prop as ITypeRefProperty).getRefTypes())
+      for(let n of (prop as unknown as ITypeRefProperty).getRefTypes())
       {
         const type = await getNodeType(n);
         if (type && !refTypes.includes(type))

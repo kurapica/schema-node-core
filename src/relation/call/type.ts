@@ -1,10 +1,9 @@
 import { deepClone, isEmpty } from "../../utility/toolset";
 import type { IRelationProcess } from "../../schema/relation/interface";
-import type { IErrorProvider } from "../../interface/errorProvider";
+import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";
 import { FunctionType } from "../../schema/function/runtime";
 import type { CallArg } from "../../schema/function/type";
 import type { RelationSchema } from "../../schema/relation/type";
-import type { IRelation, IValueAccess } from "../../interface/valueAccess";
 import { getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
 import { RelationStage } from "../../enum/relationStage";

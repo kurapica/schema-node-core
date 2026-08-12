@@ -13,7 +13,7 @@ import { Default } from './default';
 import { ReadOnly } from './readOnly';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 
 /**
  * The struct field is display only, meaning it is not editable in the UI and is not persisted to the database.

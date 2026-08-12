@@ -9,7 +9,7 @@ import { SchemaType } from "../../property/core/schemaType";
 import { Static } from "../../property/core/static";
 import { Error } from "../../property/common/error";
 import { ConstraintProperty } from "../../property/constraintProperty";
-import type { IValueAccess } from "../../interface/valueAccess";
+import type { IValueAccess } from "../../interface";
 import { ArrayNode } from "./node";
 import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL } from "../../utility/constant";
 

@@ -7,7 +7,7 @@ import { buildFuncCall } from '../../schema/function/type';
 import { EntrySource } from '../core/entrySource';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
@@ -15,7 +15,7 @@ import { Assign } from '../../relation/assign/meta';
 import { Call } from '../../relation/call/meta';
 import { EnumNode } from '../../schema/enum/node';
 import { EnumType } from '../../schema/enum/runtime';
-import { EnumArrayNode } from '../../schema/enum/array';
+import { EnumArrayNode } from '../../schema/array/runtime';
 
 /** Limit the cascade level of the enum entry. */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])

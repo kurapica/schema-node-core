@@ -6,15 +6,13 @@
 // Provides create() → DataNode factory + validateValue() + type compatibility checks.
 // =============================================================================
 
-import { type IConstraintProperty, isConstraintProperty } from '../../interface/valueAccess';
+import type { IConstraintProperty, IValueTypeAccess, ValueAccessFactory, IValueAccess, IPropertyProvider } from '../../interface';
 import { isEmpty } from '../../utility/toolset';
 import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 import type { Entry } from '../../struct/entry';
 import { NodeType } from '../node/runtime';
-import type { IValueTypeAccess, ValueAccessFactory } from '../../interface/valueTypeAccess';
-import type { IValueAccess } from '../../interface/valueAccess';
-import type { IPropertyProvider } from '../../interface/propertyProvider';
-import type { DataNode } from './node';
+import { isConstraintProperty  } from '../../interface';
+import { DataNode } from './node';
 import type { INodeType } from '../../interface';
 import { getSchemaKindRegister, getSchemaType } from '../../runtime/schemaRuntime';
 import { getMetaProperty } from '../../attribute/meta';
@@ -24,7 +22,7 @@ import { DataNodeType } from '../../property/core/dataNodeType';
 export abstract class ValueType extends NodeType implements IValueTypeAccess {
 
   /** The converter */
-  private _isAssignableTo: Map<ValueType, INodeType> | undefined;
+  private _isAssignableTo: Map<IValueTypeAccess, INodeType> | undefined;
   private _arrayType: ValueType | undefined;
 
   /** The constraint properties */
@@ -55,8 +53,8 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
     if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
     
     const kindType = getSchemaKindRegister(this.kind)!;
-    const kindDataNodeType = getMetaProperty(kindType, DataNodeType)?.getValue<ValueAccessFactory>()!;
-    return new kindDataNodeType(this, value, parent, propProvider);
+    const kindDataNodeType = getMetaProperty(kindType, DataNodeType)?.getValue<ValueAccessFactory>();
+    return kindDataNodeType ? new kindDataNodeType(this, value, parent, propProvider) : new DataNode(this, value, parent, propProvider);
   }
 
   // ── Virtual ────────────────────────────────────────────────────────────
@@ -113,8 +111,8 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   }
 
   /** Check whether this type is compatible with another (for assignment). */
-  isAssignableTo(other: ValueType): boolean {
-    return this === other || this.name === other.name || 
+  isAssignableTo(other: IValueTypeAccess): boolean {
+    return this === other ||
       this.kind === SCHEMA_KIND_OBJECT || 
       other.kind === SCHEMA_KIND_OBJECT || 
       (this._isAssignableTo ? (

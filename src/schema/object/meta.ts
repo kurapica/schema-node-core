@@ -19,12 +19,15 @@ import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TY
 import { combinePaths } from '../../utility/toolset';
 import type { NodeSchema } from '../node/type';
 import { ObjectType } from './runtime';
+import { AnyNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(RuntimeNodeType, ObjectType)
+@Meta(DataNodeType, AnyNode)
 class ObjectSchemaMeta {}
 
 /** Represents the object value type */

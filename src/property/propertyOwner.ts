@@ -5,7 +5,7 @@
 
 import { getSchemaKindPropertyTypes } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
-import type { IProperty, PropertyCtor } from '../interface/valueAccess';
+import type { IProperty, PropertyCtor } from '../interface';
 import { getPropertyName } from './property';
 
 /**

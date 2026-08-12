@@ -41,6 +41,8 @@ import type { ArraySchema } from '../array/type';
 import { ArrayProperty } from '../array/property';
 import { StructType } from './runtime';
 import { StructValue } from './valid';
+import { StructNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -49,6 +51,7 @@ import { StructValue } from './valid';
 @Meta(RuntimeNodeType, StructType)
 @Meta(SchemaGenerator, generateStructSchema)
 @Meta(StructValue)
+@Meta(DataNodeType, StructNode)
 @Meta(Append, [Relations, EntrySourceProvider, AccessValueTypeProvider])
 class StructSchemaKind{}
 

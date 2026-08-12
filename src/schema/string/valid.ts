@@ -10,7 +10,7 @@ import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 
 @Meta(Alias, 'string')
 @Meta(ForSchema, [SCHEMA_KIND_STRING])

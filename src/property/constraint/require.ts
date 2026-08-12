@@ -5,7 +5,7 @@ import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { ConstraintProperty } from '../constraintProperty';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL, SCHEMA_KIND_FUNC_ARG } from '../../utility/constant';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_FUNC_ARG])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

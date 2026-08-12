@@ -1,5 +1,4 @@
-import type { IPropertyProvider } from "../../../interface/propertyProvider";
-import type { IValueAccess } from "../../../interface/valueAccess";
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { getNodeType } from "../../../runtime/context";
 import { ArrayNodeTemplate } from "../../array/node";

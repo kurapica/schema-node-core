@@ -7,7 +7,7 @@ import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
-import type { IProperty } from '../../interface/valueAccess';
+import type { IProperty } from '../../interface';
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
 import { Call } from "../../relation/call/meta";

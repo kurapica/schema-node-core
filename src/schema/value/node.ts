@@ -3,30 +3,26 @@
 // Mirrors C# SchemaNode.Core/Node/DataNode.cs
 // =============================================================================
 
-import { joinProperties } from '../../interface';
-import type { IPropertyProvider, IRelationInfo, IValueAccess } from '../../interface';
 import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../../utility/toolset';
-import { Observable } from '../../utility/observable';
-import type { Observer } from '../../utility/observable';
+import { Observable, type Observer } from '../../utility/observable';
 import { NODE_SELF, DEBOUNCE_TIME } from '../../utility/constant';
-import { isConstraintProperty } from '../../interface/valueAccess';
 import { _LS } from '../../utility/locale';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
-import { ValueType } from './runtime';
-import { RelationType } from '../relation/runtime';
-import type { IProperty, PropertyCtor, IConstraintProperty } from '../../interface/valueAccess';
+import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
+import { isRelation, joinProperties, isConstraintProperty } from '../../interface';
 import { getPropertyName, Property } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
+import type { IValueTypeAccess } from '../../interface';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
-export abstract class DataNode implements IValueAccess, IPropertyProvider {
+export class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── Fields ────────────────────────────────────────────────────────
 
   /** The guid of the node */
   readonly id = generateGuid();
 
   /** The runtime value type (schema + runtime info). */
-  readonly type: ValueType;
+  readonly type: IValueTypeAccess;
 
   /** The node parent */
   readonly parent: IValueAccess | undefined;
@@ -66,7 +62,7 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
   /** Construct the data node with value type, parent and init value, alternative property provider */
-  constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     this.type = type;
     this.parent = parent;
     this.propertyProvider = propProvider;
@@ -404,11 +400,11 @@ export abstract class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Get attached relations */
-  *getAttachedRelations(predicate?: (relation: RelationType) => boolean): Generator<RelationType> {
+  *getAttachedRelations(predicate?: (relation: IRelation) => boolean): Generator<IRelation> {
     if (!this._subs) return;
     for(const source of this._subs.keys())
     {
-      if (source instanceof RelationType && (!predicate || predicate(source)))
+      if (isRelation(source) && (!predicate || predicate(source)))
         yield source;
     }
   }

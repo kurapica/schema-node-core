@@ -14,9 +14,9 @@ import type { LocaleString } from '../../struct/localeString/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
-import { NamespaceType } from '../../schema/namespace/type';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
+import { isNamespaceNodeType } from '../../interface';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)
@@ -65,7 +65,7 @@ export class SystemReflectType {
           ns.getProperty(Display)?.getValue<LocaleString>()
         );
       }
-      if (ns instanceof NamespaceType)
+      if (isNamespaceNodeType(ns))
       {
         access.children = Array.from(ns.getSubNodeSchemas().map(s => {
           return setPropertyValue(

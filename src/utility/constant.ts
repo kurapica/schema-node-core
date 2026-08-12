@@ -24,6 +24,7 @@ export const SCHEMA_KIND_STRUCT_FIELD = 'structfield';
 export const SCHEMA_KIND_RELATION = 'relation';
 export const SCHEMA_KIND_FUNC_ARG = 'functionarg';
 export const SCHEMA_KIND_ENTRY = 'entry';
+export const SCHEMA_KIND_GENERIC = 'generic';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ export const SCHEMA_KIND_ORDER_RELATION = 13;
 export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 14;
 export const SCHEMA_KIND_ORDER_FUNC_ARG = 15;
 export const SCHEMA_KIND_ORDER_ENTRY = 16;
+export const SCHEMA_KIND_ORDER_GENERIC = 99;
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 

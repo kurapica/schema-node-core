@@ -1,6 +1,5 @@
 import { ExpType } from "../../../enum/expType";
-import type { IPropertyProvider } from "../../../interface/propertyProvider";
-import type { IValueAccess } from "../../../interface/valueAccess";
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { getNodeType } from "../../../runtime/context";
 import { EnumNode } from "../../enum/node";
 import { StringNode } from "../../string/node";

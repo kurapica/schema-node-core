@@ -20,6 +20,8 @@ import { DateProperty } from './property';
 import type { DateSchema } from './type';
 import { DateType } from './runtime';
 import { DateValue } from './valid';
+import { DataNodeType } from '../../property';
+import { DateNode } from './node';
 
 /** the date schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DATE, SCHEMA_KIND_ORDER_DATE])
@@ -30,6 +32,7 @@ import { DateValue } from './valid';
 @Meta(SchemaGenerator, generateDateSchema)
 @Meta(Attach, SCHEMA_KIND_DATE)
 @Meta(DateValue)
+@Meta(DataNodeType, DateNode)
 class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;

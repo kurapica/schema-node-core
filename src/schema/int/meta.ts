@@ -20,6 +20,8 @@ import type { IntSchema } from './type';
 import { IntProperty } from './property';
 import { IntType } from './runtime';
 import { IntValue } from './valid';
+import { IntNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** the int schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])
@@ -30,6 +32,7 @@ import { IntValue } from './valid';
 @Meta(Attach, SCHEMA_KIND_INT)
 @Meta(SchemaGenerator, generateIntSchema)
 @Meta(IntValue)
+@Meta(DataNodeType, IntNode)
 class IntSchemaMeta {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_INT_TYPE)
     base?: string;

@@ -20,6 +20,8 @@ import type { DecimalSchema } from './type';
 import { DecimalProperty } from './property';
 import { DecimalType } from './runtime';
 import { DecimalValue } from './valid';
+import { DecimalNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** the decimal schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
@@ -30,6 +32,7 @@ import { DecimalValue } from './valid';
 @Meta(Attach, SCHEMA_KIND_DECIMAL)
 @Meta(SchemaGenerator, generateDecimalSchema)
 @Meta(DecimalValue)
+@Meta(DataNodeType, DecimalNode)
 class DecimalSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DECIMAL_TYPE)
   base?: string;

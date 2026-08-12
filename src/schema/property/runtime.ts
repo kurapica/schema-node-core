@@ -2,8 +2,7 @@
 // PropertyType — runtime type for property schemas
 // =============================================================================
 
-import type { INodeType } from '../../interface/nodeType';
-import type { IProperty } from '../../interface/valueAccess';
+import type { INodeType, IProperty } from '../../interface';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getNodeType } from '../../runtime/context';
 import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';

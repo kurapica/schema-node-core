@@ -1,5 +1,5 @@
 import { Meta, Relation } from "../../attribute";
-import type { IProperty } from "../../interface/valueAccess";
+import type { IProperty } from "../../interface";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";

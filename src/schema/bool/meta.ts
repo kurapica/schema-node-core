@@ -17,6 +17,8 @@ import { combinePaths } from '../../utility/toolset';
 import type { NodeSchema } from '../node/type';
 import { BoolType } from './runtime';
 import { BoolValue } from './valid';
+import { BoolNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
@@ -25,6 +27,7 @@ import { BoolValue } from './valid';
 @Meta(RuntimeNodeType, BoolType)
 @Meta(SchemaGenerator, generateBoolSchema)
 @Meta(BoolValue)
+@Meta(DataNodeType, BoolNode)
 class BoolSchemaMeta {}
 
 /** Represents the bool value type */

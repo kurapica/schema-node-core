@@ -12,10 +12,10 @@ import { Default } from '../../property/common/default';
 import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface/valueAccess';
+import type { IValueAccess } from '../../interface';
 import { EnumNode } from './node';
 import { EnumType } from './runtime';
-import { EnumArrayNode } from './array';
+import { EnumArrayNode } from '../array/runtime';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])

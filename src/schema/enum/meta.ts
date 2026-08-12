@@ -37,6 +37,8 @@ import type { NodeSchema } from '../node/type';
 import { EnumProperty } from './property';
 import { EnumType } from './runtime';
 import { EnumValue } from './valid';
+import { EnumNode } from './node';
+import { DataNodeType } from '../../property/core/dataNodeType';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
@@ -46,6 +48,7 @@ import { EnumValue } from './valid';
 @Meta(EnumValue)
 @Meta(SchemaGenerator, generateEnumSchema)
 @Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+@Meta(DataNodeType, EnumNode)
 class EnumSchemaKind{}
 
 /** Meta registration class (NOT exported). */

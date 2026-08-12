@@ -5,7 +5,7 @@
 
 import { RelationStage } from '../enum/relationStage';
 import { getPropertyName } from '../property/property';
-import type { PropertyCtor } from '../interface/valueAccess';
+import type { PropertyCtor } from '../interface';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 import { NODE_SELF, SCHEMA_KIND_PROPERTY } from '../utility/constant';
 import type { RelationSchema } from '../schema/relation/type';
@@ -33,7 +33,7 @@ function ensureStore(ctor: Function): RelationSchema[] {
  * Declare that a property's value is computed by calling a function.
  */
 export function Relation(
-  propClass: PropertyCtor,
+  propClass: PropertyCtor | string,
   kind: string | PropertyCtor,
   value: unknown,
   target?: string,
@@ -48,7 +48,7 @@ export function Relation(
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
       target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? (ctor as unknown as Record<string, string>).ofSchema === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
-      property: getTypeSchemaName(propClass)!,
+      property: typeof propClass === 'string' ? propClass : getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,
       [kind]: value
