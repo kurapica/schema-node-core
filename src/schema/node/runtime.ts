@@ -160,6 +160,9 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
       : this._props?.find(p => p instanceof propCtor) as T;
   }
 
+  /** Gets the property value */
+  getPropertyValue<T>(propCtor: PropertyCtor | string): T | undefined { return this.getProperty(propCtor)?.getValue() as T; }
+
   /** Get stacked property values. */
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
     if (this._props)
@@ -174,6 +177,9 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
       }
     }
   }
+
+  /** Gets the property values */
+  *getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
 
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {

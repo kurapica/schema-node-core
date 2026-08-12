@@ -9,6 +9,9 @@ import type { Observer } from "../utility/observable";
 
 /** The value type access interface */
 export interface IValueTypeAccess extends IPropertyProvider {
+  /** The type name */
+  get name(): string;
+
   /** The type schema kind */
   get kind(): string;
 
@@ -251,9 +254,15 @@ export function isConstraintProperty(prop: IProperty): prop is IConstraintProper
 export interface IPropertyProvider {
   /** Gets the property */
   getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined;
+  
+  /** Gets the property value */
+  getPropertyValue<T>(propCtor: PropertyCtor | string): T | undefined;
 
   /** Gets the properties */
   getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T>;
+
+  /** Gets the properties values */
+  getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T>;
 
   /** Gets the properties with predicate */
   filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty>;

@@ -473,10 +473,13 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   constructor(args: FuncArg[]) {
     this._args = args.map(a => new FuncArgType(a));
   }
-  isAssignableTo(other: IValueTypeAccess): boolean { return false; }
+  get name(): string { return '' }
   get kind(): string { return SCHEMA_KIND_FUNC_ARG; }
+  isAssignableTo(other: IValueTypeAccess): boolean { return false; }
   getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined { return undefined }
+  getPropertyValue<T>(propCtor: PropertyCtor | string): T | undefined { return undefined }
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> { return }
+  *getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> { return }
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess { throw new Error("Method not implemented."); }
 
@@ -640,6 +643,9 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
         yield prop as T;
     }
   }
+
+  /** Gets the property values */
+  *getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
 
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {

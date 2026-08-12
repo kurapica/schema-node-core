@@ -381,6 +381,9 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     return joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[], this._type?.getProperties(propCtor));
   }
 
+  /** Gets the property values */
+  *getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T> { for (let prop of this.getProperties(propCtor)) yield prop.getValue() as T; }
+
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
     return joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate));
