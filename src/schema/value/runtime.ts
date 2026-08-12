@@ -9,7 +9,7 @@
 import type { IConstraintProperty, IValueTypeAccess, ValueAccessFactory, IValueAccess, IPropertyProvider } from '../../interface';
 import { isEmpty } from '../../utility/toolset';
 import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
-import type { Entry } from '../../struct/entry';
+import type { Entry } from '../../struct/entry/type';
 import { NodeType } from '../node/runtime';
 import { isConstraintProperty  } from '../../interface';
 import { DataNode } from './node';

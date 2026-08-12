@@ -12,6 +12,7 @@ import { Call } from '../../relation/call/meta';
 import type { IValueAccess } from '../../interface';
 import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
 import { Error } from '../common/error';
+import { ArrayNode } from '../../schema/array/node';
 
 /** The minimum size constraint property for array data node */
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
@@ -23,13 +24,13 @@ import { Error } from '../common/error';
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.minsize.error`)
 export class MinSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (!this.hasValue || node.type.kind !== SCHEMA_KIND_ARRAY) return undefined;
+    if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
     return (node as any).length >= this._value!;
   }
 
   /** Add elements to the array to meet the minimum size constraint */
   override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess) {
-    if (target.type.kind === SCHEMA_KIND_ARRAY && !this.hasValue) {
+    if (target instanceof ArrayNode && !this.hasValue) {
       while (target.length < this._value!)
         target.addRow();
     }

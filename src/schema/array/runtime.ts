@@ -5,7 +5,6 @@
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
 import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
-import { Primary } from '../../property/constraint/primary';
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
 import type { Entry } from '../../struct/entry/type';
@@ -14,7 +13,7 @@ import type { ArraySchema } from './type';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import type { RelationSchema } from '../relation/type';
-import { RelationType } from '../relation';
+import { RelationType } from '../relation/runtime';
 import { joinProperties } from '../../interface';
 import { DataNode } from '../value/node';
 import { EnumType } from '../enum/runtime';
@@ -37,7 +36,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
     this.element = this._arraySchema?.element
       ? await getNodeType(this._arraySchema.element) as ValueType
       : undefined;
-    this.primary = this.getProperty(Primary)?.getValue<string[]>() ?? [];
+    this.primary = this.getProperty("Primary")?.getValue<string[]>() ?? [];
 
     this.element?.setArrayType(this);
 

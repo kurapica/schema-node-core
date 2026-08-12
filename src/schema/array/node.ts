@@ -4,7 +4,6 @@
 // =============================================================================
 
 import type { IPropertyProvider, IRelationInfo, IValueAccess } from "../../interface";
-import { MaxSize, MinSize } from "../../property/constraint/size";
 import { Name } from "../../property/core/name";
 import { getPropertiesBySchemaKind } from "../../property/propertyOwner";
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from "../../utility/constant";
@@ -66,10 +65,10 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   get elements(): Iterable<DataNode> { return this._getElements(); }
 
   /** Get the maximum size constraint of the array. */
-  get maxSize(): number | undefined { return this.getPropertyValue<number>(MaxSize); }
+  get maxSize(): number | undefined { return this.getPropertyValue<number>("MaxSize"); }
 
   /** Get the minimum size constraint of the array. */
-  get minSize(): number { return this.getPropertyValue<number>(MinSize) ?? 0; }
+  get minSize(): number { return this.getPropertyValue<number>("MinSize") ?? 0; }
 
   /** Get the addable status of the array. */
   get addAble(): boolean { return this.maxSize === undefined || this.length < this.maxSize; }
