@@ -35,6 +35,6 @@ export interface CompatibleSchema {
 }
 
 /** Gets the node schema full name */
-export function getNodeSchemaName(nodeSchema: NodeSchema) {
-  return combinePaths(nodeSchema.namespace ?? "", nodeSchema.name);
+export function getNodeSchemaName(nodeSchema?: NodeSchema) {
+  return nodeSchema ? combinePaths(nodeSchema.namespace ?? "", nodeSchema.name) : "";
 }

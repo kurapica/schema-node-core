@@ -16,7 +16,7 @@ const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType
 let rootNamespaceType: INamespaceNodeType | undefined;
 
 function getRuntimeNodeType(kind: string){
-  return (getSchemaKindRegister(kind)! as unknown as Record<string, new (parent?: INodeType | undefined) => INodeType>)?.runtimeNodeType
+  return (getSchemaKindRegister(kind)! as unknown as Record<string, new (parent?: INodeType) => INodeType>)?.runtimeNodeType
 }
 
 /** Get the cached NodeType type by full schema name. */
@@ -146,7 +146,7 @@ async function loadNodeType(
   if (!schema) return undefined;
 
   // Resolve NodeType class from _nodeTypeGenerator
-  const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? _nodeTypeGenerator.get(SCHEMA_KIND_NODE)!;
+  const NodeTypeCtor = getRuntimeNodeType(schema.kind) ?? getRuntimeNodeType(SCHEMA_KIND_NODE)!;
   result ??= new NodeTypeCtor(nsParent);
 
   // Cache in parent namespace (strip sub-schemas first — they're saved separately)

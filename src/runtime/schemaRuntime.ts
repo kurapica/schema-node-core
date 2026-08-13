@@ -158,8 +158,6 @@ export function saveNodeSchema(schema: NodeSchema | NodeSchema[], loadStage: Sch
     return;
   }
   if (!(schema)) return;
-
-  console.log("saveNodeSchema", schema);
   
   // Set the load state flags for the schema
   _setLoadState(schema, loadStage);
