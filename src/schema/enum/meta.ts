@@ -16,9 +16,7 @@ import { EntrySource } from '../../property/core/entrySource';
 import { Immutable } from '../../property/common/immutable';
 import { OverrideType } from '../../property/core/overrideType';
 import { Default } from '../../property/common/default';
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
-import { EnumValueType, type EnumValueTypeValue } from '../../enum/enumValueType';
-import type { LocaleString } from '../../struct/localeString/type';
+import { EnumValueType } from '../../enum/enumValueType';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { Require } from '../../property/constraint/require';
 import { Valid } from '../../property/constraint/valid';
@@ -29,14 +27,19 @@ import { combinePaths } from '../../utility/toolset';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { Base } from '../../property/core/base';
 import { buildFuncCall } from '../../schema/function/type';
-import { type Entry } from '../../struct/entry/type';
-import type { EnumSchema } from './type';
-import type { NodeSchema } from '../node/type';
 import { EnumProperty } from './property';
 import { EnumType } from './runtime';
 import { EnumValue } from './valid';
 import { EnumNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { EnumValueTypeValue } from '../../enum/enumValueType';
+import type { LocaleString } from '../../struct/localeString/type';
+import type { Entry } from '../../struct/entry/type';
+import type { EnumSchema } from './type';
+import type { NodeSchema } from '../node/type';
+
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])

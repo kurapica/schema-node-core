@@ -1,9 +1,11 @@
-import type { IProperty } from "../../interface";
 import { getPropertiesBySchemaKind, getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
-import { SCHEMA_KIND_INT } from "../../utility/constant";
 import { ScalarType } from "../value/scalar";
+
+import type { IProperty } from "../../interface";
 import type { IntSchema } from "./type";
+
+import { SCHEMA_KIND_INT } from "../../utility/constant";
 
 export class IntType extends ScalarType {
   private _intSchema: IntSchema | undefined

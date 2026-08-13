@@ -13,15 +13,17 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { NODE_SELF, NS_SYSTEM_SCHEMA_INT, NS_SYSTEM_SCHEMA_INT_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_INT, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_INT, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import type { NodeSchema } from '../node/type';
-import type { IntSchema } from './type';
 import { IntProperty } from './property';
 import { IntType } from './runtime';
 import { IntValue } from './valid';
 import { IntNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { NodeSchema } from '../node/type';
+import type { IntSchema } from './type';
+
+import { NODE_SELF, NS_SYSTEM_SCHEMA_INT, NS_SYSTEM_SCHEMA_INT_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_INT, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_INT, SCHEMA_KIND_STRING } from '../../utility/constant';
 
 /** the int schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])

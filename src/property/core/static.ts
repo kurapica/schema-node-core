@@ -3,13 +3,14 @@
 // =============================================================================
 
 import { Meta } from '../../attribute/meta';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
 import { OfSchema } from './ofSchema';
 import { PropertyValueType } from './propertyValueType';
 import { SchemaType } from './schemaType';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /**
  * Static property type — prevents relation modification of this property.

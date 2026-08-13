@@ -7,10 +7,11 @@ import { ArgName } from '../property/function/argName';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../property/function/return';
-import { Generics } from  '../schema/generic/property';
+import { Generics } from '../schema/generic/property';
 import { Require } from '../property/constraint/require';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
 import { deepClone, isEmpty, isNull } from '../utility/toolset';
+
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_INTRINSIC)

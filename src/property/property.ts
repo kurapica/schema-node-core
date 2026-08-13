@@ -6,8 +6,9 @@
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
 ;
-import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
+
+import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();

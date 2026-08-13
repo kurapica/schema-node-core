@@ -1,13 +1,14 @@
 import { ExpType } from "../../../enum/expType";
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { getNodeType } from "../../../runtime/context";
 import { EnumNode } from "../../enum/node";
 import { StringNode } from "../../string/node";
 import { StructNode } from "../../struct/node";
 import { StructType } from "../../struct/runtime";
 import { FunctionType } from "../runtime";
-import type { FuncExp } from "../type";
 import { FuncExpArgsNode } from "./funcExpArgsNode";
+
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
+import type { FuncExp } from "../type";
 
 /** The expression node contains the expression definition, used to apply the relations from the function argument */
 export class FuncExpNode extends StructNode

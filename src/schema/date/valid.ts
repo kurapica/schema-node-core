@@ -8,10 +8,12 @@ import { PropertyValueType } from '../../property/core/propertyValueType';
 import { SchemaType } from '../../property/core/schemaType';
 import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
-import { SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface';
 import { isNull } from '../../utility/toolset';
+
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 @Meta(Alias, 'date')
 @Meta(ForSchema, [SCHEMA_KIND_DATE])

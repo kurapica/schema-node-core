@@ -3,8 +3,9 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
-import type { FuncCall } from '../schema/function/type';
 import { Property } from './property';
+
+import type { FuncCall } from '../schema/function/type';
 import type { ITypeRefProperty } from './typeRefProperty';
 
 /**

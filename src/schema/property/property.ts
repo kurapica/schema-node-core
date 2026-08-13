@@ -8,8 +8,10 @@ import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
 import { Property } from "../../property/property";
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_LOGIC_EQ } from "../../utility/constant";
+
 import type { PropertySchema } from "./type";
+
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_LOGIC_EQ } from "../../utility/constant";
 
 /** The 'property' property in node schema */
 @Meta(Alias, 'property')

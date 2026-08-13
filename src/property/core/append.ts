@@ -2,9 +2,10 @@
 // Mirrors C# SchemaNode.Core/Property/Core/Append.cs
 // =============================================================================
 
-import { type PropertyCtor } from "../../interface";
 import { isNull } from "../../utility/toolset";
 import { Property } from "../property";
+
+import type { PropertyCtor } from "../../interface";
 
 /**
  * Append property type — used to register additional property types for a schema kind.

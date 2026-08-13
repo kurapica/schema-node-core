@@ -7,17 +7,19 @@ import { Require } from '../../property/constraint/require';
 import { Return } from '../../property/function/return';
 import { SchemaType } from '../../property/core/schemaType';
 import { UpLimitString } from '../../property/constraint/upLimit';
-import type { EntryAccess, Entry } from '../../struct/entry/type';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from '../../utility/constant';
 import { combinePaths, isNull } from '../../utility/toolset';
 import { _LS } from '../../utility/locale';
 import { getNodeType } from '../../runtime/context';
-import type { StructFieldSchema } from '../../schema/struct/type';
 import { ValueType } from '../../schema/value/runtime';
 import { StringType } from '../../schema/string/runtime';
 import { StructType } from '../../schema/struct/runtime';
 import { ArrayType } from '../../schema/array/runtime';
 import { ObjectType } from '../../schema/object/runtime';
+
+import type { EntryAccess, Entry } from '../../struct/entry/type';
+import type { StructFieldSchema } from '../../schema/struct/type';
+
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY } from '../../utility/constant';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)

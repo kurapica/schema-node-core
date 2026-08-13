@@ -6,8 +6,10 @@ import { OfSchema } from "../../property/core/ofSchema";
 import { SchemaType } from "../../property/core/schemaType";
 import { SchemaKind } from "../../property/record/schemaKind";
 import { Generics } from "../../schema/generic/property";
-import { NS_SYSTEM_BOOL, NS_SYSTEM_ENTRY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY, SCHEMA_KIND_STRUCT } from "../../utility/constant";
+
 import type { Entry, EntryAccess } from "./type";
+
+import { NS_SYSTEM_BOOL, NS_SYSTEM_ENTRY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ENTRYS, SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY, SCHEMA_KIND_STRUCT } from "../../utility/constant";
 
 /** The runtime entry  */
 @Meta(SchemaKind, [SCHEMA_KIND_ENTRY, SCHEMA_KIND_ORDER_ENTRY])

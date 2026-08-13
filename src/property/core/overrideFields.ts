@@ -9,8 +9,10 @@ import { ForSchema } from './forSchema';
 import { SchemaType } from './schemaType';
 import { PropertyValueType } from './propertyValueType';
 import { Visible } from '../common/visible';
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_STRUCT_FIELD } from '../../utility/constant';
+
 import type { StructFieldSchema } from '../../schema/struct/type';
+
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_STRUCT_FIELD } from '../../utility/constant';
 
 /** OverrideFields is a property that allows overriding the field type with a different schema name. */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])

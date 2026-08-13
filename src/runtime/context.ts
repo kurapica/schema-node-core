@@ -1,11 +1,14 @@
 import { SchemaLoadState } from "../enum/schemaLoadState";
-import { hasNodeReferences, isNamespaceNodeType, type INamespaceNodeType, type INodeReference, type INodeType } from "../interface";
+import { hasNodeReferences, isNamespaceNodeType } from "../interface";
 import { combineProperties } from "../property/propertyOwner";
+import { getSchemaProvider } from "../schema/provider";
+import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
+
+import type { INamespaceNodeType, INodeReference, INodeType } from "../interface";
 import type { GenericParameter } from "../schema/generic/type";
 import type { NodeSchema } from "../schema/node/type";
-import { getSchemaProvider } from "../schema/provider";
+
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
-import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
 
 const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
 

@@ -3,16 +3,18 @@
 // Mirrors C# SchemaNode.Core/Node/ArrayNode.cs
 // =============================================================================
 
-import type { IPropertyProvider, IRelationInfo, IValueAccess } from "../../interface";
 import { Name } from "../../property/core/name";
 import { getPropertiesBySchemaKind } from "../../property/propertyOwner";
-import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from "../../utility/constant";
 import { Observable } from "../../utility/observable";
-import type { Observer } from "../../utility/observable";
 import { isNull } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { ValueType } from "../value/runtime";
 import { ArrayType } from "./runtime";
+
+import type { IPropertyProvider, IRelationInfo, IValueAccess } from "../../interface";
+import type { Observer } from "../../utility/observable";
+
+import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from "../../utility/constant";
 
 /** The array node contains the array data values */
 export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements Iterable<T> {

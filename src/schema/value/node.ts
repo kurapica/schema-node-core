@@ -4,15 +4,18 @@
 // =============================================================================
 
 import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../../utility/toolset';
-import { Observable, type Observer } from '../../utility/observable';
-import { NODE_SELF, DEBOUNCE_TIME } from '../../utility/constant';
+import { Observable } from '../../utility/observable';
 import { _LS } from '../../utility/locale';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
-import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import { isRelation, joinProperties, isConstraintProperty } from '../../interface';
 import { getPropertyName, Property } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
+
+import type { Observer } from '../../utility/observable';
+import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
+
+import { NODE_SELF, DEBOUNCE_TIME } from '../../utility/constant';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {

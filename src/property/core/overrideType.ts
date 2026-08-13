@@ -9,6 +9,7 @@ import { ForSchema } from './forSchema';
 import { SchemaType } from './schemaType';
 import { PropertyValueType } from './propertyValueType';
 import { Visible } from '../common/visible';
+
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE } from '../../utility/constant';
 
 /** OverrideType is a property that allows overriding the field type with a different schema name. */

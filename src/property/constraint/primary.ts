@@ -7,12 +7,14 @@ import { Static } from '../core/static';
 import { buildFuncCall } from '../../schema/function/type';
 import { EntrySource } from '../core/entrySource';
 import { ConstraintProperty } from '../constraintProperty';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, ARRAY_ELEMENT } from '../../utility/constant';
-import type { IValueAccess } from '../../interface';
 import { isNull } from '../../utility/toolset';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
+
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, ARRAY_ELEMENT } from '../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

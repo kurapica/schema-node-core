@@ -8,9 +8,10 @@ import { Meta } from '../attribute/meta';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../property/function/return';
-import { Generics } from  '../schema/generic/property';
+import { Generics } from '../schema/generic/property';
 import { ArgName } from '../property/function/argName';
 import { Variadic } from '../property/function/variadic';
+
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
 
 function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(v as BigNumber.Value); }

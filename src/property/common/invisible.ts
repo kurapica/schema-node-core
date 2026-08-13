@@ -8,6 +8,7 @@ import { OfSchema } from '../core/ofSchema';
 import { ForSchema } from '../core/forSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
+
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /**

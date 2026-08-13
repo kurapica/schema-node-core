@@ -1,14 +1,16 @@
 import { ExpType } from "../../../enum/expType";
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
-import { NODE_SELF, NODE_TYPE } from "../../../utility/constant";
 import { isNull } from "../../../utility/toolset";
 import { ArrayType } from "../../array/runtime";
 import { DataNode } from "../../value/node";
 import { ValueType } from "../../value/runtime";
 import { FunctionType } from "../runtime";
-import type { CallArg } from "../type";
 import { FuncExpArgNode } from "./funcExpArgNode";
 import { FuncExpVariadicArgNode } from "./funcExpVariadicArgNode";
+
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
+import type { CallArg } from "../type";
+
+import { NODE_SELF, NODE_TYPE } from "../../../utility/constant";
 
 /** The function expression arguments data node */
 export class FuncExpArgsNode extends DataNode implements Iterable<DataNode> {

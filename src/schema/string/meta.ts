@@ -13,15 +13,17 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import type { NodeSchema } from '../node/type';
-import type { StringSchema } from './type';
 import { StringProperty } from './property';
 import { StringType } from './runtime';
 import { StringValue } from './valid';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { StringNode } from './node';
+
+import type { NodeSchema } from '../node/type';
+import type { StringSchema } from './type';
+
+import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 
 /** the date schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])

@@ -8,10 +8,12 @@ import { SchemaType } from '../core/schemaType';
 import { UpLimitInt } from './upLimit';
 import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import type { IValueAccess } from '../../interface';
-import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
 import { Error } from '../common/error';
 import { ArrayNode } from '../../schema/array/node';
+
+import type { IValueAccess } from '../../interface';
+
+import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
 
 /** The minimum size constraint property for array data node */
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])

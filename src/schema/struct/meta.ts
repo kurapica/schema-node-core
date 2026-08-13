@@ -8,7 +8,6 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../../property/core/indexes';
 import { Primary } from '../../property/constraint/primary';
 import { Indexes } from '../../property/constraint/indexes';
-import type { DataIndex } from '../../property/constraint/indexes';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
@@ -20,28 +19,31 @@ import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { Require } from '../../property/constraint/require';
 import { Display } from '../../property/common/display';
 import { Valid } from '../../property/constraint/valid';
-import { Generics } from  '../../schema/generic/property';
-import type { GenericParameter } from  '../../schema/generic/type';
+import { Generics } from '../../schema/generic/property';
 import { Default } from '../../property/common/default';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
 import { getProperty, setProperty, setPropertyValue } from '../../property/propertyOwner';
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { getRelationSchemas, Relation } from '../../attribute/relation';
 import { Base } from '../../property/core/base';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { buildFuncCall } from '../../schema/function/type';
 import { Relations } from '../relation/property';
-import type { StructFieldSchema, StructSchema } from './type';
-import type { NodeSchema } from '../node/type';
 import { StructProperty } from './property';
-import type { ArraySchema } from '../array/type';
 import { ArrayProperty } from '../array/property';
 import { StructType } from './runtime';
 import { StructValue } from './valid';
 import { StructNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { DataIndex } from '../../property/constraint/indexes';
+import type { GenericParameter } from  '../../schema/generic/type';
+import type { StructFieldSchema, StructSchema } from './type';
+import type { NodeSchema } from '../node/type';
+import type { ArraySchema } from '../array/type';
+
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../../utility/constant';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])

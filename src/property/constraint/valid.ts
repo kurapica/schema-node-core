@@ -5,14 +5,16 @@ import { ForSchema } from '../core/forSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { Stackable } from '../core/stackable';
-import type { IConstraintProperty, IValueAccess } from '../../interface';
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 import { getNodeType } from '../../runtime/context';
 import { isEmpty, isNull } from '../../utility/toolset';
 import { Error } from '../common/error';
 import { StructNode } from '../../schema/struct/node';
 import { FunctionType } from '../../schema/function/runtime';
 import { getErrorMessage } from '../constraintProperty';
+
+import type { IConstraintProperty, IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

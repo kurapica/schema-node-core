@@ -3,9 +3,10 @@
 // Mirrors C# SchemaNode.Core/Property/OrderProperty.cs
 // =============================================================================
 
-import type { IProperty } from '../interface';
 import { isNull } from '../utility';
 import { Property } from './property';
+
+import type { IProperty } from '../interface';
 
 /**
  * Interface for properties that carry an ordering index.

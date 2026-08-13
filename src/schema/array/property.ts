@@ -7,11 +7,13 @@ import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
-import type { IProperty } from '../../interface';
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from "../../utility/constant";
+
+import type { IProperty } from '../../interface';
 import type { ArraySchema } from "./type";
+
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from "../../utility/constant";
 
 /** The array property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])

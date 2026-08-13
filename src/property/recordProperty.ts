@@ -4,6 +4,7 @@
 // =============================================================================
 
 import { OrderProperty } from './orderProperty';
+
 import type { IOrderProperty } from './orderProperty';
 
 /**

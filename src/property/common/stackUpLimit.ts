@@ -10,8 +10,9 @@ import { ForSchema } from '../core/forSchema';
 import { PropertyValueType } from '../core/propertyValueType';
 import { buildFuncCall } from '../../schema/function/type';
 import { Visible } from './visible';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 import { Relation } from '../../attribute/relation';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 
 /**
  * When calcuating the stack up limit of a struct, this property indicates whether the origin value should be included in the calculation.

@@ -8,12 +8,13 @@ import { Meta } from '../attribute/meta';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../property/function/return';
-import { Generics } from  '../schema/generic/property';
+import { Generics } from '../schema/generic/property';
 import { ArgName } from '../property/function/argName';
 import { Default } from '../property/common/default';
 import { Require } from '../property/constraint/require';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utility/constant';
 import { isNull, isEmpty } from '../utility/toolset';
+
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utility/constant';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

@@ -9,7 +9,9 @@ import { SchemaType } from "../../property/core/schemaType";
 import { Static } from "../../property/core/static";
 import { Error } from "../../property/common/error";
 import { ConstraintProperty } from "../../property/constraintProperty";
+
 import type { IValueAccess } from "../../interface";
+
 import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ENUM, SCHEMA_KIND_PROPERTY } from "../../utility/constant";
 
 @Meta(Alias, 'bool')

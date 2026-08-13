@@ -1,5 +1,4 @@
 import { Meta } from '../../attribute/meta';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { EnumValueType } from '../../enum/enumValueType';
 import { isNull } from '../../utility/toolset';
 import { Alias } from '../../property/core/alias';
@@ -12,10 +11,13 @@ import { Default } from '../../property/common/default';
 import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import type { IValueAccess } from '../../interface';
 import { EnumNode } from './node';
 import { EnumType } from './runtime';
 import { EnumArrayNode } from '../array/runtime';
+
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])

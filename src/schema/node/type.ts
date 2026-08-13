@@ -1,5 +1,6 @@
-import type { SchemaLoadState } from "../../enum/schemaLoadState";
 import { combinePaths } from "../../utility/toolset";
+
+import type { SchemaLoadState } from "../../enum/schemaLoadState";
 
 /** The schema container node, which can contain other nodes, such as scalar, struct, enum, array, etc. */
 export interface NodeSchema {

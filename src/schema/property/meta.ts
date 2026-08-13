@@ -16,18 +16,20 @@ import { Require } from '../../property/constraint/require';
 import { PropertyValueType } from '../../property/core/propertyValueType';
 import { Valid } from '../../property/constraint/valid';
 import { Display } from '../../property/common/display';
-import type { PropertyCtor } from '../../interface';
 import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';
 import { getPropertyName } from '../../property/property';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
 import { Relations } from '../relation/property';
+import { PropertyProperty } from './property';
+
+import type { PropertyCtor } from '../../interface';
 import type { PropertySchema } from './type';
 import type { NodeSchema } from '../node/type';
-import { PropertyProperty } from './property';
+
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])

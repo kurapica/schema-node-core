@@ -10,14 +10,16 @@
 // Notice: There is no need to create an instance of SchemaRuntime, it is a singleton and all methods are static.
 // =============================================================================
 
-import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import { getMetaProperties } from '../attribute/meta';
-import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { combinePaths } from '../utility/toolset';
 import { getNodeSchemaName } from '../schema/node/type';
+
+import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import type { NodeSchema } from '../schema/node/type';
 import type { StructSchema } from '../schema/struct/type';
+
+import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 

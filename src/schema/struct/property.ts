@@ -1,5 +1,4 @@
 import { Meta, Relation } from "../../attribute";
-import type { IProperty } from "../../interface";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
@@ -8,8 +7,11 @@ import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD } from "../../utility";
+
+import type { IProperty } from "../../interface";
 import type { StructSchema, StructFieldSchema } from "./type";
+
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD } from "../../utility";
 
 /** Property bridge. */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])

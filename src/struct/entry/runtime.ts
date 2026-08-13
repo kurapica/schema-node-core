@@ -1,8 +1,10 @@
 import { Disable } from "../../property/common/disable";
 import { combineProperties, getPropertyValue } from "../../property/propertyOwner";
-import { SCHEMA_KIND_ENTRY} from "../../utility/constant";
 import { isEqual, isNull } from "../../utility/toolset";
+
 import type { Entry, EntryAccess } from "./type";
+
+import { SCHEMA_KIND_ENTRY } from "../../utility/constant";
 
 /** The runtime entry  */
 export class EntryType<T> implements Entry<T> {

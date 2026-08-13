@@ -1,13 +1,14 @@
 import { deepClone, isEmpty } from "../../utility/toolset";
-import type { IRelationProcess } from "../../schema/relation/interface";
-import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";
 import { FunctionType } from "../../schema/function/runtime";
-import type { CallArg } from "../../schema/function/type";
-import type { RelationSchema } from "../../schema/relation/type";
 import { getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
 import { RelationStage } from "../../enum/relationStage";
-import { type FuncCall } from '../../schema/function/type';
+
+import type { IRelationProcess } from "../../schema/relation/interface";
+import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";
+import type { CallArg } from "../../schema/function/type";
+import type { RelationSchema } from "../../schema/relation/type";
+import type { FuncCall } from '../../schema/function/type';
 
 /** The call relation process */
 export class CallProcess implements IRelationProcess, IErrorProvider {

@@ -12,8 +12,9 @@ import { Generics } from '../schema/generic/property';
 import { ArgName } from '../property/function/argName';
 import { Require } from '../property/constraint/require';
 import { Variadic } from '../property/function/variadic';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST } from '../utility/constant';
 import { isNull } from '../utility/toolset';
+
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST } from '../utility/constant';
 
 // ── SystemCollection ───────────────────────────────────────────────────
 

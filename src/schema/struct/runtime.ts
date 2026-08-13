@@ -4,9 +4,7 @@
 // =============================================================================
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
-import type { Entry } from '../../struct/entry/type';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
 import { DisplayOnly } from '../../property/common/displayOnly';
@@ -15,21 +13,26 @@ import { SchemaType } from '../../property/core/schemaType';
 import { Unpack } from '../../property/common/unpack';
 import { Name } from '../../property/core/name';
 import { getMetaProperties, getMetaProperty } from '../../attribute/meta';
-import type { LocaleString } from '../../struct/localeString/type';
 import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
 import { ValueType } from '../value/runtime';
-import type { StructFieldSchema, StructSchema } from './type';
-import type { RelationSchema } from '../relation/type';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
-import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, IRelationProvider, INodeReference, INodeType, IRelation } from '../../interface';
 import { isConstraintProperty, joinProperties } from '../../interface';
-import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRefProperty';
-import type { GenericParameter } from '../generic/type';
+import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { getNodeType } from '../../runtime/context';
+
+import type { Entry } from '../../struct/entry/type';
+import type { LocaleString } from '../../struct/localeString/type';
+import type { StructFieldSchema, StructSchema } from './type';
+import type { RelationSchema } from '../relation/type';
+import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, IRelationProvider, INodeReference, INodeType, IRelation } from '../../interface';
+import type { ITypeRefProperty } from '../../property/typeRefProperty';
+import type { GenericParameter } from '../generic/type';
+
+import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {

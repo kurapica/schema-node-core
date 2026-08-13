@@ -7,14 +7,16 @@ import { buildFuncCall } from '../../schema/function/type';
 import { Cascade } from './cascade';
 import { OverrideType } from '../core/overrideType';
 import { ConstraintProperty } from '../constraintProperty';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_INTRINSIC, NS_SYSTEM_MATH, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import type { IValueAccess } from '../../interface';
 import { EnumNode } from '../../schema/enum/node';
 import { EnumType } from '../../schema/enum/runtime';
 import { EnumArrayNode } from '../../schema/array/runtime';
+
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_INTRINSIC, NS_SYSTEM_MATH, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

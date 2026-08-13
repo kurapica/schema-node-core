@@ -4,10 +4,12 @@
 // =============================================================================
 
 import { SchemaLoadState } from '../../enum/schemaLoadState';
-import type { INamespaceNodeType, INodeType } from '../../interface';
-import { SCHEMA_KIND_NAMESPACE } from '../../utility/constant';
 import { NodeType } from '../node/runtime';
+
+import type { INamespaceNodeType, INodeType } from '../../interface';
 import type { NodeSchema } from '../node/type';
+
+import { SCHEMA_KIND_NAMESPACE } from '../../utility/constant';
 
 export class NamespaceType extends NodeType implements INamespaceNodeType {
   /** Sub types by name. */

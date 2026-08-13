@@ -6,15 +6,17 @@
 import { getMetaProperty } from '../../attribute/meta';
 import { RelationKind } from '../../property/record/relationKind';
 import { RelationProcess } from '../../property/core/relationProcess';
-import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation } from '../../interface';
-import { SCHEMA_KIND_RELATION } from '../../utility/constant';
 import { generateGuid } from '../../utility/toolset';
-import { hasNodeReferences  } from '../../interface';
-import type { RelationSchema } from './type';
+import { hasNodeReferences } from '../../interface';
 import { PropertyType } from '../property/runtime';
-import type { IRelationProcess } from './interface';
 import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
 import { getNodeType } from '../../runtime/context';
+
+import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation } from '../../interface';
+import type { RelationSchema } from './type';
+import type { IRelationProcess } from './interface';
+
+import { SCHEMA_KIND_RELATION } from '../../utility/constant';
 
 /** The relation type */
 export class RelationType implements INodeReference, IErrorProvider, IRelation {

@@ -13,15 +13,17 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { NODE_SELF, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL,  SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import type { NodeSchema } from '../node/type';
-import type { DecimalSchema } from './type';
 import { DecimalProperty } from './property';
 import { DecimalType } from './runtime';
 import { DecimalValue } from './valid';
 import { DecimalNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { NodeSchema } from '../node/type';
+import type { DecimalSchema } from './type';
+
+import { NODE_SELF, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, SCHEMA_KIND_STRING } from '../../utility/constant';
 
 /** the decimal schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])

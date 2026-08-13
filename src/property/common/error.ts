@@ -2,15 +2,18 @@
 // Mirrors C# SchemaNode.Core/Property/Common/Display.cs
 // =============================================================================
 
-import type { IProperty } from '../../interface';
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { OfSchema } from '../core/ofSchema';
 import { ForSchema } from '../core/forSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
+import { concatLocaleString } from '../../struct/localeString/type';
+
+import type { IProperty } from '../../interface';
+import type { LocaleString } from '../../struct/localeString/type';
+
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, SCHEMA_KIND_DATE, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
-import { concatLocaleString, type LocaleString } from '../../struct/localeString/type';
 
 /** The error property */
 @Meta(ForSchema, [SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY])

@@ -17,13 +17,15 @@ import { Valid } from '../../property/constraint/valid';
 import { Require } from '../../property/constraint/require';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
-import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, ENTRY_ROOT } from '../../utility/constant';
-import type { ArraySchema } from './type';
 import { Relations } from '../relation/property';
 import { ArrayType } from './runtime';
 import { ArrayValue } from './valid';
 import { DataNodeType } from '../../property';
 import { ArrayNode } from './node';
+
+import type { ArraySchema } from './type';
+
+import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, ENTRY_ROOT } from '../../utility/constant';
 
 /** The array schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])

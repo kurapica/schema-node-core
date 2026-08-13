@@ -3,10 +3,12 @@
 // Mirrors C# SchemaNode.Core/Property/ConstraintProperty.cs
 // =============================================================================
 
-import { formatLocaleString, type LocaleString } from '../struct/localeString/type';
+import { formatLocaleString } from '../struct/localeString/type';
 import { Display } from './common/display';
 import { Name } from './core/name';
 import { Property } from './property';
+
+import type { LocaleString } from '../struct/localeString/type';
 import type {IValueAccess, IConstraintProperty } from '../interface';
 
 export abstract class ConstraintProperty<T> extends Property<T> implements IConstraintProperty {

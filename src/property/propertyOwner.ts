@@ -5,8 +5,9 @@
 
 import { getSchemaKindPropertyTypes } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
-import type { IProperty, PropertyCtor } from '../interface';
 import { getPropertyName } from './property';
+
+import type { IProperty, PropertyCtor } from '../interface';
 
 /**
  * Get a single property by its class constructor.

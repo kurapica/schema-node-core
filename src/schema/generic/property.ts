@@ -5,8 +5,10 @@ import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
 import { SchemaType } from "../../property/core/schemaType";
 import { Property } from "../../property/property";
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility";
+
 import type { GenericParameter } from "./type";
+
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility";
 
 /**
  * A collection of generic type parameter declarations for a schema.

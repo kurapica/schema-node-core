@@ -9,21 +9,24 @@
 //                        the entire call goes through schemaProvider via queue+cache
 // =============================================================================
 
-import { type FuncArg, type FuncExp, type CallArg, type FunctionSchema } from './type';
 import { ExpType } from '../../enum/expType';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
-import type {  IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
-import type { Entry } from '../../struct/entry/type';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
 import { getNodeType } from '../../runtime/context';
-import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRefProperty';
-import type { GenericParameter } from '../generic/type';
+import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { Name } from '../../property/core/name';
-import type { RelationSchema } from '../relation/type';
 import { RelationType } from '../relation/runtime';
+
+import type { FuncArg, FuncExp, CallArg, FunctionSchema } from './type';
+import type {  IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
+import type { Entry } from '../../struct/entry/type';
+import type { ITypeRefProperty } from '../../property/typeRefProperty';
+import type { GenericParameter } from '../generic/type';
+import type { RelationSchema } from '../relation/type';
+
 import { NODE_SELF, NODE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 
 /** Shared result cache for remote calls (keyed by token). */

@@ -1,9 +1,10 @@
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { BoolNode } from "../../bool/node";
 import { StringNode } from "../../string/node";
 import { StructNode } from "../../struct/node";
 import { StructType } from "../../struct/runtime";
+
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import type { FuncArg } from "../type";
 
 /** The function argument node */

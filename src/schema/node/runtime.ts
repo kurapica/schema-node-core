@@ -5,16 +5,19 @@
 // Each NodeType wraps a NodeSchema loaded from the runtime.
 // Provides schema-level introspection: kind, name, generics, property access.
 // =============================================================================
-import type { IProperty, PropertyCtor, IPropertyProvider, INodeReference, INodeType } from '../../interface';
-import { type GenericParameter } from  '../../schema/generic/type';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { combinePaths, deepClone } from '../../utility/toolset';
-import { SCHEMA_KIND_NODE } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
-import type { NodeSchema } from './type';
-import { isTypeRefProperty, type ITypeRefProperty } from '../../property/typeRefProperty';
+import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { Generics } from '../generic/property';
 import { getNodeType } from '../../runtime/context';
+
+import type { IProperty, PropertyCtor, IPropertyProvider, INodeReference, INodeType } from '../../interface';
+import type { GenericParameter } from '../../schema/generic/type';
+import type { NodeSchema } from './type';
+import type { ITypeRefProperty } from '../../property/typeRefProperty';
+
+import { SCHEMA_KIND_NODE } from '../../utility/constant';
 
 export class NodeType implements INodeType, IPropertyProvider, INodeReference {
   /** The parent namespace (set once the type is loaded into a namespace). */

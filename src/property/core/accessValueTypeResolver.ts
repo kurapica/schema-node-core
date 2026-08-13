@@ -2,19 +2,22 @@ import { AccessValueTypeProvider } from './accessValueTypeProvider';
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING } from '../../utility/constant';
 import { ReadOnly } from '../common/readOnly';
 import { InVisible } from '../common/invisible';
 import { Default } from '../common/default';
 import { Valid } from '../constraint/valid';
-import { buildFuncCall, type FuncCall } from '../../schema/function/type';
+import { buildFuncCall } from '../../schema/function/type';
 import { OfSchema } from "./ofSchema";
 import { PropertyValueType } from "./propertyValueType";
 import { SchemaType } from "./schemaType";
 import { Static } from "./static";
 import { getNodeType } from '../../runtime/context';
-import type { IValueAccess } from '../../interface';
 import { FunctionType } from '../../schema/function/runtime';
+
+import type { FuncCall } from '../../schema/function/type';
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING } from '../../utility/constant';
 
 /** The access value provider property */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

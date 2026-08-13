@@ -3,24 +3,28 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/EnumType.cs
 // =============================================================================
 
-import { EnumValueType, type EnumValueTypeValue } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType';
 import { EntrySource } from '../../property/core/entrySource';
-import { type FuncCall } from '../../schema/function/type';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
-import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
-import type { LocaleString } from '../../struct/localeString/type';
-import {  EntryType } from '../../struct/entry/runtime';
-import { type EntryAccess } from '../../struct/entry/type';
+import { EntryType } from '../../struct/entry/runtime';
 import { isEmpty } from '../../utility/toolset';
 import { ValueType } from '../value/runtime';
-import type { EnumSchema } from './type';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
-import { joinProperties, type IProperty, type PropertyCtor } from '../../interface';
+import { joinProperties } from '../../interface';
 import { ScalarType } from '../value/scalar';
 import { StringType } from '../string/runtime';
 import { IntType } from '../int/runtime';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
+
+import type { EnumValueTypeValue } from '../../enum/enumValueType';
+import type { FuncCall } from '../../schema/function/type';
+import type { LocaleString } from '../../struct/localeString/type';
+import type { EntryAccess } from '../../struct/entry/type';
+import type { EnumSchema } from './type';
+import type { IProperty, PropertyCtor } from '../../interface';
+
+import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;

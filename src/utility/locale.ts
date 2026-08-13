@@ -1,11 +1,13 @@
 import enUS from '../locale/enUS.json';
 import zhCN from '../locale/zhCN.json';
-
-import { Observable, type Observer } from "./observable";
-import { setLocaleStringFormat, type LocaleString } from '../struct/localeString/type';
+import { Observable } from "./observable";
+import { setLocaleStringFormat } from '../struct/localeString/type';
 import { isNull } from "./toolset";
 import { getCachedNodeType } from '../runtime/context';
 import { Display } from '../property/common/display';
+
+import type { Observer } from "./observable";
+import type { LocaleString } from '../struct/localeString/type';
 import type { IValueTypeAccess } from "../interface";
 import type { INodeType } from '../interface';
 

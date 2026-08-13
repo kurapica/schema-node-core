@@ -6,11 +6,13 @@ import { ForSchema } from '../core/forSchema';
 import { EntrySource } from '../core/entrySource';
 import { buildFuncCall } from '../../schema/function/type';
 import { ConstraintProperty } from '../constraintProperty';
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT } from '../../utility/constant';
-import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
+
+import type { IValueAccess } from '../../interface';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

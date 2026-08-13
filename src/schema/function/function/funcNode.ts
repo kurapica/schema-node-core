@@ -1,4 +1,3 @@
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { getNodeType } from "../../../runtime/context";
 import { ArrayNodeTemplate } from "../../array/node";
@@ -6,9 +5,11 @@ import { StringNode } from "../../string/node";
 import { StructNode } from "../../struct/node";
 import { StructType } from "../../struct/runtime";
 import { FunctionType } from "../runtime";
-import type { FunctionSchema } from "../type";
 import { FuncArgsNode } from "./funcArgsNode";
 import { FuncExpNode } from "./funcExpNode";
+
+import type { IPropertyProvider, IValueAccess } from "../../../interface";
+import type { FunctionSchema } from "../type";
 
 /** The function node contains the function definition */
 export class FunctionNode extends StructNode

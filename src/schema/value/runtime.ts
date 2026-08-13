@@ -6,17 +6,19 @@
 // Provides create() → DataNode factory + validateValue() + type compatibility checks.
 // =============================================================================
 
-import type { IConstraintProperty, IValueTypeAccess, ValueAccessFactory, IValueAccess, IPropertyProvider } from '../../interface';
 import { isEmpty } from '../../utility/toolset';
-import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
-import type { Entry } from '../../struct/entry/type';
 import { NodeType } from '../node/runtime';
-import { isConstraintProperty  } from '../../interface';
+import { isConstraintProperty } from '../../interface';
 import { DataNode } from './node';
-import type { INodeType } from '../../interface';
 import { getSchemaKindRegister, getSchemaType } from '../../runtime/schemaRuntime';
 import { getMetaProperty } from '../../attribute/meta';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { IConstraintProperty, IValueTypeAccess, ValueAccessFactory, IValueAccess, IPropertyProvider } from '../../interface';
+import type { Entry } from '../../struct/entry/type';
+import type { INodeType } from '../../interface';
+
+import { NODE_SELF, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 
 /** Represents the value schema type */
 export abstract class ValueType extends NodeType implements IValueTypeAccess {

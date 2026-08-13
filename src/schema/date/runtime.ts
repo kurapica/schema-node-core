@@ -1,9 +1,11 @@
-import type { IProperty } from '../../interface';
 import { getPropertiesBySchemaKind, getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
-import { SCHEMA_KIND_DATE } from "../../utility/constant";
 import { ScalarType } from "../value/scalar";
+
+import type { IProperty } from '../../interface';
 import type { DateSchema } from "./type";
+
+import { SCHEMA_KIND_DATE } from "../../utility/constant";
 
 export class DateType extends ScalarType {
   private _dateSchema: DateSchema | undefined

@@ -4,21 +4,23 @@
 // =============================================================================
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
-import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
-import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 import { isEmpty } from '../../utility/toolset';
-import type { Entry } from '../../struct/entry/type';
 import { ValueType } from '../value/runtime';
-import type { ArraySchema } from './type';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
-import type { RelationSchema } from '../relation/type';
 import { RelationType } from '../relation/runtime';
 import { joinProperties } from '../../interface';
 import { DataNode } from '../value/node';
 import { EnumType } from '../enum/runtime';
 import { getNodeType } from '../../runtime/context';
 import { EnumValueType } from '../../enum/enumValueType';
+
+import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
+import type { Entry } from '../../struct/entry/type';
+import type { ArraySchema } from './type';
+import type { RelationSchema } from '../relation/type';
+
+import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 
 export class ArrayType extends ValueType implements IRelationProvider {
   private _arraySchema: ArraySchema | undefined;

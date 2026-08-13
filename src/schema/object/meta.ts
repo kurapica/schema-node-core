@@ -15,13 +15,15 @@ import { Valid } from '../../property/constraint/valid';
 import { Display } from '../../property/common/display';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_NODE, SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import type { NodeSchema } from '../node/type';
 import { ObjectType } from './runtime';
 import { AnyNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { SchemaGenerator } from '../../property';
+
+import type { NodeSchema } from '../node/type';
+
+import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_NODE, SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT, SCHEMA_KIND_STRING } from '../../utility/constant';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])

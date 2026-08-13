@@ -1,7 +1,9 @@
 import { Meta } from '../../attribute/meta';
 import { SchemaType } from '../../property/core/schemaType';
-import { NS_SYSTEM_RANGE_DATE, NS_SYSTEM_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_FULL_DATE, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_YEARMONTH, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_YEAR } from '../../utility/constant';
+
 import type { RangeDate } from './type';
+
+import { NS_SYSTEM_RANGE_DATE, NS_SYSTEM_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_FULL_DATE, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_YEARMONTH, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_YEAR } from '../../utility/constant';
 
 @Meta(SchemaType, NS_SYSTEM_RANGE_DATE)
 class RangeDateMeta implements RangeDate {

@@ -5,12 +5,14 @@ import { OfSchema } from "../../property/core/ofSchema";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
-import { type IProperty } from "../../interface";
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
 import { concatLocaleString } from "../../struct/localeString/type";
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENTRY } from "../../utility/constant";
+
+import type { IProperty } from "../../interface";
 import type { EnumSchema } from "./type";
+
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENTRY } from "../../utility/constant";
 
 
 /** The enum property of node schema */

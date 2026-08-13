@@ -12,13 +12,15 @@ import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { combinePaths } from '../../utility/toolset';
-import type { NodeSchema } from '../node/type';
 import { BoolType } from './runtime';
 import { BoolValue } from './valid';
 import { BoolNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+
+import type { NodeSchema } from '../node/type';
+
+import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])

@@ -1,5 +1,6 @@
-import type { IRelation, IValueAccess } from "../../interface";
 import { getPropertyValue } from "../../property/propertyOwner";
+
+import type { IRelation, IValueAccess } from "../../interface";
 import type { IRelationProcess } from "../../schema/relation/interface";
 import type { RelationSchema } from "../../schema/relation/type";
 

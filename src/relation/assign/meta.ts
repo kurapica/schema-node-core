@@ -9,9 +9,10 @@ import { SchemaType } from '../../property/core/schemaType';
 import { Visible } from '../../property/common/visible';
 import { RelationProcess } from "../../property/core/relationProcess";
 import { buildFuncCall } from '../../schema/function/type';
-import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 import { AssignProcess } from "./type";
 import { PropertyValueType } from "../../property";
+
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 
 @Meta(ForSchema, SCHEMA_KIND_RELATION)
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

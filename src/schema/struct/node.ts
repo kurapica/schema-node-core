@@ -1,15 +1,17 @@
-import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
 import { Unpack } from "../../property/common/unpack";
 import { OverrideFields } from "../../property/core/overrideFields";
 import { OverrideType } from "../../property/core/overrideType";
 import { getNodeType } from "../../runtime/context";
-import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
 import { isEqual, isNull } from "../../utility/toolset";
-import type { NodeSchema } from "../node/type";
 import { DataNode } from "../value/node";
-import type { ValueType } from "../value/runtime";
 import { StructType } from "./runtime";
+
+import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
+import type { NodeSchema } from "../node/type";
+import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
+
+import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
 
 /** Struct node. */
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
