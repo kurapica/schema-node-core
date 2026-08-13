@@ -8,7 +8,7 @@ import { Require } from '../../property/constraint/require';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING } from '../../utility/constant';
 import { _LS } from '../../utility/locale';
 import { combinePaths } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
@@ -179,7 +179,7 @@ export class SystemReflectFunction {
   }
 
   /** Gets the value type of the struct field */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getaccessvaluetype(
     @Meta(ArgName, 'args')

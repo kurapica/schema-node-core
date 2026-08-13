@@ -8,7 +8,6 @@ import { buildFuncCall } from '../../schema/function/type';
 import { type IProperty } from "../../interface";
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { Call } from "../../relation/call/meta";
 import { concatLocaleString } from "../../struct/localeString/type";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENTRY } from "../../utility/constant";
 import type { EnumSchema } from "./type";
@@ -19,7 +18,7 @@ import type { EnumSchema } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
 @Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
 export class EnumProperty extends Property<EnumSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<EnumSchema>();

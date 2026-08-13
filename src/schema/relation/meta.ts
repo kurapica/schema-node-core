@@ -17,7 +17,6 @@ import { DisplayOnly } from '../../property/common/displayOnly';
 import { Default } from '../../property/common/default';
 import { InVisible } from '../../property/common/invisible';
 import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
-import { Call } from '../../relation/call/meta';
 import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
 import type { RelationSchema } from './type';
 
@@ -44,7 +43,7 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
-  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
   targetKind?: string;
 
   /** The property the relation applies to */
@@ -59,7 +58,7 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
-  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property'))
   valueType?: string;
 
   /** The stage of the realtion been applied */

@@ -1,10 +1,11 @@
 import { Meta } from "../../attribute/meta";
+import { PropertyValueType } from "../../property";
 import { ReadOnly } from "../../property/common/readOnly";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
 import { SchemaType } from "../../property/core/schemaType";
 import { Property } from "../../property/property";
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE } from "../../utility";
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility";
 import type { GenericParameter } from "./type";
 
 /**
@@ -14,4 +15,5 @@ import type { GenericParameter } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(ReadOnly, true)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.generics`)
+@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.genericParameter>`)
 export class Generics extends Property<GenericParameter[]> {}

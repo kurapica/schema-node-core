@@ -47,7 +47,7 @@ export function Relation(
   return ((tar: object, _memberKey?: string, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? (ctor as unknown as Record<string, string>).ofSchema === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) ?? '' : ''),
+      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ((ctor as unknown as Record<string, string>).ofSchema === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) : '')),
       property: typeof propClass === 'string' ? propClass : getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,

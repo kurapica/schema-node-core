@@ -9,7 +9,6 @@ import { buildFuncCall } from '../../schema/function/type';
 import type { IProperty } from '../../interface';
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_DATE } from "../../utility/constant";
 import type { DateSchema } from "./type";
 
@@ -18,7 +17,7 @@ import type { DateSchema } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.date`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DATE))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DATE))
 export class DateProperty extends Property<DateSchema>
 {
   combine(other: IProperty): boolean {

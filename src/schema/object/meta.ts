@@ -21,11 +21,13 @@ import type { NodeSchema } from '../node/type';
 import { ObjectType } from './runtime';
 import { AnyNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+import { SchemaGenerator } from '../../property';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
+@Meta(SchemaGenerator, generateObjectSchema)
 @Meta(RuntimeNodeType, ObjectType)
 @Meta(DataNodeType, AnyNode)
 class ObjectSchemaMeta {}

@@ -1,6 +1,5 @@
 import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Assign } from '../../relation/assign/meta';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_FUNC } from '../../utility/constant';
 import { ReadOnly } from '../common/readOnly';
 import { InVisible } from '../common/invisible';
@@ -19,5 +18,5 @@ import { Static } from "./static";
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
-@Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE), "@AccessValueTypeProvider.func")
+@Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE), "@AccessValueTypeProvider.func")
 export class AccessValueTypeProvider extends FuncCallProperty {}

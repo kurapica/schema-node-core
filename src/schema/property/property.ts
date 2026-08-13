@@ -8,7 +8,6 @@ import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
 import { Property } from "../../property/property";
-import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_LOGIC_EQ } from "../../utility/constant";
 import type { PropertySchema } from "./type";
 
@@ -18,5 +17,5 @@ import type { PropertySchema } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.prop`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_PROPERTY))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_PROPERTY))
 export class PropertyProperty extends Property<PropertySchema> {}

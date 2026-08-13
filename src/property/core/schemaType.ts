@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { registerSchemaType } from '../../runtime/schemaRuntime';
+import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 
 /**
@@ -10,7 +11,9 @@ import { Property } from '../property';
  */
 export class SchemaType extends Property<string> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        registerSchemaType(this.getValue<string>()!.toLowerCase(), typeof target === 'function' ? target : target.constructor);
+        if (!isNull(field) || !isNull(descriptorOrIndex)) return;
+        target = typeof target === 'function' ? target : target.constructor;
+        registerSchemaType(this.getValue<string>()!.toLowerCase(), target as Function);
         (target as unknown as Record<string, string>).schemaType = this.getValue<string>()!;
     }
 }

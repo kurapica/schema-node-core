@@ -28,10 +28,8 @@ import { FromEnum } from '../../property/core/fromEnum';
 import { combinePaths } from '../../utility/toolset';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { Base } from '../../property/core/base';
-import { Call } from '../../relation/call/meta';
 import { buildFuncCall } from '../../schema/function/type';
 import { type Entry } from '../../struct/entry/type';
-import { Assign } from '../../relation/assign/meta';
 import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 import { EnumProperty } from './property';
@@ -54,7 +52,7 @@ class EnumSchemaKind{}
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(Attach, SCHEMA_KIND_ENUM)
-@Relation(Immutable, Assign, true, "values.value")
+@Relation(Immutable,'assign', true, "values.value")
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.valuetype`)
@@ -68,8 +66,8 @@ class EnumSchemaMeta implements EnumSchema {
   /** The root enum values */
   @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
   @Meta(Require, true)
-  @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"))
-  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), "values.value")
+  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), "values.value")
   values!: Entry<string>[];
 }
 

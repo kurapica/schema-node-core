@@ -4,6 +4,7 @@
 
 import { Meta } from '../../attribute/meta';
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
 import { OfSchema } from './ofSchema';
@@ -21,6 +22,8 @@ import { SchemaType } from './schemaType';
 @Meta(Static, true)
 export class Static extends Property<boolean> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
+        if (!isNull(field) || !isNull(descriptorOrIndex)) return;
+        target = typeof target === 'function' ? target : target.constructor;
         (target as unknown as Record<string, boolean>).static = this.getValue<boolean>() ?? false;
     }
 }

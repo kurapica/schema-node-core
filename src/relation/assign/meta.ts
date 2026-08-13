@@ -9,15 +9,16 @@ import { SchemaType } from '../../property/core/schemaType';
 import { Visible } from '../../property/common/visible';
 import { RelationProcess } from "../../property/core/relationProcess";
 import { buildFuncCall } from '../../schema/function/type';
-import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 import { AssignProcess } from "./type";
-import { Call } from "../call/meta";
+import { PropertyValueType } from "../../property";
 
 @Meta(ForSchema, SCHEMA_KIND_RELATION)
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.assign`)
+@Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 @Meta(RelationKind, 'assign')
 @Meta(RelationProcess, AssignProcess)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'assign'))
-@Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'assign'))
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'))
 export class Assign extends Property<unknown> {}

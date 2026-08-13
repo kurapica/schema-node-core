@@ -9,7 +9,6 @@ import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call/meta';
 import { ConstraintProperty } from '../constraintProperty';
 import { EnumNode } from '../../schema/enum/node';
 import { EnumType } from '../../schema/enum/runtime';
@@ -20,7 +19,7 @@ import { EnumArrayNode } from '../../schema/array/runtime';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.leafonly`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.leafonly.error`)
-@Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, "@type"))
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, "@type"))
 export class LeafOnly extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

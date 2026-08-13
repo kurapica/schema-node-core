@@ -13,8 +13,6 @@ import { isNull } from '../../utility/toolset';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Assign } from '../../relation/assign/meta';
-import { Call } from '../../relation/call/meta';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -22,8 +20,8 @@ import { Call } from '../../relation/call/meta';
 @Meta(Static, true)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.primary.error`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
-@Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `primary.${ARRAY_ELEMENT}`)
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
+@Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `primary.${ARRAY_ELEMENT}`)
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.length) return undefined;

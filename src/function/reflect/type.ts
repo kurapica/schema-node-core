@@ -189,7 +189,7 @@ export class SystemReflectType {
   }
 
   /** hecks if value type of the give access from the type match the given schema kinds */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakind`)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakindaccess`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isschemakindaccess(
     @Meta(ArgName, 'name')

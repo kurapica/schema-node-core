@@ -17,7 +17,7 @@ import { getErrorMessage } from '../constraintProperty';
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid`)
-@Meta(PropertyValueType, NS_SYSTEM_SCHEMA_FUNC)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(Stackable, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid.error`)
 export class Valid extends FuncCallProperty implements IConstraintProperty {

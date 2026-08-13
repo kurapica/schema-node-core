@@ -10,7 +10,6 @@ import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call/meta';
 import { EnumValueType } from '../../enum/enumValueType';
 import { EnumNode } from '../../schema/enum/node';
 
@@ -19,7 +18,7 @@ import { EnumNode } from '../../schema/enum/node';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.singleflag`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.singleflag.error`)
-@Relation(Visible, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, "@type", EnumValueType.Flags))
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, "@type", EnumValueType.Flags))
 export class SingleFlag extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value || !(node instanceof EnumNode)) return undefined;

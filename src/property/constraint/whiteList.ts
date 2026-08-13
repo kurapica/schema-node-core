@@ -16,18 +16,17 @@ import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { isNull } from '../../utility/toolset';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call/meta';
 
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.whitelist`)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.whitelist.error`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_STRING))
-@Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, "@type"))
-@Relation(BlackList, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@blackList"))
-@Relation(Root, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"))
-@Relation(Cascade, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_STRING))
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, "@type"))
+@Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@blackList"))
+@Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"))
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"))
 export class WhiteList extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue();

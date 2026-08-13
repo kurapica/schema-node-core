@@ -38,7 +38,6 @@ import { combinePaths } from '../../utility/toolset';
 import { ExpType } from '../../enum/expType';
 import { Base } from '../../property/core/base';
 import { ArgName } from '../../property/function/argName';
-import { Call } from '../../relation/call/meta';
 import { FunctionNode } from './function/funcNode';
 import { FuncArgsNode } from './function/funcArgsNode';
 import { FuncExpNode } from './function/funcExpNode';
@@ -124,14 +123,14 @@ class FuncExpMeta implements FuncExp {
   /** the expression type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
   @Meta(Require, true)
-  @Relation(WhiteList, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexptypes`, '@return'))
+  @Relation(WhiteList,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexptypes`, '@return'))
   type: ExpType = ExpType.Call;
 
   /** The expected function return type */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
-  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexpectreturn`, '@return', '@type'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexpectreturn`, '@return', '@type'))
   funcReturn?: string;
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.type`)
@@ -159,7 +158,7 @@ class CallArgMeta implements CallArg {
 
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, '@type'))
-  @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@value'))
+  @Relation(InVisible,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@value'))
   source?: string;
 
   /** The source value type */
@@ -171,9 +170,9 @@ class CallArgMeta implements CallArg {
 
   /** The const value (no complex struct value) */
   @Meta(SchemaType, NS_SYSTEM_OBJECT)
-  @Relation(OverrideType, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'))
-  @Relation(InVisible, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
-  @Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', true, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM))
+  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'))
+  @Relation(InVisible,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
+  @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', true, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM))
   value?: unknown;
 }
 
@@ -209,14 +208,14 @@ class FunctionTypeMeta {}
 /** Represents the validation function type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-@Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valid`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_BOOL))
 class ValidFuncTypeMeta {}
 
 /** Represents the function return value type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-@Meta(SchemaType, `{NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE))
 class TypeFuncTypeMeta {}
 

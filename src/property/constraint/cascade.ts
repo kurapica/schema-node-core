@@ -11,8 +11,6 @@ import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Assign } from '../../relation/assign/meta';
-import { Call } from '../../relation/call/meta';
 import { EnumNode } from '../../schema/enum/node';
 import { EnumType } from '../../schema/enum/runtime';
 import { EnumArrayNode } from '../../schema/array/runtime';
@@ -23,8 +21,8 @@ import { EnumArrayNode } from '../../schema/array/runtime';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade.error`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM))
-@Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, "@type"))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM))
+@Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, "@type"))
 export class Cascade extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

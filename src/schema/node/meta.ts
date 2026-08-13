@@ -18,7 +18,6 @@ import { Valid } from '../../property/constraint/valid';
 import { Require } from '../../property/constraint/require';
 import { ReadOnly } from '../../property/common/readOnly';
 import { Immutable } from '../../property/common/immutable';
-import { Call } from '../../relation/call/meta';
 import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
 import type { CompatibleSchema, NodeSchema } from './type';
 import { RuntimeNodeType } from '../../property';
@@ -38,7 +37,7 @@ class NodeKind {}
 class NodeSchemaMeta implements NodeSchema {
   @Meta(PrimaryIndex, 0)
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
-  @Relation(ReadOnly, Call, buildFuncCall(`${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.notempty)}`, "@name"))
+  @Relation(ReadOnly,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.notempty)}`, "@name"))
   namespace?: string;
 
   @Meta(PrimaryIndex, 1)

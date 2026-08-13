@@ -11,16 +11,14 @@ import type { IValueAccess } from '../../interface';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call/meta';
-import { Assign } from '../../relation/assign/meta';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.indexs`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes.error`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
-@Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `indexes.fields.${ARRAY_ELEMENT}`)
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
+@Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `indexes.fields.${ARRAY_ELEMENT}`)
 export class Indexes extends ConstraintProperty<DataIndex[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     return undefined; // do nothing

@@ -10,7 +10,6 @@ import { buildFuncCall } from '../../schema/function/type';
 import type { IProperty } from '../../interface';
 import { Property } from "../../property/property";
 import { combineProperties } from "../../property/propertyOwner";
-import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from "../../utility/constant";
 import type { ArraySchema } from "./type";
 
@@ -19,9 +18,9 @@ import type { ArraySchema } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.array`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ARRAY))
-@Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarrayname`, "@array.element"), "name")
-@Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarraydisplay`, "@array.element"), "display.key")
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ARRAY))
+@Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarrayname`, "@array.element"), "name")
+@Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarraydisplay`, "@array.element"), "display.key")
 export class ArrayProperty extends Property<ArraySchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other.getValue<ArraySchema>();

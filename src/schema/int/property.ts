@@ -9,7 +9,6 @@ import { buildFuncCall } from '../../schema/function/type';
 import type { IProperty } from "../../interface";
 import { Property } from "../../property/property";  
 import { combineProperties } from "../../property/propertyOwner";
-import { Call } from "../../relation/call/meta";
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_INT, SCHEMA_KIND_INT } from "../../utility/constant";
 import type { IntSchema } from "./type";
 
@@ -18,7 +17,7 @@ import type { IntSchema } from "./type";
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.int`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_INT}.schema`)
-@Relation(Visible, Call, buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_INT))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_INT))
 export class IntProperty extends Property<IntSchema>
 {
   combine(other: IProperty): boolean {

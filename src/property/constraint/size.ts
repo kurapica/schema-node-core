@@ -8,7 +8,6 @@ import { SchemaType } from '../core/schemaType';
 import { UpLimitInt } from './upLimit';
 import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
-import { Call } from '../../relation/call/meta';
 import type { IValueAccess } from '../../interface';
 import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
 import { Error } from '../common/error';
@@ -20,7 +19,7 @@ import { ArrayNode } from '../../schema/array/node';
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.minsize`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(LowLimitInt, 0)
-@Relation(UpLimitInt, Call, buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@maxSize'))
+@Relation(UpLimitInt,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@maxSize'))
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.minsize.error`)
 export class MinSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {

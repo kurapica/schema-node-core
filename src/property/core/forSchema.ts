@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { registerSchemaProperty } from '../../runtime/schemaRuntime';
+import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 
 /**
@@ -10,7 +11,9 @@ import { Property } from '../property';
  */
 export class ForSchema extends Property<string[]> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        registerSchemaProperty(typeof target === 'function' ? target : target.constructor);
+        if (!isNull(field) || !isNull(descriptorOrIndex)) return;
+        target = typeof target === 'function' ? target : target.constructor;
+        registerSchemaProperty(target as Function);
         (target as unknown as Record<string, string[]>).forSchema = this.getValue<string[]>()!;
     }
 }

@@ -31,7 +31,6 @@ import { combinePaths } from '../../utility/toolset';
 import { getRelationSchemas, Relation } from '../../attribute/relation';
 import { Base } from '../../property/core/base';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { Call } from '../../relation/call/meta';
 import { buildFuncCall } from '../../schema/function/type';
 import { Relations } from '../relation/property';
 import type { StructFieldSchema, StructSchema } from './type';
@@ -74,7 +73,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
   @Meta(Require, true)
   @Meta(PrimaryIndex)
-  @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypename`, '@type'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypename`, '@type'))
   name!: string;
 
   /** The field type */

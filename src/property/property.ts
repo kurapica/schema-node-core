@@ -91,7 +91,7 @@ export function getPropertyName(ctor: PropertyCtor): string {
     n = (ctor as unknown as Record<string, string>).alias;
     if (!n)
     {
-      let name = ctor.name;
+      let name = ctor.name ?? '';
       if (name.endsWith('Property')) name = name.slice(0, -8);
       if (name.length === 0) return name;
       n = name[0].toLowerCase() + name.slice(1);
