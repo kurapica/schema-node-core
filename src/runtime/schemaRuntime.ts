@@ -20,11 +20,9 @@ import type { NodeSchema } from '../schema/node/type';
 import type { StructSchema } from '../schema/struct/type';
 
 import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { logger } from '../utility/logger';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
-
-/** The schema kind holder */
-const _schemaKindHolder = new Map<string, Function>();
 
 /** The schema kind property types */
 const _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
@@ -165,6 +163,7 @@ export function saveNodeSchema(schema: NodeSchema | NodeSchema[], loadStage: Sch
   // System schema, register in the namespace tree
   _registerInNamespace(schema.namespace ?? '', schema);
   _schemaIndex.set(getNodeSchemaName(schema), schema);
+  logger.verbose("Register schema:", schema);
 }
 
 /** Look up a schema by full name. */
@@ -178,7 +177,6 @@ export function getSystemSchema(fullName: string): NodeSchema | undefined {
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
   return clone;
 }
-
 
 // #region ── Internal ──
 
@@ -263,8 +261,6 @@ export function getNodeTypeGenerator(kind: string): (new (parent?: INodeType) =>
 export function initSchemaRuntime(): void {
   // Scan schema kinds
   _schemaKindRegistry.forEach((ctor, kind) => {
-    _schemaKindHolder.set(kind, ctor);
-
     // generator check
     const generator = (ctor as unknown as Record<string, Function>).schemaGenerator;
     if (generator) {
@@ -273,7 +269,7 @@ export function initSchemaRuntime(): void {
 
     // append properties to the schema kind registry
     const appendProperties = (ctor as unknown as Record<string, PropertyCtor[]>).append;
-       if (appendProperties?.length) {
+    if (appendProperties?.length) {
       let existed = _schemaKindPropertyTypes.get(kind) ?? [];
       existed.push(...appendProperties);
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
@@ -290,8 +286,11 @@ export function initSchemaRuntime(): void {
 
     // Prototype properties
     const prototypeProps = getMetaProperties(ctor).filter(p => (p.constructor as unknown as Record<string, string[]>).forSchema?.includes(kind))
-    if (prototypeProps?.length)
+    if (prototypeProps?.length) {
       _schemaKindProperties.set(kind, prototypeProps);
+    }
+
+    logger.debug('[Kind]:', kind, ' '.repeat(16 - kind.length), generator ? '[Generator] Yes' : '[Generator] No ', nodeSchemaKind ? '[NodeType] Yes' : '[NodeType] No ', '[NodeType]', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
 
     // register struct with kind properties, special for schema creation
     // system.schema.design.{kind} -> hold all properties for the kind
@@ -309,7 +308,9 @@ export function initSchemaRuntime(): void {
   _schemaPropertyRegistry.forEach((ctor) => {
     const forSchema = (ctor as unknown as Record<string, string[]>).forSchema;
     if (forSchema?.length) {
-      const kinds = forSchema;
+      const kinds = typeof forSchema === 'string' ? [forSchema] : forSchema;
+      logger.debug('[Property]', ctor.name, '->', kinds);
+
       for (const kind of kinds) {
         let existed = _schemaKindPropertyTypes.get(kind) ?? [];
         if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
@@ -317,6 +318,8 @@ export function initSchemaRuntime(): void {
         _schemaKindPropertyTypes.set(kind, existed);
       }
     }
+    else
+      logger.debug('[Property]', ctor.name, '->', 'None');
   });
 
   // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
@@ -333,6 +336,7 @@ export function initSchemaRuntime(): void {
     const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
     
     // Call the generator to create the NodeSchema and register it
+    logger.debug('[Schema]', `[${kind}]`, type);
     generator(ns, name, ctor);
   });
 }

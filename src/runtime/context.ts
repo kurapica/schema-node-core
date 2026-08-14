@@ -9,6 +9,7 @@ import type { GenericParameter } from "../schema/generic/type";
 import type { NodeSchema } from "../schema/node/type";
 
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
+import { logger } from "../utility/logger";
 
 const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
 
@@ -143,6 +144,7 @@ async function loadNodeType(
 
   // Load the NodeSchema
   const schema = await loadNodeSchema(nsParent, segment, reload);
+  logger.debug('Loaded schema:', nsParent?.name, segment, '->', schema);
   if (!schema) return undefined;
 
   // Resolve NodeType class from _nodeTypeGenerator
@@ -218,7 +220,7 @@ async function loadNodeSchema(
   // 1. Check namespace cache (unless reloading)
   if (!reload && name.length) {
     const cachedNodeSchema = ns?.getSubNodeSchema(name);
-    if (cachedNodeSchema) return cachedNodeSchema;
+    if (cachedNodeSchema && cachedNodeSchema.kind !== SCHEMA_KIND_NAMESPACE) return cachedNodeSchema;
   }
 
   // 2. Try system (built-in) schema

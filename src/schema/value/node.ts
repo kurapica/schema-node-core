@@ -333,7 +333,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the value change */
-  onNext = debounce(() => { 
+  onNext = debounce(() => {
     this._dataOb?.onNext(this, this.rawValue);
     this.validate();
   }, DEBOUNCE_TIME);

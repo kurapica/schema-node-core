@@ -317,7 +317,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   // #region ── Utility ───────────────────────────────────────────────────────
 
-  private writeBackRawValue(element: IValueAccess, value: unknown) {
+  private writeBackRawValue = (element: IValueAccess, value: unknown) => {
     const arr = this._value as unknown[];
     if (!Array.isArray(arr)) return;
 
@@ -328,7 +328,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     }
   }
 
-  private refreshElementNames() {
+  private refreshElementNames = () => {
     this._elements.forEach((e, i) => e.setPropertyValue(Name, `${this.name}[${i}]`));
   }
 

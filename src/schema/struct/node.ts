@@ -271,12 +271,14 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   
   // #region ── Utility ────────────────────────────────────────────────────
 
-  private writeBackRawValue(field: IValueAccess, value: unknown) {
+  private writeBackRawValue = (field: IValueAccess, value: unknown) => {
+    if (!this._value) return; // value not initialized
+    (this._value as any)[(field as DataNode).name!] = value;
     (this._value as any)[(field as DataNode).name!] = value;
     this.onNext();
   }
 
-  private async trackOverrideType(field: IValueAccess, propCtor: PropertyCtor, newValue?: unknown | undefined, oldValue?: unknown | undefined) {
+  private trackOverrideType = async (field: IValueAccess, propCtor: PropertyCtor, newValue?: unknown | undefined, oldValue?: unknown | undefined) => {
     if (!isEqual(oldValue, newValue))
     {
       const node = field as DataNode;
