@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Attribute/RelationAttribute.cs
 // =============================================================================
 
-import { RelationStage } from '../enum/relationStage';
+import { RelationStage } from '../enum/relationStage/type';
 import { getPropertyName } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 

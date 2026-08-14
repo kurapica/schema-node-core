@@ -13,7 +13,7 @@ import { joinProperties } from '../../interface';
 import { DataNode } from '../value/node';
 import { EnumType } from '../enum/runtime';
 import { getNodeType } from '../../runtime/context';
-import { EnumValueType } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType/type';
 
 import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
@@ -36,7 +36,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
 
   override async load() {
     this.element = this._arraySchema?.element
-      ? await getNodeType(this._arraySchema.element) as ValueType
+      ? await getNodeType(this._arraySchema.element, this.generics, this.genericParams) as ValueType
       : undefined;
     this.primary = this.getProperty("Primary")?.getValue<string[]>() ?? [];
 
@@ -129,7 +129,7 @@ export class EnumArrayNode extends DataNode {
   }
 
   override getValue(): unknown[] {
-    const value = this._value as unknown[];
+    const value = this.rawValue as unknown[];
     if (!Array.isArray(value)) return [];
     return value.map((item) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
   }

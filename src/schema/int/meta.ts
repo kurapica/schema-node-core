@@ -25,16 +25,19 @@ import type { IntSchema } from './type';
 
 import { NODE_SELF, NS_SYSTEM_SCHEMA_INT, NS_SYSTEM_SCHEMA_INT_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_INT, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_INT, SCHEMA_KIND_STRING } from '../../utility/constant';
 
-/** the int schema meta */
+/** The int schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_INT, SCHEMA_KIND_ORDER_INT])
 @Meta(RuntimeNodeType, IntType)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_INT}.schema`)
-@Meta(Attach, SCHEMA_KIND_INT)
 @Meta(SchemaGenerator, generateIntSchema)
 @Meta(IntValue)
 @Meta(DataNodeType, IntNode)
+class IntKind {}
+
+/** the int schema meta */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_INT}.schema`)
+@Meta(Attach, SCHEMA_KIND_INT)
 class IntSchemaMeta {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_INT_TYPE)
     base?: string;

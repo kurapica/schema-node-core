@@ -25,16 +25,19 @@ import type { StringSchema } from './type';
 
 import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND } from '../../utility/constant';
 
-/** the date schema meta */
+/** The string schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
 @Meta(RuntimeNodeType, StringType)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
-@Meta(Attach, SCHEMA_KIND_STRING)
 @Meta(SchemaGenerator, generateStringSchema)
 @Meta(StringValue)
 @Meta(DataNodeType, StringNode)
+class StringKind {}
+
+/** the date schema meta */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
+@Meta(Attach, SCHEMA_KIND_STRING)
 class StringSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_STRING_TYPE)
   base?: string;

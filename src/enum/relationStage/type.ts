@@ -11,3 +11,6 @@ export enum RelationStage {
   InputPersist = 6,
   All = 7,
 }
+
+/** The relation stage values */
+export type RelationStageValue = `${RelationStage}`;

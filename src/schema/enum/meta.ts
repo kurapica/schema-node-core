@@ -16,7 +16,7 @@ import { EntrySource } from '../../property/core/entrySource';
 import { Immutable } from '../../property/common/immutable';
 import { OverrideType } from '../../property/core/overrideType';
 import { Default } from '../../property/common/default';
-import { EnumValueType } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType/type';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { Require } from '../../property/constraint/require';
 import { Valid } from '../../property/constraint/valid';

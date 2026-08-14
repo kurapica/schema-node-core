@@ -34,7 +34,7 @@ import { AccessValueTypeResolver } from '../../property/core/accessValueTypeReso
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { combinePaths } from '../../utility/toolset';
-import { ExpType } from '../../enum/expType';
+import { ExpType } from '../../enum/expType/type';
 import { Base } from '../../property/core/base';
 import { ArgName } from '../../property/function/argName';
 import { FunctionNode } from './function/funcNode';
@@ -59,12 +59,12 @@ import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTE
 @Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(RuntimeNodeType, FunctionType)
 @Meta(SchemaGenerator, generateFunctionSchema)
+@Meta(DataNodeType, FunctionNode)
 class FunctionKind {}
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Meta(Attach, SCHEMA_KIND_FUNCTION)
-@Meta(DataNodeType, FunctionNode)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', '@exps', NODE_SELF, ENTRY_ROOT))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`, '@args', '@exps', NODE_SELF))
 class FunctionSchemaMeta implements FunctionSchema {

@@ -1,5 +1,5 @@
 import { Meta } from '../../attribute/meta';
-import { EnumValueType } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType/type';
 import { isNull } from '../../utility/toolset';
 import { Alias } from '../../property/core/alias';
 import { ForSchema } from '../../property/core/forSchema';

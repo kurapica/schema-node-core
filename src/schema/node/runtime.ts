@@ -18,6 +18,7 @@ import type { NodeSchema } from './type';
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
+import { logger } from '../../utility/logger';
 
 export class NodeType implements INodeType, IPropertyProvider, INodeReference {
   /** The parent namespace (set once the type is loaded into a namespace). */
@@ -90,6 +91,8 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
     this.schema = schema;
     this._genericParams = genericParams?.length ? genericParams : undefined;
     this.loaded = true;
+
+    logger.debug("[Node][Load]", this.name);
 
     // load properties
     this._props = Array.from(getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE)).concat(this.loadProperties());

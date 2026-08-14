@@ -30,11 +30,14 @@ import type { PropertySchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { RuntimeNodeType } from '../../property';
+import { PropertyType } from './runtime';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])
 @Meta(SchemaGenerator, generatePropertySchema)
+@Meta(RuntimeNodeType, PropertyType)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
 @Meta(Attach, SCHEMA_KIND_PROPERTY)
 @Meta(Append, [Relations])

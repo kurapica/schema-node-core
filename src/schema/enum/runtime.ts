@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/EnumType.cs
 // =============================================================================
 
-import { EnumValueType } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType/type';
 import { EntrySource } from '../../property/core/entrySource';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { EntryType } from '../../struct/entry/runtime';
@@ -17,7 +17,7 @@ import { IntType } from '../int/runtime';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
 
-import type { EnumValueTypeValue } from '../../enum/enumValueType';
+import type { EnumValueTypeValue } from '../../enum/enumValueType/type';
 import type { FuncCall } from '../../schema/function/type';
 import type { LocaleString } from '../../struct/localeString/type';
 import type { EntryAccess } from '../../struct/entry/type';

@@ -34,10 +34,10 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   readonly propertyProvider?: IPropertyProvider;
 
   /** The value */
-  protected _value: unknown;
+  private _value: unknown;
 
   /** The original value */
-  protected _original: unknown;
+  private _original: unknown;
 
   /** The violated constraint properties(not from relations) */
   private _violated?: IConstraintProperty[];
@@ -274,7 +274,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     else
     {
       this._props ??= new Map();
-      record = { source, level: this.calcLevel(source), property: new propCtor() };
+      record = { source, level: calcLevel(this, source), property: new propCtor() };
       record.property.setValue(value);
       if (props) {
         props.push(record);
@@ -567,20 +567,20 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     return isEmpty(val) ? '' : `${val}`;
   }
 
-  /** Calculate the distance to the source node. */
-  private calcLevel(source: IValueAccess)
-  {
-    let level = 0;
-    let curr: IValueAccess | undefined = this;
-    while(curr && curr !== source)
-    {
-      level++;
-      curr = curr.parent;
-    }
-    return level;
-  }
-
   // #endregion
+}
+
+/** Calculate the distance to the source node. */
+function calcLevel(self: IValueAccess, source: IValueAccess)
+{
+  let level = 0;
+  let curr: IValueAccess | undefined = self;
+  while(curr && curr !== source)
+  {
+    level++;
+    curr = curr.parent;
+  }
+  return level;
 }
 
 interface IPropertyRecord {

@@ -54,7 +54,7 @@ import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYST
 @Meta(StructValue)
 @Meta(DataNodeType, StructNode)
 @Meta(Append, [Relations, EntrySourceProvider, AccessValueTypeProvider])
-class StructSchemaKind{}
+class StructKind{}
 
 /** Built-in struct type Meta registration (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)

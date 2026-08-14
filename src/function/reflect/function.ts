@@ -1,5 +1,5 @@
 import { Meta } from '../../attribute/meta';
-import { ExpType } from '../../enum/expType';
+import { ExpType } from '../../enum/expType/type';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
 import { Return } from '../../property/function/return';

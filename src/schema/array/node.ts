@@ -318,7 +318,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   // #region ── Utility ───────────────────────────────────────────────────────
 
   private writeBackRawValue = (element: IValueAccess, value: unknown) => {
-    const arr = this._value as unknown[];
+    const arr = this.rawValue as unknown[];
     if (!Array.isArray(arr)) return;
 
     const idx = this._elements.indexOf(element as T);

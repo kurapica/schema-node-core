@@ -35,7 +35,7 @@ import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_
 @Meta(ArrayValue)
 @Meta(DataNodeType, ArrayNode)
 @Meta(Append, [Relations])
-class ArraySchemaKind{}
+class ArrayKind{}
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)

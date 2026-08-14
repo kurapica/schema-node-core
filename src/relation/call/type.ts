@@ -2,7 +2,7 @@ import { deepClone, isEmpty } from "../../utility/toolset";
 import { FunctionType } from "../../schema/function/runtime";
 import { getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
-import { RelationStage } from "../../enum/relationStage";
+import { RelationStage } from "../../enum/relationStage/type";
 
 import type { IRelationProcess } from "../../schema/relation/interface";
 import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";

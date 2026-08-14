@@ -2,9 +2,10 @@ import { Unpack } from "../../property/common/unpack";
 import { OverrideFields } from "../../property/core/overrideFields";
 import { OverrideType } from "../../property/core/overrideType";
 import { getNodeType } from "../../runtime/context";
-import { isEqual, isNull } from "../../utility/toolset";
+import { isEmpty, isEqual, isNull } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
+import { logger } from "../../utility/logger";
 
 import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
 import type { NodeSchema } from "../node/type";
@@ -90,6 +91,9 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     const consumed = new Set<string>();
     let packFields: DataNode[] = [];
 
+    // make raw value update
+    super.setValue(data);
+
     // as raw
     for (const f of this._fields)
     {
@@ -131,7 +135,6 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         f.setValue(record);
       }
     }
-    super.setValue(value);
   }
 
   override getValue(): unknown {
@@ -150,17 +153,17 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
             if (!isNull(v) && isNull(result[k])) result[k] = v;
           }
         }
-        else
+        else if (!isEmpty(d))
         {
           result[f.name!] = d;
         }
       }
-      else
+      else if (!isEmpty(d))
       {
         result[f.name!] = d;
       }
     });
-    return result;
+    return isEmpty(result) ? undefined : result;
   }
 
   override get isEmpty(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isEmpty) }
@@ -168,7 +171,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   override get changed(): boolean { return this._fields.some(f => !f.displayOnly && f.changed) }
 
   override confirm(): void { 
-    this._fields.forEach(f => f.confirm())  
+    this._fields.forEach(f => f.confirm());
     super.confirm();
   }
 
@@ -272,9 +275,9 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── Utility ────────────────────────────────────────────────────
 
   private writeBackRawValue = (field: IValueAccess, value: unknown) => {
-    if (!this._value) return; // value not initialized
-    (this._value as any)[(field as DataNode).name!] = value;
-    (this._value as any)[(field as DataNode).name!] = value;
+    if (!this.rawValue) return; // value not initialized
+    (this.rawValue as any)[(field as DataNode).name!] = value;
+    (this.rawValue as any)[(field as DataNode).name!] = value;
     this.onNext();
   }
 

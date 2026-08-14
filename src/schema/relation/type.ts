@@ -1,4 +1,4 @@
-import { RelationStage } from "../../enum/relationStage";
+import { RelationStage } from "../../enum/relationStage/type";
 
 /** Pure data interface. */
 export interface RelationSchema {

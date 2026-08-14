@@ -9,7 +9,7 @@
 //                        the entire call goes through schemaProvider via queue+cache
 // =============================================================================
 
-import { ExpType } from '../../enum/expType';
+import { ExpType } from '../../enum/expType/type';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';

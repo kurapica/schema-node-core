@@ -4,7 +4,7 @@
 
 import { Relation } from '../../attribute/relation';
 import { Meta } from '../../attribute/meta';
-import { RelationStage } from '../../enum/relationStage';
+import { RelationStage } from '../../enum/relationStage/type';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
@@ -64,7 +64,7 @@ class RelationSchemaMeta implements RelationSchema {
   valueType?: string;
 
   /** The stage of the realtion been applied */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_RELATION_TYPE)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.stage`)
   stage!: RelationStage;
 
   /** The relation kind */

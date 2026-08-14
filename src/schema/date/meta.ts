@@ -25,16 +25,19 @@ import type { DateSchema } from './type';
 
 import { NODE_SELF, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_SCHEMA_DATE_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DATE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DATE, SCHEMA_KIND_STRING } from '../../utility/constant';
 
-/** the date schema meta */
+/** The date schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_DATE, SCHEMA_KIND_ORDER_DATE])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_DATE, SCHEMA_KIND_ORDER_DATE])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_DATE, SCHEMA_KIND_ORDER_DATE])
 @Meta(RuntimeNodeType, DateType)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Meta(SchemaGenerator, generateDateSchema)
-@Meta(Attach, SCHEMA_KIND_DATE)
 @Meta(DateValue)
 @Meta(DataNodeType, DateNode)
+class DateKind {}
+
+/** the date schema meta */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
+@Meta(Attach, SCHEMA_KIND_DATE)
 class DateSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
   base?: string;

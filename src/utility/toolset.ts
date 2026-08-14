@@ -33,7 +33,8 @@ export function isEmpty(value: any)
   {
     for (let k in value)
     {
-      return false
+      if (!isEmpty(value[k]))
+        return false
     }
     return true
   }

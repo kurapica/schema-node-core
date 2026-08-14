@@ -6,7 +6,7 @@ import { ScalarNode } from "../object/node";
 /** The int node represents the int node */
 export class IntNode extends ScalarNode {
   override getValue() {
-    let value = this._value;
+    let value = this.rawValue;
     if (isNull(value)) return null;
     if (typeof value === 'string') value = parseInt(value);
     return Number.isFinite(value) ? value : null;

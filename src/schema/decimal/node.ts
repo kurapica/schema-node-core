@@ -5,7 +5,7 @@ import { ScalarNode } from "../object/node";
 
 export class DecimalNode extends ScalarNode {
   override getValue() {
-    let value = this._value;
+    let value = this.rawValue;
     if (isNull(value)) return null;
     if (typeof value === 'string') value = parseFloat(value);
     return Number.isFinite(value) ? value : null;

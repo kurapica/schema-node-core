@@ -58,7 +58,7 @@ export async function getNodeType(
   fullName = fullName.toLowerCase().trim();
 
   // Generic type — the name matches a generic parameter → return the concrete type
-  if (generics) {
+  if (generics?.length) {
     const gIdx = generics.findIndex(g => g.name.toLowerCase() === fullName);
     if (gIdx >= 0) {
       if (genericParams && gIdx < genericParams.length)
@@ -75,7 +75,7 @@ export async function getNodeType(
     const genericStart = fullName.indexOf('<');
     if (genericStart < 0)
     {
-      console.error(`The "${fullName}" is not a valid type name.`)
+      logger.error(`The "${fullName}" is not a valid type name.`)
       return undefined;
     }
     genericPart = fullName.substring(genericStart);
@@ -144,7 +144,6 @@ async function loadNodeType(
 
   // Load the NodeSchema
   const schema = await loadNodeSchema(nsParent, segment, reload);
-  logger.debug('Loaded schema:', nsParent?.name, segment, '->', schema);
   if (!schema) return undefined;
 
   // Resolve NodeType class from _nodeTypeGenerator
@@ -169,7 +168,6 @@ async function loadNodeType(
   // Generic types reloading (clone schema to avoid mutation)
   for (const g of result.getGenericTypes())
     await g.loadType({ ...schema }, g.genericParams);
-
   return result;
 }
 
@@ -189,7 +187,18 @@ async function loadGenericType(
 
   // Parse generic params respecting nested <>, e.g. "system.point<system.int, system.number>"
   const genParams: INodeType[] = [];
+  let isTemplate = false;
   for (const paramName of splitGenericParams(inner)) {
+    if (generics?.length){
+      const idx = generics.findIndex(g => g.name.toLowerCase() === paramName.toLowerCase());
+      if (idx >= 0) {
+        isTemplate = true;
+        if (genericParams?.length && idx < genericParams.length) {
+          genParams.push(genericParams[idx]);
+          continue;
+        }
+      }
+    }
     const resolved = await getNodeType(paramName, generics, genericParams);
     if (!resolved) return undefined;
     genParams.push(resolved);
@@ -200,7 +209,8 @@ async function loadGenericType(
   // Create generic type instance
   const NodeTypeCtor = node.constructor as new (parent?: INodeType) => INodeType;
   genType = new NodeTypeCtor(node.namespace);
-  node.setGenericType(inner, genType);
+  if (!isTemplate)
+    node.setGenericType(inner, genType);
 
   await genType.loadType(node.getNodeSchema()!, genParams);
   return genType;

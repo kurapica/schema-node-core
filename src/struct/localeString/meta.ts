@@ -7,12 +7,14 @@ import type { LocaleString, LocaleTran } from "./type";
 
 import { SCHEMA_KIND_STRUCT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_TRAN } from "../../utility/constant";
 import { NS_SYSTEM_LANGUAGE } from "../../utility/constant";
+import { PrimaryIndex } from "../../property";
 
 @Meta(OfSchema, SCHEMA_KIND_STRUCT)
 @Meta(SchemaType, NS_SYSTEM_LOCALE_TRAN)
 class LocaleTranMeta implements LocaleTran {
   /** The language */
   @Meta(SchemaType, NS_SYSTEM_LANGUAGE)
+  @Meta(PrimaryIndex)
   lang!: string;
 
   /** The translation */

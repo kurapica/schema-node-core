@@ -1,4 +1,4 @@
-import { ExpType } from "../../../enum/expType";
+import { ExpType } from "../../../enum/expType/type";
 import { getNodeType } from "../../../runtime/context";
 import { EnumNode } from "../../enum/node";
 import { StringNode } from "../../string/node";

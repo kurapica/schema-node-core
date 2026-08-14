@@ -8,7 +8,7 @@ import { ConstraintProperty } from '../constraintProperty';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { EnumValueType } from '../../enum/enumValueType';
+import { EnumValueType } from '../../enum/enumValueType/type';
 import { EnumNode } from '../../schema/enum/node';
 
 import type { IValueAccess } from '../../interface';

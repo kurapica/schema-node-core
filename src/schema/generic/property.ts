@@ -1,5 +1,5 @@
 import { Meta } from "../../attribute/meta";
-import { PropertyValueType } from "../../property";
+import { PropertyValueType } from "../../property/core/propertyValueType";
 import { ReadOnly } from "../../property/common/readOnly";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfSchema } from "../../property/core/ofSchema";
@@ -8,7 +8,7 @@ import { Property } from "../../property/property";
 
 import type { GenericParameter } from "./type";
 
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility";
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility/constant";
 
 /**
  * A collection of generic type parameter declarations for a schema.

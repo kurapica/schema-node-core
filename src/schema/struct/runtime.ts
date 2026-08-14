@@ -33,6 +33,7 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
+import { logger } from '../../utility';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -103,6 +104,8 @@ export class StructType extends ValueType implements IRelationProvider {
     const attachFields: { field: StructFieldType, priority: number }[] = [];
     const attachRelations: RelationSchema[] = [];
     if (attachKind) {
+      logger.debug("[Struct]", this.name, "[Attach]", attachKind);
+      
       for(const propCtor of getSchemaKindPropertyTypes(attachKind))
       {
         const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();

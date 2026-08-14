@@ -1,4 +1,4 @@
-import { ExpType } from "../../../enum/expType";
+import { ExpType } from "../../../enum/expType/type";
 import { isNull } from "../../../utility/toolset";
 import { ArrayType } from "../../array/runtime";
 import { DataNode } from "../../value/node";

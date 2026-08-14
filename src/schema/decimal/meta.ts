@@ -25,16 +25,19 @@ import type { DecimalSchema } from './type';
 
 import { NODE_SELF, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, SCHEMA_KIND_STRING } from '../../utility/constant';
 
-/** the decimal schema meta */
+/** The decimal schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])
 @Meta(RuntimeNodeType, DecimalType)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
-@Meta(Attach, SCHEMA_KIND_DECIMAL)
 @Meta(SchemaGenerator, generateDecimalSchema)
 @Meta(DecimalValue)
 @Meta(DataNodeType, DecimalNode)
+class DecimalKind {}
+
+/** the decimal schema meta */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
+@Meta(Attach, SCHEMA_KIND_DECIMAL)
 class DecimalSchemaMeta {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_DECIMAL_TYPE)
   base?: string;

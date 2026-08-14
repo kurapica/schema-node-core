@@ -19,8 +19,10 @@ import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import type { NodeSchema } from '../schema/node/type';
 import type { StructSchema } from '../schema/struct/type';
 
-import { NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { logger } from '../utility/logger';
+import type { ArraySchema } from '../schema/array/type';
+import type { GenericParameter } from '../schema/generic/type';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
@@ -273,7 +275,7 @@ export function initSchemaRuntime(): void {
       let existed = _schemaKindPropertyTypes.get(kind) ?? [];
       existed.push(...appendProperties);
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
-    }
+    } 
 
     // node type check
     const nodeSchemaKind = (ctor as unknown as Record<string, string>).nodeSchemaKind;
@@ -303,6 +305,27 @@ export function initSchemaRuntime(): void {
     };
     saveNodeSchema(nodeSchema);
   });
+
+  // Special types: system.array & system.list
+  {
+    const systemArray: NodeSchema & { display: { key: string }, array: ArraySchema } = {
+      namespace: NS_SYSTEM,
+      name: 'array',
+      kind: SCHEMA_KIND_ARRAY,
+      display: { key: combinePaths(NS_SYSTEM, 'array') },
+      array: { element: NS_SYSTEM_OBJECT }
+    };
+    saveNodeSchema(systemArray);
+
+    const systemList: NodeSchema & { display: { key: string }, array: ArraySchema & { generics: GenericParameter[] } } = {
+      namespace: NS_SYSTEM,
+      name: 'list',
+      kind: SCHEMA_KIND_ARRAY,
+      display: { key: combinePaths(NS_SYSTEM, 'list') },
+      array: { element: 'T', generics: [{ name: 'T' }] }
+    };
+    saveNodeSchema(systemList);
+  }
 
   // Scan registered properties
   _schemaPropertyRegistry.forEach((ctor) => {

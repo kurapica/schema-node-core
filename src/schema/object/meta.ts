@@ -32,7 +32,7 @@ import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TY
 @Meta(SchemaGenerator, generateObjectSchema)
 @Meta(RuntimeNodeType, ObjectType)
 @Meta(DataNodeType, AnyNode)
-class ObjectSchemaMeta {}
+class ObjectKind {}
 
 /** Represents the object value type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)

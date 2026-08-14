@@ -1,4 +1,4 @@
-import type { RelationStage } from "../enum/relationStage";
+import type { RelationStage } from "../enum/relationStage/type";
 import type { SchemaLoadState } from "../enum/schemaLoadState";
 import type { GenericParameter } from "../schema/generic/type";
 import type { NodeSchema } from "../schema/node/type";

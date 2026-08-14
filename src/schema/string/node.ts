@@ -6,7 +6,7 @@ import { ScalarNode } from "../object/node";
 /** The data node represents the string node */
 export class StringNode extends ScalarNode {
   override getValue() {
-    let value = this._value;
+    let value = this.rawValue;
     if (isNull(value)) return null;
     return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? JSON.stringify(value) : value}`
   }

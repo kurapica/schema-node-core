@@ -4,7 +4,7 @@ import { parseDate } from "../../utility/toolset";
 import { ScalarNode } from "../object/node";
 
 export class DateNode extends ScalarNode {
-  override getValue(){ return parseDate(this._value); }
+  override getValue(){ return parseDate(this.rawValue); }
 
   /** The uplimit of numeric */
   get upLimit(): Date | undefined { return parseDate(this.getPropertyValue(UpLimitDate)) }

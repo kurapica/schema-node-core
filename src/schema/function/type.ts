@@ -1,4 +1,4 @@
-import { ExpType } from "../../enum/expType";
+import { ExpType } from "../../enum/expType/type";
 
 /** Pure data interface for function schema extension data. */
 export interface FunctionSchema {

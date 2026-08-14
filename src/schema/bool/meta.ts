@@ -22,7 +22,7 @@ import type { NodeSchema } from '../node/type';
 
 import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
 
-/** Meta registration class (NOT exported). */
+/** The bool schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
@@ -30,7 +30,7 @@ import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE
 @Meta(SchemaGenerator, generateBoolSchema)
 @Meta(BoolValue)
 @Meta(DataNodeType, BoolNode)
-class BoolSchemaMeta {}
+class BoolKind {}
 
 /** Represents the bool value type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
