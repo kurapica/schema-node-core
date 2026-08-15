@@ -9,7 +9,7 @@ import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { _LS } from '../../utility/locale';
-import { combinePaths } from '../../utility/toolset';
+import { combinePaths, isEmpty } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
@@ -31,6 +31,7 @@ export class SystemReflectArray {
     @Meta(Require, true)
     element: string,
   ): Promise<string> {
+    if (isEmpty(element)) return "";
     const split = element.split('<')[0].split('.');
     return `${split[split.length - 1]}s`;
   }
@@ -44,6 +45,7 @@ export class SystemReflectArray {
     @Meta(Require, true)
     element: string,
   ): Promise<string> {
+    if (isEmpty(element)) return "";
     return `{LIST.PREFIX}{${element}}{LIST.SUFFIX}`;
   }
 
@@ -56,7 +58,7 @@ export class SystemReflectArray {
     @Meta(Require, true)
     element: string,
   ): Promise<string> {
-    const elementType = await getNodeType(element) as ValueType | undefined;
+    const elementType = element ? await getNodeType(element) as ValueType : undefined;
     if (!elementType) return "";
     if (elementType instanceof ArrayType) return elementType.name;
     if (elementType?.arrayType) return elementType.arrayType.name;

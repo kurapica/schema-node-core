@@ -17,6 +17,8 @@ import type { RelationSchema } from './type';
 import type { IRelationProcess } from './interface';
 
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
+import { logger } from '../../utility/logger';
+import type { DataNode } from '../value';
 
 /** The relation type */
 export class RelationType implements INodeReference, IErrorProvider, IRelation {
@@ -99,6 +101,8 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
   /** Attach the relation to target with the owner */
   attach(owner: IValueAccess, target: IValueAccess)
   {
+    logger.verbose('[Relation][Attach]', '[Property]', this._property?.property, '[Owner]', (owner as DataNode).access ?? owner, '[Target]', (target as DataNode).access ?? target  );
+
     if (!this._propCtor) return;
     this._process?.detach(this, owner, target); // clear first
     this._process?.attach(this, owner, target);

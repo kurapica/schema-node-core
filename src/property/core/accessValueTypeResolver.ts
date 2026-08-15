@@ -26,7 +26,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
-@Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "@AccessValueTypeResolver.func")
+@Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "accessValueTypeResolver.func")
 export class AccessValueTypeResolver extends Property<string> {
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
     if (!newValue || !this._value) return; // static only effect once

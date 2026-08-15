@@ -5,7 +5,6 @@ import { getNodeType } from "../../runtime/context";
 import { isEmpty, isEqual, isNull } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
-import { logger } from "../../utility/logger";
 
 import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
 import type { NodeSchema } from "../node/type";
@@ -207,29 +206,26 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       info.relations.forEach(r => {
         const paths = r.target.split('.').filter(p => p.trim() !== '');
         let curr: IValueAccess | undefined = info.owner;
-        for (let i = 0; i < paths.length; i++)
-        {
-          if (curr === undefined) return;
-          if (curr === this){
-            if (i === paths.length - 1)
-              r.attach(info.owner, this);
-            else
-            {
-              const next = paths[i].toLowerCase();
-              const fieldInfos = fieldRelations.get(next) ?? [];
-              const exist = fieldInfos.find(f => f.owner === info.owner);
-              if (exist){
-                exist.relations.push(r);
-              }
-              else{
-                fieldInfos.push({owner: info.owner, relations: [r]});
-              }
-              fieldRelations.set(next, fieldInfos);
-            }
-            break;
-          }
-          curr = curr?.getAccessValue(paths[i], this);
-        }
+        let index = 0;
+
+        // indicate this
+        while (curr && curr !== this && index < paths.length)
+          curr = curr?.getAccessValue(paths[index++], this);
+        if (!curr) return;
+
+        // navigate to target field
+        if (index === paths.length)
+          return r.attach(info.owner, this);
+
+        // navigate to next field
+        const next = paths[index].toLowerCase();        
+        const fieldInfos = fieldRelations.get(next) ?? [];
+        const exist = fieldInfos.find(f => f.owner === info.owner);
+        if (exist)
+          exist.relations.push(r);
+        else
+          fieldInfos.push({owner: info.owner, relations: [r]});
+        fieldRelations.set(next, fieldInfos);
       });
     });
 

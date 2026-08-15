@@ -21,7 +21,7 @@ import { Static } from '../../property/core/static';
 import { getPropertyName } from '../../property/property';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';
-import { combinePaths } from '../../utility/toolset';
+import { combinePaths, isEmpty } from '../../utility/toolset';
 import { Relations } from '../relation/property';
 import { PropertyProperty } from './property';
 
@@ -32,6 +32,7 @@ import type { NodeSchema } from '../node/type';
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { RuntimeNodeType } from '../../property';
 import { PropertyType } from './runtime';
+import { getRelationSchemas } from '../../attribute/relation';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])
@@ -55,14 +56,6 @@ class PropertySchemaMeta implements PropertySchema {
   /** the schema kinds that the property applies to */
   @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_KIND}>`)
   forSchemas?: string[];
-
-  /** Whether the property value can't be changed by relations */
-  @Meta(SchemaType, NS_SYSTEM_BOOL)
-  static?: boolean;
-
-  /** Whether the property is stackable */
-  @Meta(SchemaType, NS_SYSTEM_BOOL)
-  stackable?: boolean;
 }
 
 /** Represents the property type */
@@ -81,13 +74,20 @@ function generatePropertySchema(namespace: string, name: string, ctor: Function)
     const type = getMetaProperty(ctor, PropertyValueType)?.getValue<string>();
     if (!type) throw new Error(`Property schema ${namespace}.${name} must have a value type.`);
 
-    const isStatic = getMetaProperty(ctor, Static)?.getValue<boolean>();
-    const stackable = getMetaProperty(ctor, Stackable)?.getValue<boolean>();
     const forSchemas = getPropertyTypeSupportSchemas(ctor as PropertyCtor);
-    const propSchema : PropertySchema = { property: getPropertyName(ctor as PropertyCtor), type, static: isStatic, stackable, forSchemas };
+    const propSchema : PropertySchema = { property: getPropertyName(ctor as PropertyCtor), type, forSchemas };
     
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
     getMetaPropertiesForSchema(SCHEMA_KIND_PROPERTY, ctor).forEach(p => setProperty(propSchema, p));
+
+    // Collect relations
+    const relations = getRelationSchemas(ctor);
+    if (relations.length > 0)
+      setPropertyValue(propSchema, Relations, relations.map(r => {
+        if (isEmpty(r.target)) r.target = propSchema.property;
+        return r;
+      }));
+    
     setPropertyValue(nodeSchema, PropertyProperty, propSchema);
     saveNodeSchema(nodeSchema);
 }

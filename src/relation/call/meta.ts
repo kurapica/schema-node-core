@@ -19,5 +19,5 @@ import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_FUNC, NS_SYST
 @Meta(RelationKind, 'call')
 @Meta(RelationProcess, CallProcess)
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.visible`,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'call'))
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'), "@call.return")
+@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'), "call.return")
 export class Call extends FuncCallProperty {}

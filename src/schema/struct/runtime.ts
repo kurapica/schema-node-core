@@ -104,8 +104,6 @@ export class StructType extends ValueType implements IRelationProvider {
     const attachFields: { field: StructFieldType, priority: number }[] = [];
     const attachRelations: RelationSchema[] = [];
     if (attachKind) {
-      logger.debug("[Struct]", this.name, "[Attach]", attachKind);
-      
       for(const propCtor of getSchemaKindPropertyTypes(attachKind))
       {
         const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
@@ -137,6 +135,8 @@ export class StructType extends ValueType implements IRelationProvider {
       if (a.priority < b.priority) return 1;
       return a.field.name.localeCompare(b.field.name);
     });
+    if (attachFields.length)
+      logger.debug("[Struct]", this.name, "[Attach]", attachFields.map(f => f.field.name));
     for (const field of attachFields)
       this._fields.push(field.field);
 

@@ -95,6 +95,7 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
   {
     // record
     const values = getRecordedValues(ctor);
+    values.sort((a, b) => a.order - b.order);
     enumSchema.values = values.map(v => (setPropertyValue({ value: v.getValue<string>()! }, Display, { key: `${enumName}.${v.getValue<string>()!}`})));
   }
   if (!enumSchema.values?.length) return;

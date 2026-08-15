@@ -4,13 +4,12 @@
 // =============================================================================
 
 import { RelationStage } from '../enum/relationStage/type';
-import { getPropertyName } from '../property/property';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 
 import type { PropertyCtor } from '../interface';
 import type { RelationSchema } from '../schema/relation/type';
 
-import { NODE_SELF, SCHEMA_KIND_PROPERTY } from '../utility/constant';
+import { NODE_SELF } from '../utility/constant';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
 
@@ -49,7 +48,7 @@ export function Relation(
   return ((tar: object, _memberKey?: string, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ((ctor as unknown as Record<string, string>).ofSchema === SCHEMA_KIND_PROPERTY ? getPropertyName(ctor as any) : '')),
+      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ''),
       property: typeof propClass === 'string' ? propClass : getTypeSchemaName(propClass)!,
       kind,
       stage: stage ?? RelationStage.Load | RelationStage.Input,
