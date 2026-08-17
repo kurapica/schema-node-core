@@ -47,7 +47,7 @@ class DateSchemaMeta {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_DATE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_DATE))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_DATE))
 class DateTypeMeta {}
 
 /** Generate the date schema */

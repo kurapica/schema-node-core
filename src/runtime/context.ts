@@ -55,7 +55,7 @@ export async function getNodeType(
   genericParams?: INodeType[],
   reload = false,
 ): Promise<INodeType | undefined> {
-  fullName = fullName.toLowerCase().trim();
+  fullName = (fullName ?? '').toLowerCase().trim();
 
   // Generic type — the name matches a generic parameter → return the concrete type
   if (generics?.length) {

@@ -38,7 +38,7 @@ class ObjectKind {}
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_OBJECT_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_OBJECT))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_OBJECT))
 class ObjectTypeMeta {}
 
 /** Generate the object schema type */

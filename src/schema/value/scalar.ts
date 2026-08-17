@@ -35,10 +35,10 @@ export abstract class ScalarType extends ValueType {
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
     // self -> base -> prototype
-    return joinProperties(super.getProperties(propCtor), (this._baseType ? this._baseType.getProperties(propCtor) : getSchemaKindProperties(this.kind, propCtor)));
+    for (let prop of joinProperties(super.getProperties(propCtor), (this._baseType ? this._baseType.getProperties(propCtor) : getSchemaKindProperties(this.kind, propCtor)))) yield prop as T;
   }
 
-  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(super.filterProperties(predicate), (this._baseType ? this._baseType.filterProperties(predicate) : filterSchemaKindProperties(this.kind, predicate)));
+  override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    for (let prop of joinProperties(super.filterProperties(predicate), (this._baseType ? this._baseType.filterProperties(predicate) : filterSchemaKindProperties(this.kind, predicate)))) yield prop;
   }
 }

@@ -28,6 +28,7 @@ import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
 import { NODE_SELF, NODE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
+import { logger } from '../../utility/logger';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -130,20 +131,37 @@ export class FunctionType extends NodeType {
    * - Remote → queue + cache via schemaProvider
    */
   async call(args: unknown[]): Promise<unknown> {
-    // Build composite function if not yet built
-    if (!this._built)
-      await this._buildComposite();
+    try
+    {
+      let res: unknown;
 
-    // 1. System function — direct invocation
-    if (this._systemFn && !this.isRemote)
-      return this._callSystem(args);
+      // Build composite function if not yet built
+      if (!this._built)
+        await this._buildComposite();
 
-    // 2. Composite function — local execution
-    if (this._compositeFn && !this.isRemote)
-      return this._callLocalComposite(args);
+      // 1. System function — direct invocation
+      if (this._systemFn && !this.isRemote)
+        res = this._callSystem(args);
 
-    // 3. Remote call — via schema provider with queue + cache
-    return this._callRemote(this.name, args);
+      // 2. Composite function — local execution
+      else if (this._compositeFn && !this.isRemote)
+        res = this._callLocalComposite(args);
+
+      // 3. Remote call — via schema provider with queue + cache
+      else
+        res = await this._callRemote(this.name, args);
+
+      // Resolve any Promise results
+      if (res instanceof Promise) res = await res;
+
+      logger.verbose('[Function][Call]', this.name, args, res);
+      return res;
+    }
+    catch (ex)
+    {
+      logger.error('[Function][Call]', this.name, args, ex);
+      throw ex;
+    }
   }
 
   /** Direct system function invocation. */

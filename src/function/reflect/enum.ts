@@ -12,9 +12,10 @@ import { getNodeType } from '../../runtime/context';
 import { EnumType } from '../../schema/enum/runtime';
 
 import type { Entry, EntryAccess } from '../../struct/entry/type';
-import type { ValueType } from '../../schema';
+import { ArrayType, type ValueType } from '../../schema';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
+import { logger } from '../../utility/logger';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
@@ -51,7 +52,7 @@ export class SystemReflectEnum {
     @Meta(Require, true)
     valuetype: EnumValueType,
   ): Promise<boolean> {
-    const enumType = await getNodeType(type) as EnumType | undefined;
+    const enumType = await SystemReflectEnum.getEnumType(type);
     return enumType?.type == valuetype;
   }
 
@@ -93,7 +94,8 @@ export class SystemReflectEnum {
     @Meta(Require, false)
     onlyEnum: boolean = false
   ): Promise<boolean> {
-    const nodeType = await getNodeType(type) as ValueType;
+    let nodeType: ValueType | undefined = await getNodeType(type) as ValueType;
+    if (nodeType instanceof ArrayType) nodeType = nodeType.element;
     if (onlyEnum) return nodeType instanceof EnumType && !!nodeType.cascade?.length;
     return nodeType instanceof EnumType ? !!nodeType.cascade?.length : (nodeType?.getProperty(EntrySource)?.hasValue ?? false);
   }
@@ -107,7 +109,7 @@ export class SystemReflectEnum {
     @Meta(Require, true)
     type: string,
   ): Promise<Entry<number>[]> {
-    const enumType = await getNodeType(type) as EnumType | undefined;
+    const enumType = await SystemReflectEnum.getEnumType(type);
     return enumType?.cascade?.map((c, i) =>
     {
       return setPropertyValue({
@@ -121,13 +123,14 @@ export class SystemReflectEnum {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`)
   @Meta(Return, `system.list<${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.entryaccess>`)
   static async getenumaccess(
-    @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
+    @Meta(ArgName, 'type') @Meta(SchemaType, NS_SYSTEM_STRING) type: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value?: string,
     @Meta(ArgName, 'root') @Meta(SchemaType, NS_SYSTEM_STRING) root?: string,
   ): Promise<EntryAccess<string>[]> {
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    let enumType = await SystemReflectEnum.getEnumType(type);
     if (!enumType) return [];
-    return await enumType.getEnumEntryAccess(value, root);
+    const res = await enumType.getEnumEntryAccess(value, root);
+    return res;
   }
 
   /** Checks if the given value is a descendant of the given root */
@@ -142,7 +145,7 @@ export class SystemReflectEnum {
     if (!value || !root) return false;
     if (value.toLowerCase() === root.toLowerCase()) return true;
 
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    const enumType = await SystemReflectEnum.getEnumType(enumTypeStr);
     if (!enumType) return false;
     const access = await enumType.getEnumEntryAccess(value, root);
     return access.length > 0;
@@ -160,7 +163,7 @@ export class SystemReflectEnum {
     if (!value || roots.length === 0) return false;
     if (rootSet.has(value.toLowerCase())) return true;
 
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    const enumType = await SystemReflectEnum.getEnumType(enumTypeStr);
     if (!enumType) return false;
     const access = await enumType.getEnumEntryAccess(value);
     return access.some(a => a.entry?.value != null && rootSet.has((a.entry.value as string).toLowerCase()));
@@ -176,7 +179,7 @@ export class SystemReflectEnum {
     value = value.trim();
     if (!value) return '';
 
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    const enumType = await SystemReflectEnum.getEnumType(enumTypeStr);
     if (!enumType) return '';
     const access = await enumType.getEnumEntryAccess(value);
     const d = depth ?? 0;
@@ -194,7 +197,7 @@ export class SystemReflectEnum {
     value = value.trim();
     if (!value) return -1;
 
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    const enumType = await SystemReflectEnum.getEnumType(enumTypeStr);
     if (!enumType) return -1;
     const access = await enumType.getEnumEntryAccess(value);
     return access.length - 1;
@@ -209,7 +212,7 @@ export class SystemReflectEnum {
     values = values.map(v => v.trim()).filter(v => !!v);
     if (values.length === 0) return '';
 
-    const enumType = await getNodeType(enumTypeStr) as EnumType;
+    const enumType = await SystemReflectEnum.getEnumType(enumTypeStr);
     if (!enumType) return '';
 
     let access = await enumType.getEnumEntryAccess(values[0]);
@@ -226,5 +229,12 @@ export class SystemReflectEnum {
       if (access.length <= 1) break;
     }
     return access.length > 1 ? (access[access.length - 1].entry?.value as string) ?? '' : '';
+  }
+
+  /** Gets the enum type for the given type string */
+  private static async getEnumType(type: string) {
+    let nodeType: ValueType | undefined = await getNodeType(type) as ValueType;
+    if (nodeType instanceof ArrayType) nodeType = nodeType.element;
+    return nodeType as EnumType;
   }
 }

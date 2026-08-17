@@ -233,7 +233,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     {
       props = this._props?.get(propCtor);
     }
-    return joinProperties(props?.map(p => p.property as T), (this.propertyProvider ?? this.type).getProperties<T>(propCtor));
+    for (let prop of joinProperties(props?.map(p => p.property as T), (this.propertyProvider ?? this.type).getProperties<T>(propCtor))) yield prop as T;
   }
 
   /** Gets the property values */
@@ -241,7 +241,21 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(...(this._props?.values()?.filter(v => v.length && predicate(v[0].property))?.map(v => v.map(p => p.property as T)) ?? []), (this.propertyProvider ?? this.type).filterProperties(predicate));
+    for (let prop of joinProperties(this._filterProperties<T>(predicate), (this.propertyProvider ?? this.type).filterProperties(predicate))) yield prop;
+  }
+
+  private *_filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    if (!this._props) return;
+    for(let props of this._props.values())
+    {
+      if (!props.length) continue;
+      const first = props[0].property as T;
+      if (predicate(first)) yield first;
+      if (first.stackable) {
+        for (let i = 1; i < props.length; i++)
+          if (predicate(props[i].property as T)) yield props[i].property as T;
+      }
+    }
   }
 
   /** Sets the property values */

@@ -78,7 +78,7 @@ class EnumSchemaMeta implements EnumSchema {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_ENUM))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_ENUM))
 class EnumTypeMeta {}
 
 function generateEnumSchema(namespace: string, name: string, ctor: Function) {
@@ -98,7 +98,6 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
     values.sort((a, b) => a.order - b.order);
     enumSchema.values = values.map(v => (setPropertyValue({ value: v.getValue<string>()! }, Display, { key: `${enumName}.${v.getValue<string>()!}`})));
   }
-  if (!enumSchema.values?.length) return;
   enumSchema.type = inferEnumType(enumSchema.values);
 
   // build

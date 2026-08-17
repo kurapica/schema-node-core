@@ -19,7 +19,7 @@ import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import type { NodeSchema } from '../schema/node/type';
 import type { StructSchema } from '../schema/struct/type';
 
-import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 import { logger } from '../utility/logger';
 import type { ArraySchema } from '../schema/array/type';
 import type { GenericParameter } from '../schema/generic/type';
@@ -214,6 +214,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
 
     if (!child) {
       child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE };
+      (child as any).display = { key: child.namespace ? `${child.namespace}.${part}` : part }; // for simple
       current.schemas.push(child);
     }
     current = child;
@@ -300,7 +301,7 @@ export function initSchemaRuntime(): void {
       namespace: NS_SYSTEM_SCHEMA_DESIGN, 
       name: kind, 
       kind: SCHEMA_KIND_STRUCT, 
-      display: { key: combinePaths(NS_SYSTEM_SCHEMA_DESIGN, kind)},
+      display: { key: `{${NS_SYSTEM_SCHEMA_KIND}.${kind}}`},
       struct: { attach: kind, fields: [] }
     };
     saveNodeSchema(nodeSchema);

@@ -133,6 +133,13 @@ export class StructType extends ValueType implements IRelationProvider {
     attachFields.sort((a, b) => {
       if (a.priority > b.priority) return -1;
       if (a.priority < b.priority) return 1;
+      if (a.field.type?.name === NS_SYSTEM_LOCALE_STRING)
+      {
+        if (a.field.name === 'display')
+          return -1;
+        if (b.field.name === 'display')
+          return 1;
+      }
       return a.field.name.localeCompare(b.field.name);
     });
     if (attachFields.length)
@@ -221,11 +228,11 @@ export class StructType extends ValueType implements IRelationProvider {
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    return joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor));
+    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor))) yield prop as T;
   }
 
-  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
+  override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
   }
 
   // ── References ──────────────────────────────────────────────────────
@@ -384,7 +391,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Get properties by type */
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    return joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[], this._type?.getProperties(propCtor));
+    for (let prop of joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[], this._type?.getProperties(propCtor))) yield prop as T;
   }
 
   /** Gets the property values */
@@ -392,6 +399,6 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate));
+    for (let prop of joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate))) yield prop;
   }
 }

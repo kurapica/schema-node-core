@@ -44,6 +44,7 @@ import type { NodeSchema } from '../node/type';
 import type { ArraySchema } from '../array/type';
 
 import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../../utility/constant';
+import type { LocaleString } from '../../struct';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -88,7 +89,7 @@ class StructFieldSchemaMeta implements StructFieldSchema {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.type`)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_STRUCT))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_STRUCT))
 class StructTypeMeta {}
 
 // ── Helper ─────────────────────────────────────────────────────────────────
@@ -113,7 +114,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     }
 
     // Generate the StructFieldSchema with savable properties and add to the struct schema
-    const fieldSchema: StructFieldSchema = { name: field, type: schemaType.getValue<string>()! };
+    const fieldSchema: StructFieldSchema & { display?: LocaleString } = { name: field, type: schemaType.getValue<string>()!, display: { key: `${structName}.${field}` } as LocaleString };
     props.filter(p => p.savable).forEach(p => setProperty(fieldSchema, p));
     structSchema.fields.push(fieldSchema);
 

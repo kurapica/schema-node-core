@@ -32,7 +32,7 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
       console.error(`Valid property function ${this._value.func} is not a function type`);
       return undefined;
     }
-    const owner = node.parent;
+    const owner = node;
     return await func.call(this._value!.args.map(a => {
       if (isEmpty(a.source)) return a.value;
       const source = owner?.getAccessValue(a.source!, node);

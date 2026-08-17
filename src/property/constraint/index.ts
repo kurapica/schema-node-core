@@ -11,3 +11,4 @@ export * from './upLimit';
 export * from './valid';
 export * from './whiteList';
 export * from './size';
+export * from './jsRegex';

@@ -12,6 +12,7 @@ import { Property } from "../../property/property";
 import type { PropertySchema } from "./type";
 
 import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_LOGIC_EQ } from "../../utility/constant";
+import { ReadOnly } from "../../property";
 
 /** The 'property' property in node schema */
 @Meta(Alias, 'property')
@@ -19,5 +20,6 @@ import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE,
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.prop`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_PROPERTY}.schema`)
+@Meta(ReadOnly, true)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_PROPERTY))
 export class PropertyProperty extends Property<PropertySchema> {}

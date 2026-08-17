@@ -16,6 +16,7 @@ import { StringType } from '../string/runtime';
 import { IntType } from '../int/runtime';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
+import { logger } from '../../utility/logger';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType/type';
 import type { FuncCall } from '../../schema/function/type';
@@ -72,11 +73,11 @@ export class EnumType extends ValueType {
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    return joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor));
+    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor))) yield prop as T;
   }
 
-  override filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
+  override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
   }
 
   override isAssignableTo(other: ValueType): boolean {

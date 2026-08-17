@@ -27,7 +27,7 @@ export function getErrorMessage(prop: IConstraintProperty, node: IValueAccess)
     const error = (ctor as unknown as Record<string, LocaleString>).error;
     if (error)
     {
-      const msg = formatLocaleString(error, node.getPropertyValue(Display) ?? node.getPropertyValue(Name) );
+      const msg = formatLocaleString(error, node.getPropertyValue(Display) ?? node.getPropertyValue(Name), prop.getValue());
       if (msg && msg !== error?.key) return msg
     }
     return formatLocaleString("VALUE_NOT_VALID", node.getPropertyValue(Display) ?? node.getPropertyValue(Name));

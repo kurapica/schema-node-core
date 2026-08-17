@@ -8,8 +8,10 @@ import { Static } from '../../property/core/static';
 import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
 
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING } from '../../utility/constant';
+import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { OfSchema } from '../../property';
 
+@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {
   /** Whether the property is static */

@@ -62,7 +62,7 @@ class PropertySchemaMeta implements PropertySchema {
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, SCHEMA_KIND_PROPERTY))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_PROPERTY))
 class PropertyTypeMeta {}
 
 /** Generate property schema */

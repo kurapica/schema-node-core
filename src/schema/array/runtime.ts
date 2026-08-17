@@ -106,11 +106,11 @@ export class ArrayType extends ValueType implements IRelationProvider {
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    return joinProperties(super.getProperties(propCtor), this.element?.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor));
+    for (let prop of joinProperties(super.getProperties(propCtor), this.element?.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    return joinProperties(super.filterProperties(predicate), this.element?.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate));
+    for (let prop of joinProperties(super.filterProperties(predicate), this.element?.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
   }
 
   *getRelations(): Generator<IRelation> {

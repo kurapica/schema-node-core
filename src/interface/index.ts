@@ -269,7 +269,7 @@ export interface IPropertyProvider {
 }
 
 /** Joins the properties from multiple providers. */
-export function *joinProperties(...propertyProviders: (Generator<IProperty> | IProperty[] | undefined)[]): Generator<IProperty> {
+export function *joinProperties(...propertyProviders: (IteratorObject<IProperty> | Iterable<IProperty> | Generator<IProperty> | IProperty[] | undefined)[]): Generator<IProperty> {
   const types: Set<Function> = new Set();
   for (const propertyProvider of propertyProviders) {
     if (!propertyProvider) continue;

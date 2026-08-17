@@ -36,7 +36,7 @@ export function getLanguage() { return currLang }
 export function subscribeLanguage(func: Observer<[string]>, immediate?: boolean) : Function
 {
   const handler = langWatches.subscribe(func)
-  if (immediate && handler) handler(currLang)
+  if (immediate && handler) func(currLang)
   return handler
 }
 

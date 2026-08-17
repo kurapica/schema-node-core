@@ -19,7 +19,7 @@ import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE,
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
-@Meta(PropertyValueType, `$${NS_SYSTEM_SCHEMA_ENUM}.schema`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
 export class EnumProperty extends Property<EnumSchema> {
   combine(other: IProperty): boolean {

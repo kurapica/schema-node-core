@@ -19,6 +19,7 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
+import { NodeSchemaKind } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)
@@ -49,13 +50,14 @@ export class SystemReflectType {
   ): Promise<EntryAccess<string>[]> {
     name = name?.toLowerCase() ?? '';
     root = root?.toLowerCase() ?? '';
-    if (!name && !root || name !== root && !name.startsWith(`${root}.`))
+    if (!name && !root && name !== root && !name.startsWith(`${root}.`))
       return [];
 
     let ns = await getNodeType(name ?? root);
     if (!ns) return [];
 
     let result: EntryAccess<string>[] = [];
+    const recordes = getRecordedValues(NodeSchemaKind);
     while (ns != null)
     {
       let access: EntryAccess<string> = {};
@@ -69,13 +71,20 @@ export class SystemReflectType {
       }
       if (isNamespaceNodeType(ns))
       {
-        access.children = Array.from(ns.getSubNodeSchemas().map(s => {
+        const nodeSchemas = Array.from(ns.getSubNodeSchemas());
+        nodeSchemas.sort((s1, s2) => {
+          const k1 = recordes.find(r => r.getValue<string>()!.toLowerCase() === s1.kind.toLowerCase())?.order ?? 99;
+          const k2 = recordes.find(r => r.getValue<string>()!.toLowerCase() === s2.kind.toLowerCase())?.order ?? 99;
+          return k1 - k2;
+        });
+
+        access.children = nodeSchemas.map(s => {
           return setPropertyValue(
             { value: combinePaths(ns!.name, s.name), hasChildren: s.kind === SCHEMA_KIND_NAMESPACE },
             Display,
             getPropertyValue(s, Display)
           );
-        }));
+        });
       }
       result.push(access);
       ns = ns.namespace;
@@ -180,7 +189,7 @@ export class SystemReflectType {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
     @Meta(Require, true)
     @Meta(Variadic, true)
-    kinds: string[],
+    ...kinds: string[]
   ): Promise<boolean> {
     const nodeType = !name ? undefined : await getNodeType(name);
     if (!nodeType) return false;
@@ -212,7 +221,7 @@ export class SystemReflectType {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
     @Meta(Require, true)
     @Meta(Variadic, true)
-    kinds: string[],
+    ...kinds: string[]
   ): Promise<boolean> {
     let nodeType = !name ? undefined : await getNodeType(name) as ValueType;
     nodeType = nodeType?.getAccessValueType(access);

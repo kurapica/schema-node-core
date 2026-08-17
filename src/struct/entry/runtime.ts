@@ -26,6 +26,8 @@ export class EntryType<T> implements Entry<T> {
   /** The value map */
   private _valueMaps?: Map<T, EntryType<T>>;
 
+  private _whiteList?: T[];
+
   /** The entry is root */
   get isRoot() { return !this._parent };
 
@@ -60,10 +62,15 @@ export class EntryType<T> implements Entry<T> {
     let inBranch = false;
     while (entry)
     {
-      accesses.unshift({
-        entry: !entry.isRoot ? entry.entry : undefined,
-        children: entry._children?.map(c => c.entry)
-      });
+      const rentry = !entry.isRoot ? entry.entry : undefined;
+      const children = entry._children 
+        ? this._whiteList?.length && entry._children.some(c => this._whiteList?.includes(c.value) ?? false)
+          ? entry._children.filter(c => this._whiteList?.includes(c.value) ?? false).map(c => c.entry)
+          : entry._children.map(c => c.entry)
+        : undefined;
+
+      if (!children?.length && rentry?.hasChildren) rentry.hasChildren = false;
+      accesses.unshift({ entry: rentry, children: children });
       if (entry == this)
       {
         inBranch = true;
@@ -78,6 +85,7 @@ export class EntryType<T> implements Entry<T> {
   /** Save the access list */
   saveAccessList(accesses: EntryAccess<T>[]): void
   {
+    if (!accesses?.length) return;
     this._valueMaps ??= new Map();
     let root: EntryType<T> | undefined = this;
 
@@ -99,6 +107,7 @@ export class EntryType<T> implements Entry<T> {
         entry.register();
         return entry;
       })
+      if (root._children?.length) root.hasChildren = true;
     }
 
     // update load state
@@ -106,10 +115,20 @@ export class EntryType<T> implements Entry<T> {
     root.updateLoadState();
   }
 
+  /** Use white list */
+  useWhiteList(whiteList: T[]): void { this._whiteList = whiteList; }
+
   /** Whether the given entry is a descendant */
   isDescendant(desc: EntryType<T>): boolean {
-    while (desc._parent && desc._parent != this) desc = desc._parent;
-    return desc._parent === this;
+    let inWhiteList = !this._whiteList?.length;
+    let isDesc = desc === this;
+    while (!(inWhiteList && isDesc) && desc._parent)
+    {
+      desc = desc._parent;
+      inWhiteList ||= this._whiteList?.includes(desc.value) ?? false;
+      isDesc ||= desc === this;
+    }
+    return isDesc && inWhiteList;
   }
 
   /** Drop the children entries */

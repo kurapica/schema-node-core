@@ -48,7 +48,7 @@ class NodeSchemaMeta implements NodeSchema {
   @Meta(Immutable, true)
   name: string = '';
 
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.kind`)
   @Meta(Require, true)
   kind: string = '';
 

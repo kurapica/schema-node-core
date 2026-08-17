@@ -6,11 +6,12 @@
 // Provides schema-level introspection: kind, name, generics, property access.
 // =============================================================================
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
-import { combinePaths, deepClone } from '../../utility/toolset';
+import { combinePaths, deepClone, generateGuid } from '../../utility/toolset';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { Generics } from '../generic/property';
 import { getNodeType } from '../../runtime/context';
+import { logger } from '../../utility/logger';
 
 import type { IProperty, PropertyCtor, IPropertyProvider, INodeReference, INodeType } from '../../interface';
 import type { GenericParameter } from '../../schema/generic/type';
@@ -18,9 +19,10 @@ import type { NodeSchema } from './type';
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
-import { logger } from '../../utility/logger';
 
 export class NodeType implements INodeType, IPropertyProvider, INodeReference {
+  readonly id = generateGuid();
+
   /** The parent namespace (set once the type is loaded into a namespace). */
   private _namespace?: INodeType;
   get namespace(): INodeType | undefined { return this._namespace; }

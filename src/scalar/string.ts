@@ -6,6 +6,7 @@ import { UpLimitString } from '../property/constraint/upLimit';
 import { Base } from '../property/core/base';
 
 import { SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_CHAR, NS_SYSTEM_GUID, NS_SYSTEM_LANGUAGE, LANGUAGE_MAX_LEN, NS_SYSTEM_IDENTIFIER, PRIMARY_KEY_MAX_LEN } from '../utility/constant';
+import { JsRegex } from '../property/constraint/jsRegex';
 
 /** Represents the string type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
@@ -26,6 +27,7 @@ class CharMeta {}
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, 36)
 @Meta(LowLimitString, 36)
+@Meta(JsRegex, "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$")
 class GuidMeta {}
         
 /** Represents the language type */
@@ -33,6 +35,7 @@ class GuidMeta {}
 @Meta(SchemaType, NS_SYSTEM_LANGUAGE)
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, LANGUAGE_MAX_LEN)
+@Meta(JsRegex, "^[a-z]{2}-?[A-Z]{2}$")
 class LanguageMeta {}
 
 /** Represents the identifier type */
@@ -40,4 +43,5 @@ class LanguageMeta {}
 @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
+@Meta(JsRegex, "^[a-zA-Z]\\w*$")
 class IdentifierMeta {}

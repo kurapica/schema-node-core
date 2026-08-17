@@ -19,7 +19,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_S
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.indexs`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.indexes.error`)
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', SCHEMA_KIND_STRUCT))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', true, SCHEMA_KIND_STRUCT))
 @Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `indexes.fields.${ARRAY_ELEMENT}`)
 export class Indexes extends ConstraintProperty<DataIndex[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
