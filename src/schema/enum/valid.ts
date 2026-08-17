@@ -11,9 +11,8 @@ import { Default } from '../../property/common/default';
 import { Static } from '../../property/core/static';
 import { Error } from '../../property/common/error';
 import { ConstraintProperty } from '../../property/constraintProperty';
-import { EnumNode } from './node';
 import { EnumType } from './runtime';
-import { EnumArrayNode } from '../array/runtime';
+import { ArrayType } from '../array/runtime';
 
 import type { IValueAccess } from '../../interface';
 
@@ -33,15 +32,15 @@ export class EnumValue extends ConstraintProperty<boolean> {
 
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty) return undefined;
-    if (node instanceof EnumNode) {
+    if (node.type.kind === SCHEMA_KIND_ENUM) {
       return this.validateEnumValue(node.type as EnumType, node.getValue());
     }
-    else if (node instanceof EnumArrayNode)
+    else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
     {
       const values = node.getValue() as unknown[];
       for(let value of values)
       {
-        const valid = await this.validateEnumValue(node.type as EnumType, value);
+        const valid = await this.validateEnumValue(node.type.element as EnumType, value);
         if (!valid) return false;
       }
       return true;

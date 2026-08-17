@@ -31,7 +31,7 @@ import { EnumProperty } from './property';
 import { EnumType } from './runtime';
 import { EnumValue } from './valid';
 import { EnumNode } from './node';
-import { DataNodeType } from '../../property/core/dataNodeType';
+import { ArrayDataNodeType, DataNodeType } from '../../property/core/dataNodeType';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType';
 import type { LocaleString } from '../../struct/localeString/type';
@@ -40,6 +40,7 @@ import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
+import { EnumArrayNode } from './array';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
@@ -50,6 +51,7 @@ import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_
 @Meta(SchemaGenerator, generateEnumSchema)
 @Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
 @Meta(DataNodeType, EnumNode)
+@Meta(ArrayDataNodeType, EnumArrayNode)
 class EnumSchemaKind{}
 
 /** Meta registration class (NOT exported). */

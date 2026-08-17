@@ -9,7 +9,6 @@ import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
 import { EnumValueType } from '../../enum/enumValueType/type';
-import { EnumNode } from '../../schema/enum/node';
 
 import type { IValueAccess } from '../../interface';
 
@@ -23,7 +22,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_B
 @Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, "@type", EnumValueType.Flags))
 export class SingleFlag extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value || !(node instanceof EnumNode)) return undefined;
+    if (node.isEmpty || !this._value || !(node.type.kind === SCHEMA_KIND_ENUM)) return undefined;
     const val = parseInt(node.toString());
     if (!val || isNaN(val)) return undefined;
     return (val & (val - 1)) === 0;

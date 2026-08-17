@@ -31,6 +31,12 @@ export interface IValueTypeAccess extends IPropertyProvider {
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess;
 }
 
+/** The array value type access interface */
+export interface IArrayValueTypeAccess extends IValueTypeAccess {
+  /** The array item type */
+  get element(): IValueTypeAccess | undefined;
+}
+
 /** The value access factory type */
 export type ValueAccessFactory = new (type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => IValueAccess;
 

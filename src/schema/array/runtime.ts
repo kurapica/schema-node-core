@@ -10,23 +10,21 @@ import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindPrope
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { joinProperties } from '../../interface';
-import { DataNode } from '../value/node';
-import { EnumType } from '../enum/runtime';
 import { getNodeType } from '../../runtime/context';
-import { EnumValueType } from '../../enum/enumValueType/type';
 
-import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation } from '../../interface';
+import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation, IArrayValueTypeAccess } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ArraySchema } from './type';
 import type { RelationSchema } from '../relation/type';
 
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 
-export class ArrayType extends ValueType implements IRelationProvider {
+export class ArrayType extends ValueType implements IRelationProvider, IArrayValueTypeAccess {
   private _arraySchema: ArraySchema | undefined;
 
   /** Element value type (resolved at load time). */
-  element?: ValueType;
+  private _element?: ValueType;
+  get element(): ValueType | undefined { return this._element; }
 
   /** Primary key field names. */
   primary: string[] = [];
@@ -35,7 +33,7 @@ export class ArrayType extends ValueType implements IRelationProvider {
   private _relations?: IRelation[];
 
   override async load() {
-    this.element = this._arraySchema?.element
+    this._element = this._arraySchema?.element
       ? await getNodeType(this._arraySchema.element, this.generics, this.genericParams) as ValueType
       : undefined;
     this.primary = this.getProperty("Primary")?.getValue<string[]>() ?? [];
@@ -65,15 +63,6 @@ export class ArrayType extends ValueType implements IRelationProvider {
   override unload(): void {
     this.element?.removeArrayType(this);
     this._relations = undefined;
-  }
-
-  override create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess {
-    // enum array node
-    if (this.element instanceof EnumType)
-      return new EnumArrayNode(this, value, parent, propProvider);
-
-    // default array node
-    return super.create(value, parent, propProvider);
   }
 
   override *getRefTypes(): Generator<INodeType> {
@@ -116,25 +105,5 @@ export class ArrayType extends ValueType implements IRelationProvider {
   *getRelations(): Generator<IRelation> {
     if (!this._relations?.length) return;
     yield* this._relations;
-  }
-}
-
-/** Enum array node */
-export class EnumArrayNode extends DataNode {
-  readonly enumType: EnumType;
-
-  constructor(type: ArrayType, value?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-      super(type, value, parent, propProvider);
-      this.enumType = type.element as EnumType;
-  }
-
-  override getValue(): unknown[] {
-    const value = this.rawValue as unknown[];
-    if (!Array.isArray(value)) return [];
-    return value.map((item) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
-  }
-
-  get length() {
-    return (this.rawValue as unknown[]).length;
   }
 }

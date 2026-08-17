@@ -10,9 +10,8 @@ import { ConstraintProperty } from '../constraintProperty';
 import { Error } from '../common/error';
 import { Visible } from '../common/visible';
 import { Relation } from '../../attribute/relation';
-import { EnumNode } from '../../schema/enum/node';
 import { EnumType } from '../../schema/enum/runtime';
-import { EnumArrayNode } from '../../schema/array/runtime';
+import { ArrayType } from '../../schema/array/runtime';
 
 import type { IValueAccess } from '../../interface';
 
@@ -29,17 +28,17 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_S
 export class Root extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
-    if (node instanceof EnumNode) {
+    if (node.type.kind === SCHEMA_KIND_ENUM) {
       const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
       if (!access?.length) return undefined;
       return access.some((item) => `${item.entry?.value}` === this._value!);
     }
-    else if (node instanceof EnumArrayNode)
+    else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
     {
       const values = node.getValue() as unknown[];
       for(let value of values)
       {
-        const access = await (node.type as EnumType).getEnumEntryAccess(`${value}`);
+        const access = await (node.type.element as EnumType).getEnumEntryAccess(`${value}`);
         if (!access?.length) continue;
         if(!access.some((item) => `${item.entry?.value}` === this._value!)) return false;
       }

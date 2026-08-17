@@ -5,10 +5,10 @@
 
 import { EnumValueType } from "../../enum/enumValueType/type";
 import { isNull } from "../../utility/toolset";
-import { DataNode } from "../value/node";
+import { ScalarNode } from "../object/node";
 import { EnumType } from "./runtime";
 
-export class EnumNode extends DataNode {
+export class EnumNode extends ScalarNode {
   override getValue() {
     const value = this.rawValue;
     return isNull(value) ? null : (this.type as EnumType).type === EnumValueType.String ? `${value}` : parseInt(`${value}`);
