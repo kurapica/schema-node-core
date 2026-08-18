@@ -39,7 +39,7 @@ class NodeKind {}
 class NodeSchemaMeta implements NodeSchema {
   @Meta(PrimaryIndex, 0)
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE)
-  @Relation(ReadOnly,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.{nameof(SystemLogic.notempty)}`, "@name"))
+  @Relation(ReadOnly, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, "@name"))
   namespace?: string;
 
   @Meta(PrimaryIndex, 1)

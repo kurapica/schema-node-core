@@ -21,12 +21,12 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING } from '../../utility/constant';
+import { Variadic } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
 export class SystemReflectFunction {
   /** Checks if the function type's return type match the given type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async withreturn(
     @Meta(ArgName, 'func')
@@ -57,7 +57,6 @@ export class SystemReflectFunction {
   }
 
   /** Checks if the function type's argument match the given types */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withargs`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async withargs(
     @Meta(ArgName, 'func')
@@ -67,7 +66,8 @@ export class SystemReflectFunction {
 
     @Meta(ArgName, 'args')
     @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE}>`)
-    args: string[],
+    @Meta(Variadic, true)
+    ...args: string[]
   ): Promise<boolean> {
     const funcType = !func ? undefined : await getNodeType(func) as FunctionType | undefined;
     if (!funcType || args.length !== funcType.args.length) return false;
@@ -84,7 +84,6 @@ export class SystemReflectFunction {
   }
 
   /** Gets the sub entries of the struct fields */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'args')
@@ -181,7 +180,6 @@ export class SystemReflectFunction {
   }
 
   /** Gets the value type of the struct field */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getaccessvaluetype(
     @Meta(ArgName, 'args')
@@ -208,7 +206,6 @@ export class SystemReflectFunction {
   }
 
   /** Get the exp types for the given retunr type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexptypes`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC}.exptype>`)
   static async getexptypes(
     @Meta(ArgName, 'type')
@@ -226,7 +223,6 @@ export class SystemReflectFunction {
   }
 
   /** Get the expected function return type for the given exp return type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getexpectreturn`)
   @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   static async getexpectreturn(
     @Meta(ArgName, 'type')

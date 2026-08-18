@@ -15,7 +15,6 @@ import { OfSchema } from '../../property';
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {
   /** Whether the property is static */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.isstatic`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isstatic(
     @Meta(ArgName, 'type')
@@ -29,7 +28,6 @@ export class SystemReflectProperty {
   }
 
   /** Whether the property is stackable */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.isstackable`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isstackable(
     @Meta(ArgName, 'type')
@@ -43,7 +41,6 @@ export class SystemReflectProperty {
   }
 
   /** Whether the property is not static */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.notstatic`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async notstatic(
     @Meta(ArgName, 'type')
@@ -55,7 +52,6 @@ export class SystemReflectProperty {
   }
 
   /** Whether the property is not stackable */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.notstackable`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async notstackable(
     @Meta(ArgName, 'type')
@@ -67,7 +63,6 @@ export class SystemReflectProperty {
   }
 
   /** Gets the property value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getpropertyvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getvaluetype(
     @Meta(ArgName, 'type')
@@ -80,7 +75,6 @@ export class SystemReflectProperty {
   }
 
   /** Whether the property is for schema */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.forschema`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async forschema(
     @Meta(ArgName, 'type')

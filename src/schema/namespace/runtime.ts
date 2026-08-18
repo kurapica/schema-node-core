@@ -11,6 +11,7 @@ import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_NAMESPACE } from '../../utility/constant';
 
+/** Namespace type */
 export class NamespaceType extends NodeType implements INamespaceNodeType {
   /** Sub types by name. */
   private _subTypes = new Map<string, INodeType>();

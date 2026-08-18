@@ -14,15 +14,15 @@ import { getMetaProperties } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { combinePaths } from '../utility/toolset';
 import { getNodeSchemaName } from '../schema/node/type';
+import { logger } from '../utility/logger';
 
 import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import type { NodeSchema } from '../schema/node/type';
 import type { StructSchema } from '../schema/struct/type';
-
-import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
-import { logger } from '../utility/logger';
 import type { ArraySchema } from '../schema/array/type';
 import type { GenericParameter } from '../schema/generic/type';
+
+import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
@@ -177,6 +177,7 @@ export function getSystemSchema(fullName: string): NodeSchema | undefined {
   const { schemas, ...clone } = schema
   if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
+  logger.verbose("Get schema:", schema);
   return clone;
 }
 
@@ -213,7 +214,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
     }
 
     if (!child) {
-      child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE };
+      child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE, loadState: schema.loadState };
       (child as any).display = { key: child.namespace ? `${child.namespace}.${part}` : part }; // for simple
       current.schemas.push(child);
     }

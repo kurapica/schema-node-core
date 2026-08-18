@@ -23,7 +23,6 @@ import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING,
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ARRAY)
 export class SystemReflectArray {
   /** Generates the array name for the given element type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarrayname`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async genarrayname(
     @Meta(ArgName, 'element')
@@ -37,7 +36,6 @@ export class SystemReflectArray {
   }
 
   /** Generates the array display name for the given element type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarraydisplay`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async genarraydisplay(
     @Meta(ArgName, 'element')
@@ -50,7 +48,6 @@ export class SystemReflectArray {
   }
 
   /** Gets the array type for the given element type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getarraytype(
     @Meta(ArgName, 'element')
@@ -66,7 +63,6 @@ export class SystemReflectArray {
   }
 
   /** Gets the array element type for the given element type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getarrayelement(
     @Meta(ArgName, 'array')
@@ -80,7 +76,6 @@ export class SystemReflectArray {
   }
 
   /** Checks if the schema kind of the schema node with the given name is a value schema kind and not array schema kind */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.isarrayele`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isarrayele(
     @Meta(ArgName, 'name')
@@ -96,7 +91,6 @@ export class SystemReflectArray {
   }
   
   /** Gets the sub entries of the value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'element')
@@ -166,7 +160,6 @@ export class SystemReflectArray {
   }
 
   /** Gets the value type of the array field */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getaccessvaluetype(
     @Meta(ArgName, 'element')

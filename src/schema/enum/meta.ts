@@ -30,7 +30,7 @@ import { buildFuncCall } from '../../schema/function/type';
 import { EnumProperty } from './property';
 import { EnumType } from './runtime';
 import { EnumValue } from './valid';
-import { EnumNode } from './node';
+import { EnumNode, EnumArrayNode } from './node';
 import { ArrayDataNodeType, DataNodeType } from '../../property/core/dataNodeType';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType';
@@ -40,7 +40,6 @@ import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
-import { EnumArrayNode } from './array';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
@@ -98,7 +97,7 @@ function generateEnumSchema(namespace: string, name: string, ctor: Function) {
     // record
     const values = getRecordedValues(ctor);
     values.sort((a, b) => a.order - b.order);
-    enumSchema.values = values.map(v => (setPropertyValue({ value: v.getValue<string>()! }, Display, { key: `${enumName}.${v.getValue<string>()!}`})));
+    enumSchema.values = values.map(v => (setPropertyValue({ value: v.getValue<string>()! }, Display, { key: `${enumName}.${v.getValue<string>()!.toLowerCase()}`})));
   }
   enumSchema.type = inferEnumType(enumSchema.values);
 
@@ -115,7 +114,7 @@ function buildEnumValues(enumName: string, target: object): Entry<string>[] {
   for (const key of Object.getOwnPropertyNames(target).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name')) {
     const val = (target as Record<string, unknown>)[key];
     if (typeof val === 'string' || typeof val === 'number') 
-      values.push(setPropertyValue({ value: String(val) }, Display, { key: `${enumName}.${key}` }));
+      values.push(setPropertyValue({ value: String(val) }, Display, { key: `${enumName}.${key.toLowerCase()}` }));
   }
   return values;
 }

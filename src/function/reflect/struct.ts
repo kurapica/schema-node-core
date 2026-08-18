@@ -26,7 +26,6 @@ import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_
 export class SystemReflectStruct {
     
   /** Gets the sub entries of the struct fields */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'fields')
@@ -98,7 +97,6 @@ export class SystemReflectStruct {
   }
 
   /** Gets the value type of the struct field */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getaccessvaluetype(
     @Meta(ArgName, 'fields')
@@ -119,7 +117,6 @@ export class SystemReflectStruct {
   }
 
   /** The field is indexable */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.isindexablefield`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isindexablefield(
     @Meta(ArgName, "field")
@@ -139,7 +136,6 @@ export class SystemReflectStruct {
   }
 
   /** get the struct indexable fields */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY}<${NS_SYSTEM_STRING}>>`)
   static async getindexablefields(
     @Meta(ArgName, 'type')
@@ -160,7 +156,6 @@ export class SystemReflectStruct {
   /// <summary>
   /// Gets the the type has object type, should enable topology
   /// </summary>
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.hasdynamicfield`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async hasdynamicfield(
     @Meta(ArgName, "type")

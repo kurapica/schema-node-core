@@ -26,7 +26,6 @@ import { NodeSchemaKind } from '../../property';
 export class SystemReflectType {
 
   /** Gets the type name of the node schema type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypename`)
   @Meta(Return, NS_SYSTEM_STRING)
   static gettypename(
     @Meta(ArgName, 'name')
@@ -37,7 +36,6 @@ export class SystemReflectType {
   }
 
   /** Gets the full names and labels of the schema nodes under the namespace with the given name */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypeentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async gettypeentries(
     @Meta(ArgName, 'name')
@@ -95,7 +93,6 @@ export class SystemReflectType {
   }
 
   /** Gets the sub entries of the value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`)
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'name')
@@ -154,7 +151,6 @@ export class SystemReflectType {
   }
 
   /** Gets the access type of the value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccesstype`)
   @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   static async getaccesstype(
     @Meta(ArgName, 'name')
@@ -173,7 +169,6 @@ export class SystemReflectType {
   }
 
   /** Checks if the schema kind of the schema node with the given name is the same as the given kind */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakind`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isschemakind(
     @Meta(ArgName, 'name')
@@ -200,7 +195,6 @@ export class SystemReflectType {
   }
 
   /** hecks if value type of the give access from the type match the given schema kinds */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakindaccess`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isschemakindaccess(
     @Meta(ArgName, 'name')
@@ -233,7 +227,6 @@ export class SystemReflectType {
   }
 
   /** Gets the schema kind of the schema node with the given name */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`)
   @Meta(Return, NS_SYSTEM_SCHEMA_KIND)
   static async getschemakind(
     @Meta(ArgName, 'type')
@@ -247,7 +240,6 @@ export class SystemReflectType {
   }
 
   /** Checks if the schema kind of the schema node with the given name is a value schema kind */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isvaluekind`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isvaluekind(
     @Meta(ArgName, 'name')
@@ -262,7 +254,6 @@ export class SystemReflectType {
   }
 
   /** Checks if the schema node with the given name is assignable to the schema node with the given target name */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isassignableto(
     @Meta(ArgName, 'type')
@@ -281,7 +272,6 @@ export class SystemReflectType {
   }
 
   /** Checks if the schema node with the given name is assignable to the schema node with the given target name */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isaccessassignableto`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isaccessassignableto(
     @Meta(ArgName, 'type')
@@ -304,7 +294,6 @@ export class SystemReflectType {
   }
 
   /** The value type is indexable */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isindexable`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isindexable(
     @Meta(ArgName, 'type')
@@ -316,7 +305,6 @@ export class SystemReflectType {
   }
 
   /** Gets the design schema name of the given schema kind */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getdesignschema`)
   @Meta(Return, NS_SYSTEM_STRING)
   static async getdesignschema(
     @Meta(ArgName, 'type')

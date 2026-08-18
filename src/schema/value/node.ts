@@ -15,7 +15,7 @@ import type { Observer } from '../../utility/observable';
 import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
 
-import { NODE_SELF, DEBOUNCE_TIME } from '../../utility/constant';
+import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -133,6 +133,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** shortcut to check if the node is display-only */
   get displayOnly() { return this.getPropertyValue<boolean>("DisplayOnly") }
+
+  /** Whether the node has disable constraint */
+  get disableConstraint():boolean { return this.getPropertyValue<boolean>("DisableConstraint") || (this.parent instanceof DataNode) && this.parent.disableConstraint }
 
   // #endregion
 
@@ -260,9 +263,13 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Sets the property values */
   setPropertyValues(props: Record<string, unknown>, source?: IValueAccess) {
-    for (const prop of getPropertiesBySchemaKind(props, this.type.kind)) {
+    // node type
+    for (const prop of getPropertiesBySchemaKind(props, this.type.kind))
       this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
-    }
+
+    // node
+    for (const prop of getPropertiesBySchemaKind(props, SCHEMA_KIND_NODE))
+      this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
   }
 
   /** Sets the value of the given property */
@@ -515,6 +522,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Validate the node. */
   async validate() {
+    if (this.disableConstraint) {
+      delete this._violated;
+      return;
+    }
+
     // validate static constraints
     for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty) as Generator<IConstraintProperty>) {
       this.recordConstraint(constraint, await constraint.validate(this));

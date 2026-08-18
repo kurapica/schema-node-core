@@ -5,13 +5,13 @@
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
 import { Meta } from '../../attribute/meta';
-import { ReadOnly } from '../common/readOnly';
 import { SchemaType } from './schemaType';
 import { OfSchema } from './ofSchema';
 import { PropertyValueType } from './propertyValueType';
 import { Static } from './static';
 
 import { NS_SYSTEM_SCHEMA, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { InVisible, ReadOnly } from '../common';
 
 /**
  * Attach the properties of a schema kind to the struct type
@@ -20,6 +20,7 @@ import { NS_SYSTEM_SCHEMA, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, S
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.attach`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA}.kind`)
-@Meta(ReadOnly, true)
 @Meta(Static, true)
+@Meta(ReadOnly, true)
+@Meta(InVisible, true)
 export class Attach extends Property<string> {}

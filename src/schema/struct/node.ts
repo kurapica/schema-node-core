@@ -12,6 +12,7 @@ import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
 
 import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
+import { DisableConstraint } from "../../property";
 
 /** Struct node. */
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
@@ -195,6 +196,14 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
 
   override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) && super.isValid }
 
+  override get error(): string | undefined {
+    // field error first
+    for (const f of this._fields)
+      if (!f.displayOnly && !f.isValid) 
+        return f.error;
+    return super.error;
+   }
+
   // #endregion
 
   // #region ── Relation ──────────────────────────────────────────────────────
@@ -273,7 +282,17 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   private writeBackRawValue = (field: IValueAccess, value: unknown) => {
     if (!this.rawValue) return; // value not initialized
     (this.rawValue as any)[(field as DataNode).name!] = value;
-    (this.rawValue as any)[(field as DataNode).name!] = value;
+    if (this.parent && !this.require) {
+      if (isEmpty(value))
+      {
+        if (isEmpty(this.rawValue) && !this.getPropertyValue<boolean>('DisableConstraint'))
+          this.setPropertyValue(DisableConstraint, true);
+      }
+      else if (this.getPropertyValue<boolean>('DisableConstraint'))
+      {
+        this.setPropertyValue(DisableConstraint, undefined);
+      }
+    }
     this.onNext();
   }
 

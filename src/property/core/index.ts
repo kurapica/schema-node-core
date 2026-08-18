@@ -27,3 +27,4 @@ export * from './schemaGenerator';
 export * from './schemaType';
 export * from './stackable';
 export * from './static';
+export * from './disableConstraint';

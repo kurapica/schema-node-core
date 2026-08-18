@@ -48,12 +48,24 @@ export abstract class ScalarNode extends DataNode {
   get isNonLeafNodeSelectable(): boolean { return this._entrySourceInfo?.allRootPassed ?? false; }
 
   /** Gets the default display text for the current value */
-  get displayValue(): string { 
+  getDisplayValue(sep?: string): string { 
     if (isEmpty(this.value)) return "";
     if (!this.hasEntrySource) return `${this.value}`;
-    const entry = this._entrySourceInfo?.rootEntry?.getEntry(this.value);
-    const display = getPropertyValue<LocaleString>(entry, "display");
-    return display ? _L(display) : `${this.value}`;
+
+    if (sep) 
+    {
+      const access = this._entrySourceInfo?.rootEntry?.getAccessList(this.value);
+      return access?.length ? access.filter(item => item.entry).map(item => {
+        const display = getPropertyValue<LocaleString>(item.entry, "display");
+        return display ? _L(display) : `${item.entry!.value}`;
+      }).join(sep) : '';
+    }
+    else
+    {
+      const entry = this._entrySourceInfo?.rootEntry?.getEntry(this.value);
+      const display = getPropertyValue<LocaleString>(entry, "display");
+      return display ? _L(display) : `${this.value}`;
+    }
    }
 
   /** refresh the options with entry source & white list & black list */
@@ -433,7 +445,6 @@ export abstract class ScalarNode extends DataNode {
 
   // #endregion
 }
-
 
 /** The data node represents the object type */
 export class AnyNode extends ScalarNode {}

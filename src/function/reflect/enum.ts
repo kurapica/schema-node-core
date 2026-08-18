@@ -15,13 +15,11 @@ import type { Entry, EntryAccess } from '../../struct/entry/type';
 import { ArrayType, type ValueType } from '../../schema';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
-import { logger } from '../../utility/logger';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
 export class SystemReflectEnum {
   /** Gets the entry type for the given enum value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`)
   @Meta(Return, NS_SYSTEM_STRING)
   static getvaluetype(
     @Meta(ArgName, 'type')
@@ -39,7 +37,6 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the enum type has the given value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isenumvaluetype(
     @Meta(ArgName, 'type')
@@ -57,7 +54,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the default entry value for the given enum value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`)
   @Meta(Return, NS_SYSTEM_STRING)
   static getdefaultentryvalue(
     @Meta(ArgName, 'type')
@@ -81,7 +77,6 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the enum type has cascade */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`)
   @Meta(Return, NS_SYSTEM_BOOL)
   static async hascascade(
     @Meta(ArgName, 'type')
@@ -101,7 +96,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the cascades for the given enum type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`)
   @Meta(Return, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_INT}>`)
   static async getcascades(
     @Meta(ArgName, 'type')
@@ -120,7 +114,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the entry access for the given enum value type */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`)
   @Meta(Return, `system.list<${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.entryaccess>`)
   static async getenumaccess(
     @Meta(ArgName, 'type') @Meta(SchemaType, NS_SYSTEM_STRING) type: string,
@@ -134,7 +127,6 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the given value is a descendant of the given root */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isdescendant`) @Meta(Return, NS_SYSTEM_BOOL)
   static async isdescendant(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -152,7 +144,6 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the given value is a descendant of any of the given roots */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isdescendantany`) @Meta(Return, NS_SYSTEM_BOOL)
   static async isdescendantany(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -170,7 +161,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the parent of the given enum value */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.parent`) @Meta(Return, NS_SYSTEM_STRING)
   static async parent(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -189,7 +179,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the depth of the given enum value */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.depth`) @Meta(Return, NS_SYSTEM_INT)
   static async depth(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -204,7 +193,6 @@ export class SystemReflectEnum {
   }
 
   /** Gets the lowest common ancestor of the given enum values */
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.lca`) @Meta(Return, NS_SYSTEM_STRING)
   static async lca(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'values') @Meta(SchemaType, `system.list<${NS_SYSTEM_STRING}>`) values: string[],

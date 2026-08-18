@@ -84,7 +84,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   override setValue(value: unknown): void {
     const data: unknown[] = Array.isArray(value) ? value : [];
-    super.setValue(value);
+    super.setValue(data);
 
     const elementType = (this.type as ArrayType).element;
     if (!elementType) {
@@ -248,12 +248,16 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     node.applyPropertyEffects();
     if (this._relations?.length) node.attachRelations(this._relations);
     node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
-    for (let i = index! + 1; i < this._elements.length; i++)
-    {
-      const item = this._elements[i];
-      this.writeBackRawValue(item, item.rawValue);
-    }
     this.refreshElementNames();
+    if (index! + 1 < this._elements.length) {
+      for (let i = index! + 1; i < this._elements.length; i++)
+      {
+        const item = this._elements[i];
+        this.writeBackRawValue(item, item.rawValue);
+      }
+    }
+    else
+      this.onNextItem(index!);
     return node;
   }
 
