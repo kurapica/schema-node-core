@@ -194,7 +194,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   
   // #region ── Validation ────────────────────────────────────────────────────
 
-  override get isValid(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isValid) && super.isValid }
+  override get isValid(): boolean { return this.getPropertyValue<boolean>('DisableConstraint') ? true : !this._fields.some(f => !f.displayOnly && !f.isValid) && super.isValid }
 
   override get error(): string | undefined {
     // field error first
