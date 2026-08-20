@@ -30,9 +30,9 @@ export class SystemReflectEnum {
     switch (type) {
       case EnumValueType.Int:
       case EnumValueType.Flags:
-        return `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_INT}>`;
+        return NS_SYSTEM_INT;
       default:
-        return `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`;
+        return NS_SYSTEM_STRING;
     }
   }
 
@@ -66,7 +66,7 @@ export class SystemReflectEnum {
     values: Entry<string>[],
    ):string {
     if (type !== EnumValueType.Flags) return '';
-    if (values.length === 0) return '0';
+    if (!values?.length) return '0';
     const lastValue = parseInt(values[values.length - 1].value);
     if (isNaN(lastValue)) return '';
     let i = 1;

@@ -16,6 +16,7 @@ import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProper
 import type { IValueTypeAccess } from '../../interface';
 
 import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
+import { logger } from '../../utility/logger';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -41,6 +42,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** The violated constraint properties(not from relations) */
   private _violated?: IConstraintProperty[];
+
+  /* avoid double validation */
+  private _validated?: boolean;
 
   /** The override properties(from relations) */
   private _props?: Map<PropertyCtor, IPropertyRecord[]>;
@@ -356,6 +360,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Publish the value change */
   onNext = debounce(() => {
     this._dataOb?.onNext(this, this.rawValue);
+    this._validated = false;
     this.validate();
   }, DEBOUNCE_TIME);
 
@@ -518,15 +523,16 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Whether the node passed all constraint validations. */
-  get isValid(): boolean { return this.violated().next().done ?? false; }
+  get isValid(): boolean { return this.disableConstraint || (this.violated().next().done ?? false); }
 
   /** Validate the node. */
   async validate() {
-    if (this.disableConstraint) {
-      delete this._violated;
+    if (this.disableConstraint) 
       return;
-    }
 
+    if (this._validated) return;
+    this._validated = true;
+    
     // validate static constraints
     for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty) as Generator<IConstraintProperty>) {
       this.recordConstraint(constraint, await constraint.validate(this));
@@ -556,6 +562,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Record violated constraint property */
   recordConstraint(constraint: IConstraintProperty, valid?: boolean): void {
+    logger.verbose('[Constraint]', this.access, constraint.name, valid);
     if (valid || isNull(valid)) {
       if (!this._violated?.length) return;
       const index = this._violated.indexOf(constraint as IConstraintProperty);
@@ -565,6 +572,22 @@ export class DataNode implements IValueAccess, IPropertyProvider {
       this._violated ??= [];
       if (this._violated.indexOf(constraint as IConstraintProperty) !== -1) return;
       this._violated.push(constraint as IConstraintProperty);
+    }
+    this.onNextViolated();
+  }
+
+  /** Clear the violated constraint properties. */
+  clearConstraints() {
+    this._violated = undefined;
+    this._validated = false;
+    
+    if (this._props) {
+      for(const records of this._props.values()) {
+        if (!records.length || !isConstraintProperty(records[0].property)) continue;
+        for(const record of records) {
+          record.valid = undefined;
+        }
+      }
     }
     this.onNextViolated();
   }

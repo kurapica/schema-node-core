@@ -6,7 +6,7 @@
 import { getMetaProperty } from '../../attribute/meta';
 import { RelationKind } from '../../property/record/relationKind';
 import { RelationProcess } from '../../property/core/relationProcess';
-import { generateGuid } from '../../utility/toolset';
+import { deepClone, generateGuid } from '../../utility/toolset';
 import { hasNodeReferences } from '../../interface';
 import { PropertyType } from '../property/runtime';
 import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
@@ -64,6 +64,9 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
 
   /** The processer */
   get processer(): IRelationProcess | undefined { return this._process };
+
+  /** The relation schema */
+  get schema() { return deepClone(this._relationSchema) };
 
   // ── Methods ────────────────────────────────────────────────────────────
 

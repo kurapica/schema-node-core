@@ -12,7 +12,8 @@ import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
 
 import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
-import { DisableConstraint } from "../../property";
+import { DisableConstraint, getPropertyName } from "../../property";
+import { logger } from "../../utility/logger";
 
 /** Struct node. */
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
@@ -202,7 +203,12 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       if (!f.displayOnly && !f.isValid) 
         return f.error;
     return super.error;
-   }
+  }
+
+  override clearConstraints(): void {
+    this._fields.forEach(f => f.clearConstraints());
+    super.clearConstraints();
+  }
 
   // #endregion
 
@@ -222,12 +228,12 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
           curr = curr?.getAccessValue(paths[index++], this);
         if (!curr) return;
 
-        // navigate to target field
+        // attach relation to this
         if (index === paths.length)
           return r.attach(info.owner, this);
 
         // navigate to next field
-        const next = paths[index].toLowerCase();        
+        const next = paths[index].toLowerCase();
         const fieldInfos = fieldRelations.get(next) ?? [];
         const exist = fieldInfos.find(f => f.owner === info.owner);
         if (exist)
@@ -285,12 +291,15 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     if (this.parent && !this.require) {
       if (isEmpty(value))
       {
-        if (isEmpty(this.rawValue) && !this.getPropertyValue<boolean>('DisableConstraint'))
+        if (isEmpty(this.rawValue) && !this.getPropertyValue<boolean>('DisableConstraint')) {
           this.setPropertyValue(DisableConstraint, true);
+          this.clearConstraints();
+        }
       }
       else if (this.getPropertyValue<boolean>('DisableConstraint'))
       {
         this.setPropertyValue(DisableConstraint, undefined);
+        this.clearConstraints();
       }
     }
     this.onNext();
@@ -318,7 +327,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         await newStrucType.loadType(nodeSchema);
         type = newStrucType;
       }
-      const newNode = type.create(node.original, this, strutField) as DataNode;
+      const newNode = type.create(node.original, this, strutField.getOverrideFieldType(type)) as DataNode;
       newNode.value = node.rawValue;
       node.moveSubscription(newNode);
       
@@ -330,6 +339,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
 
       // attach relations to new node
       newNode.attachRelations(this._fieldRelations?.get(node.name!.toLowerCase()) ?? []);
+      console.log('[Struct][Override]', newNode.name, newNode);
 
       // write back raw value
       this.writeBackRawValue(newNode, newNode.rawValue);

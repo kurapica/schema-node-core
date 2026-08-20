@@ -73,19 +73,24 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
 
   override getAccessValueType(path: string): ValueType | undefined {
     if (isEmpty(path) || path === NODE_SELF || path === ARRAY_PREVIOUS) return this;
-    return path === ARRAY_ELEMENT ? this.element : this.element?.getAccessValueType(path);
+
+    const dotIdx = path.indexOf('.');
+    const first = dotIdx >= 0 ? path.substring(0, dotIdx) : path;
+    const remain = dotIdx >= 0 ? path.substring(dotIdx + 1) : '';
+    if (first !== ARRAY_ELEMENT) return undefined;
+    return remain ? this.element?.getAccessValueType(remain) : this.element;
   }
 
   override getAccessEntries(): Entry<string>[] {
     return [
       {
         value: ARRAY_PREVIOUS
-      } as Entry<string>, 
+      } as Entry<string>,
       {
-        value: ARRAY_ELEMENT
+        value: ARRAY_ELEMENT,
+        hasChildren: this.element?.hasAccessEntries
       } as Entry<string>
     ]
-    .concat(this.element?.getAccessEntries() ?? []);
   }
 
   override get hasAccessEntries(): boolean { return true; }

@@ -298,6 +298,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
   private _require?: boolean;
   private _type?: ValueType;
   private _unpack?: boolean;
+  private _overrideMap?: Map<ValueType, StructFieldType>;
 
   /** The field name. */
   get name() { return this._fieldSchema?.name ?? '' };
@@ -400,5 +401,19 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
     for (let prop of joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate))) yield prop;
+  }
+
+  // ── Override Field Type ─────────────────────────────────────────────────
+
+  getOverrideFieldType(type?: ValueType): StructFieldType { 
+    if (!type) return this;
+    if (this._overrideMap?.has(type)) return this._overrideMap.get(type)!;
+    const overrideField = new StructFieldType();
+    overrideField._props = this._props;
+    overrideField._fieldSchema = this._fieldSchema;
+    overrideField._type = type;
+    this._overrideMap ??= new Map();
+    this._overrideMap.set(type, overrideField);
+    return overrideField;
   }
 }

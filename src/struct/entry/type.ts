@@ -5,6 +5,9 @@ export interface Entry<T> {
 
     /** Whether has child entries */
     hasChildren: boolean;
+
+    /** The children entries of the <see cref='entry'> */
+    children?: Entry<T>[];
 }
 
 /** The entry access interface */

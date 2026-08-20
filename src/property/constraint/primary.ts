@@ -26,21 +26,19 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_S
 @Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `primary.${ARRAY_ELEMENT}`)
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value?.length) return undefined;
-    if (node.type.kind === SCHEMA_KIND_ARRAY)
+    if (node.isEmpty || !this._value?.length || node.type.kind !== SCHEMA_KIND_ARRAY) return undefined;
+
+    const keys = new Set<string>();
+    for (const item of (node as unknown as Iterable<IValueAccess>))
     {
-      const keys = new Set<string>();
-      for (const item of (node as unknown as Iterable<IValueAccess>))
-      {
-        const data = item.rawValue;
-        const key = typeof(data) === 'object' ? this.getPrimarys(data as Record<string, unknown>) : undefined;
-        if (!key || !keys.has(key)) {
-          if (key) keys.add(key);
-          this.recordViolation(item, false);
-        }
-        else {
-          this.recordViolation(item, false);
-        }
+      const data = item.rawValue;
+      const key = typeof(data) === 'object' ? this.getPrimarys(data as Record<string, unknown>) : undefined;
+      if (!key || !keys.has(key)) {
+        if (key) keys.add(key);
+        this.recordViolation(item, true);
+      }
+      else {
+        this.recordViolation(item, false);
       }
     }
     return undefined;

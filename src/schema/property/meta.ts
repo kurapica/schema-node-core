@@ -16,8 +16,6 @@ import { Require } from '../../property/constraint/require';
 import { PropertyValueType } from '../../property/core/propertyValueType';
 import { Valid } from '../../property/constraint/valid';
 import { Display } from '../../property/common/display';
-import { Stackable } from '../../property/core/stackable';
-import { Static } from '../../property/core/static';
 import { getPropertyName } from '../../property/property';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, getPropertyTypeSupportSchemas, saveNodeSchema } from '../../runtime/schemaRuntime';

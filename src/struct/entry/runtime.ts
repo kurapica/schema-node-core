@@ -26,6 +26,7 @@ export class EntryType<T> implements Entry<T> {
   /** The value map */
   private _valueMaps?: Map<T, EntryType<T>>;
 
+  /** The white list mask of the entry */
   private _whiteList?: T[];
 
   /** The entry is root */
@@ -42,6 +43,13 @@ export class EntryType<T> implements Entry<T> {
   get entry(): Entry<T> {
     const entry = { value: this.value, hasChildren: this.hasChildren };
     combineProperties(entry, this._entry, SCHEMA_KIND_ENTRY);
+    return entry;
+  }
+
+  /** Gets the full entry with children entries */
+  get fullEntry(): Entry<T> {
+    const entry = this.entry;
+    entry.children = this._children?.map(c => c.fullEntry);
     return entry;
   }
 
@@ -96,17 +104,7 @@ export class EntryType<T> implements Entry<T> {
 
       // replace
       root._children?.forEach(c => c.unregister());
-      root._children = current.children?.map(c => {
-        const entry = new EntryType<T>();
-        entry.value = c.value;
-        entry.hasChildren = c.hasChildren;
-        entry._entry = c;
-        entry._parent = root;
-        entry._valueMaps = this._valueMaps;
-        entry._children = root?._children?.find(e => isEqual(c.value, e.value))?._children;
-        entry.register();
-        return entry;
-      })
+      root._children = this.genChildren(root, current.children!);
       if (root._children?.length) root.hasChildren = true;
     }
 
@@ -184,6 +182,21 @@ export class EntryType<T> implements Entry<T> {
       c._valueMaps = this._valueMaps;
       c._parent = this;
       c.register();
+    })
+  }
+
+  /** Generate children entries */
+  private genChildren(root: EntryType<T>, entries: Entry<T>[], inner = false): EntryType<T>[] | undefined  {
+    return entries?.map(c => {
+      const entry = new EntryType<T>();
+      entry.value = c.value;
+      entry.hasChildren = c.hasChildren;
+      entry._entry = c;
+      entry._parent = root;
+      entry._valueMaps = this._valueMaps;
+      entry._children = root?._children?.find(e => isEqual(c.value, e.value))?._children ?? (c.children?.length ? this.genChildren(entry, c.children!, true) : undefined);
+      if(!inner) entry.register();
+      return entry;
     })
   }
 }

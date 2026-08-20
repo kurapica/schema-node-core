@@ -39,7 +39,8 @@ import type { Entry } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT } from '../../utility/constant';
+import { InVisible, PrimaryIndex } from '../../property';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
@@ -56,7 +57,7 @@ class EnumSchemaKind{}
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(Attach, SCHEMA_KIND_ENUM)
-@Relation(Immutable,'assign', true, "values.value")
+@Relation(InVisible,'assign', true, "entrySource")
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.valuetype`)
@@ -68,11 +69,25 @@ class EnumSchemaMeta implements EnumSchema {
   cascade?: LocaleString[];
   
   /** The root enum values */
-  @Meta(SchemaType, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_STRING}>`)
+  @Meta(SchemaType,  `${NS_SYSTEM_SCHEMA_ENUM}.values`)
   @Meta(Require, true)
-  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"))
-  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), "values.value")
+  @Relation(Immutable,'assign', true, `values.${ARRAY_ELEMENT}.value`)
+  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"), `values.${ARRAY_ELEMENT}.value`)
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), `values.${ARRAY_ELEMENT}.value`)
   values!: Entry<string>[];
+}
+
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.value`) // for definition
+@Meta(Attach, SCHEMA_KIND_ENTRY)
+class EnumValueMeta implements Entry<string> {
+  /** The value of the entry */
+  @Meta(Require, true)
+  @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(PrimaryIndex)
+  value!: string;
+
+  /** Whether the entry has children, no use in definition */
+  hasChildren = false;
 }
 
 /** Represents the enum value type */

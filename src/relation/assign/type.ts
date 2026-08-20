@@ -6,15 +6,19 @@ import type { RelationSchema } from "../../schema/relation/type";
 
 /** The assign relation process */
 export class AssignProcess implements IRelationProcess {
-    private _value?: unknown
+  private _value?: unknown
 
-    async load(schema: RelationSchema) {
-      this._value = getPropertyValue<unknown>(schema, 'assign');
-    }
+  async load(schema: RelationSchema) {
+    this._value = getPropertyValue<unknown>(schema, 'assign');
+  }
 
-    attach(relation: IRelation, owner: IValueAccess, target?: IValueAccess): void {}
-    detach(relation: IRelation, owner: IValueAccess, target?: IValueAccess): void {}
-    async process(owner: IValueAccess, target?: IValueAccess): Promise<unknown> {
-      return this._value;
-    }
+  attach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void {
+    relation.process(owner, target);
+  }
+
+  detach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void {}
+  
+  async process(owner: IValueAccess, target: IValueAccess): Promise<unknown> {
+    return this._value;
+  }
 }

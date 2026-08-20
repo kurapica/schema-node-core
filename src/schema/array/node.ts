@@ -174,12 +174,12 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     let result: IValueAccess | undefined = undefined;
     if (first == ARRAY_PREVIOUS)
       result = new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
-    else 
+    else if (first == ARRAY_ELEMENT)
     {
       result = this._elements[eleIndex];
-      result = first == ARRAY_ELEMENT ? result : result?.getAccessValue(first, node);
+      return rest ? result?.getAccessValue(rest, node) : result;
     }
-    return rest ? result?.getAccessValue(rest, node) : result;
+    return undefined;
   }
 
   // #endregion
@@ -188,6 +188,11 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   override get isValid(): boolean {
     return this._elements.every(e => e.isValid) && super.isValid;
+  }
+
+  override clearConstraints(): void {
+    this._elements.forEach(e => e.clearConstraints());
+    super.clearConstraints();
   }
 
   // #endregion
@@ -201,23 +206,22 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
       info.relations.forEach(r => {
         const paths = r.target.split('.').filter(p => p.trim() !== '');
         let curr: IValueAccess | undefined = info.owner;
-        for (let i = 0; i < paths.length; i++) {
-          if (curr === undefined) return;
-          if (curr === this) {
-            if (i === paths.length - 1)
-              r.attach(info.owner, this);
-            else
-            {
-              const exist = elementRelations.find(f => f.owner === info.owner);
-              if (exist) {
-                exist.relations.push(r);
-              } else {
-                elementRelations.push({owner: info.owner, relations: [r]});
-              }
-            }
-            break;
-          }
-          curr = curr?.getAccessValue(paths[i], this);
+        let index = 0;
+
+        // indicate this
+        while (curr && curr !== this && index < paths.length)
+          curr = curr?.getAccessValue(paths[index++], this);
+        if (!curr) return;
+
+        // set relation to this
+        if (index === paths.length)
+          return r.attach(info.owner, this);
+
+        const exist = elementRelations.find(f => f.owner === info.owner);
+        if (exist) {
+          exist.relations.push(r);
+        } else {
+          elementRelations.push({owner: info.owner, relations: [r]});
         }
       });
     });
@@ -333,7 +337,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   }
 
   private refreshElementNames = () => {
-    this._elements.forEach((e, i) => e.setPropertyValue(Name, `${this.name}[${i}]`));
+    this._elements.forEach((e, i) => e.setPropertyValue(Name, `[${i}]`));
   }
 
   // #endregion

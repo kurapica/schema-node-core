@@ -50,8 +50,8 @@ export const SCHEMA_KIND_ORDER_GENERIC = 99;
 // ── Relation Path ──────────────────────────────────────────────────────────
 
 export const RELATION_OWNER = '$owner';
-export const ARRAY_PREVIOUS = '$previous';
-export const ARRAY_ELEMENT = '$element';
+export const ARRAY_PREVIOUS = '$$prev';
+export const ARRAY_ELEMENT = '$$ele';
 export const NODE_SELF = '$self';
 export const NODE_TYPE = '$type';
 export const ENTRY_ROOT = '$root';

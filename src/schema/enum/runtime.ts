@@ -5,7 +5,7 @@
 
 import { EnumValueType } from '../../enum/enumValueType/type';
 import { EntrySource } from '../../property/core/entrySource';
-import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { EntryType } from '../../struct/entry/runtime';
 import { isEmpty } from '../../utility/toolset';
 import { ValueType } from '../value/runtime';
@@ -16,16 +16,17 @@ import { StringType } from '../string/runtime';
 import { IntType } from '../int/runtime';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
-import { logger } from '../../utility/logger';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType/type';
 import type { FuncCall } from '../../schema/function/type';
 import type { LocaleString } from '../../struct/localeString/type';
-import type { EntryAccess } from '../../struct/entry/type';
+import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { IProperty, PropertyCtor } from '../../interface';
 
 import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
+import { SchemaLoadState } from '../../enum';
+import { EnumProperty } from './property';
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;
@@ -143,5 +144,22 @@ export class EnumType extends ValueType {
     if (root.isRoot && start)
       root = root.getEntry(start);
     return root?.getAccessList(value) ?? [];
+  }
+
+  /** Saves the enum sub list, only works for frontend schema */
+  saveEnumSubList(value: string, children: Entry<string>[] | undefined) {
+    if ((this.schema?.loadState ?? 0) & (SchemaLoadState.System | SchemaLoadState.Service)) return;
+    const entry = this._root.getEntry(value);
+    if (!entry) return;
+    if (!children?.length)
+      entry.dropChildren();
+    else
+      entry.saveAccessList([{
+        entry: { value, hasChildren: true },
+        children
+      }]);
+
+    this._enumSchema!.values = this._root.fullEntry.children ?? [];
+    setPropertyValue(this.schema, EnumProperty, this._enumSchema);
   }
 }
