@@ -2,7 +2,7 @@ import { Unpack } from "../../property/common/unpack";
 import { OverrideFields } from "../../property/core/overrideFields";
 import { OverrideType } from "../../property/core/overrideType";
 import { getNodeType } from "../../runtime/context";
-import { isEmpty, isEqual, isNull } from "../../utility/toolset";
+import { isEmpty, isEqual, isNull, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
 
@@ -328,7 +328,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         type = newStrucType;
       }
       const newNode = type.create(node.original, this, strutField.getOverrideFieldType(type)) as DataNode;
-      newNode.value = node.rawValue;
+      newNode.value = trimValue(node.rawValue);
       node.moveSubscription(newNode);
       
       // replace old node with new node

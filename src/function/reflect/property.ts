@@ -48,7 +48,7 @@ export class SystemReflectProperty {
     type: string
   ): Promise<boolean>
   {
-    return !await this.isstatic(type);
+    return !await SystemReflectProperty.isstatic(type);
   }
 
   /** Whether the property is not stackable */
@@ -59,7 +59,7 @@ export class SystemReflectProperty {
     type: string
   ): Promise<boolean>
   {
-    return !await this.isstackable(type);
+    return !await SystemReflectProperty.isstackable(type);
   }
 
   /** Gets the property value type */
@@ -86,6 +86,7 @@ export class SystemReflectProperty {
     kind: string
   ): Promise<boolean>
   {
+    if (!kind) return false;
     const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
     if (!prop) return false;
     return prop.forSchemas?.some(k => k.toLowerCase() === kind.toLowerCase()) ?? false;

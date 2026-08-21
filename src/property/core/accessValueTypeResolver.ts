@@ -17,9 +17,12 @@ import { FunctionType } from '../../schema/function/runtime';
 import type { FuncCall } from '../../schema/function/type';
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
+import type { DataNode } from '../../schema/value/node';
+import { ForSchema } from './forSchema';
 
 /** The access value provider property */
+@Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.AccessValueTypeResolver`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
@@ -29,41 +32,46 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_
 @Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "accessValueTypeResolver.func")
 export class AccessValueTypeResolver extends Property<string> {
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
+    console.log("access value resolver effect", target, newValue, oldValue, source);
     if (!newValue || !this._value) return; // static only effect once
-    let provider: IValueAccess | undefined = target;
+    setTimeout(() => {
+      let provider: IValueAccess | undefined = target;
 
-    // find the access value provider
-    while (provider)
-    {
-      const accessProvider = provider.getPropertyValue<FuncCall>(AccessValueTypeProvider);
-      if (accessProvider?.func) {
-        // the acces value type resolve
-        const resolve = async () => {
-          const func = await getNodeType(accessProvider.func) as FunctionType;
-          let value = await func?.call(accessProvider.args.map(a => {
-            if (!a.source) return a.value;
-            if (a.source === NODE_SELF) return target.parent?.getAccessValue(this._value!)?.rawValue;
-            return provider?.getAccessValue(a.source)?.rawValue;
-          }));
-          target.setPropertyValue(Default, value, provider);
+      console.log("try find access value provider", (target as DataNode).access);
+      // find the access value provider
+      while (provider)
+      {
+        const accessProvider = provider.getPropertyValue<FuncCall>(AccessValueTypeProvider);
+        if (accessProvider?.func) {
+      console.log("find access value provider", (provider as DataNode).access);
+          // the acces value type resolve
+          const resolve = async () => {
+            const func = await getNodeType(accessProvider.func) as FunctionType;
+            let value = await func?.call(accessProvider.args.map(a => {
+              if (!a.source) return a.value;
+              if (a.source === NODE_SELF) return target.parent?.getAccessValue(this._value!)?.rawValue;
+              return provider?.getAccessValue(a.source)?.rawValue;
+            }));
+            target.setPropertyValue(Default, value, provider);
+          }
+
+          // subscribe the access value provider
+          accessProvider.args.forEach(a => {
+            if (!a.source) return;
+            const node = a.source == NODE_SELF 
+            ? target.parent?.getAccessValue(this._value!) 
+            : provider?.getAccessValue(a.source);
+            if (node)
+              target.recordSubscription(node.subscribe(resolve), target);
+          });
+
+          // resolve the access value type
+          resolve();
+
+          break;
         }
-
-        // subscribe the access value provider
-        accessProvider.args.forEach(a => {
-          if (!a.source) return;
-          const node = a.source == NODE_SELF 
-          ? target.parent?.getAccessValue(this._value!) 
-          : provider?.getAccessValue(a.source);
-          if (node)
-            target.recordSubscription(node.subscribe(resolve), target);
-        });
-
-        // resolve the access value type
-        resolve();
-
-        break;
+        provider = provider.parent;
       }
-      provider = provider.parent;
-    }
+    }, 0);
   }
 }

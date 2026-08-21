@@ -55,6 +55,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** The violated observable */
   private _violatedOb?: Observable<[IValueAccess, boolean]>;
 
+  /** The self property observable */
+  private _selfPropObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown, unknown]>>;
+
   /** The property observable */
   private _propObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown, unknown]>>;
 
@@ -84,6 +87,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Dipose the data node, release references */
   dispose() {
     this._dataOb?.dispose();
+    this._selfPropObs?.forEach(p => p.dispose());
+    this._selfPropObs?.clear();
     this._propObs?.forEach(p => p.dispose());
     this._propObs?.clear();
     this._subs?.forEach(s => s.forEach(f => f()))
@@ -92,6 +97,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
     delete this._dataOb;
     delete this._violatedOb;  
+    delete this._selfPropObs;
     delete this._propObs;
     delete this._subs;
     delete this._props;
@@ -282,7 +288,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
     // clear
     if (isEmpty(value)) {
-      if (!record) return;
+      if (!record || !record.property.hasValue) return;
+      record.property.setValue(value);
       props = props!.filter(d => d.source !== source)
       this._props!.set(propCtor, props);
     }
@@ -310,7 +317,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
     // Validate constraint
     if (isConstraintProperty(record.property)) {
-      console.log("validate constraint", record.property.name, record.property.getValue(), record.valid, value)
       if (isEmpty(value))
       {
         if (record.valid == false) // clear violated
@@ -354,6 +360,19 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._validated = false;
     this.validate();
   }, DEBOUNCE_TIME);
+   
+  /** Subscribe self property change and return the function for un-subscribe */
+  protected subscribeSelfProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function {
+    this._selfPropObs ??= new Map();
+    let ob = this._selfPropObs.get(propCtor);
+    if (!ob){
+      ob = new Observable();
+      this._selfPropObs.set(propCtor, ob);
+    }
+    const sub = ob.subscribe(func);
+    if (immediate) func(this, propCtor, this.getPropertyValue(propCtor), undefined);
+    return sub;
+  }
 
   /** Subscribe the node property change and return the function for un-subscribe */
   subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function {
@@ -371,7 +390,10 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Publish the property value change */
   onNextProperty(propCtor: PropertyCtor, newValue?: unknown, oldValue?: unknown)
   {
-    const ob = this._propObs?.get(propCtor);
+    let ob = this._selfPropObs?.get(propCtor);
+    if (ob) ob.onNext(this, propCtor, newValue, oldValue);
+
+    ob = this._propObs?.get(propCtor);
     if (ob) ob.onNext(this, propCtor, newValue, oldValue);
   }
 

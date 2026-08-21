@@ -23,14 +23,14 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_I
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade.error`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", true, SCHEMA_KIND_ENUM))
-@Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, "@type"))
+@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, "@type"))
 export class Cascade extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
     if (node.type.kind === SCHEMA_KIND_ENUM) {
       const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
       if (!access?.length) return undefined;
-      return access.length <= this._value;
+      return access.length - 1 <= this._value;
     }
     else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
     {

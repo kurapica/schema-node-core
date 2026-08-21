@@ -14,7 +14,7 @@ import { EnumType } from '../../schema/enum/runtime';
 import type { Entry, EntryAccess } from '../../struct/entry/type';
 import { ArrayType, type ValueType } from '../../schema';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
@@ -96,21 +96,42 @@ export class SystemReflectEnum {
   }
 
   /** Gets the cascades for the given enum type */
-  @Meta(Return, `${NS_SYSTEM_ENTRYS}<${NS_SYSTEM_INT}>`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_INT}>>`)
   static async getcascades(
     @Meta(ArgName, 'type')
     @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
     @Meta(Require, true)
     type: string,
-  ): Promise<Entry<number>[]> {
+  ): Promise<EntryAccess<number>[]> {
     const enumType = await SystemReflectEnum.getEnumType(type);
-    return enumType?.cascade?.map((c, i) =>
+    return [{ children: enumType?.cascade?.map((c, i) =>
     {
       return setPropertyValue({
         value: i + 1,
         hasChildren: false
       }, Display, c);
-    }) ?? [];
+    }) ?? [] }];
+  }
+
+  /** Gets the cascade level of the enum with offset */
+  @Meta(Return, NS_SYSTEM_INT)
+  static async getcascade(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.type`)
+    @Meta(Require, true)
+    type: string,
+
+    @Meta(ArgName, 'cascade')
+    @Meta(SchemaType, NS_SYSTEM_INT)
+    @Meta(Require, false)
+    cascade: number = 0,
+
+    @Meta(ArgName, 'offset')
+    @Meta(SchemaType, NS_SYSTEM_INT)
+    offset: number = 0,
+  ): Promise<number> {
+    const enumType = await SystemReflectEnum.getEnumType(type);
+    return (cascade > 0 ? cascade : (enumType?.cascade?.length ?? 0)) + offset;
   }
 
   /** Gets the entry access for the given enum value type */

@@ -5,7 +5,7 @@
 
 import { EnumValueType } from "../../enum/enumValueType/type";
 import type { IPropertyProvider, IValueAccess } from "../../interface";
-import { isNull } from "../../utility/toolset";
+import { isNull, trimValue } from "../../utility/toolset";
 import type { ArrayType } from "../array/runtime";
 import { ScalarNode } from "../object/node";
 import { EnumType } from "./runtime";
@@ -29,7 +29,7 @@ export class EnumArrayNode extends ScalarNode {
   override getValue(): unknown[] {
     const value = this.rawValue as unknown[];
     if (!Array.isArray(value)) return [];
-    return value.map((item) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
+    return trimValue([...value]).map((item: any) => this.enumType.type === EnumValueType.String ? `${item}` : parseInt(`${item}`));
   }
 
   get length() {

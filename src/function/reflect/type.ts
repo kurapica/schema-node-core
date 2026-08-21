@@ -51,7 +51,7 @@ export class SystemReflectType {
     if (!name && !root && name !== root && !name.startsWith(`${root}.`))
       return [];
 
-    let ns = await getNodeType(name ?? root);
+    let ns = await getNodeType(name?.length ? name : root);
     if (!ns) return [];
 
     let result: EntryAccess<string>[] = [];
@@ -85,8 +85,8 @@ export class SystemReflectType {
         });
       }
       result.push(access);
-      ns = ns.namespace;
       if (root && ns?.name === root) break;
+      ns = ns.namespace;
     }
     result.reverse();
     return result;

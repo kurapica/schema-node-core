@@ -15,16 +15,18 @@ import { ArrayType } from '../../schema/array/runtime';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_INTRINSIC, NS_SYSTEM_MATH, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_INTRINSIC, NS_SYSTEM_MATH, NS_SYSTEM_SCHEMA_REFLECT_ENUM, SCHEMA_KIND_STRUCT_FIELD, NS_SYSTEM_LOGIC } from '../../utility/constant';
+import { InVisible } from '../common';
 
-@Meta(ForSchema, [SCHEMA_KIND_ENUM])
+@Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.root`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.root.error`)
 @Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, "@type"))
+@Relation(InVisible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.le`, "@cascade", 1))
 @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@type"))
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_MATH}.subtract`, "@cascade", 1))
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, "@type", "@cascade", -1))
 export class Root extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

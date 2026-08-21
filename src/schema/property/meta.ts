@@ -27,7 +27,7 @@ import type { PropertyCtor } from '../../interface';
 import type { PropertySchema } from './type';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_BOOL, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
 import { RuntimeNodeType } from '../../property';
 import { PropertyType } from './runtime';
 import { getRelationSchemas } from '../../attribute/relation';
@@ -59,7 +59,7 @@ class PropertySchemaMeta implements PropertySchema {
 /** Represents the property type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
-@Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+@Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_PROPERTY))
 class PropertyTypeMeta {}
 

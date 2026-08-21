@@ -19,6 +19,7 @@ import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utili
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function compare<T>(a: T, b: T): number {
+  if (isNull(a) || isNull(b)) return 1;
   if (a instanceof BigNumber && b instanceof BigNumber) return a.comparedTo(b) ?? 0;
   if (a === b) return 0;
   return (a as unknown as number) < (b as unknown as number) ? -1 : 1;

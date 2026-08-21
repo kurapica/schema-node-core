@@ -22,7 +22,7 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_BOOL, SCHEMA_KIND_STRING, SCHEMA_KIND
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.visible`,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', true, SCHEMA_KIND_ENUM, SCHEMA_KIND_BOOL, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE))
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.OverrideType`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, '@type'))
+@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, '@type'))
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'))
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.blacklist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'))
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.root`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@root'))

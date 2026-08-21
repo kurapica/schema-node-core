@@ -56,7 +56,7 @@ export class EntryType<T> implements Entry<T> {
   /** Gets the child entry by value */
   getEntry(value: T | null | undefined): EntryType<T> | undefined {
     value = (typeof(value) === 'string' ? value.toLowerCase() : value) as T; // case ignore
-    const entry = isNull(value) ? (this.isRoot ? this : undefined) : this._valueMaps?.get(value!);
+    const entry = isNull(value) ? (this.isRoot ? this : undefined) : (this.isRoot && isEqual(value, this.value) ? this : this._valueMaps?.get(value!));
     return entry && this.isDescendant(entry) ? entry : undefined;
   }
 
