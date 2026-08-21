@@ -9,7 +9,7 @@ import { Require } from '../../property/constraint/require';
 import { Variadic } from '../../property/function/variadic';
 import { getRecordedValues } from '../../property/recordProperty';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { combinePaths } from '../../utility/toolset';
+import { combinePaths, isNull } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
@@ -18,7 +18,7 @@ import { isNamespaceNodeType } from '../../interface';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
 import { NodeSchemaKind } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -32,7 +32,7 @@ export class SystemReflectType {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     name: string,
   ): string {
-    return name.split('<')[0].split('.').pop() || '';
+    return (name ?? '').split('<')[0].split('.').pop() || '';
   }
 
   /** Gets the full names and labels of the schema nodes under the namespace with the given name */
@@ -247,7 +247,7 @@ export class SystemReflectType {
     @Meta(Require, true)
     name: string,
   ): Promise<boolean> {
-    const nodeType = !name ? undefined : await getNodeType(name);
+    const nodeType = isNull(name) ? undefined : await getNodeType(name);
     if (!nodeType) return false;
     const valueKinds = getRecordedValues(ValueSchemaKind);
     return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
@@ -309,6 +309,7 @@ export class SystemReflectType {
   static async getdesignschema(
     @Meta(ArgName, 'type')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(Require, true)
     type: string,
 
     @Meta(ArgName, 'element')

@@ -6,15 +6,45 @@ export function combinePaths(...names: string[])
 
 
   /** Parse value to date */
-export function parseDate(value: unknown): Date | undefined
+export function parseDate(value: unknown, isYear: boolean = false): Date | undefined
 {
   if (value instanceof Date) return value;
 
   if (typeof (value) === "string" || typeof (value) === "number" && value > 0) {
-      const date = new Date(value)
-      if (date && !isNaN(date.getFullYear())) return date;
+    if (isYear)
+    {
+      const year = Number(value)
+      if (year && !isNaN(year) && year >= 0 && year <= 9999)
+      return new Date(year, 0, 1)
+    }
+
+    const date = new Date(value)
+    if (date && !isNaN(date.getFullYear())) return date;
   }
   return undefined;
+}
+
+/** Trim value of array, object, string, number */
+export function trimValue(value: any)
+{
+  if (Array.isArray(value))
+  {
+    value = value.map((v: any) => trimValue(v))
+    while (value.length && isEmpty(value[value.length - 1])) value.pop()
+  }
+  else if (value && typeof (value) === "object")
+  {
+    if (value instanceof Date) return value
+    for (let k in value)
+    {
+      value[k] = trimValue(value[k])
+    }
+  }
+  else if (typeof (value) === "string")
+  {
+    value = value.trim()
+  }
+  return value
 }
 
 /**
@@ -25,10 +55,10 @@ export function isNull(value: any)
   return value == null || value == undefined || value === ""
 }
 
-export function isEmpty(value: any)
+export function isEmpty(value: any): boolean
 {
   if (isNull(value)) return true
-  if (Array.isArray(value)) return value.length === 0
+  if (Array.isArray(value)) return value.length === 0 || value.every((v: any) => isEmpty(v))
   if (typeof(value) === "object")
   {
     for (let k in value)
@@ -245,40 +275,42 @@ export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
 /**
  * Use queue to process query
  */
-export function useQueueQuery<T>(queryFunc: (...args: any[]) => Promise<T>)
-{
+export function useQueueQuery<T>(
+  queryFunc: (...args: any[]) => Promise<T>
+) {
   const queues: {
-    args: any[],
-    resolve: Function,
-    reject: Function
+    args: any[]
+    resolve: (value: T | PromiseLike<T>) => void
+    reject: (reason?: any) => void
   }[] = []
-  let processing = 0
+
+  let processing = false
 
   const processQuery = async () => {
-    // single thread - record time
-    if (processing && (new Date().getTime() - processing) < 1000) return
+    if (processing) return
 
-    // process queue
-    let task = queues.shift()
-    while (task) {
-      processing = new Date().getTime()
-      try {
-        task.resolve(await queryFunc(...task.args))
+    processing = true
+
+    try {
+      while (queues.length) {
+        const task = queues.shift()!
+
+        try {
+          task.resolve(await queryFunc(...task.args))
+        }
+        catch (ex) {
+          task.reject(ex)
+        }
       }
-      catch (ex) {
-        task.reject(ex)
-      }
-      task = queues.shift()
     }
-
-    // reset
-    processing = 0
+    finally {
+      processing = false
+    }
   }
 
-  return function (...args: any[])
-  {
-    setTimeout(() => processQuery(), 5)
-    return new Promise((resolve, reject) => queues.push({ args, resolve, reject })) as unknown as Promise<T>
+  return (...args: any[]) => {
+    setTimeout(processQuery, 5)
+    return new Promise<T>((resolve, reject) => queues.push({ args, resolve, reject }))
   }
 }
 

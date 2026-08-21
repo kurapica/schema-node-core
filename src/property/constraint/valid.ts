@@ -14,8 +14,11 @@ import { getErrorMessage } from '../constraintProperty';
 
 import type { IConstraintProperty, IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT } from '../../utility/constant';
-import { Property } from '../property';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT, NS_SYSTEM_BOOL } from '../../utility/constant';
+
+import { Assign } from '../../relation';
+import { Default } from '../common/default';
+import { Relation } from '../../attribute/relation';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
@@ -24,6 +27,7 @@ import { Property } from '../property';
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(Stackable, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid.error`)
+@Relation(Default, Assign, NS_SYSTEM_BOOL, 'valid.return')
 export class Valid extends FuncCallProperty implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.func) return undefined;

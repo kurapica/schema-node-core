@@ -9,6 +9,7 @@
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
+import { deepClone, trimValue } from "../utility";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -21,6 +22,10 @@ const _saveableCache = new Map<Function, boolean>();
 export abstract class Property<T> implements IProperty {
   protected _value: T | undefined = undefined;
   protected _hasValue = false;
+
+  constructor(source?: IValueAccess) {
+    this.source = source;
+  }
 
   get name(): string {
     return getPropertyName(this.constructor as PropertyCtor);
@@ -48,6 +53,9 @@ export abstract class Property<T> implements IProperty {
     return this._hasValue;
   }
 
+  /** The source of the property value. */
+  readonly source?: IValueAccess;
+
   /** Whether the property is applicable to the given schema kind. */
   forSchema(...kinds: string[]): boolean {
     const ctor = this.constructor as Function;
@@ -62,7 +70,7 @@ export abstract class Property<T> implements IProperty {
 
   getValue<TV>(): TV | undefined {
     if (!this._hasValue) return undefined;
-    return this._value as unknown as TV;
+    return trimValue(deepClone(this._value)) as unknown as TV;
   }
 
   combine(other: IProperty): boolean {

@@ -3,12 +3,12 @@
 // Mirrors C# SchemaNode.Core/Node/DataNode.cs
 // =============================================================================
 
-import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull } from '../../utility/toolset';
+import { clearDebounce, debounce, deepClone, generateGuid, isEmpty, isEqual, isNull, trimValue } from '../../utility/toolset';
 import { Observable } from '../../utility/observable';
 import { _LS } from '../../utility/locale';
 import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { isRelation, joinProperties, isConstraintProperty } from '../../interface';
-import { getPropertyName, Property } from '../../property/property';
+import { getPropertyName } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
 
 import type { Observer } from '../../utility/observable';
@@ -52,9 +52,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** The data observable */
   private _dataOb?: Observable<[IValueAccess, unknown]>;
 
-  /** The state observable */
-  private _stateOb?: Observable<[IValueAccess, PropertyCtor?, unknown?, unknown?]>;
-
   /** The violated observable */
   private _violatedOb?: Observable<[IValueAccess, boolean]>;
 
@@ -87,7 +84,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Dipose the data node, release references */
   dispose() {
     this._dataOb?.dispose();
-    this._stateOb?.dispose();
     this._propObs?.forEach(p => p.dispose());
     this._propObs?.clear();
     this._subs?.forEach(s => s.forEach(f => f()))
@@ -95,7 +91,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._violatedOb?.dispose();
 
     delete this._dataOb;
-    delete this._stateOb;
     delete this._violatedOb;  
     delete this._propObs;
     delete this._subs;
@@ -266,23 +261,24 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Sets the property values */
-  setPropertyValues(props: Record<string, unknown>, source?: IValueAccess) {
-    // node type
-    for (const prop of getPropertiesBySchemaKind(props, this.type.kind))
-      this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
+  setPropertyValues(props: Record<string, unknown>, source?: IValueAccess, ...kinds: string[]) {
+    if (!kinds.includes(this.type.kind)) kinds.push(this.type.kind);
+    if (!kinds.includes(SCHEMA_KIND_NODE)) kinds.push(SCHEMA_KIND_NODE);
 
-    // node
-    for (const prop of getPropertiesBySchemaKind(props, SCHEMA_KIND_NODE))
-      this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
+    for (const kind of kinds)
+      for (const prop of getPropertiesBySchemaKind(props, kind))
+        this.setPropertyValue(prop.constructor as any, prop.getValue(), source);
   }
 
   /** Sets the value of the given property */
-  setPropertyValue<T>(propCtor: new () => Property<T>, value?: T, source?: IValueAccess): void {
+  setPropertyValue<T>(propCtor: PropertyCtor, value?: T, source?: IValueAccess): void {
     source ??= this;
 
     let oldValue = this.getPropertyValue<T>(propCtor);
     let props = this._props?.get(propCtor);
     let record = props?.find(p => p.source === source);
+
+    value = trimValue(value);
 
     // clear
     if (isEmpty(value)) {
@@ -299,7 +295,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     else
     {
       this._props ??= new Map();
-      record = { source, level: calcLevel(this, source), property: new propCtor() };
+      record = { source, level: calcLevel(this, source), property: new propCtor(source) };
       record.property.setValue(value);
       if (props) {
         props.push(record);
@@ -314,6 +310,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
     // Validate constraint
     if (isConstraintProperty(record.property)) {
+      console.log("validate constraint", record.property.name, record.property.getValue(), record.valid, value)
       if (isEmpty(value))
       {
         if (record.valid == false) // clear violated
@@ -339,12 +336,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     }
   }
 
-  /** Gets the property value source */
-  getPropertySource(propCtor: PropertyCtor): IValueAccess {
-    const props = this._props?.get(propCtor);
-    return props?.[0].source ?? this;;
-  }
-
   // #endregion
 
   // #region ── Subscription ──────────────────────────────────────────────────
@@ -364,20 +355,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this.validate();
   }, DEBOUNCE_TIME);
 
-  /** Subscribe the node state changes(any property changed) and return the function for un-subscribe */
-  subscribeState(func: Observer<[IValueAccess, PropertyCtor?, unknown?]>, immediate?: boolean): Function {
-    this._stateOb ??= new Observable();
-    const sub = this._stateOb.subscribe(func);
-    if (immediate) func(this);
-    return sub;
-  }
-
-  /** Publish the state change */
-  onNextState(propCtor?: PropertyCtor, newValue?: unknown, oldValue?: unknown) {
-    if (!this._stateOb) return;
-    this._stateOb.onNext(this, propCtor, newValue, oldValue); 
-  }
-
   /** Subscribe the node property change and return the function for un-subscribe */
   subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function {
     this._propObs ??= new Map();
@@ -396,7 +373,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   {
     const ob = this._propObs?.get(propCtor);
     if (ob) ob.onNext(this, propCtor, newValue, oldValue);
-    this.onNextState(propCtor, newValue, oldValue);
   }
 
   /** Subscribe the violated constraints and return the function for un-subscribe */
@@ -453,12 +429,10 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Move subscriptions to new node before destroying this node */
   moveSubscription(newNode: DataNode): void {
     newNode._dataOb = this._dataOb;
-    newNode._stateOb = this._stateOb;
     newNode._propObs = this._propObs;
     newNode._violatedOb = this._violatedOb;
 
     this._dataOb = undefined;
-    this._stateOb = undefined;
     this._propObs = undefined;
     this._violatedOb = undefined;
   }

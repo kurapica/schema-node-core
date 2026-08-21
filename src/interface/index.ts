@@ -77,9 +77,6 @@ export interface IValueAccess {
   /** Sets the value of the given property from relations */
   setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void;
 
-  /** Gets the property value source */
-  getPropertySource(propCtor: PropertyCtor): IValueAccess;
-
   // #endregion
 
   // #region ── Subscription ──────────────────────────────────────────────────
@@ -209,6 +206,9 @@ export interface IProperty {
   /** Whether the property value is savable (persisted) in schema. */
   readonly savable: boolean;
 
+  /** The source of the property value. */
+  readonly source?: IValueAccess;
+
   /** Whether the property is applicable to the given schema kind. */
   forSchema(...kinds: string[]): boolean;
 
@@ -232,7 +232,7 @@ export interface IProperty {
 }
 
 /** The property constructor */
-export type PropertyCtor<T extends IProperty = IProperty> = new () => T;
+export type PropertyCtor<T extends IProperty = IProperty> = new (source?: IValueAccess) => T;
 
 /**
  * Interface for constraint property components.

@@ -29,16 +29,17 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_BOOL, SCHEMA_KIND_STRING, SCHEMA_KIND
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.leafonly`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@leafOnly'))
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.cascade`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascade'))
 @Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.singleflag`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@singleFlag'))
+@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.asSuggest`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@asSuggest'))
 export class Default extends Property<unknown> {
-    apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
-        if (!isNull(field) || !isNull(descriptorOrIndex)) return;
-        target = typeof target === 'function' ? target : target.constructor;
-        (target as unknown as Record<string, unknown>).default = this.getValue()!; // avoid cycle reference
-    }
+  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
+    if (!isNull(field) || !isNull(descriptorOrIndex)) return;
+    target = typeof target === 'function' ? target : target.constructor;
+    (target as unknown as Record<string, unknown>).default = this.getValue()!; // avoid cycle reference
+  }
 
-    override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-        const origin = target.getValue();
-        if (isEmpty(origin) || isEqual(origin, oldValue))
-            target.setValue(newValue);
-    }
+  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
+    const origin = target.getValue();
+    if (isEmpty(origin) || isEqual(origin, oldValue))
+      target.setValue(newValue);
+  }
 }

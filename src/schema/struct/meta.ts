@@ -114,7 +114,7 @@ function generateStructSchema(namespace: string, name: string, ctor: Function) {
     }
 
     // Generate the StructFieldSchema with savable properties and add to the struct schema
-    const fieldSchema: StructFieldSchema & { display?: LocaleString } = { name: field, type: schemaType.getValue<string>()!, display: { key: `${structName}.${field}` } as LocaleString };
+    const fieldSchema: StructFieldSchema & { display?: LocaleString } = { name: field, type: schemaType.getValue<string>()!, display: { key: `${structName}.${field.toLowerCase()}` } as LocaleString };
     props.filter(p => p.savable).forEach(p => setProperty(fieldSchema, p));
     structSchema.fields.push(fieldSchema);
 

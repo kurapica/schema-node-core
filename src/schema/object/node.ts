@@ -1,4 +1,3 @@
-import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
 import { Disable } from "../../property/common/disable";
 import { BlackList } from "../../property/constraint/blackList";
 import { Cascade } from "../../property/constraint/cascade";
@@ -12,15 +11,19 @@ import { EntrySourceConsumer } from "../../property/core/entrySourceConsumer";
 import { EntrySourceProvider } from "../../property/core/entrySourceProvider";
 import { getPropertyValue, setPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
-import type { LocaleString } from "../../struct/localeString";
 import { EntryType } from "../../struct/entry/runtime";
-import type { Entry, EntryAccess } from "../../struct/entry/type";
-import { ENTRY_ROOT, NODE_SELF, NODE_TYPE } from "../../utility/constant";
-import { _L, _LS } from "../../utility/locale";
+import { DataNode } from "../value/node";
 import { debounce, isEmpty, isEqual } from "../../utility/toolset";
+import { _L, _LS } from "../../utility/locale";
+
+import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
 import type { FunctionType } from "../function/runtime";
 import type { CallArg, FuncCall } from "../function/type";
-import { DataNode } from "../value/node";
+import type { Entry, EntryAccess } from "../../struct/entry/type";
+import type { LocaleString } from "../../struct/localeString";
+
+import { ENTRY_ROOT, NODE_SELF, NODE_TYPE } from "../../utility/constant";
+import type { FuncCallProperty } from "../../property";
 
 /** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {
@@ -31,7 +34,12 @@ export abstract class ScalarNode extends DataNode {
   /** Construct the data node with value type, parent and init value, alternative property provider */
   constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, value, parent, propProvider);
-    this.recordSubscription(this.subscribeState(this._refreshEntrySource, true));
+    this.recordSubscription(this.subscribeProperty(WhiteList, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeProperty(BlackList, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeProperty(Valid, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeProperty(Root, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeProperty(Cascade, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeProperty(EntrySource, this._refreshEntrySource, true));
   }
 
   // #endregion
@@ -70,18 +78,23 @@ export abstract class ScalarNode extends DataNode {
 
   /** refresh the options with entry source & white list & black list */
   private _refreshEntrySource = async () => {
+    this._entrySourceInfo ??= {};
+    if (this._entrySourceInfo.initing) return;
+    this._entrySourceInfo.initing = true;
+
     const whiteList = this.getPropertyValue<string[]>(WhiteList);
     const blackList = this.getPropertyValue<string[]>(BlackList);
 
     // entry source
-    let entrySource = this.getPropertyValue<FuncCall>(EntrySource);
+    let entrySourceProp = this.getProperty(EntrySource)
+    let entrySource = entrySourceProp?.getValue<FuncCall>();
     const root = this.getPropertyValue<string>(Root);
     const cascade = this.getPropertyValue<number>(Cascade);
 
     // entry source owner
-    let owner = this.getPropertySource(EntrySource);
+    let owner = entrySourceProp?.source;
     const entryFunc = entrySource?.func ? await getNodeType(entrySource.func) as FunctionType : undefined;
-    const valids = Array.from(this.getPropertyValues<FuncCall>(Valid));
+    const valids = Array.from(this.getProperties(Valid)).filter(item => item.hasValue) as FuncCallProperty[]; // require property source
     valids.reverse(); // old first
 
     // access consumer to access access source from ancestors
@@ -124,7 +137,6 @@ export abstract class ScalarNode extends DataNode {
 
     if (entryFunc)
     {
-      this._entrySourceInfo ??= {};
 
       // refresh options if relatied properties changed
       if (this._entrySourceInfo.source !== entryFunc || 
@@ -133,7 +145,7 @@ export abstract class ScalarNode extends DataNode {
           this._entrySourceInfo.owner !== owner ||
           !isEqual(this._entrySourceInfo.whiteList, whiteList) ||
           !isEqual(this._entrySourceInfo.blackList, blackList) ||
-          !isEqual(this._entrySourceInfo.valids, valids))
+          !(this._entrySourceInfo.valids?.length === valids.length && this._entrySourceInfo.valids?.every((item, i) => item.prop === valids[i])))
       {
         this._entrySourceInfo.owner = owner;
         this._entrySourceInfo.whiteList = whiteList;
@@ -142,11 +154,21 @@ export abstract class ScalarNode extends DataNode {
         this._entrySourceInfo.subscribes?.forEach(sub => sub());
         this._entrySourceInfo.subscribes = undefined;
         this._entrySourceInfo.rootEntry = new EntryType<any>();
-        this._entrySourceInfo.valids = valids;
-        
         this._entrySourceInfo.args = entrySource!.args.map(a => this._callArgToEntrySource(owner!, a));
         
+        this._entrySourceInfo.valids = [];
+        for(const item of valids)
+        {
+          const funcCall = item.getValue<FuncCall>()!;
+          this._entrySourceInfo.valids.push({
+            prop: item,
+            func: await getNodeType(funcCall.func) as FunctionType,
+            args: funcCall.args.map(a => this._callArgToEntrySource(item.source ?? this, a)),
+          });
+        }
+
         // init options
+        this._entrySourceInfo.initing = false;
         await this._initEntryOptions();
       }
       return;
@@ -176,6 +198,7 @@ export abstract class ScalarNode extends DataNode {
       ]);
       // notify version change
       this._nextEntrySourceVer();
+      this._entrySourceInfo.initing = false;
     }
     else if (this._entrySourceInfo)
     {
@@ -208,9 +231,11 @@ export abstract class ScalarNode extends DataNode {
       if (target)
       {
         result.source = target;
-        this._entrySourceInfo ??= {};
-        this._entrySourceInfo.subscribes ??= [];
-        this._entrySourceInfo.subscribes.push(target.subscribe(this._delayInitEntryOptions));
+        if (target !== this) {
+          this._entrySourceInfo ??= {};
+          this._entrySourceInfo.subscribes ??= [];
+          this._entrySourceInfo.subscribes.push(target.subscribe(this._delayInitEntryOptions));
+        }
       }
     }
     return result;
@@ -218,43 +243,53 @@ export abstract class ScalarNode extends DataNode {
 
   /** init options with entry source args */
   private _initEntryOptions = async () => {
+    if (this._entrySourceInfo?.initing) return;
+    
     this._entrySourceInfo ??= {};
+    this._entrySourceInfo.initing = true;
     this._entrySourceInfo.validres = new Map();
     this._entrySourceInfo.allRootPassed = true;
 
-    // white list init entry tree and as mask
-    if (this._entrySourceInfo.whiteList?.length)
+    try
     {
-      const passKeys = new Set();
-      for (const item of this._entrySourceInfo.whiteList.filter(a => !this._entrySourceInfo?.blackList?.includes(a)))
+      // white list init entry tree and as mask
+      if (this._entrySourceInfo.whiteList?.length)
       {
-        const queryAccessList = await this._queryEntrySource(item);
-        if (queryAccessList && (!this._entrySourceInfo.root || queryAccessList.some(a => a.entry?.value == this._entrySourceInfo!.root)))
+        const passKeys = new Set();
+        for (const item of this._entrySourceInfo.whiteList.filter(a => !this._entrySourceInfo?.blackList?.includes(a)))
         {
-          this._entrySourceInfo.rootEntry!.saveAccessList(queryAccessList);
-          queryAccessList.filter(a => a.entry?.value).forEach(a => passKeys.add(a.entry!.value));
+          const queryAccessList = await this._queryEntrySource(item);
+          if (queryAccessList && (!this._entrySourceInfo.root || queryAccessList.some(a => a.entry?.value == this._entrySourceInfo!.root)))
+          {
+            this._entrySourceInfo.rootEntry!.saveAccessList(queryAccessList);
+            queryAccessList.filter(a => a.entry?.value).forEach(a => passKeys.add(a.entry!.value));
+          }
         }
+
+        // white list mask
+        this._entrySourceInfo.rootEntry!.useWhiteList(Array.from(passKeys.values()));
       }
 
-      // white list mask
-      this._entrySourceInfo.rootEntry!.useWhiteList(Array.from(passKeys.values()));
+      // prepare entry tree and check single level
+      const root = await this.getEntryAccessList();
+      this._entrySourceInfo.singleLevel = !root[0]?.children?.length || root[0].children.every(a => !a.hasChildren);
+
+      // load options to the value
+      let value = this.getValue();
+      if (!isEmpty(value))
+      {
+        if (!Array.isArray(value)) value = [value];
+        for(const v of value as Array<any>)
+          await this.getEntryAccessList(v);
+      }
+
+      // notify version change
+      this._nextEntrySourceVer();
     }
-
-    // prepare entry tree and check single level
-    const root = await this.getEntryAccessList();
-    this._entrySourceInfo.singleLevel = !root[0]?.children?.length || root[0].children.every(a => !a.hasChildren);
-
-    // load options to the value
-    let value = this.getValue();
-    if (!isEmpty(value))
+    finally
     {
-      if (!Array.isArray(value)) value = [value];
-      for(const v of value as Array<any>)
-        await this.getEntryAccessList(v);
+      this._entrySourceInfo.initing = false;
     }
-
-    // notify version change
-    this._nextEntrySourceVer();
   }
 
   /** next entry source version */
@@ -372,11 +407,9 @@ export abstract class ScalarNode extends DataNode {
     let isvalid = true;
     for (const valid of this._entrySourceInfo.valids)
     {
-      const validFunc = await getNodeType(valid.func) as FunctionType;
-      if (!validFunc) continue;
-      const res = await validFunc.call(valid.args.map(a => {
+      const res = await valid.func.call(valid.args.map(a => {
         if (!a.source) return a.value;
-        return a.source === NODE_SELF ? value : undefined; // only scalar value here
+        return a.source === this ? value : a.source.getValue();
       }));
       if (!res)
       {
@@ -499,7 +532,11 @@ interface IEntrySourceInfo
   blackList?: string[],
 
   /** The valids */
-  valids?: FuncCall[],
+  valids?: {
+    prop: FuncCallProperty,
+    func: FunctionType,
+    args: IEntrySourceArg[],
+  }[],
 
   /** The access value type provider */
   valueTypeProvider?: FunctionType,
@@ -515,4 +552,7 @@ interface IEntrySourceInfo
 
   /** The valid result cache */
   validres?: Map<string, boolean>,
+
+  /** Whether initing */
+  initing?: boolean,
 }

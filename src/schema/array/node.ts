@@ -57,7 +57,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   get length(): number { return this._elements.length; }
 
-  at(index: number): DataNode | undefined {
+  at(index: number): T | undefined {
     return this._elements[index];
   }
 
@@ -280,7 +280,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   /** Move elements in the array */
   moveRow(from: number, to: number): void {
     if (from === to || from < 0 || to < 0 || from >= this._elements.length || to >= this._elements.length) return;
-
+    console.log("array move row", from, to, this.value)
     const temp = this._elements[from];
     if (from < to) {
       for (let i = from; i < to; i++) {
@@ -300,6 +300,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
       this.writeBackRawValue(item, item.rawValue);
     }
     this.refreshElementNames();
+    console.log("after move row", this.value)
   }
 
   // #endregion

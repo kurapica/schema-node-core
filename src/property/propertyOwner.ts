@@ -41,7 +41,7 @@ export function *getProperties(owner: any, propCtor: PropertyCtor): Generator<IP
   if (owner === null) return;  
 
   const key = getPropertyName(propCtor);
-  const raw = key ? owner?.[key] : undefined;
+  const raw = key ? owner[key] : undefined;
   if (isNull(raw)) return;
 
   const temp = new propCtor();

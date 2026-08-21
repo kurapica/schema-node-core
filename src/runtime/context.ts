@@ -10,6 +10,7 @@ import type { NodeSchema } from "../schema/node/type";
 
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
 import { logger } from "../utility/logger";
+import { isNull } from "../utility/toolset";
 
 const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
 
@@ -55,7 +56,7 @@ export async function getNodeType(
   genericParams?: INodeType[],
   reload = false,
 ): Promise<INodeType | undefined> {
-  fullName = (fullName ?? '').toLowerCase().trim();
+  fullName = (isNull(fullName) ? '' : fullName).toLowerCase().trim();
 
   // Generic type — the name matches a generic parameter → return the concrete type
   if (generics?.length) {
