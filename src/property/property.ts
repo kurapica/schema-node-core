@@ -9,7 +9,7 @@
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
-import { deepClone, trimValue } from "../utility";
+import { deepClone, trimValue } from "../utility/toolset";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();

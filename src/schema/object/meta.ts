@@ -19,7 +19,7 @@ import { combinePaths } from '../../utility/toolset';
 import { ObjectType } from './runtime';
 import { AnyNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
-import { SchemaGenerator } from '../../property';
+import { SchemaGenerator } from '../../property/core/schemaGenerator';
 
 import type { NodeSchema } from '../node/type';
 

@@ -2,7 +2,6 @@ import { deepClone, isEmpty } from "../../utility/toolset";
 import { FunctionType } from "../../schema/function/runtime";
 import { getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
-import { RelationStage } from "../../enum/relationStage/type";
 
 import type { IRelationProcess } from "../../schema/relation/interface";
 import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";
@@ -42,9 +41,7 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
       target.recordSubscription(node.subscribe(handler), relation);
     });
 
-    // Load stage: call the function immediately
-    if (relation.stage & RelationStage.Load)
-      handler();
+    handler();
   }
 
   detach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void {

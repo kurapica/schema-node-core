@@ -4,14 +4,12 @@
 // =============================================================================
 
 import { Name } from "../../property/core/name";
-import { getPropertiesBySchemaKind } from "../../property/propertyOwner";
 import { Observable } from "../../utility/observable";
-import { isNull } from "../../utility/toolset";
+import { isNull, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
-import { ValueType } from "../value/runtime";
 import { ArrayType } from "./runtime";
 
-import type { IPropertyProvider, IRelationInfo, IValueAccess } from "../../interface";
+import type { IPropertyProvider, IRelationInfo, IValueAccess, ValueAccessFactory } from "../../interface";
 import type { Observer } from "../../utility/observable";
 
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from "../../utility/constant";
@@ -22,10 +20,9 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   protected _elements: T[] = [];
   protected _relations?: IRelationInfo[]; // the merged relations from types
+  protected _arrayDataOb?: Observable<[IValueAccess, unknown, number]>;
 
-  private _arrayDataOb?: Observable<[IValueAccess, unknown, number]>;
-
-  constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, undefined, parent, propProvider);
 
     const arrValue = Array.isArray(value) ? value : [];
@@ -37,7 +34,9 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
       f.applyPropertyEffects();
       f.recordSubscription(f.subscribe(this.writeBackRawValue, true), this);
     });
-    this.attachRelations([{owner: this, relations: Array.from((type as ArrayType).getRelations())}]);
+
+    // attach relations from self
+    this.attachRelations([{owner: this, relations: Array.from(type.getRelations())}]);
   }
 
   override dispose() {
@@ -49,6 +48,14 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     delete this._relations;
     
     super.dispose();
+  }
+
+  override moveSubscription(newNode: DataNode): void {
+    super.moveSubscription(newNode);
+    if (newNode instanceof ArrayNodeTemplate) {
+      newNode._arrayDataOb = this._arrayDataOb;
+      this._arrayDataOb = undefined;
+    }
   }
 
   // #endregion
@@ -103,13 +110,13 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     for (let i = this._elements.length; i < data.length; i++) {
       const node = elementType.create(data[i], this, this.propertyProvider);
       this._elements.push(node as T);
-      node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this);
-      if (this._relations?.length) node.attachRelations(this._relations);
+      node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this); // so subscription will be disposed when node is disposed
+      if (this._relations?.length) node.attachRelations(this._relations); // attach all relations from self and parents
     }
-    this.refreshElementNames();
+    this.refreshElementNames(); // override name
   }
 
-  override getValue(): unknown { return this._elements.map(e => e.getValue()); }
+  override getValue(): unknown { return trimValue(this._elements.map(e => e.getValue())); }
 
   override get isEmpty(): boolean { return !this._elements.length; }
 
@@ -124,12 +131,10 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   // #region ── Property ──────────────────────────────────────────────────────
 
-  override setPropertyValues(props: Record<string, unknown>): void {
-    super.setPropertyValues(props);
-    
-    for (const prop of getPropertiesBySchemaKind(props, (this.type as ArrayType).element!.kind)) {
-      this.setPropertyValue(prop.constructor as any, prop.getValue());
-    }
+  override setPropertyValues(props: Record<string, unknown>, source?: IValueAccess, ...kinds: string[]): void {
+    const eleKind = (this.type as ArrayType).element?.kind;
+    if (eleKind && !kinds.includes(eleKind)) kinds.push(eleKind);
+    super.setPropertyValues(props, source, ...kinds);
   }
 
   // #endregion
@@ -172,10 +177,9 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     if (eleIndex === -1) return undefined;
 
     let result: IValueAccess | undefined = undefined;
-    if (first == ARRAY_PREVIOUS)
+    if (first == ARRAY_PREVIOUS) {
       result = new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
-    else if (first == ARRAY_ELEMENT)
-    {
+    } else if (first == ARRAY_ELEMENT) {
       result = this._elements[eleIndex];
       return rest ? result?.getAccessValue(rest, node) : result;
     }
@@ -185,6 +189,12 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   // #endregion
 
   // #region ── Validation ────────────────────────────────────────────────────
+
+  override *getErrorNodes(): Generator<IValueAccess> {
+    for (const e of this._elements)
+      if (!e.isValid) yield* e.getErrorNodes();
+    yield* super.getErrorNodes();
+  }
 
   override get isValid(): boolean {
     return this._elements.every(e => e.isValid) && super.isValid;
@@ -237,7 +247,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   // #region ── Array Operations ──────────────────────────────────────────────
 
   /** Add a new element to the array */
-  addRow(index?: number, data?: unknown, propertyProvider?: IPropertyProvider, ctor?: new (type: ValueType, data?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => T): T | undefined {
+  addRow(index?: number, data?: unknown, propertyProvider?: IPropertyProvider, ctor?: ValueAccessFactory): T | undefined {
     const elementType = (this.type as ArrayType).element;
     if (!elementType || !this.addAble) return undefined;
 
@@ -247,7 +257,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     if (!node) return undefined;
 
     if (isNull(index)) index = this._elements.length;
-    this._elements.splice(index!, 0, node as T);
+    this._elements.splice(index!, 0, node);
   
     node.applyPropertyEffects();
     if (this._relations?.length) node.attachRelations(this._relations);
@@ -280,25 +290,17 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   /** Move elements in the array */
   moveRow(from: number, to: number): void {
     if (from === to || from < 0 || to < 0 || from >= this._elements.length || to >= this._elements.length) return;
-    const temp = this._elements[from];
+    const temp = this._elements[from].value;
     if (from < to) {
       for (let i = from; i < to; i++) {
-        this._elements[i] = this._elements[i + 1];
+        this._elements[i].value = this._elements[i + 1].value;
       }
     } else {
       for (let i = from; i > to; i--) {
-        this._elements[i] = this._elements[i - 1];
+        this._elements[i].value = this._elements[i - 1].value;
       }
     }
-    this._elements[to] = temp;
-    const rawValue = this.rawValue as unknown[];
-    rawValue.splice(0, rawValue.length, ...this._elements.map(e => e.rawValue));
-    for (let i = Math.min(from, to); i <= Math.max(from, to); i++)
-    {
-      const item = this._elements[i];
-      this.writeBackRawValue(item, item.rawValue);
-    }
-    this.refreshElementNames();
+    this._elements[to].value = temp;
   }
 
   // #endregion

@@ -53,7 +53,7 @@ export class NamespaceType extends NodeType implements INamespaceNodeType {
     delete schema.schemas;
 
     // The system schema don't need reload
-    if (!(this._subSchemas.has(name) && (!reload || schema.loadState === SchemaLoadState.System))) {
+    if (!(this._subSchemas.has(name) && ((schema.loadState ?? 0) & SchemaLoadState.System))) {
       this._subSchemas.set(name, schema);
 
       // mark the type need reload

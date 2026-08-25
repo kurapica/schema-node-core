@@ -1,5 +1,3 @@
-import { RelationStage } from "../../enum/relationStage/type";
-
 /** Pure data interface. */
 export interface RelationSchema {
   /** The target of the relation */
@@ -7,9 +5,6 @@ export interface RelationSchema {
 
   /** The property the relation applies to */
   property: string;
-
-  /** The stage of the realtion been applied */
-  stage: RelationStage;
 
   /** The relation kind */
   kind: string;

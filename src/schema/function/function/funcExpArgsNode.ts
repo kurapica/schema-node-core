@@ -7,7 +7,7 @@ import { FunctionType } from "../runtime";
 import { FuncExpArgNode } from "./funcExpArgNode";
 import { FuncExpVariadicArgNode } from "./funcExpVariadicArgNode";
 
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
+import type { IPropertyProvider, IValueAccess, ValueAccessFactory } from "../../../interface";
 import type { CallArg } from "../type";
 
 import { NODE_SELF, NODE_TYPE } from "../../../utility/constant";
@@ -107,8 +107,8 @@ export class FuncExpArgsNode extends DataNode implements Iterable<DataNode> {
   // #region ── Utility ───────────────────────────────────────────────────────
 
   /** Add a new element to the array */
-  private addRow(data: unknown, propertyProvider: IPropertyProvider, ctor: new (type: ValueType, data?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => DataNode): DataNode | undefined {
-    const node = new ctor((this.type as ArrayType)!.element!, data, this, propertyProvider ?? this.propertyProvider);
+  private addRow(data: unknown, propertyProvider: IPropertyProvider, ctor: ValueAccessFactory): DataNode | undefined {
+    const node = new ctor((this.type as ArrayType)!.element!, data, this, propertyProvider ?? this.propertyProvider) as DataNode;
     if (!node) return undefined;
 
     this._args.push(node);

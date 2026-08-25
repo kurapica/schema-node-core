@@ -1,9 +1,8 @@
 import { StringNode } from "../../string/node";
 import { StructNode } from "../../struct/node";
 import { StructType } from "../../struct/runtime";
-import { ValueType } from "../../value/runtime";
 
-import type { IPropertyProvider, IValueAccess } from "../../../interface";
+import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../../interface";
 
 export class FuncExpArgNode extends StructNode {
   /** The argument type. */
@@ -12,7 +11,7 @@ export class FuncExpArgNode extends StructNode {
   /** The argument source. */
   readonly argSource: StringNode;
 
-  constructor(type: ValueType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type as StructType, value, parent, propProvider);
 
     this.argType = this.getAccessValue("type") as StringNode;

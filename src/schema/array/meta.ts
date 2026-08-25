@@ -20,7 +20,7 @@ import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProv
 import { Relations } from '../relation/property';
 import { ArrayType } from './runtime';
 import { ArrayValue } from './valid';
-import { DataNodeType } from '../../property';
+import { DataNodeType } from '../../property/core/dataNodeType';
 import { ArrayNode } from './node';
 
 import type { ArraySchema } from './type';

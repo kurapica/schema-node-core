@@ -32,6 +32,8 @@ import { EnumType } from './runtime';
 import { EnumValue } from './valid';
 import { EnumNode, EnumArrayNode } from './node';
 import { ArrayDataNodeType, DataNodeType } from '../../property/core/dataNodeType';
+import { InVisible } from '../../property/common/invisible';
+import { PrimaryIndex } from '../../property/core/indexes';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType';
 import type { LocaleString } from '../../struct/localeString/type';
@@ -40,7 +42,6 @@ import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT } from '../../utility/constant';
-import { InVisible, PrimaryIndex } from '../../property';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])

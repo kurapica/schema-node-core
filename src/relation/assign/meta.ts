@@ -10,7 +10,7 @@ import { Visible } from '../../property/common/visible';
 import { RelationProcess } from "../../property/core/relationProcess";
 import { buildFuncCall } from '../../schema/function/type';
 import { AssignProcess } from "./type";
-import { PropertyValueType } from "../../property";
+import { PropertyValueType } from "../../property/core/propertyValueType";
 
 import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 

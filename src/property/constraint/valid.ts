@@ -16,7 +16,7 @@ import type { IConstraintProperty, IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_STRUCT, NS_SYSTEM_BOOL } from '../../utility/constant';
 
-import { Assign } from '../../relation';
+import { Assign } from '../../relation/assign';
 import { Default } from '../common/default';
 import { Relation } from '../../attribute/relation';
 
@@ -38,7 +38,7 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
       console.error(`Valid property function ${this._value.func} is not a function type`);
       return undefined;
     }
-    const owner = node;
+    const owner = this.source ?? node;
     return await func.call(this._value!.args.map(a => {
       if (isEmpty(a.source)) return a.value;
       const source = owner?.getAccessValue(a.source!, node);

@@ -12,8 +12,7 @@ import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
 
 import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
-import { DisableConstraint, getPropertyName } from "../../property";
-import { logger } from "../../utility/logger";
+import { DisableConstraint } from "../../property/core/disableConstraint";
 
 /** Struct node. */
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
@@ -195,6 +194,13 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   
   // #region ── Validation ────────────────────────────────────────────────────
 
+  override *getErrorNodes(): Generator<IValueAccess> {
+    for (const f of this._fields)
+      if (!f.displayOnly && !f.isValid)
+        yield* f.getErrorNodes();
+    yield* super.getErrorNodes();
+  }
+
   override get isValid(): boolean { return this.getPropertyValue<boolean>('DisableConstraint') ? true : !this._fields.some(f => !f.displayOnly && !f.isValid) && super.isValid }
 
   override get error(): string | undefined {
@@ -339,7 +345,6 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
 
       // attach relations to new node
       newNode.attachRelations(this._fieldRelations?.get(node.name!.toLowerCase()) ?? []);
-      console.log('[Struct][Override]', newNode.name, newNode);
 
       // write back raw value
       this.writeBackRawValue(newNode, newNode.rawValue);

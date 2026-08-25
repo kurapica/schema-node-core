@@ -22,15 +22,15 @@ import { getMetaPropertiesForSchema, getPropertyTypeSupportSchemas, saveNodeSche
 import { combinePaths, isEmpty } from '../../utility/toolset';
 import { Relations } from '../relation/property';
 import { PropertyProperty } from './property';
+import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
+import { PropertyType } from './runtime';
+import { getRelationSchemas } from '../../attribute/relation';
 
 import type { PropertyCtor } from '../../interface';
 import type { PropertySchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PROPERTY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE } from '../../utility/constant';
-import { RuntimeNodeType } from '../../property';
-import { PropertyType } from './runtime';
-import { getRelationSchemas } from '../../attribute/relation';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ORDER_PROP])

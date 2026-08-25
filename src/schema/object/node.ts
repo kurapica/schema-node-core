@@ -21,9 +21,9 @@ import type { FunctionType } from "../function/runtime";
 import type { CallArg, FuncCall } from "../function/type";
 import type { Entry, EntryAccess } from "../../struct/entry/type";
 import type { LocaleString } from "../../struct/localeString";
+import type { FuncCallProperty } from "../../property/funcCallProperty";
 
 import { ENTRY_ROOT, NODE_SELF, NODE_TYPE } from "../../utility/constant";
-import type { FuncCallProperty } from "../../property";
 
 /** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {
@@ -56,25 +56,27 @@ export abstract class ScalarNode extends DataNode {
   get isNonLeafNodeSelectable(): boolean { return this._entrySourceInfo?.allRootPassed ?? false; }
 
   /** Gets the default display text for the current value */
-  getDisplayValue(sep?: string): string { 
+  async getDisplayValue(sep?: string): Promise<string> { 
     if (isEmpty(this.value)) return "";
     if (!this.hasEntrySource) return `${this.value}`;
 
+    const access = await this.getEntryAccessList(this.value);
+    if (!access?.length || !access[access.length - 1].entry) return `${this.value}`;
+
     if (sep) 
     {
-      const access = this._entrySourceInfo?.rootEntry?.getAccessList(this.value);
-      return access?.length ? access.filter(item => item.entry).map(item => {
+      return access.filter(item => item.entry).map(item => {
         const display = getPropertyValue<LocaleString>(item.entry, "display");
         return display ? _L(display) : `${item.entry!.value}`;
-      }).join(sep) : '';
+      }).join(sep);
     }
     else
     {
-      const entry = this._entrySourceInfo?.rootEntry?.getEntry(this.value);
+      const entry = access[access.length - 1].entry;
       const display = getPropertyValue<LocaleString>(entry, "display");
       return display ? _L(display) : `${this.value}`;
     }
-   }
+  }
 
   /** refresh the options with entry source & white list & black list */
   private _refreshEntrySource = debounce(useQueueQuery(async () => {
@@ -104,7 +106,6 @@ export abstract class ScalarNode extends DataNode {
       {
         entrySource = parent.getPropertyValue<FuncCall>(EntrySourceProvider);
         if (entrySource) {
-          console.log("Find entry source provider", this.access, (parent as DataNode).access, entrySource);
           owner = parent;
           break;
         }

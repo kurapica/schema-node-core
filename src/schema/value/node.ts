@@ -506,6 +506,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     }
   }
 
+  /** Get error nodes */
+  *getErrorNodes(): Generator<IValueAccess> {
+    if (!(this.violated().next().done ?? false)) yield this;
+  }
+
   /** The error message if the node is invalid. */
   get error(): string | undefined {
     let hasError = false;

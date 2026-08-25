@@ -10,6 +10,7 @@ import { Error } from '../common/error';
 import type { IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL } from '../../utility/constant';
+import type { DataNode } from '../../schema';
 
 @Meta(Alias, 'jsregex')
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT])
@@ -20,6 +21,9 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT, SCHEMA_KIND
 export class JsRegex extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
-    return new RegExp(this._value).test(node.rawValue as string ?? '');
+    const value = node.rawValue;
+    if (Array.isArray(value)) 
+      return value.filter(v => v !== undefined).every(v => new RegExp(this._value!).test(v as string ?? ''));
+    return new RegExp(this._value).test(value as string ?? '');
   }
 }

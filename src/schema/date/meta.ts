@@ -17,7 +17,7 @@ import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { DateProperty } from './property';
 import { DateType } from './runtime';
 import { DateValue } from './valid';
-import { DataNodeType } from '../../property';
+import { DataNodeType } from '../../property/core/dataNodeType';
 import { DateNode } from './node';
 
 import type { NodeSchema } from '../node/type';

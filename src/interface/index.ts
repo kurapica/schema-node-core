@@ -1,4 +1,3 @@
-import type { RelationStage } from "../enum/relationStage/type";
 import type { SchemaLoadState } from "../enum/schemaLoadState";
 import type { GenericParameter } from "../schema/generic/type";
 import type { NodeSchema } from "../schema/node/type";
@@ -139,9 +138,6 @@ export interface IRelation {
 
   /** The property constructor */
   get propertyCtor(): PropertyCtor | undefined;
-
-  /** The relation stage */
-  get stage(): RelationStage;
 
   /** Attach the relation to target with the owner */
   attach(owner: IValueAccess, target: IValueAccess): void;

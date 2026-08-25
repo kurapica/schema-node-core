@@ -3,7 +3,6 @@
 // Mirrors C# SchemaNode.Core/Attribute/RelationAttribute.cs
 // =============================================================================
 
-import { RelationStage } from '../enum/relationStage/type';
 import { getTypeSchemaName } from '../runtime/schemaRuntime';
 
 import type { PropertyCtor } from '../interface';
@@ -28,7 +27,7 @@ function ensureStore(ctor: Function): RelationSchema[] {
   return store;
 }
 
-// ── @Relation(propClass, kind, data[, target][, stage]) — Call relation ──────────────────
+// ── @Relation(propClass, kind, data[, target]) — Call relation ──────────────────
 
 /**
  * Declare that a property's value is computed by calling a function.
@@ -37,8 +36,7 @@ export function Relation(
   propClass: PropertyCtor | string,
   kind: string | PropertyCtor,
   value: unknown,
-  target?: string,
-  stage?: RelationStage
+  target?: string
 ): ClassDecorator & PropertyDecorator & ParameterDecorator {
   if (typeof kind !== 'string')
     kind = (kind as unknown as Record<string, string>).relationKind;
@@ -51,7 +49,6 @@ export function Relation(
       target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ''),
       property: typeof propClass === 'string' ? propClass : getTypeSchemaName(propClass)!,
       kind,
-      stage: stage ?? RelationStage.Load | RelationStage.Input,
       [kind]: value
     };
     ensureStore(ctor).push(schema);
