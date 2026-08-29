@@ -96,15 +96,15 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
   override get hasAccessEntries(): boolean { return true; }
 
   override getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
-    return super.getProperty(propCtor) ?? this.element?.getProperty(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
+    return super.getProperty(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(super.getProperties(propCtor), this.element?.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor))) yield prop as T;
+    for (let prop of joinProperties(super.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(super.filterProperties(predicate), this.element?.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
   }
 
   *getRelations(): Generator<IRelation> {

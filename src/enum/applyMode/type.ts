@@ -1,8 +1,8 @@
 // =============================================================================
-// ExpType — expression operation types
+// ApplyMode — apply mode
 // =============================================================================
 
-export enum ExpType {
+export enum ApplyMode {
   Call = 'call',
   Map = 'map',
   Reduce = 'reduce',
@@ -14,4 +14,4 @@ export enum ExpType {
   Any = 'any',
 }
 
-export type ExpTypeValue = `${ExpType}`;
+export type ApplyModeValue = `${ApplyMode}`;

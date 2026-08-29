@@ -19,6 +19,7 @@ import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_
 import { Assign } from '../../relation/assign';
 import { Default } from '../common/default';
 import { Relation } from '../../attribute/relation';
+import { logger } from '../../utility';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(ForSchema, [SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRUCT])
@@ -39,11 +40,19 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
       return undefined;
     }
     const owner = this.source ?? node;
-    return await func.call(this._value!.args.map(a => {
-      if (isEmpty(a.source)) return a.value;
-      const source = owner?.getAccessValue(a.source!, node);
-      return source?.getValue();
-    })) as boolean;
+    try
+    {
+      return await func.call(this._value!.args.map(a => {
+        if (isEmpty(a.source)) return a.value;
+        const source = owner?.getAccessValue(a.source!, node);
+        return source?.getValue();
+      })) as boolean;
+    }
+    catch (error)
+    {
+      logger.error('[Valid]', node, this._value, error);
+      return undefined;
+    }
   }
 
   error(node: IValueAccess): string | undefined {

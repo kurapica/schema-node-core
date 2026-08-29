@@ -142,8 +142,8 @@ export class SystemReflectStruct {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
     type: string
   ): Promise<Entry<string>[]> {
-    var structType = type ? await getNodeType(type) as StructType : undefined;
-    if (!structType) return [];
+    var structType = type ? await getNodeType(type) : undefined;
+    if (!(structType instanceof StructType)) return [];
     const result: Entry<string>[] = [];
     for (let f of structType.getFields())
     {

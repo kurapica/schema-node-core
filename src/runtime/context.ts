@@ -65,7 +65,16 @@ export async function getNodeType(
       if (genericParams && gIdx < genericParams.length)
         return genericParams[gIdx];
       const runtime = getRuntimeNodeType(SCHEMA_KIND_GENERIC)!;
-      return new (runtime as any)(fullName);
+      const compatibles = [];
+      if (generics[gIdx].compatibles?.length)
+      {
+        for (const c of generics[gIdx].compatibles)
+        {
+          const type = await getNodeType(c);
+          if (type) compatibles.push(type);
+        }
+      }
+      return new (runtime as any)(generics[gIdx].name, compatibles);
     }
   }
 
@@ -296,7 +305,7 @@ async function loadNodeSchema(
  * e.g. "system.string, system.point<system.int, system.number>"
  *   → ["system.string", "system.point<system.int, system.number>"]
  */
-function* splitGenericParams(input: string): Generator<string> {
+export function* splitGenericParams(input: string): Generator<string> {
   let depth = 0;
   let start = 0;
 

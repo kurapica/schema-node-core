@@ -10,11 +10,13 @@ import { Display } from '../../property/common/display';
 import { EntrySource } from '../../property/core/entrySource';
 import { getNodeType } from '../../runtime/context';
 import { EnumType } from '../../schema/enum/runtime';
+import { ArrayType } from '../../schema/array/runtime';
 
 import type { Entry, EntryAccess } from '../../struct/entry/type';
-import { ArrayType, type ValueType } from '../../schema';
+import type { ValueType } from '../../schema/value/runtime';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
+
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)

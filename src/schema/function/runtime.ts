@@ -9,7 +9,7 @@
 //                        the entire call goes through schemaProvider via queue+cache
 // =============================================================================
 
-import { ExpType } from '../../enum/expType/type';
+import { ApplyMode } from '../../enum/applyMode/type';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
@@ -19,6 +19,7 @@ import { getNodeType } from '../../runtime/context';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { Name } from '../../property/core/name';
 import { RelationType } from '../relation/runtime';
+import { logger } from '../../utility/logger';
 
 import type { FuncArg, FuncExp, CallArg, FunctionSchema } from './type';
 import type {  IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
@@ -28,7 +29,6 @@ import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
 import { NODE_SELF, NODE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
-import { logger } from '../../utility/logger';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -54,7 +54,7 @@ export class FunctionType extends NodeType {
   returnType?: ValueType;
 
   /** Argument definitions. */
-  get args(): FunArgsType { return this._args! } 
+  get args(): FunArgsType { return this._args! }  
 
   /** Expression tree (for composite functions). */
   get exps(): FuncExp[] { return this._funcSchema?.exps ?? [] }
@@ -92,7 +92,7 @@ export class FunctionType extends NodeType {
 
     // Load argument types
     this._args = new FunArgsType(this._funcSchema.args);
-    await this._args.load();
+    await this._args.load(this.generics, this.genericParams);
     this._systemFn = this._funcSchema.func as ((...args: unknown[]) => unknown) | undefined;
     this._converter = this.getProperty("Converter")?.getValue() ?? false;
     this._serverOnly = this.getProperty("ServerOnly")?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
@@ -102,12 +102,12 @@ export class FunctionType extends NodeType {
     this.returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
 
     if (this._converter && this._args.length == 1 && this.returnType)
-      this._args.get(0)?.valueType?.addConverter(this.returnType, this);
+      this._args.at(0)?.valueType?.addConverter(this.returnType, this);
   }
 
   override unload(): void {
     if (this._converter && this._args?.length == 1 && this.returnType)
-      this._args.get(0)?.valueType?.removeConverter(this.returnType, this);
+      this._args.at(0)?.valueType?.removeConverter(this.returnType, this);
     
     this._funcMap = undefined;
     this._built = false;
@@ -130,7 +130,7 @@ export class FunctionType extends NodeType {
    * - Composite → interpret expression tree (recursive sub-calls)
    * - Remote → queue + cache via schemaProvider
    */
-  async call(args: unknown[]): Promise<unknown> {
+  async call(args: unknown[], applyMode: ApplyMode = ApplyMode.Call): Promise<unknown> {
     try
     {
       let res: unknown;
@@ -139,20 +139,137 @@ export class FunctionType extends NodeType {
       if (!this._built)
         await this._buildComposite();
 
-      // 1. System function — direct invocation
-      if (this._systemFn && !this.isRemote)
-        res = this._callSystem(args);
+      // 1. Remote Call — via schemaProvider with queue + cache
+      if (this.isRemote)
+        res = await this._callRemote(this.name, args, applyMode);
 
-      // 2. Composite function — local execution
-      else if (this._compositeFn && !this.isRemote)
-        res = this._callLocalComposite(args);
+      else if (applyMode === ApplyMode.Call) {
+        res = await this._callLocale(args);
+      }
 
-      // 3. Remote call — via schema provider with queue + cache
-      else
-        res = await this._callRemote(this.name, args);
+      // Collection mode
+      else 
+      {
+        // indicate the colletion
+        let arrIdx = -1;
+        for (let i = 0; i < this.args.length; i++) {
+          if (this.args.at(i)?.valueType?.kind !== SCHEMA_KIND_ARRAY && Array.isArray(args[i])) {
+            arrIdx = i;
+            break;
+          }
+        }
 
-      // Resolve any Promise results
-      if (res instanceof Promise) res = await res;
+        if (arrIdx >= 0)
+        {
+          args = [...args]; // avoid mutate original args
+          const col = args[arrIdx] as unknown[];
+          switch (applyMode)
+          {
+            /** Map mode */
+            case ApplyMode.Map:
+            {
+              const result:unknown[] = [];
+              for (let item of col){
+                args[arrIdx] = item;
+                const r = await this._callLocale(args);
+                if (!isNull(r)) result.push(r);
+              }
+              res = result;
+              break;
+            }
+            /** Filter mode */
+            case ApplyMode.Filter:
+            {
+              const result:unknown[] = [];
+              for (let item of col){
+                args[arrIdx] = item;
+                if (await this._callLocale(args)) 
+                  result.push(item);
+              }
+              res = result;
+              break;
+            }
+            /** Reduce mode */
+            case ApplyMode.Reduce:
+            {
+              const resIdx = arrIdx == 0 ? 1 : 0;
+              let startIdx = 0;
+              while (isNull(args[resIdx]))
+                args[resIdx] = col[startIdx++];
+
+              for (let item = col[startIdx]; item !== undefined; item = col[startIdx++] as unknown){
+                args[arrIdx] = item;
+                const r = await this._callLocale(args);
+                if (!isNull(r)) args[resIdx] = r;
+              }
+              res = args[resIdx];
+              break;
+            }
+            /** First mode */
+            case ApplyMode.First: 
+            {
+              for (let item of col){
+                args[arrIdx] = item;
+                if (await this._callLocale(args)) {
+                  res = item;
+                  break;
+                }
+              }
+              break;
+            }
+            /** Last mode */
+            case ApplyMode.Last: 
+            {
+              for (let i = col.length - 1; i >= 0; i--){
+                const item = col[i];
+                args[arrIdx] = item;
+                if (await this._callLocale(args)) {
+                  res = item;
+                  break;
+                }
+              }
+              break;
+            }
+            /** Count mode */
+            case ApplyMode.Count:
+            {
+              let count = 0;
+              for (let item of col){
+                args[arrIdx] = item;
+                if (await this._callLocale(args)) count++;
+              }
+              res = count;
+              break;
+            }
+            /** All mode */
+            case ApplyMode.All:
+            {
+              res = true;
+              for (let item of col){
+                args[arrIdx] = item;
+                if (!await this._callLocale(args)) {
+                  res = false;
+                  break;
+                }
+              }
+              break;
+            }
+            /** Any mode */
+            case ApplyMode.Any:
+            {
+              res = false;
+              for (let item of col){
+                args[arrIdx] = item;
+                if (await this._callLocale(args)) {
+                  res = true;
+                  break;
+                }
+              }
+              break;
+            }
+          }
+        }
+      }
 
       logger.verbose('[Function][Call]', this.name, args, res);
       return res;
@@ -164,14 +281,12 @@ export class FunctionType extends NodeType {
     }
   }
 
-  /** Direct system function invocation. */
-  private _callSystem(args: unknown[]): unknown {
-    return this._systemFn!(...args);
-  }
-
-  /** Local composite execution (all sub-functions resolved locally). */
-  private _callLocalComposite(args: unknown[]): unknown {
-    return this._compositeFn!(...args);
+  private async _callLocale(args: unknown[]): Promise<unknown> {
+    const func = this._systemFn ?? this._compositeFn;
+    if (!func) return undefined;
+    let res = func(...args);
+    if (res instanceof Promise) res = await res;
+    return res;
   }
 
   // ── Remote Call with Queue + Cache ──────────────────────────────────
@@ -184,7 +299,7 @@ export class FunctionType extends NodeType {
    * - Delay-based batching (REMOTE_CALL_DELAY ms)
    * - Queue-based serialization via useQueueQuery
    */
-  private async _callRemote(schemaName: string, args: unknown[]): Promise<unknown> {
+  private async _callRemote(schemaName: string, args: unknown[], applyMode: ApplyMode = ApplyMode.Call): Promise<unknown> {
     if (!getSchemaProvider()) throw new Error('Schema provider not provided');
 
     // Token-based cache for simple (serializable) args
@@ -205,7 +320,7 @@ export class FunctionType extends NodeType {
       await new Promise(resolve => setTimeout(resolve, REMOTE_CALL_DELAY));
 
       try {
-        const res = await callSchemaFunctionQueue(schemaName, args);
+        const res = await callSchemaFunctionQueue(schemaName, args, applyMode);
         if (!this._noCache) shareFuncCallResult.set(token, res);
         pendingCall[token].forEach(c => c.resolve(res));
         return res;
@@ -303,9 +418,10 @@ export class FunctionType extends NodeType {
     // Build compiled expression info (with type-informed array analysis)
     const compiledExps: CompiledExp[] = [];
     for (const exp of exps) {
+      const call = exp.call;
 
       // Resolve the called function's type for arg type analysis
-      const calledFunc = await getNodeType(exp.func) as FunctionType | undefined;
+      const calledFunc = await getNodeType(call.func) as FunctionType | undefined;
       if (!calledFunc) return undefined;
       await calledFunc._buildComposite();
 
@@ -324,20 +440,20 @@ export class FunctionType extends NodeType {
       expTypes.set(exp.name, expRetType);
 
       // Analyze array dependencies using type compatibility
-      const arrayInfo = exp.type !== ExpType.Call
+      const arrayInfo = call.mode !== ApplyMode.Call
         ? await _analyzeArrayDepsByType(exp, calledFunc, expTypes)
         : undefined;
 
       // Build require flags from called function's arg nullability
       const requireFlags: boolean[] = [];
-      if (exp.args && calledFunc) {
-        for (let i = 0; i < exp.args.length; i++) {
-          const fnArg = calledFunc.args.get(i);
+      if (call.args && calledFunc) {
+        for (let i = 0; i < call.args.length; i++) {
+          const fnArg = calledFunc.args.at(i);
           requireFlags.push(fnArg?.require ?? false);
         }
       }
 
-      compiledExps.push({ fn: expFn, funcName: exp.func, exp, arrayInfo, requireFlags });
+      compiledExps.push({ fn: expFn, funcName: call.func, exp, arrayInfo, requireFlags });
     }
 
     const objFields = await _resolveStructReturnFields(
@@ -357,9 +473,9 @@ export class FunctionType extends NodeType {
         let valid = true;
         const arrayVal = comp.arrayInfo?.arrayName ? (_getExpValue(comp.arrayInfo.arrayName, expValues) ?? []) : null;
 
-        if (comp.exp.args) {
-          for (let j = 0; j < comp.exp.args.length; j++) {
-            const arg = comp.exp.args[j];
+        if (comp.exp.call.args) {
+          for (let j = 0; j < comp.exp.call.args.length; j++) {
+            const arg = comp.exp.call.args[j];
 
             // If this position is array-dependent, push placeholder
             if (comp.arrayInfo?.arrayIndexes.includes(j) && comp.arrayInfo.sourceArrayIdx >= 0) {
@@ -368,7 +484,7 @@ export class FunctionType extends NodeType {
             }
 
             const v = arg.source ? _getExpValue(arg.source, expValues) : arg.value;
-            if (isNull(v) && comp.requireFlags[j] && !(comp.exp.type === ExpType.Reduce && j === 1)) {
+            if (isNull(v) && comp.requireFlags[j] && !(comp.exp.call.mode === ApplyMode.Reduce && j === 1)) {
               valid = false;
               break;
             }
@@ -407,7 +523,7 @@ export class FunctionType extends NodeType {
     val: unknown[],
     arrayInfo: ArrayDepInfo | undefined,
   ): Promise<unknown> {
-    if (exp.type === ExpType.Call)
+    if (exp.call.mode === ApplyMode.Call)
       return fn(...val);
 
     if (!arrayInfo || arrayInfo.sourceArrayIdx < 0) return null;
@@ -417,64 +533,64 @@ export class FunctionType extends NodeType {
 
     const { arrayIndexes, arrayName } = arrayInfo;
 
-    switch (exp.type) {
-      case ExpType.Map:
+    switch (exp.call.mode) {
+      case ApplyMode.Map:
         return Promise.all(sourceArray.map((elem) =>
-          fn(..._replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args)),
+          fn(..._replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args)),
         ));
 
-      case ExpType.Filter:
+      case ApplyMode.Filter:
         return (await Promise.all(sourceArray.map(async (elem) => {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           return (await fn(...testVals)) ? elem : undefined;
         }))).filter(Boolean);
 
-      case ExpType.Reduce: {
+      case ApplyMode.Reduce: {
         let acc = val.length > 1 && val[1] !== undefined ? val[1] : sourceArray[0];
         const startIdx = val.length > 1 && val[1] !== undefined ? 0 : 1;
         for (let j = startIdx; j < sourceArray.length; j++) {
-          const reduced = _replaceArrayElements(val, arrayIndexes, arrayName, sourceArray[j], exp.args);
+          const reduced = _replaceArrayElements(val, arrayIndexes, arrayName, sourceArray[j], exp.call.args);
           reduced[1] = acc;
           acc = await fn(...reduced);
         }
         return acc;
       }
 
-      case ExpType.First:
+      case ApplyMode.First:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           if (await fn(...testVals)) return elem;
         }
         return undefined;
 
-      case ExpType.Last: {
+      case ApplyMode.Last: {
         let last: unknown;
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           if (await fn(...testVals)) last = elem;
         }
         return last;
       }
 
-      case ExpType.Count: {
+      case ApplyMode.Count: {
         let count = 0;
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           if (await fn(...testVals)) count++;
         }
         return count;
       }
 
-      case ExpType.All:
+      case ApplyMode.All:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           if (!(await fn(...testVals))) return false;
         }
         return true;
 
-      case ExpType.Any:
+      case ApplyMode.Any:
         for (const elem of sourceArray) {
-          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.args);
+          const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           if (await fn(...testVals)) return true;
         }
         return false;
@@ -504,9 +620,9 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> { return }
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess { throw new Error("Method not implemented."); }
 
-  async load() {
+  async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
     this._stringType = await getNodeType(NS_SYSTEM_STRING) as ValueType;
-    await Promise.all(this._args.map(a => a.load()));
+    await Promise.all(this._args.map(a => a.load(generics, genericParams)));
 
     // load relations
     for (const a of this._args)
@@ -554,7 +670,7 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   }
 
   /** Get the function argument by name or index. */
-  get(argName: string | number): FuncArgType | undefined {
+  at(argName: string | number): FuncArgType | undefined {
     if (typeof argName === 'number')
       return this._args[argName];
     return this._args.find(a => a.name.toLowerCase() === argName.toLowerCase());
@@ -605,7 +721,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
   get name() { return this._funcArg.name; }
 
   /** Get the type of the function argument */
-  get type() { return this._funcArg.type; }
+  get type() { return this._valueType?.name ?? this._funcArg.type; }
 
   /** Get the value type of the function argument */
   get valueType() { return this._valueType; }
@@ -624,7 +740,9 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
     this._props.unshift(name);
   }
 
-  async load() {
+  async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
+    this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as ValueType;
+
     const refTypes: INodeType[] = []
     for(let prop of this._props.filter(isTypeRefProperty))
     {
@@ -712,18 +830,18 @@ async function _analyzeArrayDepsByType(
   calledFunc: FunctionType | undefined,
   expTypes: Map<string, ValueType | undefined>,
 ): Promise<ArrayDepInfo | undefined> {
-  if (!exp.args || !exp.args.length || !calledFunc) return undefined;
+  if (!exp.call.args || !exp.call.args.length || !calledFunc) return undefined;
 
   const arrayIndexes: number[] = [];
   let arrayName: string | undefined;
   let sourceArrayIdx = -1;
 
-  for (let j = 0; j < Math.min(calledFunc.args.length, exp.args.length); j++) {
-    const expArg = exp.args[j];
+  for (let j = 0; j < Math.min(calledFunc.args.length, exp.call.args.length); j++) {
+    const expArg = exp.call.args[j];
     if (!expArg.source) continue;
 
     // If the called function already expects an array for this param — skip
-    const fnArgType = await getNodeType(calledFunc.args.get(j)?.type ?? '')  as ValueType | undefined;
+    const fnArgType = await getNodeType(calledFunc.args.at(j)?.type ?? '')  as ValueType | undefined;
     if (fnArgType?.kind === SCHEMA_KIND_ARRAY) continue;
 
     // Find the array source: walk the source path to find which prefix resolves to an ArrayType

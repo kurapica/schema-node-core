@@ -260,15 +260,23 @@ export class SystemReflectType {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     type: string,
 
-    @Meta(ArgName, 'target')
+    @Meta(ArgName, 'matchArrayElement')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    matchArrayElement: boolean,
+
+    @Meta(ArgName, 'targets')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    target: string,
+    @Meta(Variadic, true)
+    ...targets: string[]
   ): Promise<boolean> {
-    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
-    if (!nodeType) return false;
-    const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
-    if (!targetNodeType) return false;
-    return nodeType.isAssignableTo(targetNodeType);
+    const nodeType = type ? await getNodeType(type) : undefined;
+    if (!(nodeType instanceof ValueType)) return false;
+    for (const target of targets)
+    {
+      const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
+      if (targetNodeType instanceof ValueType && (nodeType.isAssignableTo(targetNodeType) || matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.isAssignableTo(targetNodeType))) return true;
+    }
+    return false;
   }
 
   /** Checks if the schema node with the given name is assignable to the schema node with the given target name */
@@ -282,15 +290,24 @@ export class SystemReflectType {
     @Meta(SchemaType, NS_SYSTEM_STRING)
     path: string,
 
-    @Meta(ArgName, 'target')
+    @Meta(ArgName, 'matchArrayElement')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    matchArrayElement: boolean,
+
+    @Meta(ArgName, 'targets')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    target: string,
+    @Meta(Variadic, true)
+    ...targets: string[]
   ): Promise<boolean> {
-    const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
-    if (!nodeType) return false;
-    const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
-    if (!targetNodeType) return false;
-    return nodeType.getAccessValueType(path)?.isAssignableTo(targetNodeType) ?? false;
+    let nodeType = !type ? undefined : await getNodeType(type) as ValueType;
+    nodeType = nodeType?.getAccessValueType(path);
+    if (!(nodeType instanceof ValueType)) return false;
+    for (const target of targets)
+    {
+      const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
+      if (targetNodeType instanceof ValueType && (nodeType.isAssignableTo(targetNodeType) || matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.isAssignableTo(targetNodeType))) return true;
+    }
+    return false;
   }
 
   /** The value type is indexable */

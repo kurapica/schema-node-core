@@ -59,7 +59,10 @@ export abstract class Property<T> implements IProperty {
   /** Whether the property is applicable to the given schema kind. */
   forSchema(...kinds: string[]): boolean {
     const ctor = this.constructor as Function;
-    return ((ctor as unknown as Record<string, string[]>).forSchema as string[])?.some((k) => kinds.includes(k)) ?? false;
+    const forSchemas = (ctor as unknown as Record<string, string[]>).forSchema;
+    if (Array.isArray(forSchemas)) return forSchemas.some((k) => kinds.includes(k));
+    if (typeof(forSchemas) == 'string') return kinds.some(k => k.toLowerCase() == forSchemas);
+    return false;
   }
 
   /** Override in subclasses for custom coercion. */

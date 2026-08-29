@@ -41,10 +41,14 @@ export type ValueAccessFactory = new (type: IValueTypeAccess, value: unknown, pa
 
 /** Objects that provide path-based value access. */
 export interface IValueAccess {
+
   get type(): IValueTypeAccess;
 
   // #region ── Value Access ──────────────────────────────────────────────────
 
+  /** The access path */
+  get access(): string;
+  
   /** Whether this node holds no value. */
   get isEmpty(): boolean;
 

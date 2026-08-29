@@ -6,7 +6,7 @@ import { isEmpty, isEqual, isNull, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
 
-import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo } from "../../interface";
+import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo, IValueTypeAccess } from "../../interface";
 import type { NodeSchema } from "../node/type";
 import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
@@ -22,10 +22,10 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   protected _fieldRelations?: Map<string, IRelationInfo[]>;
   private _fieldTypeTrack?: Map<string, Function>;
 
-  constructor(type: StructType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
     super(type, undefined, parent, propProvider);
 
-    const fields = type.getFields();
+    const fields = (type as StructType).getFields();
     for (const field of fields.filter(f => f.type)) {
       const node = field.type!.create(undefined, this, field) as DataNode;
       this._fields.push(node);
@@ -43,7 +43,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     });
 
     // attach relations from type
-    this.attachRelations([{owner: this, relations: Array.from(type.getRelations())}]);
+    this.attachRelations([{owner: this, relations: Array.from((type as StructType).getRelations())}]);
   }
 
   override dispose() {

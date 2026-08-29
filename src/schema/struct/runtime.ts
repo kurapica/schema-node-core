@@ -23,6 +23,7 @@ import { RelationType } from '../relation/runtime';
 import { isConstraintProperty, joinProperties } from '../../interface';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { getNodeType } from '../../runtime/context';
+import { logger } from '../../utility';
 
 import type { Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
@@ -32,8 +33,7 @@ import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, I
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE } from '../../utility/constant';
-import { logger } from '../../utility';
+import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST } from '../../utility/constant';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -114,7 +114,6 @@ export class StructType extends ValueType implements IRelationProvider {
         const fieldType = new StructFieldType();
         const fieldSchema = { name: propType.property!, type: propType.valueType.name };
         setPropertyValue(fieldSchema, Display, propType.getProperty(Display)?.getValue<LocaleString>());
-        setPropertyValue(fieldSchema, Attach, attachKind); // attach kind
 
         // copy properties from meta property type
         for (const prop of getMetaProperties(propCtor).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))

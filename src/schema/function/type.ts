@@ -1,4 +1,5 @@
-import { ExpType } from "../../enum/expType/type";
+import { ApplyMode } from "../../enum/applyMode/type";
+import type { LocaleString } from "../../struct/localeString/type";
 
 /** Pure data interface for function schema extension data. */
 export interface FunctionSchema {
@@ -38,13 +39,21 @@ export interface FuncExp {
   /** The return type of this expression. */
   return: string;
 
-  /** The expression evaluation type (Call / Map / Reduce / etc.). */
-  type: ExpType;
+  /** The function call. */
+  call: FuncCall;
+}
 
-  /** The function to call — schema type of the target function. */
+/**
+ * Represents a deferred function call: func(args...).
+ */
+export interface FuncCall {
+  /** The apply mode. */
+  mode: ApplyMode;
+
+  /** Fully qualified function schema name. */
   func: string;
-
-  /** Arguments — list of expression names or argument names. */
+  
+  /** Call arguments. */
   args: CallArg[];
 }
 
@@ -54,6 +63,9 @@ export interface FuncExp {
  * Mirrors C# SchemaNode.Core/Schema/FunctionSchema.cs CallArg.
  */
 export interface CallArg {
+  /** The argument name.(not savable) */
+  name?: LocaleString;
+
   /** The runtime type hint. */
   type?: string;
 
@@ -64,24 +76,11 @@ export interface CallArg {
   value?: unknown;
 }
 
-/**
- * Represents a deferred function call: func(args...).
- */
-export interface FuncCall {
-  /** The return type of the function */
-   return?: string;
-
-  /** Fully qualified function schema name. */
-  func: string;
-  
-  /** Call arguments. */
-  args: CallArg[];
-}
-
 /** build the function call for simple */
 export function buildFuncCall(func: string, ...args: unknown[]): FuncCall
 {
   return {
+    mode: ApplyMode.Call,
     func,
     args: args.map(a => {
       if (typeof(a) === 'string')

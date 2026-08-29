@@ -8,6 +8,8 @@ import type { IErrorProvider, IValueAccess, IRelation } from "../../interface";
 import type { CallArg } from "../../schema/function/type";
 import type { RelationSchema } from "../../schema/relation/type";
 import type { FuncCall } from '../../schema/function/type';
+import { logger } from "../../utility/logger";
+import { getPropertyName } from "../../property";
 
 /** The call relation process */
 export class CallProcess implements IRelationProcess, IErrorProvider {
@@ -37,7 +39,11 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
     this._call!.args.forEach(a => {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
-      if (!node) return;
+      if (!node) {
+        console.warn('[Relation][Call][Attach]', owner, a.source, 'not found');
+        return;
+      }
+      node.subscribe(handler);
       target.recordSubscription(node.subscribe(handler), relation);
     });
 
@@ -50,10 +56,18 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
 
   async process(owner: IValueAccess, target: IValueAccess): Promise<unknown> {
     if (!this._func) return undefined;
-    return await this._func.call(this._call!.args.map(a => {
-      if (isEmpty(a.source)) return a.value;
-      const node = owner.getAccessValue(a.source!, target);
-      return node?.getValue();
-    }));
+    try
+    {
+      return await this._func.call(this._call!.args.map(a => {
+        if (isEmpty(a.source)) return a.value;
+        const node = owner.getAccessValue(a.source!, target);
+        return node?.getValue();
+      }), this._call?.mode);
+    }
+    catch (error)
+    {
+      logger.error('[CallProcess]', owner, this._call, error);
+      return undefined;
+    }
   }
 }

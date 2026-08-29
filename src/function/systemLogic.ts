@@ -14,7 +14,7 @@ import { Default } from '../property/common/default';
 import { Require } from '../property/constraint/require';
 import { isNull, isEmpty } from '../utility/toolset';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER, NS_SYSTEM_INT } from '../utility/constant';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ export class SystemLogic {
 
   /** v in [min, max] */
   @Meta(Return, NS_SYSTEM_BOOL)
-  @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER]}])
+  @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT]}])
   static between<T>(
     @Meta(ArgName, 'v') @Meta(SchemaType, 'T') @Meta(Require, true) v: T,
     @Meta(ArgName, 'min') @Meta(SchemaType, 'T') @Meta(Require, true) min: T,

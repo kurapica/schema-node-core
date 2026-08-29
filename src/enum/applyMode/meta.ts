@@ -8,10 +8,10 @@ import { SchemaType } from '../../property/core/schemaType';
 import { FromEnum } from "../../property/core/fromEnum";
 
 import { NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_ENUM } from "../../utility/constant";
-import { ExpType } from "./type";
+import { ApplyMode } from "./type";
 
-/** The exp type schema declaration */
+/** The apply mode schema declaration */
 @Meta(OfSchema, SCHEMA_KIND_ENUM)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
-@Meta(FromEnum, ExpType)
-class ExpTypeSchema {}
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.applymode`)
+@Meta(FromEnum, ApplyMode)
+class ApplyModeSchema {}

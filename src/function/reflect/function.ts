@@ -1,5 +1,4 @@
 import { Meta } from '../../attribute/meta';
-import { ExpType } from '../../enum/expType/type';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
 import { Return } from '../../property/function/return';
@@ -16,12 +15,13 @@ import { ArrayType } from '../../schema/array/runtime';
 import { BoolType } from '../../schema/bool';
 import { IntType } from '../../schema/int/runtime';
 import { DecimalType } from '../../schema/decimal/runtime';
+import { Variadic } from '../../property';
+import { ApplyMode } from '../../enum/applyMode/type';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING } from '../../utility/constant';
-import { Variadic } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
@@ -46,12 +46,11 @@ export class SystemReflectFunction {
     const nodeType = !func ? undefined : await getNodeType(func) as FunctionType | undefined;
     const returnType = !type ? undefined : await getNodeType(type) as ValueType | undefined;
     if (!nodeType?.returnType || !returnType) return false;
-    
+
     if (nodeType.returnType.isAssignableTo(returnType)) return true;
-    
-    if (matchArrayElement && returnType instanceof ArrayType && returnType.element) {
+
+    if (matchArrayElement && returnType instanceof ArrayType && returnType.element)
       return nodeType.returnType.isAssignableTo(returnType.element);
-    }
     
     return false;
   }
@@ -76,7 +75,7 @@ export class SystemReflectFunction {
       const argType = !args[i] ? undefined : await getNodeType(args[i]) as ValueType | undefined;
       if (!argType) return false;
       
-      const funcArgType = await getNodeType(funcType.args.get(i)!.type) as ValueType | undefined;
+      const funcArgType = await getNodeType(funcType.args.at(i)!.type) as ValueType | undefined;
       if (!funcArgType || !funcArgType.isAssignableTo(argType)) return false;
     }
     
@@ -196,7 +195,7 @@ export class SystemReflectFunction {
     @Meta(SchemaType, NS_SYSTEM_STRING)
     path: string
   ): Promise<string | undefined> {
-    path = path.toLowerCase();
+    path = path?.toLowerCase();
     if (!path) return undefined;
     const dotIndex = path.indexOf('.');
     const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
@@ -205,21 +204,21 @@ export class SystemReflectFunction {
     return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
   }
 
-  /** Get the exp types for the given retunr type */
-  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC}.exptype>`)
-  static async getexptypes(
+  /** Get the apply modes for the given retunr type */
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC}.applymode>`)
+  static async getapplymodes(
     @Meta(ArgName, 'type')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
     @Meta(Require, true)
     type: string
-  ): Promise<ExpType[]> {
+  ): Promise<ApplyMode[]> {
     var returnType = type ? await getNodeType(type) as ValueType : undefined;
     if (!returnType) return [];
-    if (returnType instanceof ArrayType) return [ExpType.Call, ExpType.Filter, ExpType.Map];
-    if (returnType instanceof BoolType) return [ExpType.Call, ExpType.All, ExpType.Any];
-    if (returnType instanceof IntType) return [ExpType.Call, ExpType.Count, ExpType.Reduce];
-    if (returnType instanceof DecimalType) return [ExpType.Call, ExpType.Reduce];
-    return [ExpType.Call, ExpType.First, ExpType.Last, ExpType.Reduce];
+    if (returnType instanceof ArrayType) return [ApplyMode.Call, ApplyMode.Filter, ApplyMode.Map];
+    if (returnType instanceof BoolType) return [ApplyMode.Call, ApplyMode.All, ApplyMode.Any];
+    if (returnType instanceof IntType) return [ApplyMode.Call, ApplyMode.Count, ApplyMode.Reduce];
+    if (returnType instanceof DecimalType) return [ApplyMode.Call, ApplyMode.Reduce];
+    return [ApplyMode.Call, ApplyMode.First, ApplyMode.Last, ApplyMode.Reduce];
   }
 
   /** Get the expected function return type for the given exp return type */
@@ -232,22 +231,22 @@ export class SystemReflectFunction {
 
     @Meta(ArgName, 'expType')
     @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exptype`)
-    expType: ExpType,
+    expType: ApplyMode,
   ): Promise<string | undefined> {
     const valueType = !type ? undefined : await getNodeType(type) as ValueType | undefined;
     if (!valueType) return undefined;
     switch(expType){
-      case ExpType.Call:
-      case ExpType.Reduce:
+      case ApplyMode.Call:
+      case ApplyMode.Reduce:
         return valueType.name;
-      case ExpType.Map:
+      case ApplyMode.Map:
         return valueType instanceof ArrayType ? valueType.element?.name : valueType.name;
-      case ExpType.First:
-      case ExpType.Last:
-      case ExpType.Filter:
-      case ExpType.Count:
-      case ExpType.All:
-      case ExpType.Any:
+      case ApplyMode.First:
+      case ApplyMode.Last:
+      case ApplyMode.Filter:
+      case ApplyMode.Count:
+      case ApplyMode.All:
+      case ApplyMode.Any:
         return NS_SYSTEM_BOOL;
       default:
         return undefined;
