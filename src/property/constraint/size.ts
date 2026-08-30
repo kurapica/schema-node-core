@@ -25,8 +25,10 @@ import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAIN
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.minsize.error`)
 export class MinSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
-    return (node as any).length >= this._value!;
+    if (!this.hasValue) return undefined;
+    const val = node.getValue();
+    if (!Array.isArray(val)) return undefined;
+    return val.length >= this._value!;
   }
 
   /** Add elements to the array to meet the minimum size constraint */
@@ -47,7 +49,9 @@ export class MinSize extends ConstraintProperty<number> {
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT}.maxsize.error`)
 export class MaxSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (!this.hasValue || !(node instanceof ArrayNode)) return undefined;
-    return node.length >= this._value!;
+    if (!this.hasValue) return undefined;
+    const val = node.getValue();
+    if (!Array.isArray(val)) return undefined;
+    return val.length <= this._value!;
   }
 }

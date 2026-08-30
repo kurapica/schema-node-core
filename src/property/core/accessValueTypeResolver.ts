@@ -32,18 +32,15 @@ import { ForSchema } from './forSchema';
 @Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "accessValueTypeResolver.func")
 export class AccessValueTypeResolver extends Property<string> {
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    console.log("access value resolver effect", target, newValue, oldValue, source);
     if (!newValue || !this._value) return; // static only effect once
     setTimeout(() => {
       let provider: IValueAccess | undefined = target;
 
-      console.log("try find access value provider", (target as DataNode).access);
       // find the access value provider
       while (provider)
       {
         const accessProvider = provider.getPropertyValue<FuncCall>(AccessValueTypeProvider);
         if (accessProvider?.func) {
-      console.log("find access value provider", (provider as DataNode).access);
           // the acces value type resolve
           const resolve = async () => {
             const func = await getNodeType(accessProvider.func) as FunctionType;

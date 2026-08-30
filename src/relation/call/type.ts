@@ -9,7 +9,6 @@ import type { CallArg } from "../../schema/function/type";
 import type { RelationSchema } from "../../schema/relation/type";
 import type { FuncCall } from '../../schema/function/type';
 import { logger } from "../../utility/logger";
-import { getPropertyName } from "../../property";
 
 /** The call relation process */
 export class CallProcess implements IRelationProcess, IErrorProvider {
@@ -17,6 +16,9 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
   private _call?: FuncCall;
   private _error?: string;
   private _func?: FunctionType;
+
+  /** The function */
+  get func() { return this._func }
 
   /** The arguments */
   get args(): CallArg[] { return deepClone(this._call?.args || []); }

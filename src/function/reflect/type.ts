@@ -147,7 +147,7 @@ export class SystemReflectType {
     }
 
     // cut
-    return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
+    return root ? result.filter(e => (e.entry?.value?.length ?? 0) >= root.length) : result;
   }
 
   /** Gets the access type of the value type */

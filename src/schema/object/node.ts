@@ -230,7 +230,7 @@ export abstract class ScalarNode extends DataNode {
     }
     else if (a.source)
     {
-      const target = owner.getAccessValue(a.source);
+      const target = owner.getAccessValue(a.source, this);
       if (target)
       {
         result.source = target;

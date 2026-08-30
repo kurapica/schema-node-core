@@ -137,10 +137,11 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     }
   }
 
-  override getValue(): unknown {
+  private _getValue(submit = false): unknown {
     const result: Record<string, unknown> = {};
     this._fields.forEach(f => {
-      if (f.isEmpty || f.displayOnly) return;
+      if (f.isEmpty) return;
+      if (submit && f.displayOnly) return;
       if (!f.isValid && !f.visible) return; // skip invisible & invalid field
 
       const d = f.getValue();
@@ -166,6 +167,10 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     return isEmpty(result) ? undefined : result;
   }
 
+  override getValue(): unknown { return this._getValue(); }
+
+  override get submitValue(): unknown { return this._getValue(true); }
+
   override get isEmpty(): boolean { return !this._fields.some(f => !f.displayOnly && !f.isEmpty) }
 
   override get changed(): boolean { return this._fields.some(f => !f.displayOnly && f.changed) }
@@ -180,11 +185,13 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── Path Navigation ───────────────────────────────────────────────
 
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
+    if (isEmpty(path)) return this;
+    if (path.toLowerCase() === NODE_SELF) return node ?? this;
+    
     const dot = path.indexOf('.');
     const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
     const rest = dot >= 0 ? path.substring(dot + 1) : '';
 
-    if (!first || first == NODE_SELF) return this;
     const field = this._fields.find(f => f.name?.toLowerCase() == first);
     if (!field) return undefined;
     return rest ? field.getAccessValue(rest, node) : field;

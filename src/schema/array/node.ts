@@ -5,7 +5,7 @@
 
 import { Name } from "../../property/core/name";
 import { Observable } from "../../utility/observable";
-import { isNull, trimValue } from "../../utility/toolset";
+import { isEmpty, isNull, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { ArrayType } from "./runtime";
 
@@ -160,7 +160,8 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   // #region ── Path Navigation ───────────────────────────────────────────────
 
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
-    if (!path || path.trim() === NODE_SELF) return this;
+    if (isEmpty(path)) return this;
+    if (path.toLowerCase() === NODE_SELF) return node ?? this;
 
     const dot = path.indexOf('.');
     const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();

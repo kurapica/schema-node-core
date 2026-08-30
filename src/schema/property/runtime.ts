@@ -2,19 +2,22 @@
 // PropertyType — runtime type for property schemas
 // =============================================================================
 
-import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
 import { getNodeType } from '../../runtime/context';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
 
-import type { INodeType, IProperty } from '../../interface';
+import type { INodeType, IProperty, IRelation } from '../../interface';
 import type { PropertySchema } from './type';
 
 import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import type { RelationSchema } from '../relation/type';
+import { Relations } from '../relation/property';
+import { RelationType } from '../relation/runtime';
 
 export class PropertyType extends NodeType {
   private _propertySchema: PropertySchema | undefined
-  private _valueType: ValueType | undefined
+  private _valueType: ValueType | undefined  
 
   /** The property type property name */
   get property() { return this._propertySchema?.property; }
@@ -24,6 +27,10 @@ export class PropertyType extends NodeType {
 
   /** The property works for schema kind */
   get forSchemas(): string[] | undefined { return this._propertySchema?.forSchemas ? [...this._propertySchema.forSchemas] : []; }
+
+  forSchema(schemaKind: string): boolean {
+    return this.forSchemas?.includes(schemaKind) ?? false;
+  }
 
   override loadProperties(): IProperty[] {
     this._propertySchema = getPropertyValue<PropertySchema>(this.schema, "property");

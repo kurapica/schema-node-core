@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/ArrayType.cs
 // =============================================================================
 
-import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { isEmpty } from '../../utility/toolset';
 import { ValueType } from '../value/runtime';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
@@ -12,12 +12,14 @@ import { RelationType } from '../relation/runtime';
 import { joinProperties } from '../../interface';
 import { getNodeType } from '../../runtime/context';
 
-import type { IProperty, PropertyCtor, IRelationProvider, IValueAccess, IPropertyProvider, INodeType, IRelation, IArrayValueTypeAccess } from '../../interface';
+import type { IProperty, PropertyCtor, IRelationProvider, INodeType, IRelation, IArrayValueTypeAccess } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ArraySchema } from './type';
 import type { RelationSchema } from '../relation/type';
 
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
+import { Display } from '../../property/common/display';
+import { _LS } from '../../utility';
 
 export class ArrayType extends ValueType implements IRelationProvider, IArrayValueTypeAccess {
   private _arraySchema: ArraySchema | undefined;
@@ -83,13 +85,13 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
 
   override getAccessEntries(): Entry<string>[] {
     return [
-      {
-        value: ARRAY_PREVIOUS
-      } as Entry<string>,
-      {
+      setPropertyValue({
+        value: ARRAY_PREVIOUS,
+      } as Entry<string>, Display, _LS("ARRAY_PREVIOUS")),
+      setPropertyValue({
         value: ARRAY_ELEMENT,
         hasChildren: this.element?.hasAccessEntries
-      } as Entry<string>
+      } as Entry<string>, Display, _LS("ARRAY_ELEMENT"))
     ]
   }
 

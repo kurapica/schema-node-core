@@ -43,7 +43,7 @@ import type { StructFieldSchema, StructSchema } from './type';
 import type { NodeSchema } from '../node/type';
 import type { ArraySchema } from '../array/type';
 
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT } from '../../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT, ARRAY_ELEMENT } from '../../utility/constant';
 import type { LocaleString } from '../../struct';
 
 /** The struct schema kind */
@@ -62,6 +62,7 @@ class StructKind{}
 @Meta(Attach, SCHEMA_KIND_STRUCT)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
+@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.enableproperty`, '@fields', `@relations.${ARRAY_ELEMENT}.target`, NODE_SELF), `relations.${ARRAY_ELEMENT}.property`)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];

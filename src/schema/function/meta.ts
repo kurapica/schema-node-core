@@ -193,7 +193,7 @@ class CallArgMeta implements CallArg {
   /** The source value type */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
+  //@Meta(InVisible, true)
   @Meta(AccessValueTypeResolver, 'source')
   sourceType?: string;
 

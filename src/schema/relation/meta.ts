@@ -20,13 +20,12 @@ import { AccessValueTypeResolver } from '../../property/core/accessValueTypeReso
 
 import type { RelationSchema } from './type';
 
-import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PROPERTY } from '../../utility/constant';
+import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PROPERTY } from '../../utility/constant';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_RELATION, SCHEMA_KIND_ORDER_RELATION])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.schema`)
 @Meta(Attach, SCHEMA_KIND_RELATION)
-@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.forschema`, '@property', '@targetKind'), 'property')
 class RelationSchemaMeta implements RelationSchema {
   /** The target of the relation */
   @Meta(SchemaType, NS_SYSTEM_STRING)
@@ -34,20 +33,6 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(EntrySourceConsumer, true)
   @Meta(Require, true)
   target!: string;
-
-  /** The schema type of the target */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-  @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
-  @Meta(AccessValueTypeResolver, "target")
-  targetType?: string;
-
-  /** The schema kind of the target */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
-  @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
-  @Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
-  targetKind?: string;
 
   /** The property the relation applies to */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)

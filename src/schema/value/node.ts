@@ -174,7 +174,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   get original() { return deepClone(this._original) }
 
   /** Whether the data node changed */
-  get changed(): boolean { return !isEqual(this._original, this._value) }
+  get changed(): boolean { return !(isEmpty(this._original) && isEmpty(this._value)) && !isEqual(this._original, this._value) }
 
   /** Gets the submit value */
   get submitValue(): unknown { return this.getValue() }
@@ -469,7 +469,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
    * Supports: $self, field names, array indices.
    */
   getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
-    return isEmpty(path) || path === NODE_SELF ? this : undefined;
+    if (isEmpty(path)) return this;
+    if (path.toLowerCase() === NODE_SELF) return node ?? this;
+    return undefined;
   }
 
   // #endregion
