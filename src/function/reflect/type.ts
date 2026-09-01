@@ -1,12 +1,12 @@
-import { Meta } from '../../attribute/meta';
+import { getMetaProperty, Meta } from '../../attribute/meta';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
-import { Return } from '../../property/function/return';
-import { ArgName } from '../../property/function/argName';
+import { Return } from '../../schema/function/property/return';
+import { ArgName } from '../../schema/function/property/argName';
 import { setPropertyValue, getPropertyValue } from '../../property/propertyOwner';
 import { Display } from '../../property/common/display';
-import { Require } from '../../property/constraint/require';
-import { Variadic } from '../../property/function/variadic';
+import { Require } from '../../property/common/require';
+import { Variadic } from '../../schema/function/property/variadic';
 import { getRecordedValues } from '../../property/recordProperty';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { combinePaths, isNull } from '../../utility/toolset';
@@ -14,16 +14,39 @@ import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
 import { isNamespaceNodeType } from '../../interface';
+import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
-import { NodeSchemaKind } from '../../property';
+import { getSchemaKindRegister } from '../../runtime';
+import { SchemaUsage } from '../../property/core/schemaUsage';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)
 export class SystemReflectType {
+
+  /** Gets the usage type of the node schema type */
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getusagetype(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(Require, true)
+    type: string,
+
+    @Meta(ArgName, 'arrayElement')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    arrayElement = false
+  ): Promise<string | undefined> {
+    let typeNode = await getNodeType(type);
+    if (!typeNode) return undefined;
+    if (arrayElement && typeNode instanceof ArrayType) typeNode = typeNode.element;
+    if (!typeNode) return undefined;
+    const ctor = getSchemaKindRegister(typeNode.kind);
+    if (!ctor) return undefined;
+    return getMetaProperty(ctor, SchemaUsage)?.getValue<string>();
+  }
 
   /** Gets the type name of the node schema type */
   @Meta(Return, NS_SYSTEM_STRING)
@@ -152,7 +175,7 @@ export class SystemReflectType {
 
   /** Gets the access type of the value type */
   @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-  static async getaccesstype(
+  static async getaccessvaluetype(
     @Meta(ArgName, 'name')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
     @Meta(Require, true)

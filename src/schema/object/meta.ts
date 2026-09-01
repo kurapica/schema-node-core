@@ -11,7 +11,7 @@ import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
-import { Valid } from '../../property/constraint/valid';
+import { Valid } from '../../property/common/valid';
 import { Display } from '../../property/common/display';
 import { setPropertyValue, setProperty } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';

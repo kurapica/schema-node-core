@@ -8,19 +8,18 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
 import { PrimaryIndex } from '../../property/core/indexes';
-import { EntrySourceConsumer } from '../../property/core/entrySourceConsumer';
-import { Valid } from '../../property/constraint/valid';
+import { Valid } from '../../property/common/valid';
 import { buildFuncCall } from '../../schema/function/type';
-import { Require } from '../../property/constraint/require';
-import { DisplayOnly } from '../../property/common/displayOnly';
+import { Require } from '../../property/common/require';
 import { Default } from '../../property/common/default';
 import { InVisible } from '../../property/common/invisible';
-import { Root } from '../../property/constraint/root';
-import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
 
 import type { RelationSchema } from './type';
 
 import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PROPERTY } from '../../utility/constant';
+import { EntrySourceConsumer } from '../string/property/entrySourceConsumer';
+import { Root } from '../enum/property/root';
+import { DisplayOnly } from '../struct/property/displayOnly';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_RELATION, SCHEMA_KIND_ORDER_RELATION])

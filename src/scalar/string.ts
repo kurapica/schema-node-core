@@ -1,12 +1,12 @@
 import { Meta } from '../attribute/meta';
-import { LowLimitString } from '../property/constraint/lowLimit';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
-import { UpLimitString } from '../property/constraint/upLimit';
 import { Base } from '../property/core/base';
+import { UpLimitString } from '../schema/string/property/upLimit';
+import { LowLimitString } from '../schema/string/property/lowLimit';
+import { JsRegex } from '../property/common/jsRegex';
 
 import { SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_CHAR, NS_SYSTEM_GUID, NS_SYSTEM_LANGUAGE, LANGUAGE_MAX_LEN, NS_SYSTEM_IDENTIFIER, PRIMARY_KEY_MAX_LEN } from '../utility/constant';
-import { JsRegex } from '../property/constraint/jsRegex';
 
 /** Represents the string type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)

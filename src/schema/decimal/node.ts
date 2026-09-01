@@ -1,5 +1,5 @@
-import { LowLimitNumber } from "../../property/constraint/lowLimit";
-import { UpLimitNumber } from "../../property/constraint/upLimit";
+import { LowLimitNumber } from "./property/lowLimit";
+import { UpLimitNumber } from "./property/upLimit";
 import { isNull } from "../../utility/toolset";
 import { ScalarNode } from "../object/node";
 

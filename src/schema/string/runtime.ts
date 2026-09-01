@@ -1,4 +1,3 @@
-import { UpLimitString } from "../../property/constraint/upLimit";
 import { getPropertiesBySchemaKind, getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
 import { ScalarType } from "../value/scalar";
@@ -7,6 +6,7 @@ import type { IProperty } from "../../interface";
 import type { StringSchema } from "./type";
 
 import { ENTITY_PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_STRING } from "../../utility/constant";
+import { UpLimitString } from "./property/upLimit";
 
 export class StringType extends ScalarType {
   private _stringSchema: StringSchema | undefined;

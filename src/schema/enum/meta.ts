@@ -18,8 +18,6 @@ import { OverrideType } from '../../property/core/overrideType';
 import { Default } from '../../property/common/default';
 import { EnumValueType } from '../../enum/enumValueType/type';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
-import { Require } from '../../property/constraint/require';
-import { Valid } from '../../property/constraint/valid';
 import { Relation } from '../../attribute/relation';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { FromEnum } from '../../property/core/fromEnum';
@@ -27,13 +25,19 @@ import { combinePaths } from '../../utility/toolset';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { Base } from '../../property/core/base';
 import { buildFuncCall } from '../../schema/function/type';
-import { EnumProperty } from './property';
 import { EnumType } from './runtime';
-import { EnumValue } from './valid';
+import { EnumValue } from './property/enumValue';
 import { EnumNode, EnumArrayNode } from './node';
 import { ArrayDataNodeType, DataNodeType } from '../../property/core/dataNodeType';
 import { InVisible } from '../../property/common/invisible';
 import { PrimaryIndex } from '../../property/core/indexes';
+import { Root } from './property/root';
+import { Cascade } from './property/cascade';
+import { SchemaUsage } from '../../property/core/schemaUsage';
+import { Append } from '../../property/core/append';
+import { BlackList } from '../../property/common/blackList';
+import { WhiteList } from '../../property/common/whiteList';
+import { Valid } from '../../property/common/valid';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType';
 import type { LocaleString } from '../../struct/localeString/type';
@@ -41,21 +45,29 @@ import type { Entry } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_ENTRYS, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT, SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_PROPERTY_ENUM, NS_SYSTEM_LOGIC } from '../../utility/constant';
+import { Require } from '../../property/common/require';
+import { LeafOnly } from './property/leafOnly';
+import { SingleFlag } from './property/singleFlag';
+import { Visible } from '../../property/common/visible';
+import { EnumProperty } from './enum';
 
 /** The enum schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
 @Meta(NodeSchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
 @Meta(ValueSchemaKind, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ORDER_ENUM])
 @Meta(RuntimeNodeType, EnumType)
-@Meta(EnumValue)
+@Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_ENUM}.usage`)
 @Meta(SchemaGenerator, generateEnumSchema)
-@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+@Meta(Append, [EntrySource, Default, BlackList, WhiteList, Valid])
 @Meta(DataNodeType, EnumNode)
+@Meta(EnumValue)
 @Meta(ArrayDataNodeType, EnumArrayNode)
+@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
 class EnumSchemaKind{}
 
 /** Meta registration class (NOT exported). */
+@Meta(SchemaKind, [SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ORDER_ENUM])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Meta(Attach, SCHEMA_KIND_ENUM)
 @Relation(InVisible,'assign', true, "entrySource")
@@ -73,10 +85,42 @@ class EnumSchemaMeta implements EnumSchema {
   @Meta(SchemaType,  `${NS_SYSTEM_SCHEMA_ENUM}.values`)
   @Meta(Require, true)
   @Relation(Immutable,'assign', true, `values.${ARRAY_ELEMENT}.value`)
-  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, "@type"), `values.${ARRAY_ELEMENT}.value`)
-  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, "@type", `@values.${ARRAY_PREVIOUS}`), `values.${ARRAY_ELEMENT}.value`)
+  @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getvaluetype`, '@type'), `values.${ARRAY_ELEMENT}.value`)
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getdefaultentryvalue`, '@type', `@values.${ARRAY_PREVIOUS}`), `values.${ARRAY_ELEMENT}.value`)
   values!: Entry<string>[];
 }
+
+/** The enum schema usage */
+@Meta(SchemaKind, [SCHEMA_KIND_ENUM_USAGE, SCHEMA_KIND_ORDER_ENUM])
+@Meta(Append, [Default, BlackList, WhiteList, Valid])
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.usage`)
+@Meta(Attach, SCHEMA_KIND_ENUM_USAGE)
+// default
+@Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@root'), 'default')
+@Relation(LeafOnly,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@leafOnly'), 'default')
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascade'), 'default')
+@Relation(SingleFlag,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@singleFlag'), 'default')
+@Relation(WhiteList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
+@Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
+// blacklist
+@Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'blackList')
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"), 'blackList')
+// whitelist
+@Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@blackList"), 'whiteList')
+@Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'whiteList')
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"), 'whiteList')
+// root
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'root')
+@Relation(InVisible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.le`, "@cascade", 1), 'root')
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, NODE_TYPE), 'root')
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, NODE_TYPE, "@cascade", -1), 'root')
+// cascade
+@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, NODE_TYPE), 'cascade')
+// leafOnly
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'leafOnly')
+// singleFlag
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, NODE_TYPE, EnumValueType.Flags), 'singleFlag')
+class EnumUsage {}
 
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.value`) // for definition
 @Meta(Attach, SCHEMA_KIND_ENTRY)
@@ -129,7 +173,7 @@ function buildEnumValues(enumName: string, target: object): Entry<string>[] {
   const values: Entry<string>[] = [];
   for (const key of Object.getOwnPropertyNames(target).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name')) {
     const val = (target as Record<string, unknown>)[key];
-    if (typeof val === 'string' || typeof val === 'number') 
+    if (val=== 'string' || val=== 'number') 
       values.push(setPropertyValue({ value: String(val) }, Display, { key: `${enumName}.${key.toLowerCase()}` }));
   }
   return values;

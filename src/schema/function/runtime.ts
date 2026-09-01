@@ -22,7 +22,7 @@ import { RelationType } from '../relation/runtime';
 import { logger } from '../../utility/logger';
 
 import type { FuncArg, FuncExp, CallArg, FunctionSchema } from './type';
-import type {  IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
+import type { IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';

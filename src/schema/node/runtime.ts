@@ -9,7 +9,7 @@ import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { combinePaths, deepClone, generateGuid } from '../../utility/toolset';
 import { SchemaLoadState } from '../../enum/schemaLoadState';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
-import { Generics } from '../generic/property';
+import { Generics } from '../generic/generics';
 import { getNodeType } from '../../runtime/context';
 import { logger } from '../../utility/logger';
 

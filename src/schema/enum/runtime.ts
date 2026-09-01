@@ -26,7 +26,7 @@ import type { IProperty, PropertyCtor } from '../../interface';
 
 import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
 import { SchemaLoadState } from '../../enum';
-import { EnumProperty } from './property';
+import { EnumProperty } from './enum';
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;

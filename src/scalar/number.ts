@@ -1,12 +1,12 @@
 import { Meta } from '../attribute/meta';
-import { LowLimitInt } from '../property/constraint/lowLimit';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
-import { UpLimitInt } from '../property/constraint/upLimit';
 import { Base } from '../property/core/base';
 
 import { NS_SYSTEM_DOUBLE, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_NUMBER, NS_SYSTEM_PERCENT, NS_SYSTEM_YEAR, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_INT } from '../utility/constant';
-import { JsRegex } from '../property';
+import { JsRegex } from '../property/common/jsRegex';
+import { UpLimitInt } from '../schema/int/property/upLimit';
+import { LowLimitInt } from '../schema/int/property/lowLimit';
 
 /** Represents the number type */
 @Meta(OfSchema, SCHEMA_KIND_DECIMAL)

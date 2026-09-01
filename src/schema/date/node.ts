@@ -1,5 +1,5 @@
-import { LowLimitDate } from "../../property/constraint/lowLimit";
-import { UpLimitDate } from "../../property/constraint/upLimit";
+import { LowLimitDate } from "./property/lowLimit";
+import { UpLimitDate } from "./property/upLimit";
 import { parseDate } from "../../utility/toolset";
 import { ScalarNode } from "../object/node";
 

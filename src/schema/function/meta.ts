@@ -12,48 +12,50 @@ import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../../property/core/attach';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
-import { Return } from '../../property/function/return';
 import { Display } from '../../property/common/display';
 import { Visible } from '../../property/common/visible';
 import { PrimaryIndex } from '../../property/core/indexes';
-import { UpLimitString } from '../../property/constraint/upLimit';
-import { Require } from '../../property/constraint/require';
-import { Valid } from '../../property/constraint/valid';
-import { DisplayOnly } from '../../property/common/displayOnly';
 import { ReadOnly } from '../../property/common/readOnly';
 import { OverrideType } from '../../property/core/overrideType';
 import { InVisible } from '../../property/common/invisible';
-import { WhiteList } from '../../property/constraint/whiteList';
 import { Default } from '../../property/common/default';
 import { Immutable } from '../../property/common/immutable';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
-import { AccessValueTypeResolver } from '../../property/core/accessValueTypeResolver';
 import { setProperty, setPropertyValue } from '../../property/propertyOwner';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { combinePaths } from '../../utility/toolset';
 import { ApplyMode } from '../../enum/applyMode/type';
 import { Base } from '../../property/core/base';
-import { ArgName } from '../../property/function/argName';
-import { FunctionNode } from './function/funcNode';
-import { FuncArgsNode } from './function/funcArgsNode';
-import { FuncCallNode } from './function/funcCallNode';
-import { FuncArgNode } from './function/funcArgNode';
+import { FunctionNode } from './node/funcNode';
+import { FuncArgsNode } from './node/funcArgsNode';
+import { FuncCallNode } from './node/funcCallNode';
+import { FuncArgNode } from './node/funcArgNode';
 import { buildFuncCall } from './type';
 import { Relations } from '../relation/property';
-import { FuncProperty } from './property';
 import { FunctionType } from './runtime';
 import { Assign } from '../../relation';
-import { FuncCallArgsNode } from './function/funcCallArgsNode';
+import { FuncCallArgsNode } from './node/funcCallArgsNode';
+import { UpLimitString } from '../string/property/upLimit';
+import { Require } from '../../property/common/require';
+import { BlackList } from '../../property/common/blackList';
+import { Valid } from '../../property/common/valid';
+import { DisplayOnly } from '../struct/property/displayOnly';
+import { WhiteList } from '../../property/common/whiteList';
+import { AccessEntryConsumer } from '../string/property/accessEntryConsumer';
+import { AccessValueTypeResolver } from '../string/property/accessValueTypeResolver';
+import { Return } from './property/return';
+import { ArgName } from './property/argName';
+import { FuncProperty } from './func';
+import { Generics } from '../generic/generics';
+import { Append } from '../../property/core/append';
 
 import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type';
 import type { NodeSchema } from '../node/type';
+import type { LocaleString } from '../../struct/localeString/type';
 
 import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT } from '../../utility/constant';
-import { AccessEntryConsumer } from '../../property/core/accessEntryConsumer';
-import type { LocaleString } from '../../struct';
-import { BlackList } from '../../property';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -61,6 +63,7 @@ import { BlackList } from '../../property';
 @Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(RuntimeNodeType, FunctionType)
 @Meta(SchemaGenerator, generateFunctionSchema)
+@Meta(Append, [Generics])
 class FunctionKind {}
 
 /** Meta registration class (NOT exported). */

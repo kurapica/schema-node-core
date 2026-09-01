@@ -1,7 +1,7 @@
-import { LowLimitString } from "../../property/constraint/lowLimit";
-import { UpLimitString } from "../../property/constraint/upLimit";
 import { isNull } from "../../utility/toolset";
 import { ScalarNode } from "../object/node";
+import { LowLimitString } from "./property/lowLimit";
+import { UpLimitString } from "./property/upLimit";
 
 /** The data node represents the string node */
 export class StringNode extends ScalarNode {

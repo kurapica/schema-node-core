@@ -1,18 +1,18 @@
-import { Unpack } from "../../property/common/unpack";
-import { OverrideFields } from "../../property/core/overrideFields";
-import { OverrideType } from "../../property/core/overrideType";
+import { Unpack } from './property/unpack';
+import { OverrideFields } from './property/overrideFields';
+import { OverrideType } from '../../property/core/overrideType';
 import { getNodeType } from "../../runtime/context";
 import { isEmpty, isEqual, isNull, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
+import { SCHEMA_KIND_STRUCT } from "../../utility/constant";
+import { DisableConstraint } from "../../property/core/disableConstraint";
 
 import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo, IValueTypeAccess } from "../../interface";
 import type { NodeSchema } from "../node/type";
 import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
 
-import { NODE_SELF, SCHEMA_KIND_STRUCT } from "../../utility/constant";
-import { DisableConstraint } from "../../property/core/disableConstraint";
 
 /** Struct node. */
 export class StructNode extends DataNode implements Iterable<IValueAccess> {
@@ -185,8 +185,8 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   // #region ── Path Navigation ───────────────────────────────────────────────
 
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
-    if (isEmpty(path)) return this;
-    if (path.toLowerCase() === NODE_SELF) return node ?? this;
+    const access = super.getAccessValue(path, node);
+    if (access) return access;
     
     const dot = path.indexOf('.');
     const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();

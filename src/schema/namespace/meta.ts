@@ -7,7 +7,7 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { OfSchema } from '../../property/core/ofSchema';
-import { Valid } from '../../property/constraint/valid';
+import { Valid } from '../../property/common/valid';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { Base } from '../../property/core/base';
 import { buildFuncCall } from '../../schema/function/type';

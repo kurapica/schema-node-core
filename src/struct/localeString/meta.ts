@@ -1,6 +1,6 @@
 import { Meta } from "../../attribute/meta";
 import { OfSchema } from '../../property/core/ofSchema';
-import { Require } from '../../property/constraint/require';
+import { Require } from '../../property/common/require';
 import { SchemaType } from '../../property/core/schemaType';
 
 import type { LocaleString, LocaleTran } from "./type";

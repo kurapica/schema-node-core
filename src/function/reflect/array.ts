@@ -1,9 +1,9 @@
 import { Meta } from '../../attribute/meta';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
-import { Return } from '../../property/function/return';
-import { ArgName } from '../../property/function/argName';
-import { Require } from '../../property/constraint/require';
+import { Return } from '../../schema/function/property/return';
+import { ArgName } from '../../schema/function/property/argName';
+import { Require } from '../../property/common/require';
 import { getRecordedValues } from '../../property/recordProperty';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { Display } from '../../property/common/display';

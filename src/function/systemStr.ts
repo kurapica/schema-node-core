@@ -6,9 +6,9 @@
 import { Meta } from '../attribute/meta';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
-import { Return } from '../property/function/return';
-import { ArgName } from '../property/function/argName';
-import { Converter } from '../property/function/converter';
+import { Return } from '../schema/function/property/return';
+import { ArgName } from '../schema/function/property/argName';
+import { Converter } from '../schema/function/property/converter';
 
 import type { LocaleString } from '../struct/localeString/type';
 

@@ -7,23 +7,38 @@ export const DEBOUNCE_TIME = 20;
 
 // ── Schema Kind ────────────────────────────────────────────────────────────
 
-export const SCHEMA_KIND_NODE = 'node';
-export const SCHEMA_KIND_NAMESPACE = 'namespace';
-export const SCHEMA_KIND_OBJECT = 'object';
-export const SCHEMA_KIND_BOOL = 'bool';
-export const SCHEMA_KIND_INT = 'int';
-export const SCHEMA_KIND_DECIMAL = 'decimal';
-export const SCHEMA_KIND_STRING = 'string';
-export const SCHEMA_KIND_DATE = 'date';
-export const SCHEMA_KIND_ENUM = 'enum';
-export const SCHEMA_KIND_STRUCT = 'struct';
-export const SCHEMA_KIND_ARRAY = 'array';
-export const SCHEMA_KIND_FUNCTION = 'function';
-export const SCHEMA_KIND_PROPERTY = 'property';
-export const SCHEMA_KIND_STRUCT_FIELD = 'structfield';
-export const SCHEMA_KIND_RELATION = 'relation';
-export const SCHEMA_KIND_FUNC_ARG = 'functionarg';
-export const SCHEMA_KIND_ENTRY = 'entry';
+export const SCHEMA_KIND_NODE = "node";
+export const SCHEMA_KIND_NAMESPACE = "namespace";
+export const SCHEMA_KIND_OBJECT = "object";
+export const SCHEMA_KIND_BOOL = "bool";
+export const SCHEMA_KIND_BOOL_USAGE = "bool.usage";
+export const SCHEMA_KIND_INT = "int";
+export const SCHEMA_KIND_INT_DEFINE = "int.define";
+export const SCHEMA_KIND_INT_USAGE = "int.usage";
+export const SCHEMA_KIND_DECIMAL = "decimal";
+export const SCHEMA_KIND_DECIMAL_DEFINE = "decimal.define";
+export const SCHEMA_KIND_DECIMAL_USAGE = "decimal.usage";
+export const SCHEMA_KIND_STRING = "string";
+export const SCHEMA_KIND_STRING_DEFINE = "string.define";
+export const SCHEMA_KIND_STRING_USAGE = "string.usage";
+export const SCHEMA_KIND_DATE = "date";
+export const SCHEMA_KIND_DATE_DEFINE = "date.define";
+export const SCHEMA_KIND_DATE_USAGE = "date.usage";
+export const SCHEMA_KIND_ENUM = "enum";
+export const SCHEMA_KIND_ENUM_DEFINE = "enum.define";
+export const SCHEMA_KIND_ENUM_USAGE = "enum.usage";
+export const SCHEMA_KIND_STRUCT = "struct";
+export const SCHEMA_KIND_STRUCT_DEFINE = "struct.define";
+export const SCHEMA_KIND_STRUCT_USAGE = "struct.usage";
+export const SCHEMA_KIND_STRUCT_FIELD = "struct.field";
+export const SCHEMA_KIND_ARRAY = "array";
+export const SCHEMA_KIND_ARRAY_DEFINE = "array.define";
+export const SCHEMA_KIND_ARRAY_USAGE = "array.usage";
+export const SCHEMA_KIND_FUNCTION = "function";
+export const SCHEMA_KIND_PROPERTY = "property";
+export const SCHEMA_KIND_RELATION = "relation";
+export const SCHEMA_KIND_FUNC_ARG = "function.arg";
+export const SCHEMA_KIND_ENTRY = "entry";
 export const SCHEMA_KIND_GENERIC = 'generic';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
@@ -140,9 +155,16 @@ export const NS_SYSTEM_SCHEMA_PROPERTY = `${NS_SYSTEM_SCHEMA}.prop`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_TYPE = `${NS_SYSTEM_SCHEMA_PROPERTY}.type`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_CORE = `${NS_SYSTEM_SCHEMA_PROPERTY}.core`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_COMMON = `${NS_SYSTEM_SCHEMA_PROPERTY}.common`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_CONSTRAINT = `${NS_SYSTEM_SCHEMA_PROPERTY}.constraint`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_FUNC = `${NS_SYSTEM_SCHEMA_PROPERTY}.func`;
 export const NS_SYSTEM_SCHEMA_PROPERTY_RELATION = `${NS_SYSTEM_SCHEMA_PROPERTY}.relation`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_BOOL = `${NS_SYSTEM_SCHEMA_PROPERTY}.bool`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_INT = `${NS_SYSTEM_SCHEMA_PROPERTY}.int`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_DECIMAL = `${NS_SYSTEM_SCHEMA_PROPERTY}.decimal`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_STRING = `${NS_SYSTEM_SCHEMA_PROPERTY}.string`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_DATE = `${NS_SYSTEM_SCHEMA_PROPERTY}.date`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_ENUM = `${NS_SYSTEM_SCHEMA_PROPERTY}.enum`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_STRUCT = `${NS_SYSTEM_SCHEMA_PROPERTY}.struct`;
+export const NS_SYSTEM_SCHEMA_PROPERTY_ARRAY = `${NS_SYSTEM_SCHEMA_PROPERTY}.array`;
 
 export const NS_SYSTEM_SCHEMA_ERROR = `${NS_SYSTEM_SCHEMA}.error`;
 

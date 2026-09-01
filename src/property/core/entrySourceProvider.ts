@@ -2,7 +2,7 @@ import { Meta } from '../../attribute/meta';
 import { Relation } from '../../attribute/relation';
 import { ReadOnly } from '../common/readOnly';
 import { InVisible } from '../common/invisible';
-import { Valid } from '../constraint/valid';
+import { Valid } from '../common/valid';
 import { FuncCallProperty } from "../funcCallProperty";
 import { buildFuncCall } from '../../schema/function/type';
 import { OfSchema } from "./ofSchema";

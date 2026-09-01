@@ -9,9 +9,10 @@ import { SchemaType } from './schemaType';
 import { OfSchema } from './ofSchema';
 import { PropertyValueType } from './propertyValueType';
 import { Static } from './static';
+import { ReadOnly } from '../common/readOnly';
+import { InVisible } from '../common/invisible';
 
 import { NS_SYSTEM_SCHEMA, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_PROPERTY_CORE, SCHEMA_KIND_PROPERTY } from '../../utility/constant';
-import { InVisible, ReadOnly } from '../common';
 
 /**
  * Attach the properties of a schema kind to the struct type

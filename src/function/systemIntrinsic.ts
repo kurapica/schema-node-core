@@ -3,12 +3,12 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { ArgName } from '../property/function/argName';
+import { ArgName } from '../schema/function/property/argName';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
-import { Return } from '../property/function/return';
-import { Generics } from '../schema/generic/property';
-import { Require } from '../property/constraint/require';
+import { Return } from '../schema/function/property/return';
+import { Require } from '../property/common/require';
+import { Generics } from '../schema/generic/generics';
 import { deepClone, isEmpty, isNull } from '../utility/toolset';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';

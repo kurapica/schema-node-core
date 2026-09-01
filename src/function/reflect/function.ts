@@ -1,9 +1,10 @@
 import { Meta } from '../../attribute/meta';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
-import { Return } from '../../property/function/return';
-import { ArgName } from '../../property/function/argName';
-import { Require } from '../../property/constraint/require';
+import { Return } from '../../schema/function/property/return';
+import { ArgName } from '../../schema/function/property/argName';
+import { Variadic } from '../../schema/function/property/variadic';
+import { Require } from '../../property/common/require';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { _LS } from '../../utility/locale';
@@ -15,7 +16,6 @@ import { ArrayType } from '../../schema/array/runtime';
 import { BoolType } from '../../schema/bool';
 import { IntType } from '../../schema/int/runtime';
 import { DecimalType } from '../../schema/decimal/runtime';
-import { Variadic } from '../../property';
 import { ApplyMode } from '../../enum/applyMode/type';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';

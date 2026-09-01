@@ -1,12 +1,8 @@
 import { Meta } from '../../attribute/meta';
-import { ArgName } from '../../property/function/argName';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { OfSchema } from '../../property/core/ofSchema';
-import { Require } from '../../property/constraint/require';
-import { Return } from '../../property/function/return';
 import { SchemaType } from '../../property/core/schemaType';
-import { UpLimitString } from '../../property/constraint/upLimit';
 import { combinePaths, isEmpty, isNull } from '../../utility/toolset';
 import { _LS } from '../../utility/locale';
 import { getNodeType } from '../../runtime/context';
@@ -15,20 +11,20 @@ import { StringType } from '../../schema/string/runtime';
 import { StructType } from '../../schema/struct/runtime';
 import { ArrayType } from '../../schema/array/runtime';
 import { ObjectType } from '../../schema/object/runtime';
+import { PropertyType } from '../../schema/property/runtime';
+import { CallProcess } from '../../relation';
+import { Return } from '../../schema/function/property/return';
+import { ArgName } from '../../schema/function/property/argName';
+import { Require } from '../../property/common/require';
+import { InVisible } from '../../property/common/invisible';
+import { Visible } from '../../property/common/visible';
+import { UpLimitString } from '../../schema/string/property/upLimit';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { StructFieldSchema } from '../../schema/struct/type';
+import type { RelationType } from '../../schema/relation/runtime';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
-import { PropertyType } from '../../schema/property/runtime';
-import { Relations } from '../../schema/relation/property';
-import type { RelationSchema } from '../../schema/relation/type';
-import { getSchemaType } from '../../runtime';
-import { InVisible, Visible } from '../../property';
-import type { IConstraintProperty, IProperty, IRelationInfo, IValueAccess, IValueTypeAccess, PropertyCtor } from '../../interface';
-import type { Observer } from '../../utility';
-import type { RelationType, StructNode } from '../../schema';
-import { CallProcess } from '../../relation';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)

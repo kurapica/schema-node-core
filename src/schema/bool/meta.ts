@@ -3,7 +3,7 @@ import { Display } from '../../property/common/display';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { SchemaType } from '../../property/core/schemaType';
-import { Valid } from '../../property/constraint/valid';
+import { Default, Valid } from '../../property/common/';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
@@ -14,13 +14,15 @@ import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { combinePaths } from '../../utility/toolset';
 import { BoolType } from './runtime';
-import { BoolValue } from './valid';
+import { BoolValue } from './property/boolValue';
 import { BoolNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
 
 import type { NodeSchema } from '../node/type';
 
-import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_BOOL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { Append, Attach } from '../../property';
+import { SchemaUsage } from '../../property/core/schemaUsage';
 
 /** The bool schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
@@ -28,9 +30,17 @@ import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE
 @Meta(ValueSchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])
 @Meta(RuntimeNodeType, BoolType)
 @Meta(SchemaGenerator, generateBoolSchema)
+@Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_BOOL}.usage`)
+@Meta(Append, [Default])
 @Meta(BoolValue)
 @Meta(DataNodeType, BoolNode)
 class BoolKind {}
+
+@Meta(SchemaKind, [SCHEMA_KIND_BOOL_USAGE, SCHEMA_KIND_ORDER_BOOL])
+@Meta(Append, [Default])
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_BOOL}.usage`)
+@Meta(Attach, SCHEMA_KIND_BOOL_USAGE)
+class BoolUsage {}
 
 /** Represents the bool value type */
 @Meta(OfSchema, SCHEMA_KIND_STRING)

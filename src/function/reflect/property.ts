@@ -1,7 +1,7 @@
 import { Meta } from '../../attribute/meta';
-import { ArgName } from '../../property/function/argName';
-import { Require } from '../../property/constraint/require';
-import { Return } from '../../property/function/return';
+import { ArgName } from '../../schema/function/property/argName';
+import { Return } from '../../schema/function/property/return';
+import { Require } from '../../property/common/require';
 import { SchemaType } from '../../property/core/schemaType';
 import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';

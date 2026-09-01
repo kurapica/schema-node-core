@@ -15,8 +15,9 @@ import type { Observer } from '../../utility/observable';
 import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
 
-import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
+import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE, NODE_TYPE } from '../../utility/constant';
 import { logger } from '../../utility/logger';
+import { TypeProvider } from '../../property/core/typeProvider';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -471,6 +472,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
     if (isEmpty(path)) return this;
     if (path.toLowerCase() === NODE_SELF) return node ?? this;
+    if (path.toLowerCase() === NODE_TYPE) {
+      let access: IValueAccess | undefined = node ?? this;
+      while (access && !access.getProperty(TypeProvider)?.hasValue) access = access.parent;
+      if (access) return access.getAccessValue(access.getPropertyValue<string>(TypeProvider)!, node);
+    }
     return undefined;
   }
 

@@ -6,8 +6,6 @@
 import { Meta, getMetaFields, getMetaProperties } from '../../attribute/meta';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { PrimaryIndex, UniqueIndex, Index } from '../../property/core/indexes';
-import { Primary } from '../../property/constraint/primary';
-import { Indexes } from '../../property/constraint/indexes';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
@@ -16,10 +14,7 @@ import { Attach } from '../../property/core/attach';
 import { Append } from '../../property/core/append';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
-import { Require } from '../../property/constraint/require';
 import { Display } from '../../property/common/display';
-import { Valid } from '../../property/constraint/valid';
-import { Generics } from '../../schema/generic/property';
 import { Default } from '../../property/common/default';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
@@ -30,21 +25,30 @@ import { Base } from '../../property/core/base';
 import { getMetaPropertiesForSchema, saveNodeSchema } from '../../runtime/schemaRuntime';
 import { buildFuncCall } from '../../schema/function/type';
 import { Relations } from '../relation/property';
-import { StructProperty } from './property';
-import { ArrayProperty } from '../array/property';
 import { StructType } from './runtime';
-import { StructValue } from './valid';
 import { StructNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+import { TypeProvider } from '../../property/core/typeProvider';
+import { StructValue } from './property/structValue';
+import { Valid } from '../../property/common/valid';
+import { Require } from '../../property/common/require';
+import { StructProperty } from './struct';
+import { Primary } from '../array/property/primary';
+import { Indexes, type DataIndex } from '../array/property/indexes';
+import { Generics } from '../generic/generics';
+import { ArrayProperty } from '../array/array';
 
-import type { DataIndex } from '../../property/constraint/indexes';
 import type { GenericParameter } from  '../../schema/generic/type';
 import type { StructFieldSchema, StructSchema } from './type';
 import type { NodeSchema } from '../node/type';
 import type { ArraySchema } from '../array/type';
+import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT, ARRAY_ELEMENT } from '../../utility/constant';
-import type { LocaleString } from '../../struct';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT, ARRAY_ELEMENT, SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_STRUCT_DEFINE, NODE_TYPE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC } from '../../utility/constant';
+import { SchemaUsage } from '../../property/core/schemaUsage';
+import { Unpack } from './property';
+import { Visible } from '../../property/common/visible';
+import { OverrideType } from '../../property/core/overrideType';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -52,26 +56,38 @@ import type { LocaleString } from '../../struct';
 @Meta(ValueSchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
 @Meta(RuntimeNodeType, StructType)
 @Meta(SchemaGenerator, generateStructSchema)
+@Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_STRUCT}.usage`)
+@Meta(Append, [Generics, Relations, Valid, EntrySourceProvider, AccessValueTypeProvider, TypeProvider])
 @Meta(StructValue)
 @Meta(DataNodeType, StructNode)
-@Meta(Append, [Relations, EntrySourceProvider, AccessValueTypeProvider])
 class StructKind{}
 
 /** Built-in struct type Meta registration (NOT exported). */
+@Meta(SchemaKind, [SCHEMA_KIND_STRUCT_DEFINE, SCHEMA_KIND_ORDER_STRUCT])
+@Meta(Append, [Generics, Relations, Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Meta(Attach, SCHEMA_KIND_STRUCT)
+@Meta(Attach, SCHEMA_KIND_STRUCT_DEFINE)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
-@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.enableproperty`, '@fields', `@relations.${ARRAY_ELEMENT}.target`, NODE_SELF), `relations.${ARRAY_ELEMENT}.property`)
+//@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.enableproperty`, '@fields', `@relations.${ARRAY_ELEMENT}.target`, NODE_SELF), `relations.${ARRAY_ELEMENT}.property`)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];
 }
 
+@Meta(SchemaKind, [SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_ORDER_STRUCT])
+@Meta(Append, [Valid])
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.usage`)
+@Meta(Attach, SCHEMA_KIND_STRUCT_USAGE)
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
+@Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessvaluetype`, NODE_TYPE, NODE_SELF))
+class StructUsage {}
+
 /** The struct field schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_ORDER_STRUCT_FIELD])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.field`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_FIELD)
+@Meta(TypeProvider, 'type')
 class StructFieldSchemaMeta implements StructFieldSchema {
   /** The field name */
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
@@ -84,6 +100,17 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
   type!: string;
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
+  @Meta(Unpack, true)
+  @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", false, SCHEMA_KIND_ARRAY))
+  arrayDefine?: {};
+
+  @Meta(SchemaType, NS_SYSTEM_OBJECT)
+  @Meta(Unpack, true)
+  @Relation(Visible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, "@type"))
+  @Relation(OverrideType, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getusagetype`, "@type", true))
+  valueDefine?: {};
 }
 
 /** Represents the struct value type */

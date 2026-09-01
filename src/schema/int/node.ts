@@ -1,7 +1,7 @@
-import { LowLimitInt } from "../../property/constraint/lowLimit";
-import { UpLimitInt } from "../../property/constraint/upLimit";
 import { isNull } from "../../utility/toolset";
 import { ScalarNode } from "../object/node";
+import { LowLimitInt } from "./property/lowLimit";
+import { UpLimitInt } from "./property/upLimit";
 
 /** The int node represents the int node */
 export class IntNode extends ScalarNode {

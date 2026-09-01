@@ -7,11 +7,11 @@ import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
-import { Return } from '../property/function/return';
-import { Generics } from '../schema/generic/property';
-import { ArgName } from '../property/function/argName';
+import { Return } from '../schema/function/property/return';
+import { ArgName } from '../schema/function/property/argName';
+import { Generics } from '../schema/generic/generics';
 import { Default } from '../property/common/default';
-import { Require } from '../property/constraint/require';
+import { Require } from '../property/common/require';
 import { isNull, isEmpty } from '../utility/toolset';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER, NS_SYSTEM_INT } from '../utility/constant';

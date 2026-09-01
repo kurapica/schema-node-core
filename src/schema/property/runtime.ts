@@ -2,7 +2,7 @@
 // PropertyType — runtime type for property schemas
 // =============================================================================
 
-import { getPropertiesBySchemaKind, getProperty, getPropertyValue } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getNodeType } from '../../runtime/context';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
@@ -11,9 +11,6 @@ import type { INodeType, IProperty, IRelation } from '../../interface';
 import type { PropertySchema } from './type';
 
 import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';
-import type { RelationSchema } from '../relation/type';
-import { Relations } from '../relation/property';
-import { RelationType } from '../relation/runtime';
 
 export class PropertyType extends NodeType {
   private _propertySchema: PropertySchema | undefined

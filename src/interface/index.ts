@@ -55,6 +55,9 @@ export interface IValueAccess {
   /** Gets the raw value to reduce the access cost */
   get rawValue(): unknown;
 
+  /** The original value */
+  get original(): unknown;
+
   /** Sets the value. */
   setValue(value: unknown): void;
 

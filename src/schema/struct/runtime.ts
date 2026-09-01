@@ -7,10 +7,10 @@ import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyVa
 import { isEmpty } from '../../utility/toolset';
 import { Attach } from '../../property/core/attach';
 import { Display } from '../../property/common/display';
-import { DisplayOnly } from '../../property/common/displayOnly';
-import { Require } from '../../property/constraint/require';
+import { DisplayOnly } from './property/displayOnly';
+import { Require } from '../../property/common/require';
 import { SchemaType } from '../../property/core/schemaType';
-import { Unpack } from '../../property/common/unpack';
+import { Unpack } from './property/unpack';
 import { Name } from '../../property/core/name';
 import { getMetaProperties, getMetaProperty } from '../../attribute/meta';
 import { _LS } from '../../utility/locale';

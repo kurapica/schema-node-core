@@ -1,18 +1,18 @@
 import { Disable } from "../../property/common/disable";
-import { BlackList } from "../../property/constraint/blackList";
-import { Cascade } from "../../property/constraint/cascade";
-import { Root } from "../../property/constraint/root";
-import { Valid } from "../../property/constraint/valid";
-import { WhiteList } from "../../property/constraint/whiteList";
-import { AccessEntryConsumer } from "../../property/core/accessEntryConsumer";
+import { BlackList } from "../../property/common/blackList";
+import { Valid } from "../../property/common/valid";
+import { WhiteList } from "../../property/common/whiteList";
 import { AccessValueTypeProvider } from "../../property/core/accessValueTypeProvider";
 import { EntrySource, EntrySourceVersion } from "../../property/core/entrySource";
-import { EntrySourceConsumer } from "../../property/core/entrySourceConsumer";
 import { EntrySourceProvider } from "../../property/core/entrySourceProvider";
 import { getPropertyValue, setPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
 import { EntryType } from "../../struct/entry/runtime";
 import { DataNode } from "../value/node";
+import { Root } from "../enum/property/root";
+import { Cascade } from "../enum/property/cascade";
+import { AccessEntryConsumer } from "../string/property/accessEntryConsumer";
+import { EntrySourceConsumer } from "../string/property/entrySourceConsumer";
 import { debounce, isEmpty, isEqual, useQueueQuery } from "../../utility/toolset";
 import { _L, _LS } from "../../utility/locale";
 

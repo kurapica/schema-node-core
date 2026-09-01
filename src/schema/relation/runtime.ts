@@ -11,14 +11,14 @@ import { hasNodeReferences } from '../../interface';
 import { PropertyType } from '../property/runtime';
 import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
 import { getNodeType } from '../../runtime/context';
-
-import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation } from '../../interface';
-import type { RelationSchema } from './type';
-import type { IRelationProcess } from './interface';
-
 import { SCHEMA_KIND_RELATION } from '../../utility/constant';
 import { logger } from '../../utility/logger';
+
+import type { RelationSchema } from './type';
+import type { IRelationProcess } from './interface';
 import type { DataNode } from '../value';
+
+import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation } from '../../interface';
 
 /** The relation type */
 export class RelationType implements INodeReference, IErrorProvider, IRelation {
