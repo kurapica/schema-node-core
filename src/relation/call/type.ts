@@ -42,7 +42,7 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
       if (!node) {
-        console.warn('[Relation][Call][Attach]', owner, a.source, 'not found');
+        console.warn('[Relation][Call][Attach]', owner, target, a.source, 'not found');
         return;
       }
       node.subscribe(handler);

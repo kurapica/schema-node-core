@@ -5,7 +5,7 @@
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { isEmpty } from '../../utility/toolset';
-import { Attach } from '../../property/core/attach';
+import { Attach } from './property/attach';
 import { Display } from '../../property/common/display';
 import { DisplayOnly } from './property/displayOnly';
 import { Require } from '../../property/common/require';
@@ -113,10 +113,9 @@ export class StructType extends ValueType implements IRelationProvider {
         
         const fieldType = new StructFieldType();
         const fieldSchema = { name: propType.property!, type: propType.valueType.name };
-        setPropertyValue(fieldSchema, Display, propType.getProperty(Display)?.getValue<LocaleString>());
 
         // copy properties from meta property type
-        for (const prop of getMetaProperties(propCtor).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
+        for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
           setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
 
         await fieldType.load(fieldSchema);
@@ -383,7 +382,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Get property by type */
   getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
-    return this._props?.find(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T ?? this._type?.getProperty(propCtor);
+    return this._props?.find(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T;
   }
 
   /** Gets the property value */
@@ -391,7 +390,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Get properties by type */
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[], this._type?.getProperties(propCtor))) yield prop as T;
+    for (let prop of joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[])) yield prop as T;
   }
 
   /** Gets the property values */
@@ -399,7 +398,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
 
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(this._props?.filter(predicate), this._type?.filterProperties(predicate))) yield prop;
+    for (let prop of joinProperties(this._props?.filter(predicate))) yield prop;
   }
 
   // ── Override Field Type ─────────────────────────────────────────────────

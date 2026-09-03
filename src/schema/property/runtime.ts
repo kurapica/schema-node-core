@@ -7,7 +7,7 @@ import { getNodeType } from '../../runtime/context';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
 
-import type { INodeType, IProperty, IRelation } from '../../interface';
+import { type INodeType, type IProperty } from '../../interface';
 import type { PropertySchema } from './type';
 
 import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';

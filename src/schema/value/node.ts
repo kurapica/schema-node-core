@@ -10,14 +10,14 @@ import { getPropertiesBySchemaKind } from '../../property/propertyOwner';
 import { isRelation, joinProperties, isConstraintProperty } from '../../interface';
 import { getPropertyName } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
+import { logger } from '../../utility/logger';
+import { TypeProvider } from '../../property/core/typeProvider';
 
 import type { Observer } from '../../utility/observable';
 import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
 
-import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE, NODE_TYPE } from '../../utility/constant';
-import { logger } from '../../utility/logger';
-import { TypeProvider } from '../../property/core/typeProvider';
+import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE, TYPE_PROVIDER } from '../../utility/constant';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -33,7 +33,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   readonly parent: IValueAccess | undefined;
 
   /** The alternative property provider  */
-  readonly propertyProvider?: IPropertyProvider;
+  readonly propertyProviders: IPropertyProvider[];
 
   /** The value */
   private _value: unknown;
@@ -69,11 +69,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
-  /** Construct the data node with value type, parent and init value, alternative property provider */
-  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
+  /** Construct the data node with value type, parent and init value, more property providers */
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
     this.type = type;
     this.parent = parent;
-    this.propertyProvider = propProvider;
+    this.propertyProviders = propProviders.filter(p => !isNull(p));
     if (!isEmpty(value))
     {
       this.setValue(value);
@@ -216,7 +216,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     {
       props = this._props?.get(propCtor);
     }
-    return props?.length ? props[0].property as T : (this.propertyProvider ?? this.type).getProperty<T>(propCtor);
+    return (props?.length ? props[0].property as T : undefined) 
+      ?? this.propertyProviders.map(p => p?.getProperty<T>(propCtor)).find(p => p?.hasValue) as T | undefined // normally only one or none providers
+      ?? this.type.getProperty<T>(propCtor);
   }
 
   /** Gets the property value */
@@ -242,7 +244,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     {
       props = this._props?.get(propCtor);
     }
-    for (let prop of joinProperties(props?.map(p => p.property as T), (this.propertyProvider ?? this.type).getProperties<T>(propCtor))) yield prop as T;
+    for (let prop of joinProperties(props?.map(p => p.property as T), ...this.propertyProviders.map(p => p.getProperties<T>(propCtor)), this.type.getProperties<T>(propCtor))) yield prop as T;
   }
 
   /** Gets the property values */
@@ -250,7 +252,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Filters the properties */
   *filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(this._filterProperties<T>(predicate), (this.propertyProvider ?? this.type).filterProperties(predicate))) yield prop;
+    for (let prop of joinProperties(this._filterProperties<T>(predicate), ...this.propertyProviders.map(p => p.filterProperties(predicate)), this.type.filterProperties(predicate))) yield prop;
   }
 
   private *_filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
@@ -472,7 +474,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
     if (isEmpty(path)) return this;
     if (path.toLowerCase() === NODE_SELF) return node ?? this;
-    if (path.toLowerCase() === NODE_TYPE) {
+    if (path.toLowerCase() === TYPE_PROVIDER) {
       let access: IValueAccess | undefined = node ?? this;
       while (access && !access.getProperty(TypeProvider)?.hasValue) access = access.parent;
       if (access) return access.getAccessValue(access.getPropertyValue<string>(TypeProvider)!, node);
@@ -543,7 +545,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._validated = true;
     
     // validate static constraints
-    for (const constraint of (this.propertyProvider ?? this.type).filterProperties(isConstraintProperty) as Generator<IConstraintProperty>) {
+    for (const constraint of joinProperties(...this.propertyProviders.map(p => p.filterProperties(isConstraintProperty)), 
+                                            this.type.filterProperties(isConstraintProperty)) as Generator<IConstraintProperty>) {
       this.recordConstraint(constraint, await constraint.validate(this));
     }
 

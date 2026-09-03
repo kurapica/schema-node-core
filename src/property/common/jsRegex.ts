@@ -8,13 +8,13 @@ import { Error } from '../common/error';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PROPERTY_COMMON } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_COMMON } from '../../utility/constant';
 
 @Meta(Alias, 'jsregex')
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.jsregex`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.jsregex`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.jsregex.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.jsregex.error`)
 export class JsRegex extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

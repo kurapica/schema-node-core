@@ -13,17 +13,17 @@ import { ArrayNode } from "../node";
 
 import type { IValueAccess } from "../../../interface";
 
-import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_ARRAY } from "../../../utility/constant";
+import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_ARRAY } from "../../../utility/constant";
 
 @Meta(Alias, 'array')
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.valid.error`)
 export class ArrayValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
 

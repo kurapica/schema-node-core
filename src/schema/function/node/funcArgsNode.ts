@@ -11,8 +11,10 @@ import type { IPropertyProvider, IValueAccess } from "../../../interface";
 /** The function arguments node */
 export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
 {
-  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, value, parent, propProvider);
+  private _showVariadic = true;
+
+  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, value, parent, ...propProviders);
 
     // variadic arguments are the last
     this.recordSubscription(this.subscribeItem(() => {
@@ -25,7 +27,7 @@ export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
       if (this.length > 0)
       {
         const variadic = this._elements[this.length - 1].getAccessValue('variadic') as BoolNode;
-        variadic.setPropertyValue(InVisible, undefined, this);
+        variadic.setPropertyValue(InVisible, !this._showVariadic, this);
       }
     }, true));
   }
@@ -35,5 +37,11 @@ export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
     this.setPropertyValue(MinSize, value ? this.length : undefined);
     this.setPropertyValue(MaxSize, value ? this.length : undefined);
     this.forEach((item: FuncArgNode) => item.unModifiable = value);
+  }
+
+  set showVariadic(value: boolean) {
+    this._showVariadic = value;
+    if (!this._elements.length) return;
+    this._elements[this._elements.length - 1].getAccessValue('variadic')?.setPropertyValue(InVisible, !value);
   }
 }

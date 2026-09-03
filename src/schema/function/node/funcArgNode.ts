@@ -1,3 +1,4 @@
+import { InVisible } from "../../../property";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { StructNode } from "../../struct/node";
 

@@ -24,8 +24,8 @@ export class FuncCallNode extends StructNode
   /** The arguments */
   readonly args: FuncCallArgsNode;
 
-  constructor(type: StructType, value: FuncExp | undefined, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, value, parent, propProvider);
+  constructor(type: StructType, value: FuncExp | undefined, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, value, parent, ...propProviders);
     this.mode = this.getAccessValue("mode") as EnumNode;
     this.func = this.getAccessValue("func") as StringNode;
     this.args = this.getAccessValue("args") as FuncCallArgsNode;

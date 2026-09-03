@@ -13,18 +13,18 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 import type { IValueAccess } from '../../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT } from '../../../utility/constant';
-import { NS_SYSTEM_SCHEMA_PROPERTY_STRUCT } from '../../../utility/constant';
+import { NS_SYSTEM_SCHEMA_PRO_STRUCT } from '../../../utility/constant';
 import { StructNode } from '../node';
 
 @Meta(Alias, 'struct')
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_STRUCT}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_STRUCT}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.valid.error`)
 export class StructValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
 

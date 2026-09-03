@@ -8,13 +8,13 @@ import { Error } from '../../../property/common/error';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_ARRAY_DEFINE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_ARRAY } from '../../../utility/constant';
+import { SCHEMA_KIND_ARRAY_DEFINE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_ARRAY } from '../../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_DEFINE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.indexes`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.indexes`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.indexs`)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.indexes.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.indexes.error`)
 export class Indexes extends ConstraintProperty<DataIndex[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     return undefined; // do nothing

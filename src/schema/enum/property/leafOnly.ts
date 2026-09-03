@@ -10,13 +10,13 @@ import { ArrayType } from '../../../schema/array/runtime';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_SCHEMA_PROPERTY_ENUM } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_SCHEMA_PRO_ENUM } from '../../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.leafonly`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.leafonly`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.leafonly.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.leafonly.error`)
 export class LeafOnly extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

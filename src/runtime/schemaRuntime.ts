@@ -18,11 +18,10 @@ import { logger } from '../utility/logger';
 
 import type { IProperty, PropertyCtor, INodeType } from '../interface';
 import type { NodeSchema } from '../schema/node/type';
-import type { StructSchema } from '../schema/struct/type';
 import type { ArraySchema } from '../schema/array/type';
 import type { GenericParameter } from '../schema/generic/type';
 
-import { NS_SYSTEM, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { NS_SYSTEM, NS_SYSTEM_OBJECT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
@@ -276,6 +275,11 @@ export function initSchemaRuntime(): void {
     if (appendProperties?.length) {
       let existed = _schemaKindPropertyTypes.get(kind) ?? [];
       existed.push(...appendProperties);
+      appendProperties.forEach(p => {
+        const t = (p as unknown as Record<string, string[]>);
+        if (t.forSchema?.includes(kind)) return;
+        t.forSchema = t.forSchema ? [...t.forSchema, kind] : [kind];
+      })
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
     } 
 
@@ -289,23 +293,12 @@ export function initSchemaRuntime(): void {
     }
 
     // Prototype properties
-    const prototypeProps = getMetaProperties(ctor).filter(p => (p.constructor as unknown as Record<string, string[]>).forSchema?.includes(kind))
+    const prototypeProps = getMetaProperties(ctor).filter(p => appendProperties?.includes(p.constructor as PropertyCtor) || (p.constructor as unknown as Record<string, string[]>).forSchema?.includes(kind))
     if (prototypeProps?.length) {
       _schemaKindProperties.set(kind, prototypeProps);
     }
 
     logger.debug('[Kind]:', kind, ' '.repeat(16 - kind.length), generator ? '[Generator] Yes' : '[Generator] No ', nodeSchemaKind ? '[NodeType] Yes' : '[NodeType] No ', '[NodeType]', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
-
-    // register struct with kind properties, special for schema creation
-    // system.schema.design.{kind} -> hold all properties for the kind
-    const nodeSchema: NodeSchema & { display: { key: string }, struct: StructSchema & { attach: string } } = { 
-      namespace: NS_SYSTEM_SCHEMA_DESIGN, 
-      name: kind, 
-      kind: SCHEMA_KIND_STRUCT, 
-      display: { key: `{${NS_SYSTEM_SCHEMA_KIND}.${kind}}`},
-      struct: { attach: kind, fields: [] }
-    };
-    saveNodeSchema(nodeSchema);
   });
 
   // Special types: system.array & system.list

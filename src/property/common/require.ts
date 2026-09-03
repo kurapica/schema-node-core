@@ -6,10 +6,10 @@ import { ConstraintProperty } from '../constraintProperty';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.require`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.require`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 export class Require extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {

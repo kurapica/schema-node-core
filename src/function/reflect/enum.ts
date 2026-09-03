@@ -4,7 +4,7 @@ import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaType } from '../../property/core/schemaType';
 import { setPropertyValue } from '../../property/propertyOwner';
 import { Display } from '../../property/common/display';
-import { EntrySource } from '../../property/core/entrySource';
+import { EntryRoot, EntrySource } from '../../property/core/entrySource';
 import { getNodeType } from '../../runtime/context';
 import { EnumType } from '../../schema/enum/runtime';
 import { ArrayType } from '../../schema/array/runtime';
@@ -140,10 +140,10 @@ export class SystemReflectEnum {
   static async getenumaccess(
     @Meta(ArgName, 'type') @Meta(SchemaType, NS_SYSTEM_STRING) type: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value?: string,
-    @Meta(ArgName, 'root') @Meta(SchemaType, NS_SYSTEM_STRING) root?: string,
+    @Meta(ArgName, 'root') @Meta(SchemaType, NS_SYSTEM_STRING) @Meta(EntryRoot, true) root?: string,
   ): Promise<EntryAccess<string>[]> {
     let enumType = await SystemReflectEnum.getEnumType(type);
-    if (!enumType) return [];
+    if (!(enumType instanceof EnumType)) return [];
     const res = await enumType.getEnumEntryAccess(value, root);
     return res;
   }

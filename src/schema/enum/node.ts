@@ -21,9 +21,9 @@ export class EnumNode extends ScalarNode {
 export class EnumArrayNode extends ScalarNode {
   readonly enumType: EnumType;
 
-  constructor(type: ArrayType, value?: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-      super(type, value, parent, new EnumArrayNodePropertyProvider(type.element as EnumType, propProvider));
-      this.enumType = type.element as EnumType;
+  constructor(type: ArrayType, value?: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, value, parent, new EnumArrayNodePropertyProvider(type.element as EnumType, ...propProviders));
+    this.enumType = type.element as EnumType;
   }
 
   override getValue(): unknown[] {
@@ -39,15 +39,15 @@ export class EnumArrayNode extends ScalarNode {
 
 class EnumArrayNodePropertyProvider implements IPropertyProvider {
   private _enumType: EnumType;
-  private _propProvider?: IPropertyProvider;
+  private _propProviders: IPropertyProvider[];
 
-  constructor(enumType: EnumType, propProvider?: IPropertyProvider) {
+  constructor(enumType: EnumType, ...propProviders: IPropertyProvider[]) {
     this._enumType = enumType;
-    this._propProvider = propProvider;
+    this._propProviders = propProviders;
   }
 
   getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
-    return this._propProvider?.getProperty(propCtor) as T ?? this._enumType.getProperty(propCtor) as T;
+    return this._propProviders.map(p => p.getProperty(propCtor) as T).find(p => p?.hasValue) ?? this._enumType.getProperty(propCtor) as T;
   }
   
   getPropertyValue<T>(propCtor: PropertyCtor | string): T | undefined {
@@ -55,7 +55,7 @@ class EnumArrayNodePropertyProvider implements IPropertyProvider {
   }
 
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(this._propProvider?.getProperties(propCtor) || [], this._enumType.getProperties(propCtor))) yield prop as T;
+    for (let prop of joinProperties(...this._propProviders.map(p => p.getProperties(propCtor)), this._enumType.getProperties(propCtor))) yield prop as T;
   }
 
   *getPropertyValues<T>(propCtor: PropertyCtor | string): Generator<T> {
@@ -63,6 +63,6 @@ class EnumArrayNodePropertyProvider implements IPropertyProvider {
   }
 
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(this._propProvider?.filterProperties(predicate), this._enumType.filterProperties(predicate))) yield prop;
+    for (let prop of joinProperties(...this._propProviders.map(p => p.filterProperties(predicate)), this._enumType.filterProperties(predicate))) yield prop;
   }
 }

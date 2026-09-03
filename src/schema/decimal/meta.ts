@@ -1,5 +1,5 @@
 import { getMetaProperty, Meta } from '../../attribute/meta';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { Display } from '../../property/common/display';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';
@@ -23,7 +23,7 @@ import { DataNodeType } from '../../property/core/dataNodeType';
 import type { NodeSchema } from '../node/type';
 import type { DecimalSchema } from './type';
 
-import { NODE_SELF, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DECIMAL_DEFINE, SCHEMA_KIND_DECIMAL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { NODE_SELF, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DECIMAL_DEFINE, SCHEMA_KIND_DECIMAL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, SCHEMA_KIND_STRING } from '../../utility/constant';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Append } from '../../property/core/append';
 import { EntrySource } from '../../property/core/entrySource';
@@ -63,8 +63,8 @@ class DecimalSchemaMeta implements DecimalSchema {
 @Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Unit, Error, StackUpLimit, Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.usage`)
 @Meta(Attach, SCHEMA_KIND_DECIMAL_USAGE)
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.blacklist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
+@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
+@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.blacklist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
 class DecimalUsage {}
 
 /** Represents the decimal value type */

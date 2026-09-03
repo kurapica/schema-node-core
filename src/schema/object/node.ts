@@ -3,7 +3,7 @@ import { BlackList } from "../../property/common/blackList";
 import { Valid } from "../../property/common/valid";
 import { WhiteList } from "../../property/common/whiteList";
 import { AccessValueTypeProvider } from "../../property/core/accessValueTypeProvider";
-import { EntrySource, EntrySourceVersion } from "../../property/core/entrySource";
+import { EntryRoot, EntrySource, EntrySourceVersion } from "../../property/core/entrySource";
 import { EntrySourceProvider } from "../../property/core/entrySourceProvider";
 import { getPropertyValue, setPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
@@ -13,7 +13,7 @@ import { Root } from "../enum/property/root";
 import { Cascade } from "../enum/property/cascade";
 import { AccessEntryConsumer } from "../string/property/accessEntryConsumer";
 import { EntrySourceConsumer } from "../string/property/entrySourceConsumer";
-import { debounce, isEmpty, isEqual, useQueueQuery } from "../../utility/toolset";
+import { debounce, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
 import { _L, _LS } from "../../utility/locale";
 
 import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
@@ -23,7 +23,7 @@ import type { Entry, EntryAccess } from "../../struct/entry/type";
 import type { LocaleString } from "../../struct/localeString";
 import type { FuncCallProperty } from "../../property/funcCallProperty";
 
-import { ENTRY_ROOT, NODE_SELF, NODE_TYPE } from "../../utility/constant";
+import { NODE_SELF } from "../../utility/constant";
 
 /** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {
@@ -32,8 +32,8 @@ export abstract class ScalarNode extends DataNode {
   private _entrySourceInfo?: IEntrySourceInfo;
 
   /** Construct the data node with value type, parent and init value, alternative property provider */
-  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, value, parent, propProvider);
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, value, parent, ...propProviders);
     this.recordSubscription(this.subscribeSelfProperty(WhiteList, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(BlackList, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(Valid, this._refreshEntrySource));
@@ -216,29 +216,12 @@ export abstract class ScalarNode extends DataNode {
   private _callArgToEntrySource(owner: IValueAccess, a: CallArg): IEntrySourceArg
   {
     const result: IEntrySourceArg = { value: a.value };
-    if (a.source === NODE_SELF)
-    {
-      result.source = this;
-    }
-    else if(a.source === NODE_TYPE)
-    {
-      result.value = this.type.name;
-    }
-    else if(a.source === ENTRY_ROOT)
-    {
-      result.isroot = true;
-    }
-    else if (a.source)
-    {
-      const target = owner.getAccessValue(a.source, this);
-      if (target)
-      {
-        result.source = target;
-        if (target !== this) {
-          this._entrySourceInfo ??= {};
-          this._entrySourceInfo.subscribes ??= [];
-          this._entrySourceInfo.subscribes.push(target.subscribe(this._delayInitEntryOptions));
-        }
+    if (a.source) {
+      result.source = (owner ?? this)?.getAccessValue(a.source, this);
+      if (result.source && result.source !== this) {
+        this._entrySourceInfo ??= {};
+        this._entrySourceInfo.subscribes ??= [];
+        this._entrySourceInfo.subscribes.push(result.source!.subscribe(this._delayInitEntryOptions));
       }
     }
     return result;
@@ -311,11 +294,15 @@ export abstract class ScalarNode extends DataNode {
     if (!this._entrySourceInfo?.source || !this._entrySourceInfo?.args) return [];
 
     // call entry source function
-    const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.args.map(a => {
-        if (a.source) return a.source === this ? value : a.source.getValue();
-        if (a.isroot) return this._entrySourceInfo!.root;
-        return a.value;
-      })) as EntryAccess<any>[];
+    const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args.map((a, i) => {
+      const c = this._entrySourceInfo!.args![i];
+      if (!c || isNull(c.source) && isNull(c.value)) {
+        if (a.getPropertyValue(EntryRoot)) return this._entrySourceInfo!.root;
+        return undefined;
+      }
+      if (c.source) return c.source === this ? value : c.source.getValue();
+      return c.value;
+    })) as EntryAccess<any>[];
 
     // valid
     if (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length)
@@ -457,7 +444,7 @@ export abstract class ScalarNode extends DataNode {
 
     // check cascade level
     const cascade = this._entrySourceInfo?.cascade ?? 9999;
-    if (accessList?.length && cascade <= accessList!.length)
+    if (accessList?.length && cascade >= 1 && cascade <= accessList!.length)
     {
       accessList = accessList.slice(0, cascade);
       accessList[cascade - 1].children?.forEach(c => c.hasChildren = false);
@@ -492,7 +479,6 @@ interface IEntrySourceArg
 {
   source?: IValueAccess,
   value?: any,
-  isroot?: boolean,
 }
 
 /** Entry source info */

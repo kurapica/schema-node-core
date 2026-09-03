@@ -28,7 +28,7 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
-import { NODE_SELF, NODE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
+import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -669,6 +669,10 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
     return this._args[Symbol.iterator]();
   }
 
+  map<T>(callback: (value: FuncArgType, index: number) => T): T[] {
+    return this._args.map(callback);
+  }
+
   /** Get the function argument by name or index. */
   at(argName: string | number): FuncArgType | undefined {
     if (typeof argName === 'number')
@@ -689,7 +693,7 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
     const arg = this._args.find(a => a.name.toLowerCase() === first);
     if (!arg) return undefined;
     if (remain === NODE_SELF) return this._stringType;
-    if (remain === NODE_TYPE) return this._stringType;
+    if (remain === TYPE_PROVIDER) return this._stringType;
     return arg.valueType;
   }
 

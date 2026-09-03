@@ -37,7 +37,7 @@ export interface IArrayValueTypeAccess extends IValueTypeAccess {
 }
 
 /** The value access factory type */
-export type ValueAccessFactory = new (type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) => IValueAccess;
+export type ValueAccessFactory = new (type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) => IValueAccess;
 
 /** Objects that provide path-based value access. */
 export interface IValueAccess {

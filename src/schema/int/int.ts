@@ -12,12 +12,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from "../../interface";
 import type { IntSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_INT, SCHEMA_KIND_INT } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_INT, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_INT, SCHEMA_KIND_INT } from "../../utility/constant";
 
 /** The int property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.int`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_INT}.${SCHEMA_KIND_INT}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_INT}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_INT))
 export class IntProperty extends Property<IntSchema>

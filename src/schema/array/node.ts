@@ -12,7 +12,7 @@ import { ArrayType } from "./runtime";
 import type { IPropertyProvider, IRelationInfo, IValueAccess, ValueAccessFactory } from "../../interface";
 import type { Observer } from "../../utility/observable";
 
-import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF } from "../../utility/constant";
+import { ARRAY_ELEMENT, ARRAY_PREVIOUS } from "../../utility/constant";
 
 /** The array node contains the array data values */
 export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements Iterable<T> {
@@ -22,8 +22,8 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   protected _relations?: IRelationInfo[]; // the merged relations from types
   protected _arrayDataOb?: Observable<[IValueAccess, unknown, number]>;
 
-  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, undefined, parent, propProvider);
+  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, undefined, parent, ...propProviders);
 
     const arrValue = Array.isArray(value) ? value : [];
     this.setValue(arrValue);
@@ -108,7 +108,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     this._elements.length = Math.min(this._elements.length, data.length);
 
     for (let i = this._elements.length; i < data.length; i++) {
-      const node = elementType.create(data[i], this, this.propertyProvider);
+      const node = elementType.create(data[i], this, ...this.propertyProviders);
       this._elements.push(node as T);
       node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this); // so subscription will be disposed when node is disposed
       if (this._relations?.length) node.attachRelations(this._relations); // attach all relations from self and parents
@@ -179,7 +179,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
     let result: IValueAccess | undefined = undefined;
     if (first == ARRAY_PREVIOUS) {
-      result = new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
+      return new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
     } else if (first == ARRAY_ELEMENT) {
       result = this._elements[eleIndex];
       return rest ? result?.getAccessValue(rest, node) : result;
@@ -252,9 +252,13 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     const elementType = (this.type as ArrayType).element;
     if (!elementType || !this.addAble) return undefined;
 
-    const node = ctor 
-      ? new ctor(elementType, data, this, propertyProvider ?? this.propertyProvider) as T 
-      : elementType.create(data, this, propertyProvider ?? this.propertyProvider) as T;
+    const node = propertyProvider 
+      ? ctor 
+        ? new ctor(elementType, data, this, propertyProvider, ...this.propertyProviders) as T 
+        : elementType.create(data, this, propertyProvider, ...this.propertyProviders) as T
+      :ctor 
+        ? new ctor(elementType, data, this, ...this.propertyProviders) as T 
+        : elementType.create(data, this, ...this.propertyProviders) as T;
     if (!node) return undefined;
 
     if (isNull(index)) index = this._elements.length;

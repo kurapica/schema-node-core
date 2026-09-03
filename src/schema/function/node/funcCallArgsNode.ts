@@ -16,7 +16,7 @@ import type { LocaleString } from "../../../struct/localeString/type";
 import type { StructNode } from "../../struct/node";
 import type { StructType } from "../../struct/runtime";
 
-import { NODE_SELF, NODE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from "../../../utility/constant";
+import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from "../../../utility/constant";
 
 /** The function expression arguments data node */
 export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
@@ -30,8 +30,8 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
   private _argCountOb?: Observable<[IValueAccess, number]>;
   private _preColIdx: number = -1;
 
-  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, undefined, parent, propProvider);
+  constructor(type: ArrayType, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, undefined, parent, ...propProviders);
     this._argType = type.element as StructType;
     this._initData = value as CallArg[] ?? []; // waiting parent
   }
@@ -128,7 +128,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
 
     const arg = this._args.find(e => e.name?.toLowerCase() == first) ?? (this._varArg?.name?.toLowerCase() == first ? this._varArg : undefined);
     if (!arg) return undefined;
-    if (rest === NODE_TYPE) return arg.getAccessValue('sourceType');
+    if (rest === TYPE_PROVIDER) return arg.getAccessValue('sourceType');
     if (rest === NODE_SELF) return arg.getAccessValue('source');
     return arg.getAccessValue('value');
   }
@@ -166,8 +166,8 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
   /** Add a new element to the array */
   private addRow(data: unknown, propertyProvider: IPropertyProvider, factory?: ValueAccessFactory): StructNode | undefined {
     const node = factory 
-      ? new factory(this._argType, data, this, propertyProvider ?? this.propertyProvider) as StructNode 
-      : this._argType.create(data, this, propertyProvider ?? this.propertyProvider) as StructNode;
+      ? new factory(this._argType, data, this, propertyProvider, ...this.propertyProviders) as StructNode 
+      : this._argType.create(data, this, propertyProvider, ...this.propertyProviders) as StructNode;
     if (!node) return undefined;
 
     this._args.push(node);

@@ -10,14 +10,14 @@ import { ArrayType } from '../../../schema/array/runtime';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_ENUM, SCHEMA_KIND_ENUM_USAGE } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PRO_ENUM, SCHEMA_KIND_ENUM_USAGE } from '../../../utility/constant';
 
 /** Limit the cascade level of the enum entry. */
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.cascade`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascade`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.cascade.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascade.error`)
 export class Cascade extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

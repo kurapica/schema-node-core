@@ -64,12 +64,10 @@ export const SCHEMA_KIND_ORDER_GENERIC = 99;
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 
-export const RELATION_OWNER = '$owner';
+export const NODE_SELF = '$self';
+export const TYPE_PROVIDER = '$type';
 export const ARRAY_PREVIOUS = '$prev';
 export const ARRAY_ELEMENT = '$ele';
-export const NODE_SELF = '$self';
-export const NODE_TYPE = '$type';
-export const ENTRY_ROOT = '$root';
 
 // ── Generic Pattern ────────────────────────────────────────────────────────
 
@@ -151,20 +149,21 @@ export const NS_SYSTEM_SCHEMA_FUNC_CALL_ARG = `${NS_SYSTEM_SCHEMA_FUNC}.callarg`
 export const NS_SYSTEM_SCHEMA_RELATION = `${NS_SYSTEM_SCHEMA}.relation`;
 export const NS_SYSTEM_SCHEMA_RELATION_TYPE = `${NS_SYSTEM_SCHEMA_RELATION}.type`;
 export const NS_SYSTEM_SCHEMA_RELATION_KIND = `${NS_SYSTEM_SCHEMA_RELATION}.kind`;
-export const NS_SYSTEM_SCHEMA_PROPERTY = `${NS_SYSTEM_SCHEMA}.prop`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_TYPE = `${NS_SYSTEM_SCHEMA_PROPERTY}.type`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_CORE = `${NS_SYSTEM_SCHEMA_PROPERTY}.core`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_COMMON = `${NS_SYSTEM_SCHEMA_PROPERTY}.common`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_FUNC = `${NS_SYSTEM_SCHEMA_PROPERTY}.func`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_RELATION = `${NS_SYSTEM_SCHEMA_PROPERTY}.relation`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_BOOL = `${NS_SYSTEM_SCHEMA_PROPERTY}.bool`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_INT = `${NS_SYSTEM_SCHEMA_PROPERTY}.int`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_DECIMAL = `${NS_SYSTEM_SCHEMA_PROPERTY}.decimal`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_STRING = `${NS_SYSTEM_SCHEMA_PROPERTY}.string`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_DATE = `${NS_SYSTEM_SCHEMA_PROPERTY}.date`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_ENUM = `${NS_SYSTEM_SCHEMA_PROPERTY}.enum`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_STRUCT = `${NS_SYSTEM_SCHEMA_PROPERTY}.struct`;
-export const NS_SYSTEM_SCHEMA_PROPERTY_ARRAY = `${NS_SYSTEM_SCHEMA_PROPERTY}.array`;
+export const NS_SYSTEM_SCHEMA_PRO = `${NS_SYSTEM_SCHEMA}.prop`;
+export const NS_SYSTEM_SCHEMA_PRO_TYPE = `${NS_SYSTEM_SCHEMA_PRO}.type`;
+export const NS_SYSTEM_SCHEMA_PRO_CORE = `${NS_SYSTEM_SCHEMA_PRO}.core`;
+export const NS_SYSTEM_SCHEMA_PRO_COMMON = `${NS_SYSTEM_SCHEMA_PRO}.common`;
+export const NS_SYSTEM_SCHEMA_PRO_FUNC = `${NS_SYSTEM_SCHEMA_PRO}.func`;
+export const NS_SYSTEM_SCHEMA_PRO_RELATION = `${NS_SYSTEM_SCHEMA_PRO}.relation`;
+export const NS_SYSTEM_SCHEMA_PRO_BOOL = `${NS_SYSTEM_SCHEMA_PRO}.bool`;
+export const NS_SYSTEM_SCHEMA_PRO_INT = `${NS_SYSTEM_SCHEMA_PRO}.int`;
+export const NS_SYSTEM_SCHEMA_PRO_DECIMAL = `${NS_SYSTEM_SCHEMA_PRO}.decimal`;
+export const NS_SYSTEM_SCHEMA_PRO_STRING = `${NS_SYSTEM_SCHEMA_PRO}.string`;
+export const NS_SYSTEM_SCHEMA_PRO_DATE = `${NS_SYSTEM_SCHEMA_PRO}.date`;
+export const NS_SYSTEM_SCHEMA_PRO_ENUM = `${NS_SYSTEM_SCHEMA_PRO}.enum`;
+export const NS_SYSTEM_SCHEMA_PRO_STRUCT = `${NS_SYSTEM_SCHEMA_PRO}.struct`;
+export const NS_SYSTEM_SCHEMA_PRO_ARRAY = `${NS_SYSTEM_SCHEMA_PRO}.array`;
+export const NS_SYSTEM_SCHEMA_PRO_PROPERTY = `${NS_SYSTEM_SCHEMA_PRO}.property`;
 
 export const NS_SYSTEM_SCHEMA_ERROR = `${NS_SYSTEM_SCHEMA}.error`;
 

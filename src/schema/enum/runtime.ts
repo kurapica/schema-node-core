@@ -4,10 +4,10 @@
 // =============================================================================
 
 import { EnumValueType } from '../../enum/enumValueType/type';
-import { EntrySource } from '../../property/core/entrySource';
+import { EntryRoot, EntrySource } from '../../property/core/entrySource';
 import { getPropertiesBySchemaKind, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { EntryType } from '../../struct/entry/runtime';
-import { isEmpty } from '../../utility/toolset';
+import { isEmpty, isNull } from '../../utility/toolset';
 import { ValueType } from '../value/runtime';
 import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty } from '../../runtime/schemaRuntime';
 import { joinProperties } from '../../interface';
@@ -16,17 +16,18 @@ import { StringType } from '../string/runtime';
 import { IntType } from '../int/runtime';
 import { FunctionType } from '../function/runtime';
 import { getNodeType } from '../../runtime/context';
+import { SchemaLoadState } from '../../enum';
+import { EnumProperty } from './enum';
+import { buildFuncCall, type FuncCall } from '../../schema/function/type';
 
 import type { EnumValueTypeValue } from '../../enum/enumValueType/type';
-import type { FuncCall } from '../../schema/function/type';
 import type { LocaleString } from '../../struct/localeString/type';
 import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { IProperty, PropertyCtor } from '../../interface';
 
-import { ENTRY_ROOT, NODE_SELF, NODE_TYPE, SCHEMA_KIND_ENUM } from '../../utility/constant';
-import { SchemaLoadState } from '../../enum';
-import { EnumProperty } from './enum';
+import { NODE_SELF, TYPE_PROVIDER, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+
 
 export class EnumType extends ValueType {
   private _enumSchema: EnumSchema | undefined;
@@ -44,7 +45,9 @@ export class EnumType extends ValueType {
 
   override loadProperties(): IProperty[] {
     this._enumSchema = getPropertyValue<EnumSchema>(this.schema, "enum");
-    return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM)) : [];
+    const entrySource = new EntrySource();
+    entrySource.setValue<FuncCall>(buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, this.name, NODE_SELF));
+    return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM)).concat(entrySource) : [entrySource];
   }
 
   override async load()
@@ -115,26 +118,20 @@ export class EnumType extends ValueType {
     const source = await getNodeType(entrySource.func) as FunctionType;
     if (!source) return [];
 
-    access = await source.call(entrySource.args.map(m => {
-      if (m.source)
-      {
-        if (m.source === NODE_TYPE)
-        {
-          return this.name;
-        }
-        else if(m.source === NODE_SELF)
-        {
-          return value;
-        } 
-        else if(m.source === ENTRY_ROOT)
-        {
+    console.warn("getEnumEntryAccess", value, start, source.args, entrySource.args);
+    access = await source.call(source.args.map((a, i) => {
+      const m = entrySource.args[i];
+      if (!m || isNull(m.source) && isNull(m.value)) {
+        // handle entry root
+        if (a.getPropertyValue<boolean>(EntryRoot))
           return start;
-        }
+        return undefined;
       }
-      else
-      {
-        return m.value;
-      }
+
+      if(m.source === NODE_SELF)
+        return value;
+      
+      return m.value;
     })) as EntryAccess<string>[];
 
     if (!access?.length) return [];

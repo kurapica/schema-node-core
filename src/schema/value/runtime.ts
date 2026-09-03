@@ -42,18 +42,21 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   // ── DataNode factory ─────────────────────────────────────────────────── 
 
   /** Create a DataNode instance for this type. Abstract — subclasses return concrete nodes. */
-  create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess {
+  create(value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]): IValueAccess {
     // parent given data node type
-    if (parent?.type instanceof ValueType && propProvider?.getProperty('name')?.hasValue) {
-      const schemaType = getSchemaType(parent.type.name);
-      const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType, propProvider.getProperty('name')!.getValue<string>())?.getValue<ValueAccessFactory>() : undefined;
-      if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
+    if (parent?.type instanceof ValueType && propProviders.length) {
+      const name = propProviders.map(p => p?.getProperty('name')).find(p => p?.hasValue)?.getValue<string>();
+      if (name) {
+        const schemaType = getSchemaType(parent.type.name);
+        const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType, name)?.getValue<ValueAccessFactory>() : undefined;
+        if (dataNodeType) return new dataNodeType(this, value, parent, ...propProviders);
+      }
     }
 
     // schema node type
     const schemaType = getSchemaType(this.name);
     const dataNodeType = schemaType ? getMetaProperty(schemaType, DataNodeType)?.getValue<ValueAccessFactory>() : undefined;
-    if (dataNodeType) return new dataNodeType(this, value, parent, propProvider);
+    if (dataNodeType) return new dataNodeType(this, value, parent, ...propProviders);
     
     // array node type
     if (this.kind === SCHEMA_KIND_ARRAY)
@@ -62,14 +65,14 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
       if (element) {
         const eleKind = getSchemaKindRegister(element.kind)!;
         const arrayNodeType = getMetaProperty(eleKind, ArrayDataNodeType)?.getValue<ValueAccessFactory>();
-        if (arrayNodeType) return new arrayNodeType(this, value, parent, propProvider);
+        if (arrayNodeType) return new arrayNodeType(this, value, parent, ...propProviders);
       }
     }
 
     // kind node type
     const kindType = getSchemaKindRegister(this.kind)!;
     const kindDataNodeType = getMetaProperty(kindType, DataNodeType)?.getValue<ValueAccessFactory>();
-    return kindDataNodeType ? new kindDataNodeType(this, value, parent, propProvider) : new DataNode(this, value, parent, propProvider);
+    return kindDataNodeType ? new kindDataNodeType(this, value, parent, ...propProviders) : new DataNode(this, value, parent, ...propProviders);
   }
 
   // ── Virtual ────────────────────────────────────────────────────────────

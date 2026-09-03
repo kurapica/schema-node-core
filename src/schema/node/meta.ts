@@ -9,7 +9,7 @@ import { Base } from '../../property/core/base';
 import { buildFuncCall } from '../../schema/function/type';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { PrimaryIndex } from '../../property/core/indexes';
 import { OfSchema } from '../../property/core/ofSchema';
 import { EntrySource } from '../../property/core/entrySource';
@@ -22,17 +22,15 @@ import { NodeType } from './runtime';
 
 import type { CompatibleSchema, NodeSchema } from './type';
 
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
 import { UpLimitString } from '../string/property/upLimit';
+import { Append } from '../../property/core/append';
+import { Display } from '../../property/common/display';
 
-/** Represents the node kind */
+/** The meta definition of the node schema */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_NODE])
 @Meta(RuntimeNodeType, NodeType)
-class NodeKind {}
-
-/**
- * The meta definition of the node schema
- */
+@Meta(Append, [Display])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE)
 class NodeSchemaMeta implements NodeSchema {
@@ -72,7 +70,7 @@ class NodeSchemaMeta implements NodeSchema {
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
-@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypeentries`, NODE_SELF, ENTRY_ROOT))
+@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.gettypeentries`, NODE_SELF))
 class AnyTypeMeta {}
 
 /** Represents the value type */

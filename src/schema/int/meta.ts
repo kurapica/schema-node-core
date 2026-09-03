@@ -1,5 +1,5 @@
 import { getMetaProperty, Meta } from '../../attribute/meta';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { Display } from '../../property/common/display';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';

@@ -10,14 +10,14 @@ import { Error } from '../../../property/common/error';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PROPERTY_ARRAY, SCHEMA_KIND_ARRAY_DEFINE } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY_DEFINE } from '../../../utility/constant';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_DEFINE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.primary`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary`)
 @Meta(Static, true)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.primary.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary.error`)
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.length || node.type.kind !== SCHEMA_KIND_ARRAY) return undefined;

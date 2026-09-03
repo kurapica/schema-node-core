@@ -13,17 +13,17 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL, NS_SYSTEM_SCHEMA_PROPERTY_DECIMAL } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL, NS_SYSTEM_SCHEMA_PRO_DECIMAL } from '../../../utility/constant';
 
 @Meta(Alias, 'decimal')
 @Meta(ForSchema, [SCHEMA_KIND_DECIMAL])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_DECIMAL}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_DECIMAL}.decimal.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.decimal.error`)
 export class DecimalValue extends ConstraintProperty<number> {
   override get hasValue(): boolean { return true; }
 

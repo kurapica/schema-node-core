@@ -13,16 +13,16 @@ import { UpLimitInt } from '../../int/property/upLimit';
 
 import type { IValueAccess } from '../../../interface';
 
-import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_ARRAY, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_USAGE, SCHEMA_KIND_PROPERTY } from '../../../utility/constant';
+import { NS_SYSTEM_INT, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_USAGE, SCHEMA_KIND_PROPERTY } from '../../../utility/constant';
 
 /** The minimum size constraint property for array data node */
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.minsize`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.minsize`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(LowLimitInt, 0)
 @Relation(UpLimitInt,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@maxSize'))
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ARRAY}.minsize.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.minsize.error`)
 export class MinSize extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (!this.hasValue) return undefined;

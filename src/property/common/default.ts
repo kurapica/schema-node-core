@@ -13,13 +13,13 @@ import { Relation } from '../../attribute/relation';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_OBJECT,  NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NODE_TYPE } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_CORE, TYPE_PROVIDER } from '../../utility/constant';
 
 /** The Default property represents the default value */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.default`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, NODE_TYPE))
+@Relation(`${NS_SYSTEM_SCHEMA_PRO_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER))
 export class Default extends Property<unknown> {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
     if (!isNull(field) || !isNull(descriptorOrIndex)) return;

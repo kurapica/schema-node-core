@@ -13,17 +13,17 @@ import { isNull } from '../../../utility/toolset';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_DATE } from '../../../utility/constant';
+import { SCHEMA_KIND_DATE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_DATE } from '../../../utility/constant';
 
 @Meta(Alias, 'date')
 @Meta(ForSchema, [SCHEMA_KIND_DATE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_DATE}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DATE}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_DATE}.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_DATE}.error`)
 export class DateValue extends ConstraintProperty<Date> {
   override get hasValue(): boolean { return true; }
 

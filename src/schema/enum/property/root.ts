@@ -10,14 +10,14 @@ import { ArrayType } from '../../../schema/array/runtime';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PROPERTY_ENUM, SCHEMA_KIND_ENUM_USAGE } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PRO_ENUM, SCHEMA_KIND_ENUM_USAGE } from '../../../utility/constant';
 
 /** The enum root value */
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.root`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.root`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.root.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.root.error`)
 export class Root extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;

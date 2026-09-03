@@ -10,7 +10,7 @@ import { OfSchema } from './ofSchema';
 import { PropertyValueType } from './propertyValueType';
 import { SchemaType } from './schemaType';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /**
  * Static property type — prevents relation modification of this property.
@@ -18,7 +18,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } 
  */
 @Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.stackable`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.stackable`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class Static extends Property<boolean> {

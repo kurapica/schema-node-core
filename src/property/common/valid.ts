@@ -13,7 +13,7 @@ import { getErrorMessage } from '../constraintProperty';
 
 import type { IConstraintProperty, IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 import { Assign } from '../../relation/assign';
 import { Default } from '../common/default';
@@ -22,10 +22,10 @@ import { logger } from '../../utility';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(Stackable, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
 @Relation(Default, Assign, NS_SYSTEM_BOOL, 'valid.return')
 export class Valid extends FuncCallProperty implements IConstraintProperty {
   async validate(node: IValueAccess): Promise<boolean | undefined> {

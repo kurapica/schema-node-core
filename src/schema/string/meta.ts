@@ -1,5 +1,5 @@
 import { getMetaProperty, Meta } from '../../attribute/meta';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { Display } from '../../property/common/display';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { OfSchema } from '../../property/core/ofSchema';
@@ -33,7 +33,7 @@ import { Unit } from '../../property/common/unit';
 import type { NodeSchema } from '../node/type';
 import type { StringSchema } from './type';
 
-import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING_DEFINE, SCHEMA_KIND_STRING_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NODE_TYPE } from '../../utility/constant';
+import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING_DEFINE, SCHEMA_KIND_STRING_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_ENUM, TYPE_PROVIDER } from '../../utility/constant';
 import { Relation } from '../../attribute/relation';
 import { Visible } from '../../property/common/visible';
 import { OverrideType } from '../../property/core/overrideType';
@@ -77,10 +77,10 @@ class StringSchemaMeta implements StringSchema {
 @Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@blackList"), 'whiteList')
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'whiteList')
 // root
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'root')
-@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, NODE_TYPE), 'root')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'root')
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, TYPE_PROVIDER), 'root')
 // leafOnly
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'leafOnly')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'leafOnly')
 class StringUsage {}
 
 /** Represents the string value type */

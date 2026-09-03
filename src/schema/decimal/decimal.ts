@@ -12,12 +12,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from '../../interface';
 import type { DecimalSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DECIMAL, SCHEMA_KIND_DECIMAL } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_DECIMAL, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DECIMAL, SCHEMA_KIND_DECIMAL } from "../../utility/constant";
 
 /** The decimal property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.decimal`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.${SCHEMA_KIND_DECIMAL}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DECIMAL}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DECIMAL))
 export class DecimalProperty extends Property<DecimalSchema> {

@@ -12,12 +12,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from "../../interface";
 import type { FunctionSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_FUNC_ARG } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_SCHEMA_PRO_FUNC } from "../../utility/constant";
 
 /** The function property for node schemas. */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.func`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_FUNC}.${SCHEMA_KIND_FUNCTION}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_FUNCTION))
 export class FuncProperty extends Property<FunctionSchema> {

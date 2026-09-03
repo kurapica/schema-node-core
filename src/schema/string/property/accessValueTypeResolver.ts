@@ -18,12 +18,12 @@ import { AccessValueTypeProvider } from '../../../property/core/accessValueTypeP
 import type { FuncCall } from '../../../schema/function/type';
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_PROPERTY_STRING } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_PRO_STRING } from '../../../utility/constant';
 
 /** The access value provider property */
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_STRING}.AccessValueTypeResolver`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessValueTypeResolver`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
 @Meta(Static, true)
 @Meta(ReadOnly, true)

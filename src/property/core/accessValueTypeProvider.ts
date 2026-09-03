@@ -10,11 +10,11 @@ import { PropertyValueType } from "./propertyValueType";
 import { SchemaType } from "./schemaType";
 import { Static } from "./static";
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_FUNC } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_FUNC } from '../../utility/constant';
 
 /** The access value provider property */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.AccessValueTypeProvider`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.AccessValueTypeProvider`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)

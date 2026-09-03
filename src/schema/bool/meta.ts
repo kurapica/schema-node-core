@@ -17,12 +17,13 @@ import { BoolType } from './runtime';
 import { BoolValue } from './property/boolValue';
 import { BoolNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
+import { SchemaUsage } from '../../property/core/schemaUsage';
+import { Append } from '../../property/core/append';
+import { Attach } from '../struct/property/attach';
 
 import type { NodeSchema } from '../node/type';
 
 import { NODE_SELF, NS_SYSTEM_SCHEMA_BOOL, NS_SYSTEM_SCHEMA_BOOL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_BOOL, SCHEMA_KIND_BOOL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_BOOL, SCHEMA_KIND_STRING } from '../../utility/constant';
-import { Append, Attach } from '../../property';
-import { SchemaUsage } from '../../property/core/schemaUsage';
 
 /** The bool schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_BOOL, SCHEMA_KIND_ORDER_BOOL])

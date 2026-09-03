@@ -22,6 +22,7 @@ import type { LocaleString } from '../../struct/localeString/type';
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
 import { getSchemaKindRegister } from '../../runtime';
 import { SchemaUsage } from '../../property/core/schemaUsage';
+import { EntryRoot } from '../../property/core/entrySource';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)
@@ -67,6 +68,7 @@ export class SystemReflectType {
 
     @Meta(ArgName, 'root')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+    @Meta(EntryRoot, true)
     root?: string
   ): Promise<EntryAccess<string>[]> {
     name = name?.toLowerCase() ?? '';
@@ -129,6 +131,7 @@ export class SystemReflectType {
 
     @Meta(ArgName, 'root')
     @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(EntryRoot, true)
     root?: string
   ): Promise<EntryAccess<string>[]> {
     let valueType = !name ? undefined : await getNodeType(name) as ValueType | undefined;

@@ -12,17 +12,17 @@ import { ConstraintProperty } from "../../../property/constraintProperty";
 
 import type { IValueAccess } from "../../../interface";
 
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_BOOL, SCHEMA_KIND_BOOL, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
+import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_BOOL, SCHEMA_KIND_BOOL, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
 
 @Meta(Alias, 'bool')
 @Meta(ForSchema, [SCHEMA_KIND_BOOL])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_BOOL}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_BOOL}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_BOOL}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_BOOL}.valid.error`)
 export class BoolValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
   async validate(node: IValueAccess): Promise<boolean | undefined>{ return undefined }

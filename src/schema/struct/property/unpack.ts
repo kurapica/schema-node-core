@@ -11,7 +11,7 @@ import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { Relation } from '../../../attribute/relation';
 import { buildFuncCall } from '../../../schema/function/type';
 
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_OBJECT, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_STRUCT } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_OBJECT, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PRO_STRUCT, TYPE_PROVIDER } from '../../../utility/constant';
 import { Property } from '../../../property/property';
 
 /**
@@ -19,7 +19,7 @@ import { Property } from '../../../property/property';
  */
 @Meta(ForSchema, [SCHEMA_KIND_STRUCT_FIELD])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_STRUCT}.unpack`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.unpack`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', false, SCHEMA_KIND_OBJECT, SCHEMA_KIND_STRUCT))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, TYPE_PROVIDER, false, SCHEMA_KIND_OBJECT, SCHEMA_KIND_STRUCT))
 export class Unpack extends Property<boolean> {}

@@ -12,11 +12,11 @@ import { buildFuncCall } from '../../schema/function/type';
 import { AssignProcess } from "./type";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 
-import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PRO_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 
 @Meta(ForSchema, SCHEMA_KIND_RELATION)
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.assign`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_RELATION}.assign`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 @Meta(RelationKind, 'assign')
 @Meta(RelationProcess, AssignProcess)

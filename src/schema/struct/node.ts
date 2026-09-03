@@ -12,6 +12,7 @@ import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo, IVal
 import type { NodeSchema } from "../node/type";
 import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
+import { logger } from '../../utility/logger';
 
 
 /** Struct node. */
@@ -22,8 +23,8 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   protected _fieldRelations?: Map<string, IRelationInfo[]>;
   private _fieldTypeTrack?: Map<string, Function>;
 
-  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, undefined, parent, propProvider);
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, undefined, parent, ...propProviders);
 
     const fields = (type as StructType).getFields();
     for (const field of fields.filter(f => f.type)) {
@@ -47,7 +48,17 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
   }
 
   override dispose() {
-    this._fields.forEach(f => f.dispose());
+    if (this._fieldTypeTrack) {
+      for (let sub of this._fieldTypeTrack.values())
+        sub();
+      this._fieldTypeTrack = undefined;
+    }
+
+    this._fields.forEach(f => {
+      f.dispose();
+      if (f.type.getProperty('name')?.getValue() === '__randomStructType')
+        (f.type as StructType)?.unloadType();
+    });
     this._fields = [];
     super.dispose();
   }
@@ -192,7 +203,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
     const rest = dot >= 0 ? path.substring(dot + 1) : '';
 
-    const field = this._fields.find(f => f.name?.toLowerCase() == first);
+    const field = this._fields.find(f=> f.name?.toLowerCase() == first);
     if (!field) return undefined;
     return rest ? field.getAccessValue(rest, node) : field;
   }
@@ -339,12 +350,23 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         const newStrucType = new StructType();
         await newStrucType.loadType(nodeSchema);
         type = newStrucType;
+
+        if (!this._fields.length) {
+          newStrucType.unloadType();
+          return;
+        }
       }
       const newNode = type.create(node.original, this, strutField.getOverrideFieldType(type)) as DataNode;
       newNode.value = trimValue(node.rawValue);
       node.moveSubscription(newNode);
       
       // replace old node with new node
+      if (this._fields.length <= index) { // avoid struct already disposed
+        newNode.dispose();
+        if (newNode.type.getProperty('name')?.getValue() === '__randomStructType')
+          (newNode.type as StructType)?.unloadType();
+        return;
+      }
       this._fields[index] = newNode;
       if (node.type.getProperty('name')?.getValue() === '__randomStructType')
         (node.type as StructType)?.unloadType();

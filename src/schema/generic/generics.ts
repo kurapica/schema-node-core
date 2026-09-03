@@ -8,7 +8,7 @@ import { Property } from "../../property/property";
 
 import type { GenericParameter } from "./type";
 
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_LIST } from "../../utility/constant";
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_LIST } from "../../utility/constant";
 import { Static } from "../../property/core/static";
 import { InVisible } from "../../property/common/invisible";
 
@@ -20,6 +20,6 @@ import { InVisible } from "../../property/common/invisible";
 @Meta(ReadOnly, true)
 @Meta(Static, true)
 @Meta(InVisible, true)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.generics`)
-@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.genericParameter>`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.generics`)
+@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_PRO_CORE}.genericParameter>`)
 export class Generics extends Property<GenericParameter[]> {}

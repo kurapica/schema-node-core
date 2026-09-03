@@ -9,15 +9,15 @@ import { ConstraintProperty } from "../../../property/constraintProperty";
 import { isNull } from "../../../utility/toolset";
 
 import type { IValueAccess } from "../../../interface";
-import { NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_PROPERTY_INT, SCHEMA_KIND_INT, SCHEMA_KIND_INT_DEFINE, SCHEMA_KIND_INT_USAGE, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
+import { NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_PRO_INT, SCHEMA_KIND_INT, SCHEMA_KIND_INT_DEFINE, SCHEMA_KIND_INT_USAGE, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
 import { StackUpLimit } from "../../../property/common/stackUpLimit";
 
 @Meta(Alias, 'uplimit')
 @Meta(ForSchema, [SCHEMA_KIND_INT, SCHEMA_KIND_INT_DEFINE, SCHEMA_KIND_INT_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_INT}.uplimit`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_INT}.uplimit`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_INT}.uplimit.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_INT}.uplimit.error`)
 export class UpLimitInt extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as number;

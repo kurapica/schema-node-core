@@ -13,12 +13,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from '../../interface';
 import type { ArraySchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_ARRAY } from "../../utility/constant";
 
 /** The array property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.array`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.${SCHEMA_KIND_ARRAY}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ARRAY))
 @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.genarrayname`, "@array.element"), "name")

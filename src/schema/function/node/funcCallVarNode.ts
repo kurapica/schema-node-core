@@ -16,8 +16,8 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
   private _argType: StructType
   private _argCountOb?: Observable<[IValueAccess, number]>;
 
-  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider) {
-    super(type, undefined, parent, propProvider);
+  constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
+    super(type, undefined, parent, ...propProviders);
     this._argType = type as StructType;
     super.setValue([]);
     if (Array.isArray(value))

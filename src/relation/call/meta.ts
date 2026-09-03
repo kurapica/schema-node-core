@@ -10,14 +10,14 @@ import { buildFuncCall } from '../../schema/function/type';
 import { CallProcess } from "./type";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 
-import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_PROPERTY_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
+import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_PRO_RELATION, SCHEMA_KIND_PROPERTY, SCHEMA_KIND_RELATION } from "../../utility/constant";
 
 @Meta(ForSchema, SCHEMA_KIND_RELATION)
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_RELATION}.call`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_RELATION}.call`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(RelationKind, 'call')
 @Meta(RelationProcess, CallProcess)
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.visible`,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'call'))
-@Relation(`${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.default`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'), "call.return")
+@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.visible`,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', 'call'))
+@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.default`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@valueType'), "call.return")
 export class Call extends FuncCallProperty {}

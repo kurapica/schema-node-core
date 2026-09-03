@@ -10,7 +10,7 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
-import { Attach } from '../../property/core/attach';
+import { Attach } from './property/attach';
 import { Append } from '../../property/core/append';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
@@ -44,11 +44,16 @@ import type { NodeSchema } from '../node/type';
 import type { ArraySchema } from '../array/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, ENTRY_ROOT, ARRAY_ELEMENT, SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_STRUCT_DEFINE, NODE_TYPE, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC } from '../../utility/constant';
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_STRUCT_DEFINE, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC } from '../../utility/constant';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Unpack } from './property';
 import { Visible } from '../../property/common/visible';
 import { OverrideType } from '../../property/core/overrideType';
+import { Disable } from '../../property/common/disable';
+import { Description } from '../../property/common/description';
+import { InVisible } from '../../property/common/invisible';
+import { Immutable } from '../../property/common/immutable';
+import { ReadOnly } from '../../property/common/readOnly';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -67,7 +72,7 @@ class StructKind{}
 @Meta(Append, [Generics, Relations, Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_DEFINE)
-@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF, ENTRY_ROOT))
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
 //@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.enableproperty`, '@fields', `@relations.${ARRAY_ELEMENT}.target`, NODE_SELF), `relations.${ARRAY_ELEMENT}.property`)
 class StructSchemaMeta implements StructSchema {
@@ -79,14 +84,18 @@ class StructSchemaMeta implements StructSchema {
 @Meta(Append, [Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.usage`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_USAGE)
-@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
-@Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessvaluetype`, NODE_TYPE, NODE_SELF))
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`, TYPE_PROVIDER, NODE_SELF))
+@Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessvaluetype`, TYPE_PROVIDER, NODE_SELF))
 class StructUsage {}
 
-/** The struct field schema meta */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_ORDER_STRUCT_FIELD])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.field`)
+@Meta(Append, [Disable, Display, Description, Visible, InVisible, Immutable, ReadOnly, Require, OverrideType])
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_FIELD)
+class StructFieldDefine {}
+
+/** The struct field schema meta */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.field`)
 @Meta(TypeProvider, 'type')
 class StructFieldSchemaMeta implements StructFieldSchema {
   /** The field name */
@@ -100,6 +109,10 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
   type!: string;
+
+  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
+  @Meta(Unpack, true)
+  fieldDefine?: {};
 
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
   @Meta(Unpack, true)

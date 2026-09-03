@@ -7,7 +7,7 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { getRecordedValues } from '../../property/recordProperty';
@@ -45,7 +45,7 @@ import type { Entry } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NODE_TYPE, ENTRY_ROOT, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT, SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_SCHEMA_PROPERTY_ENUM, NS_SYSTEM_LOGIC } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT, SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC, NS_SYSTEM_LOGIC_EQ } from '../../utility/constant';
 import { Require } from '../../property/common/require';
 import { LeafOnly } from './property/leafOnly';
 import { SingleFlag } from './property/singleFlag';
@@ -63,14 +63,12 @@ import { EnumProperty } from './enum';
 @Meta(DataNodeType, EnumNode)
 @Meta(EnumValue)
 @Meta(ArrayDataNodeType, EnumArrayNode)
-@Meta(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, NODE_TYPE, NODE_SELF, ENTRY_ROOT))
 class EnumSchemaKind{}
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ORDER_ENUM])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
-@Meta(Attach, SCHEMA_KIND_ENUM)
-@Relation(InVisible,'assign', true, "entrySource")
+@Meta(Attach, SCHEMA_KIND_ENUM_DEFINE)
 class EnumSchemaMeta implements EnumSchema {
   /** The enum value type */
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.valuetype`)
@@ -79,6 +77,7 @@ class EnumSchemaMeta implements EnumSchema {
 
   /** The cascade of the enum value */
   @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_LOCALE_STRING}>`)
+  @Relation(InVisible, 'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@type', EnumValueType.Flags))
   cascade?: LocaleString[];
   
   /** The root enum values */
@@ -110,16 +109,17 @@ class EnumSchemaMeta implements EnumSchema {
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'whiteList')
 @Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"), 'whiteList')
 // root
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'root')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'root')
 @Relation(InVisible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.le`, "@cascade", 1), 'root')
-@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, NODE_TYPE), 'root')
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, NODE_TYPE, "@cascade", -1), 'root')
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, TYPE_PROVIDER), 'root')
+@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, TYPE_PROVIDER, "@cascade", -1), 'root')
 // cascade
-@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, NODE_TYPE), 'cascade')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'cascade')
+@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, TYPE_PROVIDER), 'cascade')
 // leafOnly
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, NODE_TYPE), 'leafOnly')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'leafOnly')
 // singleFlag
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, NODE_TYPE, EnumValueType.Flags), 'singleFlag')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.isenumvaluetype`, TYPE_PROVIDER, EnumValueType.Flags), 'singleFlag')
 class EnumUsage {}
 
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.value`) // for definition
@@ -173,7 +173,8 @@ function buildEnumValues(enumName: string, target: object): Entry<string>[] {
   const values: Entry<string>[] = [];
   for (const key of Object.getOwnPropertyNames(target).filter(k => k !== 'prototype' && k !== 'length' && k !== 'name')) {
     const val = (target as Record<string, unknown>)[key];
-    if (val=== 'string' || val=== 'number') 
+
+    if (typeof val=== 'string' || typeof val=== 'number') 
       values.push(setPropertyValue({ value: String(val) }, Display, { key: `${enumName}.${key.toLowerCase()}` }));
   }
   return values;

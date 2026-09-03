@@ -8,7 +8,7 @@ import { Static } from '../../property/core/static';
 import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
 
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PROPERTY_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
 import { OfSchema } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -18,7 +18,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isstatic(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     type: string
   ): Promise<boolean>
   {
@@ -31,7 +31,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isstackable(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     type: string
   ): Promise<boolean>
   {
@@ -44,7 +44,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async notstatic(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     type: string
   ): Promise<boolean>
   {
@@ -55,7 +55,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async notstackable(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     type: string
   ): Promise<boolean>
   {
@@ -66,7 +66,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_STRING)
   static async getvaluetype(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     @Meta(Require, true)
     type: string,
   ): Promise<string | undefined> {
@@ -78,7 +78,7 @@ export class SystemReflectProperty {
   @Meta(Return, NS_SYSTEM_BOOL)
   static async forschema(
     @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PROPERTY_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     type: string,
 
     @Meta(ArgName, 'kind')

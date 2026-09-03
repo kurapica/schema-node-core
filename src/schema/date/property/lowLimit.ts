@@ -9,15 +9,15 @@ import { ConstraintProperty } from "../../../property/constraintProperty";
 
 import type { IValueAccess } from "../../../interface";
 
-import { NS_SYSTEM_DATE, NS_SYSTEM_SCHEMA_PROPERTY_DATE, SCHEMA_KIND_DATE, SCHEMA_KIND_DATE_DEFINE, SCHEMA_KIND_DATE_USAGE, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
+import { NS_SYSTEM_DATE, NS_SYSTEM_SCHEMA_PRO_DATE, SCHEMA_KIND_DATE, SCHEMA_KIND_DATE_DEFINE, SCHEMA_KIND_DATE_USAGE, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
 import { isNull, parseDate } from "../../../utility/toolset";
 
 @Meta(Alias, 'lowlimit')
 @Meta(ForSchema, [SCHEMA_KIND_DATE, SCHEMA_KIND_DATE_DEFINE, SCHEMA_KIND_DATE_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_DATE}.lowlimit`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DATE}.lowlimit`)
 @Meta(PropertyValueType, NS_SYSTEM_DATE)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_DATE}.lowlimit.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_DATE}.lowlimit.error`)
 export class LowLimitDate extends ConstraintProperty<Date> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue() as Date;

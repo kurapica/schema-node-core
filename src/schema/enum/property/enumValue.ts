@@ -16,17 +16,17 @@ import { ArrayType } from '../../array/runtime';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_ENUM } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_ENUM } from '../../../utility/constant';
 
 @Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_ENUM])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_ENUM}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.valid.error`)
 export class EnumValue extends ConstraintProperty<boolean> {
   override get hasValue(): boolean { return true; }
 

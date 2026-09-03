@@ -12,13 +12,13 @@ import { concatLocaleString } from '../../struct/localeString/type';
 import type { LocaleString } from '../../struct/localeString/type';
 import type { IProperty } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 
 /**
  * The display property
  */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.display`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.display`)
 @Meta(PropertyValueType, NS_SYSTEM_LOCALE_STRING)
 export class Display extends Property<LocaleString> {
     combine(other: IProperty): boolean {

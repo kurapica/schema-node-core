@@ -11,7 +11,7 @@ import { PropertyValueType } from './propertyValueType';
 import { SchemaType } from './schemaType';
 import { Static } from './static';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /**
  * Declare whether duplicate properties from different sources stack (accumulate) vs override.
@@ -19,7 +19,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_BOOL } 
  */
 @Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.stackable`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.stackable`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class Stackable extends Property<boolean> {

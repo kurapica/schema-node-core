@@ -1,7 +1,6 @@
 export * from './accessValueTypeProvider';
 export * from './alias';
 export * from './append';
-export * from './attach';
 export * from './base';
 export * from './dataNodeType';
 export * from './disableConstraint';

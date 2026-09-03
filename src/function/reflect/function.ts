@@ -17,11 +17,13 @@ import { BoolType } from '../../schema/bool';
 import { IntType } from '../../schema/int/runtime';
 import { DecimalType } from '../../schema/decimal/runtime';
 import { ApplyMode } from '../../enum/applyMode/type';
+import { EntryRoot } from '../../property/core/entrySource';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING } from '../../utility/constant';
+
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
@@ -101,6 +103,7 @@ export class SystemReflectFunction {
 
     @Meta(ArgName, 'root')
     @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(EntryRoot, true)
     root?: string
   ): Promise<EntryAccess<string>[]> {
     path = path?.toLowerCase() ?? '';

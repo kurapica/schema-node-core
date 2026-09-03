@@ -12,12 +12,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from '../../interface';
 import type { DateSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_DATE } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_DATE, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_DATE, NS_SYSTEM_SCHEMA_PRO_DATE } from "../../utility/constant";
 
 /** The date property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.date`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DATE}.${SCHEMA_KIND_DATE}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_DATE}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_DATE))
 export class DateProperty extends Property<DateSchema>

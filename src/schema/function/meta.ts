@@ -9,7 +9,7 @@ import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 import { SchemaType } from '../../property/core/schemaType';
-import { Attach } from '../../property/core/attach';
+import { Attach } from '../struct/property/attach';
 import { OfSchema } from '../../property/core/ofSchema';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { Display } from '../../property/common/display';
@@ -55,7 +55,8 @@ import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type
 import type { NodeSchema } from '../node/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ENTRY_ROOT, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT } from '../../utility/constant';
+import { TypeProvider } from '../../property';
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -69,7 +70,7 @@ class FunctionKind {}
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Meta(Attach, SCHEMA_KIND_FUNCTION)
-@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', '@exps', NODE_SELF, ENTRY_ROOT))
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', '@exps', NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`, '@args', '@exps', NODE_SELF))
 @Meta(DataNodeType, FunctionNode)
 class FunctionSchemaMeta implements FunctionSchema {
@@ -93,9 +94,11 @@ class FunctionSchemaMeta implements FunctionSchema {
 
 /** Meta registration class for function argument (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_ORDER_FUNC_ARG])
+@Meta(Append, [Display, Default, Require])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.arg`)
 @Meta(Attach, SCHEMA_KIND_FUNC_ARG)
 @Meta(DataNodeType, FuncArgNode)
+@Meta(TypeProvider, 'type')
 class FuncArgMeta implements FuncArg {
   @Meta(PrimaryIndex, 0)
   @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
@@ -196,7 +199,7 @@ class CallArgMeta implements CallArg {
   /** The source value type */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
-  //@Meta(InVisible, true)
+  @Meta(InVisible, true)
   @Meta(AccessValueTypeResolver, 'source')
   sourceType?: string;
 

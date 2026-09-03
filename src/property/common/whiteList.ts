@@ -12,13 +12,13 @@ import { Relation } from '../../attribute/relation';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY,  NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NODE_TYPE, NS_SYSTEM_SCHEMA_PROPERTY_COMMON } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY,  NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_PRO_COMMON } from '../../utility/constant';
 
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.whitelist`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_COMMON}.whitelist.error`)
-@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, NODE_TYPE))
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist.error`)
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, TYPE_PROVIDER))
 export class WhiteList extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     const value = node.getValue();

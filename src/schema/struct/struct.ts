@@ -11,12 +11,12 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from "../../interface";
 import type { StructSchema, StructFieldSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD } from "../../utility";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD } from "../../utility";
 
 /** Property bridge. */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.struct`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.${SCHEMA_KIND_STRUCT}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRUCT))
 export class StructProperty extends Property<StructSchema> {

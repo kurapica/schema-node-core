@@ -12,12 +12,12 @@ import { concatLocaleString } from "../../struct/localeString/type";
 import type { IProperty } from "../../interface";
 import type { EnumSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PROPERTY_CORE, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENTRY } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_ENUM, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENTRY } from "../../utility/constant";
 
 /** The enum property of node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_CORE}.enum`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.${SCHEMA_KIND_ENUM}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ENUM}.schema`)
 @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_ENUM))
 export class EnumProperty extends Property<EnumSchema> {

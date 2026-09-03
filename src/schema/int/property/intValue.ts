@@ -13,17 +13,17 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_INT, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PROPERTY_INT } from '../../../utility/constant';
+import { SCHEMA_KIND_INT, SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_INT } from '../../../utility/constant';
 
 @Meta(Alias, 'int')
 @Meta(ForSchema, [SCHEMA_KIND_INT])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PROPERTY_INT}.valid`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_INT}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
 @Meta(Default, true)
 @Meta(Static, true)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PROPERTY_INT}.valid.error`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_INT}.valid.error`)
 export class IntValue extends ConstraintProperty<number> {
   override get hasValue(): boolean { return true; }
 

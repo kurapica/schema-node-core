@@ -17,6 +17,7 @@ import { ArrayType } from '../../schema/array/runtime';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
+import { EntryRoot } from '../../property/core/entrySource';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -104,6 +105,7 @@ export class SystemReflectArray {
 
     @Meta(ArgName, 'root')
     @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(EntryRoot, true)
     root?: string
   ): Promise<EntryAccess<string>[]> {
     const elementType = element ? await getNodeType(element) as ValueType : undefined;
