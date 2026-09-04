@@ -10,7 +10,10 @@ import { Error } from '../../../property/common/error';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY_DEFINE } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY_DEFINE, NS_SYSTEM_INTRINSIC, ARRAY_ELEMENT, ARRAY_PREVIOUS } from '../../../utility/constant';
+import { Relation } from '../../../attribute';
+import { BlackList } from '../../../property';
+import { buildFuncCall } from '../../function';
 
 @Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_DEFINE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -18,6 +21,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_
 @Meta(Static, true)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary.error`)
+@Relation(BlackList, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, `@primary.${ARRAY_PREVIOUS}`), `primary.${ARRAY_ELEMENT}`)
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.length || node.type.kind !== SCHEMA_KIND_ARRAY) return undefined;

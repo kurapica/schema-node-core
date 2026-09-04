@@ -13,7 +13,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } fro
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 export class Require extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (this._value !== true) return undefined;
-    return !node.isEmpty;
+    if (!this.hasValue) return undefined;
+    return !this._value || !node.isEmpty;
   }
 }

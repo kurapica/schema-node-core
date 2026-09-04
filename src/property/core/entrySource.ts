@@ -6,11 +6,12 @@ import { ForSchema } from './forSchema';
 import { SchemaType } from './schemaType';
 import { PropertyValueType } from './propertyValueType';
 import { Relation } from '../../attribute/relation';
-
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_BOOL } from '../../utility/constant';
 import { Property } from '../property';
 import { Static } from './static';
-import { InVisible, ReadOnly } from '../common';
+import { ReadOnly } from '../common/readOnly';
+import { InVisible } from '../common/invisible';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /** The entry source function */
 @Meta(ForSchema, [SCHEMA_KIND_PROPERTY])

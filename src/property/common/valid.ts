@@ -10,16 +10,15 @@ import { Error } from '../common/error';
 import { StructNode } from '../../schema/struct/node';
 import { FunctionType } from '../../schema/function/runtime';
 import { getErrorMessage } from '../constraintProperty';
-
-import type { IConstraintProperty, IValueAccess } from '../../interface';
-
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
-
 import { Assign } from '../../relation/assign';
 import { Default } from '../common/default';
 import { Relation } from '../../attribute/relation';
-import { logger } from '../../utility';
-import type { FuncCall } from '../../schema';
+import { logger } from '../../utility/logger';
+
+import type { IConstraintProperty, IValueAccess } from '../../interface';
+import type { FuncCall } from '../../schema/function/type';
+
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)

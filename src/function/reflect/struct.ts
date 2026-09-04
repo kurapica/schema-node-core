@@ -210,7 +210,7 @@ export class SystemReflectStruct {
     @Meta(ArgName, 'type')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
     type: string
-  ): Promise<Entry<string>[]> {
+  ): Promise<EntryAccess<string>[]> {
     var structType = type ? await getNodeType(type) : undefined;
     if (!(structType instanceof StructType)) return [];
     const result: Entry<string>[] = [];
@@ -219,7 +219,7 @@ export class SystemReflectStruct {
       if (f.type?.isIndexable || f.type instanceof StringType && !isNull(f.getPropertyValue(UpLimitString)) && f.getPropertyValue(UpLimitString) as number <= PRIMARY_KEY_MAX_LEN)
         result.push(setPropertyValue({ value: f.name, hasChildren: false }, Display, f.getPropertyValue(Display) ?? _LS(f.name)));
     }
-    return result;
+    return [{ children: result }];
   }
 
   /// <summary>

@@ -18,7 +18,7 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
 import { EntryRoot } from '../../property/core/entrySource';
-import type { IValueTypeAccess } from '../../interface';
+import type { LocaleString } from '../../struct/localeString/type';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -115,31 +115,29 @@ export class SystemReflectArray {
     path = path?.toLowerCase() ?? '';
     root = root?.toLowerCase() ?? '';
     if (path && root && path !== root && !path.startsWith(`${root}.`)) return [];
-    if (!root) root = path;
+    if (!path) path = root;
 
     // first
-    const first: Entry<string>[] = [
-      { value: ARRAY_PREVIOUS, hasChildren: false },
-      { value: ARRAY_ELEMENT, hasChildren: elementType.hasAccessEntries },
+    const first: (Entry<string> & { display: LocaleString })[]  = [
+      { value: ARRAY_PREVIOUS, display: _LS('ARRAY_PREVIOUS'), hasChildren: false },
+      { value: ARRAY_ELEMENT, display: _LS('ARRAY_ELEMENT'), hasChildren: elementType.hasAccessEntries },
     ];
-    for(const e of elementType.getAccessEntries())
-      first.push(e);
 
     const result: EntryAccess<string>[] = [ { children: first} ];
-    let curr = result[0].children?.find(c => c.value.toLowerCase() === root || root.startsWith(`${c.value.toLowerCase()}.`));
-    let valueType: ValueType | undefined = curr?.value === ARRAY_ELEMENT ? elementType : await getNodeType(`${NS_SYSTEM_LIST}<${elementType.name}>`) as ValueType;
-    while (valueType)
+    let curr = path ? result[0].children?.find(c => c.value.toLowerCase() === path || path.startsWith(`${c.value.toLowerCase()}.`)) : undefined;
+    let valueType: ValueType | undefined = curr?.value === ARRAY_ELEMENT ? elementType : undefined;
+    while (valueType && curr)
     {
       const accessEntry: EntryAccess<string> = {};
+      accessEntry.entry = setPropertyValue(
+        { value: curr.value, hasChildren: valueType.hasAccessEntries },
+        Display,
+        getPropertyValue(curr, Display)
+      );
+      result.push(accessEntry);
+      if (!valueType.hasAccessEntries) break;
+
       const accesses = valueType.getAccessEntries();
-      if (curr)
-      {
-        accessEntry.entry = setPropertyValue(
-          { value: curr.value, hasChildren: accesses.length > 0 },
-          Display,
-          getPropertyValue(curr, Display)
-        );
-      }
       accessEntry.children = accesses;
 
       // check next part
@@ -154,7 +152,6 @@ export class SystemReflectArray {
           curr = a;
         }
       }
-      result.push(accessEntry);
       valueType = next;
     }
 
