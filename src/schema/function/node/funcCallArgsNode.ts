@@ -5,7 +5,7 @@ import { ApplyMode } from "../../../enum/applyMode/type";
 import { Observable, type Observer } from "../../../utility/observable";
 import { SystemReflectType } from "../../../function";
 import { FuncCallVarNode } from "./funcCallVarNode";
-import { _LS } from "../../../utility";
+import { _LS, splitString } from "../../../utility";
 import { buildFuncCall, type CallArg } from "../type";
 import { Display } from "../../../property/common/display";
 import { ReadOnly } from "../../../property/common/readOnly";
@@ -122,14 +122,13 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
 
   // special for argument choice
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
-    const dot = path.indexOf('.');
-    const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
-    const rest = dot >= 0 ? path.substring(dot + 1).toLowerCase() : '';
+    const paths = splitString(path?.toLowerCase(), '.', 2);
 
-    const arg = this._args.find(e => e.name?.toLowerCase() == first) ?? (this._varArg?.name?.toLowerCase() == first ? this._varArg : undefined);
+    // @TODO: handle the global access path later
+    const arg = this._args.find(e => e.name?.toLowerCase() == paths[0]) ?? (this._varArg?.name?.toLowerCase() == paths[0] ? this._varArg : undefined);
     if (!arg) return undefined;
-    if (rest === TYPE_PROVIDER) return arg.getAccessValue('sourceType');
-    if (rest === NODE_SELF) return arg.getAccessValue('source');
+    if (paths[1] === TYPE_PROVIDER) return arg.getAccessValue('sourceType');
+    if (paths[1] === NODE_SELF) return arg.getAccessValue('source');
     return arg.getAccessValue('value');
   }
 

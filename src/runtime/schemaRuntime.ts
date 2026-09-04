@@ -12,7 +12,7 @@
 
 import { getMetaProperties } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
-import { combinePaths } from '../utility/toolset';
+import { combinePaths, splitString } from '../utility/toolset';
 import { getNodeSchemaName } from '../schema/node/type';
 import { logger } from '../utility/logger';
 
@@ -202,7 +202,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
     return;
   }
 
-  const parts = ns.split('.');
+  const parts = splitString(ns);
   let current = rootNamespace;
 
   for (const part of parts) {
@@ -233,7 +233,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
 
 /** Walk the namespace tree by dotted path. */
 function _findInNamespace(path: string): NodeSchema | undefined {
-  const parts = path.split('.');
+  const parts = splitString(path);
   let current: NodeSchema | undefined = rootNamespace;
 
   for (const part of parts) {

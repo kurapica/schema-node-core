@@ -20,6 +20,8 @@ import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELA
 import { EntrySourceConsumer } from '../string/property/entrySourceConsumer';
 import { Root } from '../enum/property/root';
 import { DisplayOnly } from '../struct/property/displayOnly';
+import { AccessValueTypeProvider } from '../../property';
+import { AccessValueTypeResolver } from '../string';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_RELATION, SCHEMA_KIND_ORDER_RELATION])
@@ -33,6 +35,11 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(Require, true)
   target!: string;
 
+  @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  @Meta(DisplayOnly, true)
+  @Meta(AccessValueTypeResolver, 'target')
+  targetType?: string;
+
   /** The property the relation applies to */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
   @Meta(PrimaryIndex, 1)
@@ -44,8 +51,7 @@ class RelationSchemaMeta implements RelationSchema {
   /** The value type of the property */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
-  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property', '@targetType'))
   valueType?: string;
 
   /** The relation kind */

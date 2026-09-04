@@ -3,14 +3,14 @@ import { hasNodeReferences, isNamespaceNodeType } from "../interface";
 import { combineProperties } from "../property/propertyOwner";
 import { getSchemaProvider } from "../schema/provider";
 import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
+import { logger } from "../utility/logger";
+import { isNull, splitString } from "../utility/toolset";
 
 import type { INamespaceNodeType, INodeReference, INodeType } from "../interface";
 import type { GenericParameter } from "../schema/generic/type";
 import type { NodeSchema } from "../schema/node/type";
 
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
-import { logger } from "../utility/logger";
-import { isNull } from "../utility/toolset";
 
 const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
 
@@ -23,7 +23,7 @@ function getRuntimeNodeType(kind: string){
 
 /** Get the cached NodeType type by full schema name. */
 export function getCachedNodeType(fullName: string): INodeType | undefined {
-  const split = fullName.split('.');
+  const split = splitString(fullName);
   if (!rootNamespaceType) {
     const runtime = getRuntimeNodeType(SCHEMA_KIND_NAMESPACE)!;
     rootNamespaceType = new runtime() as INamespaceNodeType;
@@ -91,7 +91,7 @@ export async function getNodeType(
     genericPart = fullName.substring(genericStart);
     fullName = fullName.substring(0, genericStart);
   }
-  const parts = fullName.split('.');
+  const parts = splitString(fullName);
   if (genericPart) parts.push(genericPart);
 
   // Load nodes

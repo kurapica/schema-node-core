@@ -12,7 +12,7 @@ import { Require } from '../../property/common/require';
 import { SchemaType } from '../../property/core/schemaType';
 import { Unpack } from './property/unpack';
 import { Name } from '../../property/core/name';
-import { getMetaProperties, getMetaProperty } from '../../attribute/meta';
+import { getMetaProperty } from '../../attribute/meta';
 import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
@@ -26,7 +26,6 @@ import { getNodeType } from '../../runtime/context';
 import { logger } from '../../utility';
 
 import type { Entry } from '../../struct/entry/type';
-import type { LocaleString } from '../../struct/localeString/type';
 import type { StructFieldSchema, StructSchema } from './type';
 import type { RelationSchema } from '../relation/type';
 import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, IRelationProvider, INodeReference, INodeType, IRelation } from '../../interface';

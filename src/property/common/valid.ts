@@ -19,6 +19,7 @@ import { Assign } from '../../relation/assign';
 import { Default } from '../common/default';
 import { Relation } from '../../attribute/relation';
 import { logger } from '../../utility';
+import type { FuncCall } from '../../schema';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -28,6 +29,27 @@ import { logger } from '../../utility';
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
 @Relation(Default, Assign, NS_SYSTEM_BOOL, 'valid.return')
 export class Valid extends FuncCallProperty implements IConstraintProperty {
+  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
+    this.clear(target, source);
+    if ((newValue as FuncCall).args?.length) {
+      source ??= this.source ?? target;
+      for (let arg of (newValue as FuncCall).args) {
+        if (arg.source) {
+          const t = source?.getAccessValue(arg.source!, target);
+          if (t)
+            target.recordSubscription(t.subscribe(async () => {
+              const res = await t.getValue();
+              target.setPropertyValue(Valid, res as boolean, source);
+            }), this);
+        }
+      }
+    }
+  }
+
+  clear(target: IValueAccess, source?: IValueAccess): void {
+    target.clearSubscription(this);
+  }
+
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value?.func) return undefined;
     if (!(node instanceof StructNode) && isNull(node.getValue())) return undefined;

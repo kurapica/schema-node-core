@@ -15,12 +15,12 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_INT, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA
 /** Limit the cascade level of the enum entry. */
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascade`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascadedepth`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
-@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascade.error`)
-export class Cascade extends ConstraintProperty<number> {
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.cascadedepth.error`)
+export class CascadeDepth extends ConstraintProperty<number> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value) return undefined;
+    if (node.isEmpty || !this._value || this._value < 1) return undefined;
     if (node.type.kind === SCHEMA_KIND_ENUM) {
       const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
       if (!access?.length) return undefined;
@@ -33,7 +33,7 @@ export class Cascade extends ConstraintProperty<number> {
       {
         const access = await (node.type.element as EnumType).getEnumEntryAccess(`${value}`);
         if (!access?.length) continue;
-        if(access.length > this._value) return false;
+        if(access.length - 1 > this._value) return false;
       }
       return true;
     }

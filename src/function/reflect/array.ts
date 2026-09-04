@@ -9,7 +9,7 @@ import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { _LS } from '../../utility/locale';
-import { combinePaths, isEmpty } from '../../utility/toolset';
+import { combinePaths, isEmpty, splitString } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
@@ -18,6 +18,7 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
 import { EntryRoot } from '../../property/core/entrySource';
+import type { IValueTypeAccess } from '../../interface';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -45,7 +46,7 @@ export class SystemReflectArray {
     element: string,
   ): Promise<string> {
     if (isEmpty(element)) return "";
-    return `{LIST.PREFIX}{${element}}{LIST.SUFFIX}`;
+    return `{LIST.PREFIX}{@${element}}{LIST.SUFFIX}`;
   }
 
   /** Gets the array type for the given element type */
@@ -119,14 +120,14 @@ export class SystemReflectArray {
     // first
     const first: Entry<string>[] = [
       { value: ARRAY_PREVIOUS, hasChildren: false },
-      { value: ARRAY_ELEMENT, hasChildren: false },
+      { value: ARRAY_ELEMENT, hasChildren: elementType.hasAccessEntries },
     ];
     for(const e of elementType.getAccessEntries())
       first.push(e);
 
     const result: EntryAccess<string>[] = [ { children: first} ];
     let curr = result[0].children?.find(c => c.value.toLowerCase() === root || root.startsWith(`${c.value.toLowerCase()}.`));
-    let valueType = curr ? elementType.getAccessValueType(curr.value) : undefined;
+    let valueType: ValueType | undefined = curr?.value === ARRAY_ELEMENT ? elementType : await getNodeType(`${NS_SYSTEM_LIST}<${elementType.name}>`) as ValueType;
     while (valueType)
     {
       const accessEntry: EntryAccess<string> = {};
@@ -176,8 +177,12 @@ export class SystemReflectArray {
     if (!path) return undefined;
     const elementType = element ? await getNodeType(element) as ValueType : undefined;
     if (!elementType) return undefined;
+
     if (path.toLowerCase() === NODE_SELF || path.toLowerCase() === ARRAY_PREVIOUS) return `${NS_SYSTEM_LIST}<${elementType.name}>`;
-    if (path.toLowerCase() === ARRAY_ELEMENT) return elementType?.name;
-    return elementType.getAccessValueType(path)?.name;
+
+    const paths = splitString(path, '.', 2);
+    return paths[0]?.toLowerCase() === ARRAY_ELEMENT 
+      ? paths.length > 1 ? elementType.getAccessValueType(paths[1])?.name : elementType?.name
+      : undefined;
   }
 }

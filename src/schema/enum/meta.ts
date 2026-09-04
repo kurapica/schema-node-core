@@ -32,7 +32,7 @@ import { ArrayDataNodeType, DataNodeType } from '../../property/core/dataNodeTyp
 import { InVisible } from '../../property/common/invisible';
 import { PrimaryIndex } from '../../property/core/indexes';
 import { Root } from './property/root';
-import { Cascade } from './property/cascade';
+import { CascadeDepth } from './property/cascadeDepth';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Append } from '../../property/core/append';
 import { BlackList } from '../../property/common/blackList';
@@ -45,7 +45,7 @@ import type { Entry } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT, SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC, NS_SYSTEM_LOGIC_EQ } from '../../utility/constant';
+import { SCHEMA_KIND_ENUM, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_ENUM, SCHEMA_KIND_ORDER_ENUM, NS_SYSTEM_LIST, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_ENUM, ARRAY_PREVIOUS, SCHEMA_KIND_ENTRY, ARRAY_ELEMENT, SCHEMA_KIND_ENUM_DEFINE, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../../utility/constant';
 import { Require } from '../../property/common/require';
 import { LeafOnly } from './property/leafOnly';
 import { SingleFlag } from './property/singleFlag';
@@ -97,25 +97,25 @@ class EnumSchemaMeta implements EnumSchema {
 // default
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@root'), 'default')
 @Relation(LeafOnly,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@leafOnly'), 'default')
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascade'), 'default')
+@Relation(CascadeDepth,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@cascadeDepth'), 'default')
 @Relation(SingleFlag,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@singleFlag'), 'default')
 @Relation(WhiteList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
 @Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
 // blacklist
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'blackList')
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"), 'blackList')
+@Relation(CascadeDepth,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascadeDepth"), 'blackList')
 // whitelist
 @Relation(BlackList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@blackList"), 'whiteList')
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@root"), 'whiteList')
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascade"), 'whiteList')
+@Relation(CascadeDepth,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, "@cascadeDepth"), 'whiteList')
 // root
 @Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'root')
-@Relation(InVisible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.le`, "@cascade", 1), 'root')
-@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, TYPE_PROVIDER), 'root')
-@Relation(Cascade,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, TYPE_PROVIDER, "@cascade", -1), 'root')
+@Relation(InVisible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.le`, "@cascadeDepth", 1), 'root')
+@Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER), 'root')
+@Relation(CascadeDepth,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascade`, TYPE_PROVIDER, "@cascadeDepth", -1), 'root')
 // cascade
-@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'cascade')
-@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, TYPE_PROVIDER), 'cascade')
+@Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'cascadeDepth')
+@Relation(EntrySource, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getcascades`, TYPE_PROVIDER), 'cascadeDepth')
 // leafOnly
 @Relation(Visible,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.hascascade`, TYPE_PROVIDER), 'leafOnly')
 // singleFlag

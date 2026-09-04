@@ -11,6 +11,7 @@ import { ArrayType } from '../../../schema/array/runtime';
 import type { IValueAccess } from '../../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_SCHEMA_PRO_ENUM } from '../../../utility/constant';
+import { CascadeDepth } from './cascadeDepth';
 
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
@@ -20,22 +21,23 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_ENUM, SCHEMA_KIND_ENU
 export class LeafOnly extends ConstraintProperty<boolean> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
+    const cascadeDepth = node.getPropertyValue<number>(CascadeDepth);
     if (node.type.kind === SCHEMA_KIND_ENUM) {
-      const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
-      if (!access?.length) return undefined;
-      return !access[access.length - 1].entry?.hasChildren;
+      return await this.isLeafNode(node.type as EnumType, node.getValue() as string, cascadeDepth);
     }
     else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
     {
       const values = node.getValue() as unknown[];
       for(let value of values)
-      {
-        const access = await (node.type.element as EnumType).getEnumEntryAccess(`${value}`);
-        if (!access?.length) continue;
-        if(access[access.length - 1].entry?.hasChildren) return false;
-      }
+        if(!await this.isLeafNode(node.type.element as EnumType, value as string, cascadeDepth)) return false;
       return true;
     }
     return undefined;
+  }
+
+  private async isLeafNode(type: EnumType, value: string, cascadeDepth: number | undefined): Promise<boolean | undefined> {
+    const access = await type.getEnumEntryAccess(value);
+    if (!access?.length) return undefined;
+    return !(access[access.length - 1].entry?.hasChildren) || (cascadeDepth ? (access.length - 1 <= cascadeDepth) : false);
   }
 }

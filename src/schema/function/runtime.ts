@@ -12,7 +12,7 @@
 import { ApplyMode } from '../../enum/applyMode/type';
 import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
-import { isEmpty, isNull, useQueueQuery } from '../../utility/toolset';
+import { isEmpty, isNull, splitString, useQueueQuery } from '../../utility/toolset';
 import { NodeType } from '../node/runtime';
 import { ValueType } from '../value/runtime';
 import { getNodeType } from '../../runtime/context';
@@ -882,7 +882,7 @@ function _findArraySourceByType(
 ): { sourceName: string; direct: boolean } | undefined {
   if (!source) return undefined;
 
-  const parts = source.split('.');
+  const parts = splitString(source);
   let type = expTypes.get(parts[0]);
 
   // Direct: the first part is an array
@@ -903,7 +903,7 @@ function _findArraySourceByType(
 function _getExpValue(source: string, exps: Record<string, unknown>)
 {
   if (!source) return undefined;
-  const parts = source.split('.');
+  const parts = splitString(source);
   let value: any = exps[parts[0]];
   for (let i = 1; i < parts.length; i++)
   {
@@ -953,7 +953,7 @@ function _replaceArrayElements(
 
 /** Extract a nested value from an object by dotted path. */
 function _extractSubValue(obj: unknown, path: string): unknown {
-  const parts = path.split('.');
+  const parts = splitString(path);
   let current = obj;
   for (const part of parts) {
     if (isNull(current)) break;

@@ -23,14 +23,14 @@ import { ArrayValue } from './property/arrayValue';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { ArrayNode } from './node';
 import { Generics } from '../generic/generics';
-
-import type { ArraySchema } from './type';
-
-import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_ARRAY_DEFINE, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT, ARRAY_ELEMENT, SCHEMA_KIND_ARRAY_USAGE } from '../../utility/constant';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Relation } from '../../attribute/relation';
 import { Visible } from '../../property/common/visible';
 import { EntrySource } from '../../property/core/entrySource';
+
+import type { ArraySchema } from './type';
+
+import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_ARRAY_DEFINE, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT, ARRAY_ELEMENT, SCHEMA_KIND_ARRAY_USAGE } from '../../utility/constant';
 
 /** The array schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])

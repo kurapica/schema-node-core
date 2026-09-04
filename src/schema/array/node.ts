@@ -5,7 +5,7 @@
 
 import { Name } from "../../property/core/name";
 import { Observable } from "../../utility/observable";
-import { isNull, trimValue } from "../../utility/toolset";
+import { isNull, splitString, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { ArrayType } from "./runtime";
 
@@ -116,11 +116,13 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     this.refreshElementNames(); // override name
   }
 
-  override getValue(): unknown { return trimValue(this._elements.map(e => e.getValue())); }
+  override getValue(): unknown { return trimValue(this._elements.map(e => e.value)); }
 
   override get isEmpty(): boolean { return !this._elements.length; }
 
   override get changed(): boolean { return this._elements.some(e => e.changed); }
+
+  override get submitValue(): unknown { return trimValue(this._elements.map(e => e.submitValue)); }
 
   override confirm(): void {
     this._elements.forEach(e => e?.confirm());
@@ -163,9 +165,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     const access = super.getAccessValue(path, node);
     if (access) return access;
 
-    const dot = path.indexOf('.');
-    const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
-    const rest = dot >= 0 ? path.substring(dot + 1) : '';
+    const paths = splitString(path?.toLowerCase(), '.', 2);
 
     let eleIndex = -1;
     let branch: IValueAccess | undefined = node;
@@ -178,11 +178,11 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     if (eleIndex === -1) return undefined;
 
     let result: IValueAccess | undefined = undefined;
-    if (first == ARRAY_PREVIOUS) {
-      return new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]); // for previous
-    } else if (first == ARRAY_ELEMENT) {
+    if (paths[0] === ARRAY_PREVIOUS) {
+      return paths.length == 1 ? new SliceArrayNode(this, 0, eleIndex, this._elements[eleIndex]) : undefined;  // for previous
+    } else if (paths[0] === ARRAY_ELEMENT) {
       result = this._elements[eleIndex];
-      return rest ? result?.getAccessValue(rest, node) : result;
+      return paths.length > 1 ? result?.getAccessValue(paths[1], node) : result;
     }
     return undefined;
   }
@@ -215,7 +215,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
     relationInfos.forEach(info => {
       info.relations.forEach(r => {
-        const paths = r.target.split('.').filter(p => p.trim() !== '');
+        const paths = splitString(r.target);
         let curr: IValueAccess | undefined = info.owner;
         let index = 0;
 

@@ -38,7 +38,7 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
     const handler = () => relation.process(owner, target);
 
     // Subscribe the source node for data changes
-    this._call!.args.forEach(a => {
+    this._call!.args?.forEach(a => {
       if (isEmpty(a.source)) return;
       const node = owner.getAccessValue(a.source!, target);
       if (!node) {
@@ -60,11 +60,11 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
     if (!this._func) return undefined;
     try
     {
-      return await this._func.call(this._call!.args.map(a => {
+      return await this._func.call(this._call!.args?.map(a => {
         if (isEmpty(a.source)) return a.value;
         const node = owner.getAccessValue(a.source!, target);
         return node?.getValue();
-      }), this._call?.mode);
+      }) ?? [], this._call?.mode);
     }
     catch (error)
     {

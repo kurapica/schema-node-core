@@ -2,7 +2,7 @@ import { Unpack } from './property/unpack';
 import { OverrideFields } from './property/overrideFields';
 import { OverrideType } from '../../property/core/overrideType';
 import { getNodeType } from "../../runtime/context";
-import { isEmpty, isEqual, isNull, trimValue } from "../../utility/toolset";
+import { isEmpty, isEqual, isNull, splitString, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructType } from "./runtime";
 import { SCHEMA_KIND_STRUCT } from "../../utility/constant";
@@ -148,14 +148,14 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     }
   }
 
-  private _getValue(submit = false): unknown {
+  private _getValue(submit?: boolean): unknown {
     const result: Record<string, unknown> = {};
     this._fields.forEach(f => {
       if (f.isEmpty) return;
       if (submit && f.displayOnly) return;
       if (!f.isValid && !f.visible) return; // skip invisible & invalid field
 
-      const d = f.getValue();
+      const d = f.submitValue;
       if (f.getProperty(Unpack))
       {
         if (typeof(d) === 'object')
@@ -199,13 +199,11 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     const access = super.getAccessValue(path, node);
     if (access) return access;
     
-    const dot = path.indexOf('.');
-    const first = dot >= 0 ? path.substring(0, dot).toLowerCase() : path.toLowerCase();
-    const rest = dot >= 0 ? path.substring(dot + 1) : '';
+    const paths = splitString(path?.toLowerCase(), '.', 2);
 
-    const field = this._fields.find(f=> f.name?.toLowerCase() == first);
+    const field = this._fields.find(f=> f.name?.toLowerCase() == paths[0]);
     if (!field) return undefined;
-    return rest ? field.getAccessValue(rest, node) : field;
+    return paths.length > 1 ? field.getAccessValue(paths[1], node) : field;
   }
 
   // #endregion
@@ -243,7 +241,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     // attach relations from given infos
     relationInfos.forEach(info => {
       info.relations.forEach(r => {
-        const paths = r.target.split('.').filter(p => p.trim() !== '');
+        const paths = splitString(r.target);
         let curr: IValueAccess | undefined = info.owner;
         let index = 0;
 

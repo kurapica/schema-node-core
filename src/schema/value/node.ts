@@ -11,13 +11,13 @@ import { isRelation, joinProperties, isConstraintProperty } from '../../interfac
 import { getPropertyName } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
 import { logger } from '../../utility/logger';
-import { TypeProvider } from '../../property/core/typeProvider';
 
 import type { Observer } from '../../utility/observable';
 import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
 
-import { NODE_SELF, DEBOUNCE_TIME, SCHEMA_KIND_NODE, TYPE_PROVIDER } from '../../utility/constant';
+import { DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
+import { getGlobalAccessValue } from '../../property/core/accessPath';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -87,6 +87,18 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Dipose the data node, release references */
   dispose() {
+    // clear properties effect
+    for(const prop of Array.from(this.filterProperties(() => true)))
+      prop.clear(this);
+
+    // validate dynamic constraints
+    if (this._props) {
+      for(const records of this._props.values())
+        for(const record of records)
+          record.property.clear(this, record.source);
+    }
+
+
     this._dataOb?.dispose();
     this._selfPropObs?.forEach(p => p.dispose());
     this._selfPropObs?.clear();
@@ -340,7 +352,10 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
     // public property change
     if (!props?.length || props[0].level <= record.level) {
-      record.property.effect(this, record.property.getValue(), oldValue, source); // apply side effect
+      if (isEmpty(value))
+        record.property.clear(this, source);
+      else
+        record.property.effect(this, record.property.getValue(), oldValue, source); // apply side effect
       this.onNextProperty(propCtor, record.property.getValue(), oldValue);
     }
   }
@@ -473,13 +488,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
    */
   getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
     if (isEmpty(path)) return this;
-    if (path.toLowerCase() === NODE_SELF) return node ?? this;
-    if (path.toLowerCase() === TYPE_PROVIDER) {
-      let access: IValueAccess | undefined = node ?? this;
-      while (access && !access.getProperty(TypeProvider)?.hasValue) access = access.parent;
-      if (access) return access.getAccessValue(access.getPropertyValue<string>(TypeProvider)!, node);
-    }
-    return undefined;
+    return getGlobalAccessValue(this, path, node);
   }
 
   // #endregion

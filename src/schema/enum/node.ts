@@ -5,7 +5,7 @@
 
 import { EnumValueType } from "../../enum/enumValueType/type";
 import { joinProperties, type IProperty, type IPropertyProvider, type IValueAccess, type PropertyCtor } from "../../interface";
-import { isNull, trimValue } from "../../utility/toolset";
+import { isEmpty, isNull, trimValue } from "../../utility/toolset";
 import type { ArrayType } from "../array/runtime";
 import { ScalarNode } from "../object/node";
 import { EnumType } from "./runtime";
@@ -22,8 +22,12 @@ export class EnumArrayNode extends ScalarNode {
   readonly enumType: EnumType;
 
   constructor(type: ArrayType, value?: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
-    super(type, value, parent, new EnumArrayNodePropertyProvider(type.element as EnumType, ...propProviders));
+    super(type, undefined, parent, new EnumArrayNodePropertyProvider(type.element as EnumType, ...propProviders));
     this.enumType = type.element as EnumType;
+    if (!isEmpty(value)) {
+      this.setValue(value);
+      this.confirm();
+    }
   }
 
   override getValue(): unknown[] {

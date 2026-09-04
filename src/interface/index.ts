@@ -232,6 +232,9 @@ export interface IProperty {
 
   /** Apply the property effect to the target. */
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void;
+
+  /** Clear the property effect from the target. */
+  clear(target: IValueAccess, source?: IValueAccess): void;
 }
 
 /** The property constructor */
@@ -408,4 +411,16 @@ export function isNamespaceNodeType(obj: unknown): obj is INamespaceNodeType {
   return typeof (obj as any)?.getNodeType === 'function'
 }
 
+// #endregion
+
+// #region ── Access ───────────────────────────────────────────────────────────
+
+/** The access path interface (temporary) */
+export interface IAccessPathHandler {
+  /** Get the access value type from the owner by path. */
+  getAccessValueType(owner: IValueTypeAccess): IValueTypeAccess | undefined;
+
+  /** Get the access value from the owner by path. */
+  getAccessValue(owner: IValueAccess, node?: IValueAccess): IValueAccess | undefined;
+}
 // #endregion

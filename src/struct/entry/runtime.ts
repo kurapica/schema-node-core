@@ -1,6 +1,6 @@
 import { Disable } from "../../property/common/disable";
 import { combineProperties, getPropertyValue } from "../../property/propertyOwner";
-import { isEqual, isNull } from "../../utility/toolset";
+import { generateGuid, isEqual, isNull } from "../../utility/toolset";
 
 import type { Entry, EntryAccess } from "./type";
 
@@ -8,6 +8,8 @@ import { SCHEMA_KIND_ENTRY } from "../../utility/constant";
 
 /** The runtime entry  */
 export class EntryType<T> implements Entry<T> {
+  readonly id = generateGuid();
+
   /** The value of the entry */
   value!: T;
 
@@ -68,14 +70,21 @@ export class EntryType<T> implements Entry<T> {
     // build entry access list
     const accesses: EntryAccess<T>[] = [];
     let inBranch = false;
+    let preEntry: Entry<T> | undefined = undefined;
     while (entry)
     {
       const rentry = !entry.isRoot ? entry.entry : undefined;
-      const children = entry._children 
-        ? this._whiteList?.length && entry._children.some(c => this._whiteList?.includes(c.value) ?? false)
-          ? entry._children.filter(c => this._whiteList?.includes(c.value) ?? false).map(c => c.entry)
-          : entry._children.map(c => c.entry)
+      const children = entry._children?.length
+        ? (this._whiteList?.length && entry._children.some(c => this._whiteList!.includes(c.value))
+          ? entry._children.filter(c => this._whiteList!.includes(c.value)).map(c => c.entry)
+          : entry._children.map(c => c.entry))
         : undefined;
+
+      if (preEntry && !preEntry.hasChildren)
+      {
+        const e = children?.find(c => c.value == preEntry!.value);
+        if (e) e.hasChildren = false;
+      }
 
       if (!children?.length && rentry?.hasChildren) rentry.hasChildren = false;
       accesses.unshift({ entry: rentry, children: children });
@@ -84,6 +93,7 @@ export class EntryType<T> implements Entry<T> {
         inBranch = true;
         break;
       }
+      preEntry = rentry;
       entry = entry._parent;
     }
     if (!inBranch) return undefined;
@@ -118,7 +128,7 @@ export class EntryType<T> implements Entry<T> {
 
   /** Whether the given entry is a descendant */
   isDescendant(desc: EntryType<T>): boolean {
-    let inWhiteList = !this._whiteList?.length;
+    let inWhiteList = !this._whiteList?.length || this._whiteList?.includes(desc.value);
     let isDesc = desc === this;
     while (!(inWhiteList && isDesc) && desc._parent)
     {

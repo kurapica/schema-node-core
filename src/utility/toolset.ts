@@ -4,6 +4,30 @@ export function combinePaths(...names: string[])
   return names.filter(n => !isEmpty(n)).join('.')
 }
 
+/** Split the string by delimiter and filter empty strings */
+export function splitString(str: string, delimiter: string = '.', count?: number): string[]
+{
+  str ??= '';
+  if (!count)
+    return str.split(delimiter).filter(n => !isEmpty(n));
+  else
+  {
+    const res: string[] = [];
+    let startIdx = 0;
+    let dotIndex = str.indexOf(delimiter);
+    while (dotIndex >= 0 && count > 1)
+    {
+      if (dotIndex > startIdx + 1) // skip empty delimiter
+        res.push(str.substring(startIdx, dotIndex));
+      startIdx = dotIndex + 1;
+      dotIndex = str.indexOf(delimiter, startIdx);
+      count--;
+    }
+    if (str.length > startIdx)
+      res.push(str.substring(startIdx));
+    return res;
+  }
+}
 
   /** Parse value to date */
 export function parseDate(value: unknown, isYear: boolean = false): Date | undefined

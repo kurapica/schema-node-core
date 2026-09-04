@@ -94,6 +94,9 @@ export abstract class Property<T> implements IProperty {
 
   /** Apply the property effect to the target. */
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {}
+
+  /** Clear the property effect from the target. */
+  clear(target: IValueAccess, source?: IValueAccess): void {}
 }
 
 /** Get the property name of the property constructor. */

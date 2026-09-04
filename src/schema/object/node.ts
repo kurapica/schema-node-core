@@ -10,20 +10,18 @@ import { getNodeType } from "../../runtime/context";
 import { EntryType } from "../../struct/entry/runtime";
 import { DataNode } from "../value/node";
 import { Root } from "../enum/property/root";
-import { Cascade } from "../enum/property/cascade";
+import { CascadeDepth } from "../enum/property/cascadeDepth";
 import { AccessEntryConsumer } from "../string/property/accessEntryConsumer";
 import { EntrySourceConsumer } from "../string/property/entrySourceConsumer";
 import { debounce, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
 import { _L, _LS } from "../../utility/locale";
 
 import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
-import type { FunctionType } from "../function/runtime";
+import { FunctionType } from "../function/runtime";
 import type { CallArg, FuncCall } from "../function/type";
 import type { Entry, EntryAccess } from "../../struct/entry/type";
 import type { LocaleString } from "../../struct/localeString";
 import type { FuncCallProperty } from "../../property/funcCallProperty";
-
-import { NODE_SELF } from "../../utility/constant";
 
 /** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {
@@ -38,7 +36,7 @@ export abstract class ScalarNode extends DataNode {
     this.recordSubscription(this.subscribeSelfProperty(BlackList, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(Valid, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(Root, this._refreshEntrySource));
-    this.recordSubscription(this.subscribeSelfProperty(Cascade, this._refreshEntrySource));
+    this.recordSubscription(this.subscribeSelfProperty(CascadeDepth, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(EntrySource, this._refreshEntrySource, true));
   }
 
@@ -90,7 +88,7 @@ export abstract class ScalarNode extends DataNode {
     let entrySourceProp = this.getProperty(EntrySource)
     let entrySource = entrySourceProp?.getValue<FuncCall>();
     const root = this.getPropertyValue<string>(Root);
-    const cascade = this.getPropertyValue<number>(Cascade);
+    const cascade = this.getPropertyValue<number>(CascadeDepth);
 
     // entry source owner
     let owner = entrySourceProp?.source;
@@ -125,10 +123,10 @@ export abstract class ScalarNode extends DataNode {
           this._entrySourceInfo ??= {};
 
           this._entrySourceInfo.valueTypeProvider = accessValueTypeProvider.func ? await getNodeType(accessValueTypeProvider.func) as FunctionType : undefined;
-          this._entrySourceInfo.valueTypeProviderArgs = accessValueTypeProvider.args.map(a => this._callArgToEntrySource(parent!, a));
+          this._entrySourceInfo.valueTypeProviderArgs = accessValueTypeProvider.args?.map(a => this._callArgToEntrySource(parent!, a)) || [];
 
           this._entrySourceInfo.valueTypeConsumer = accessValueTypeConsumer.func ? await getNodeType(accessValueTypeConsumer.func) as FunctionType : undefined;
-          this._entrySourceInfo.valueTypeConsumerArgs = accessValueTypeConsumer.args.map(a => this._callArgToEntrySource(parent!, a));
+          this._entrySourceInfo.valueTypeConsumerArgs = accessValueTypeConsumer.args?.map(a => this._callArgToEntrySource(parent!, a)) || [];
 
           break;
         }
@@ -147,14 +145,14 @@ export abstract class ScalarNode extends DataNode {
           !isEqual(this._entrySourceInfo.blackList, blackList) ||
           !(this._entrySourceInfo.valids?.length === valids.length && this._entrySourceInfo.valids?.every((item, i) => item.prop === valids[i])))
       {
+        this._entrySourceInfo.subscribes?.forEach(sub => sub());
+        this._entrySourceInfo.subscribes = undefined;
         this._entrySourceInfo.owner = owner;
         this._entrySourceInfo.whiteList = whiteList;
         this._entrySourceInfo.blackList = blackList;
         this._entrySourceInfo.source = entryFunc;
         this._entrySourceInfo.cascade = cascade;
         this._entrySourceInfo.root = root;
-        this._entrySourceInfo.subscribes?.forEach(sub => sub());
-        this._entrySourceInfo.subscribes = undefined;
         this._entrySourceInfo.rootEntry = new EntryType<any>();
         this._entrySourceInfo.rootEntry.value = root;
         this._entrySourceInfo.args = entrySource!.args.map(a => this._callArgToEntrySource(owner!, a));
@@ -163,11 +161,13 @@ export abstract class ScalarNode extends DataNode {
         for(const item of valids)
         {
           const funcCall = item.getValue<FuncCall>()!;
-          this._entrySourceInfo.valids.push({
-            prop: item,
-            func: await getNodeType(funcCall.func) as FunctionType,
-            args: funcCall.args.map(a => this._callArgToEntrySource(item.source ?? this, a)),
-          });
+          const func = funcCall?.func ? await getNodeType(funcCall.func) : undefined;
+          if (func instanceof FunctionType)
+            this._entrySourceInfo.valids.push({
+              prop: item,
+              func,
+              args: funcCall.args?.map(a => this._callArgToEntrySource(item.source ?? this, a)) || [],
+            });
         }
 
         // init options
@@ -249,6 +249,7 @@ export abstract class ScalarNode extends DataNode {
           {
             this._entrySourceInfo.rootEntry!.saveAccessList(queryAccessList);
             queryAccessList.filter(a => a.entry?.value).forEach(a => passKeys.add(a.entry!.value));
+            passKeys.add(item);
           }
         }
 
@@ -397,10 +398,10 @@ export abstract class ScalarNode extends DataNode {
     let isvalid = true;
     for (const valid of this._entrySourceInfo.valids)
     {
-      const res = await valid.func.call(valid.args.map(a => {
+      const res = await valid.func.call(valid.args?.map(a => {
         if (!a.source) return a.value;
         return a.source === this ? value : a.source.getValue();
-      }));
+      }) || []);
       if (!res)
       {
         isvalid = false;

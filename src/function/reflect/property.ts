@@ -8,7 +8,7 @@ import { Static } from '../../property/core/static';
 import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
 
-import { NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
 import { OfSchema } from '../../property';
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -69,9 +69,14 @@ export class SystemReflectProperty {
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
     @Meta(Require, true)
     type: string,
+
+    @Meta(ArgName, 'ownerType')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    ownerType: string
   ): Promise<string | undefined> {
     const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
-    return prop?.valueType?.name;
+    const name = prop?.valueType?.name;
+    return name === NS_SYSTEM_OBJECT && ownerType ? ownerType : name;
   }
 
   /** Whether the property is for schema */

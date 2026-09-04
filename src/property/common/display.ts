@@ -8,15 +8,15 @@ import { OfSchema } from '../core/ofSchema';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { concatLocaleString } from '../../struct/localeString/type';
+import { ForSchema } from '../core/forSchema';
 
 import type { LocaleString } from '../../struct/localeString/type';
 import type { IProperty } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 
-/**
- * The display property
- */
+/** The display property */
+@Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.display`)
 @Meta(PropertyValueType, NS_SYSTEM_LOCALE_STRING)
