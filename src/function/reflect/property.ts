@@ -7,9 +7,11 @@ import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';
 import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
+import { OfSchema } from '../../property/core/ofSchema';
+import { Variadic } from '../../schema/function/property/variadic';
 
 import { NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
-import { OfSchema } from '../../property';
+
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
@@ -88,12 +90,11 @@ export class SystemReflectProperty {
 
     @Meta(ArgName, 'kind')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
-    kind: string
-  ): Promise<boolean>
-  {
-    if (!kind) return false;
+    @Meta(Variadic, true)
+    ...kinds: string[]
+  ): Promise<boolean> {
+    if (!kinds.length) return false;
     const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
-    if (!prop) return false;
-    return prop.forSchemas?.some(k => k.toLowerCase() === kind.toLowerCase()) ?? false;
+    return prop && kinds.some(kind => prop.forSchema(kind)) || false;
   }
 }

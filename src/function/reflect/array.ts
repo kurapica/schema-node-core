@@ -142,6 +142,7 @@ export class SystemReflectArray {
 
       // check next part
       let next: ValueType | undefined;
+      let nextCurr: Entry<string> | undefined;
       for (const a of accesses)
       {
         const n = a.value;
@@ -149,9 +150,10 @@ export class SystemReflectArray {
         if (path && (path === a.value || path.startsWith(a.value + '.')))
         {
           next = valueType.getAccessValueType(n);
-          curr = a;
+          nextCurr = a;
         }
       }
+      curr = nextCurr;
       valueType = next;
     }
 
@@ -175,7 +177,7 @@ export class SystemReflectArray {
     const elementType = element ? await getNodeType(element) as ValueType : undefined;
     if (!elementType) return undefined;
 
-    if (path.toLowerCase() === NODE_SELF || path.toLowerCase() === ARRAY_PREVIOUS) return `${NS_SYSTEM_LIST}<${elementType.name}>`;
+    if (path.toLowerCase() === ARRAY_PREVIOUS) return `${NS_SYSTEM_LIST}<${elementType.name}>`;
 
     const paths = splitString(path, '.', 2);
     return paths[0]?.toLowerCase() === ARRAY_ELEMENT 

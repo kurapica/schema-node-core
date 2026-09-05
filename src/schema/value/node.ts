@@ -293,6 +293,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Sets the value of the given property */
   setPropertyValue<T>(propCtor: PropertyCtor, value?: T, source?: IValueAccess): void {
+    logger.verbose('[NODE][Property]', this.access, '=>', propCtor.name, '=', value, '[From]', source?.access)
+
     source ??= this;
 
     let oldValue = this.getPropertyValue<T>(propCtor);
@@ -346,7 +348,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
             record.valid = res;
             this.onNextViolated();
           }
-        }).catch(ex => console.error(ex))
+        }).catch(ex => logger.error(ex))
       }
     }
 
@@ -584,7 +586,16 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Record violated constraint property */
   recordConstraint(constraint: IConstraintProperty, valid?: boolean): void {
     logger.verbose('[Constraint]', this.access, constraint.name, valid);
-    if (valid || isNull(valid)) {
+
+    // dynamic property
+    var map = this._props?.get(constraint.constructor as PropertyCtor);
+    var exist = map?.find(r => r.property === constraint);
+    if (exist) {
+      if (exist.valid == valid) return;
+      exist.valid = valid;
+    }
+    // static property
+    else if (valid || isNull(valid)) {
       if (!this._violated?.length) return;
       const index = this._violated.indexOf(constraint as IConstraintProperty);
       if (index !== -1) this._violated.splice(index, 1);

@@ -54,6 +54,7 @@ import { Description } from '../../property/common/description';
 import { InVisible } from '../../property/common/invisible';
 import { Immutable } from '../../property/common/immutable';
 import { ReadOnly } from '../../property/common/readOnly';
+import { KindProvider } from '../../property/core/kindProvider';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -62,7 +63,7 @@ import { ReadOnly } from '../../property/common/readOnly';
 @Meta(RuntimeNodeType, StructType)
 @Meta(SchemaGenerator, generateStructSchema)
 @Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_STRUCT}.usage`)
-@Meta(Append, [Generics, Relations, Valid, EntrySourceProvider, AccessValueTypeProvider, TypeProvider])
+@Meta(Append, [Generics, Relations, Valid, EntrySourceProvider, AccessValueTypeProvider, TypeProvider, KindProvider])
 @Meta(StructValue)
 @Meta(DataNodeType, StructNode)
 class StructKind{}
@@ -74,7 +75,7 @@ class StructKind{}
 @Meta(Attach, SCHEMA_KIND_STRUCT_DEFINE)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessentries`, '@fields', NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getaccessvaluetype`, '@fields', NODE_SELF))
-//@Relation(Valid, 'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.enableproperty`, '@fields', `@relations.${ARRAY_ELEMENT}.target`, NODE_SELF), `relations.${ARRAY_ELEMENT}.property`)
+@Meta(KindProvider, SCHEMA_KIND_STRUCT_FIELD)
 class StructSchemaMeta implements StructSchema {
   @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fields`)
   fields: StructFieldSchema[] = [];

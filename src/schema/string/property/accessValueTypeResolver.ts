@@ -30,7 +30,13 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYST
 @Meta(InVisible, true)
 @Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_STRING), "accessValueTypeResolver.func")
 export class AccessValueTypeResolver extends Property<string> {
+  clear(target: IValueAccess, source?: IValueAccess): void {
+    target.clearSubscription(this);
+  }
+
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
+    this.clear(target, source);
+
     if (!newValue || !this._value) return; // static only effect once
     setTimeout(() => {
       let provider: IValueAccess | undefined = target;
@@ -58,7 +64,7 @@ export class AccessValueTypeResolver extends Property<string> {
             ? target.parent?.getAccessValue(this._value!) 
             : provider?.getAccessValue(a.source);
             if (node)
-              target.recordSubscription(node.subscribe(resolve), target);
+              target.recordSubscription(node.subscribe(resolve), this);
           });
 
           // resolve the access value type

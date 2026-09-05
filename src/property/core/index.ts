@@ -20,3 +20,4 @@ export * from './schemaType';
 export * from './stackable';
 export * from './static';
 export * from './typeProvider';
+export * from './kindProvider';

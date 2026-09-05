@@ -30,15 +30,16 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUN
 export class Valid extends FuncCallProperty implements IConstraintProperty {
   effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
     this.clear(target, source);
+
     if ((newValue as FuncCall).args?.length) {
       source ??= this.source ?? target;
       for (let arg of (newValue as FuncCall).args) {
         if (arg.source) {
           const t = source?.getAccessValue(arg.source!, target);
-          if (t)
+          if (t && t !== target) 
             target.recordSubscription(t.subscribe(async () => {
-              const res = await t.getValue();
-              target.setPropertyValue(Valid, res as boolean, source);
+              const res = await this.validate(target) as boolean;
+              target.recordConstraint(this, res); 
             }), this);
         }
       }
@@ -55,17 +56,18 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
     
     const func = await getNodeType(this._value.func) as FunctionType;
     if (!func) {
-      console.error(`Valid property function ${this._value.func} is not a function type`);
+      logger.error(`Valid property function ${this._value.func} is not a function type`);
       return undefined;
     }
     const owner = this.source ?? node;
     try
     {
-      return await func.call(this._value!.args.map(a => {
+      const res =  await func.call(this._value!.args.map(a => {
         if (isEmpty(a.source)) return a.value;
         const source = owner?.getAccessValue(a.source!, node);
         return source?.getValue();
       })) as boolean;
+      return res;
     }
     catch (error)
     {
