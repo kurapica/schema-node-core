@@ -23,9 +23,8 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_S
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
 export class KindResolver extends Property<boolean> {
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    this.clear(target, source);
-    if (!newValue) return;
+  effect(target: IValueAccess): void {
+    if (!this._value) return;
     setTimeout(() => {
       let provider: IValueAccess | undefined = target;
 

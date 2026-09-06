@@ -25,6 +25,7 @@ import { PropertyProperty } from './property';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { PropertyType } from './runtime';
 import { getRelationSchemas } from '../../attribute/relation';
+import { LeafOnly } from '../enum/property/leafOnly';
 
 import type { PropertyCtor } from '../../interface';
 import type { PropertySchema } from './type';
@@ -61,6 +62,7 @@ class PropertySchemaMeta implements PropertySchema {
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_PROPERTY))
+@Meta(LeafOnly, true)
 class PropertyTypeMeta {}
 
 /** Generate property schema */

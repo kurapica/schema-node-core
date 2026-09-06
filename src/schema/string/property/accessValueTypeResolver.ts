@@ -34,10 +34,10 @@ export class AccessValueTypeResolver extends Property<string> {
     target.clearSubscription(this);
   }
 
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    this.clear(target, source);
+  effect(target: IValueAccess): void {
+    this.clear(target);
 
-    if (!newValue || !this._value) return; // static only effect once
+    if (!this._value) return;
     setTimeout(() => {
       let provider: IValueAccess | undefined = target;
 

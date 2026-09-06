@@ -24,8 +24,8 @@ import { ReadOnly } from '../../../property/common/readOnly';
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class DisplayOnly extends Property<boolean> {
-  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    if (newValue) // static property only effect once
+  override effect(target: IValueAccess): void {
+    if (this._value) // static property only effect once
     {
       const value = target.getValue();
       if (!isEmpty(value))

@@ -9,7 +9,7 @@
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
 import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
-import { deepClone, trimValue } from "../utility/toolset";
+import { deepClone, isEqual, trimValue } from "../utility/toolset";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
@@ -86,17 +86,18 @@ export abstract class Property<T> implements IProperty {
   equal(other: IProperty): boolean {
     if (this.constructor !== other.constructor) return false;
     if (this.hasValue !== other.hasValue) return false;
-    return !this.hasValue || this.getValue() === other.getValue();
+    // compare raw values: getValue() returns a fresh deep clone each time, so reference equality never holds for objects
+    return !this.hasValue || isEqual(this._value, (other as Property<T>)._value);
   }
 
   // do nothing by default, subclasses can override to apply the property to the target
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {}
+  effect(target: IValueAccess): void {}
 
   /** Clear the property effect from the target. */
-  clear(target: IValueAccess, source?: IValueAccess): void {}
+  clear(target: IValueAccess): void {}
 }
 
 /** Get the property name of the property constructor. */

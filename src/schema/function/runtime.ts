@@ -38,8 +38,8 @@ const pendingCall: Record<string, { resolve: (v: unknown) => void; reject: (e: u
 
 /** Queue remote callFunction through useQueueQuery to serialize requests. */
 const callSchemaFunctionQueue = useQueueQuery(
-  (schemaName: string, args: unknown[], retType?: string) =>
-    getSchemaProvider()!.callFunction(schemaName, args, retType),
+  (schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode) =>
+    getSchemaProvider()!.callFunction(schemaName, args, retType, applyMode),
 );
 
 /** Delay (ms) to batch concurrent remote calls before execution. */
@@ -194,7 +194,7 @@ export class FunctionType extends NodeType {
             {
               const resIdx = arrIdx == 0 ? 1 : 0;
               let startIdx = 0;
-              while (isNull(args[resIdx]))
+              while (isNull(args[resIdx]) && startIdx < col.length)
                 args[resIdx] = col[startIdx++];
 
               for (let item = col[startIdx]; item !== undefined; item = col[startIdx++] as unknown){
@@ -303,7 +303,7 @@ export class FunctionType extends NodeType {
     if (!getSchemaProvider()) throw new Error('Schema provider not provided');
 
     // Token-based cache for simple (serializable) args
-    const token = this._buildCacheToken(schemaName, args);
+    const token = this._buildCacheToken(schemaName, args, applyMode);
 
     if (token) {
       // Check shared cache
@@ -320,7 +320,7 @@ export class FunctionType extends NodeType {
       await new Promise(resolve => setTimeout(resolve, REMOTE_CALL_DELAY));
 
       try {
-        const res = await callSchemaFunctionQueue(schemaName, args, applyMode);
+        const res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
         if (!this._noCache) shareFuncCallResult.set(token, res);
         pendingCall[token].forEach(c => c.resolve(res));
         return res;
@@ -367,7 +367,7 @@ export class FunctionType extends NodeType {
     delete pendingComplexCall[schemaName];
 
     try {
-      const res = await callSchemaFunctionQueue(schemaName, args);
+      const res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
       queue.forEach((c: any) => c.resolve(res));
       return res;
     } catch (ex) {
@@ -377,11 +377,11 @@ export class FunctionType extends NodeType {
   }
 
   /** Build a cache token for simple argument sets. */
-  private _buildCacheToken(schemaName: string, args: unknown[]): string | null {
-    if (!args || args.length === 0) return schemaName;
+  private _buildCacheToken(schemaName: string, args: unknown[], applyMode: ApplyMode = ApplyMode.Call): string | null {
+    if (!args || args.length === 0) return `${schemaName}:${applyMode}`;
     const complexIdx = args.findIndex(a => a && typeof a === 'object');
     if (complexIdx >= 0) return null;
-    return `${schemaName}:${JSON.stringify(args)}`;
+    return `${schemaName}:${applyMode}:${JSON.stringify(args)}`;
   }
 
   // ── Composite Build ─────────────────────────────────────────────────
@@ -531,7 +531,7 @@ export class FunctionType extends NodeType {
     const sourceArray = val[arrayInfo.sourceArrayIdx] as unknown[] | undefined;
     if (!sourceArray || !Array.isArray(sourceArray)) return null;
 
-    const { arrayIndexes, arrayName } = arrayInfo;
+    const { arrayIndexes, arrayName, sourceArrayIdx } = arrayInfo;
 
     switch (exp.call.mode) {
       case ApplyMode.Map:
@@ -543,14 +543,17 @@ export class FunctionType extends NodeType {
         return (await Promise.all(sourceArray.map(async (elem) => {
           const testVals = _replaceArrayElements(val, arrayIndexes, arrayName, elem, exp.call.args);
           return (await fn(...testVals)) ? elem : undefined;
-        }))).filter(Boolean);
+        }))).filter(x => x !== undefined);
 
       case ApplyMode.Reduce: {
-        let acc = val.length > 1 && val[1] !== undefined ? val[1] : sourceArray[0];
-        const startIdx = val.length > 1 && val[1] !== undefined ? 0 : 1;
+        // accumulator sits at the other of the first two argument positions (mirrors inline Reduce)
+        const accIdx = sourceArrayIdx === 0 ? 1 : 0;
+        const hasInitial = val.length > accIdx && val[accIdx] !== undefined;
+        let acc = hasInitial ? val[accIdx] : sourceArray[0];
+        const startIdx = hasInitial ? 0 : 1;
         for (let j = startIdx; j < sourceArray.length; j++) {
           const reduced = _replaceArrayElements(val, arrayIndexes, arrayName, sourceArray[j], exp.call.args);
-          reduced[1] = acc;
+          reduced[accIdx] = acc;
           acc = await fn(...reduced);
         }
         return acc;
@@ -853,7 +856,7 @@ async function _analyzeArrayDepsByType(
     if (!sourceInfo) continue;
 
     if (arrayName && arrayName !== sourceInfo.sourceName) {
-      console.warn(`Multiple array sources in expression ${exp.name}`);
+      logger.warn(`Multiple array sources in expression ${exp.name}`);
       return undefined;
     }
 

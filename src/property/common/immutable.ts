@@ -26,11 +26,10 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } fro
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class Immutable extends Property<boolean> {
-  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    if (newValue && target instanceof DataNode) // static property only effect once
+  override effect(target: IValueAccess): void {
+    if (this.getValue() && target instanceof DataNode) // static property only effect once
     {
-      const value = target.original;
-      if (!isEmpty(value))
+      if (!isEmpty(target.original))
         target.setPropertyValue(ReadOnly, true);
     }
   }

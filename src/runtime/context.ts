@@ -371,4 +371,4 @@ export async function exportNodeType(nodeType: INodeType, result: NodeSchema[]):
 }
 
 // install
-if (window) (window as unknown as Record<string, Function>)!.getNodeType = getNodeType;
+if (typeof window !== 'undefined') (window as unknown as Record<string, Function>)!.getNodeType = getNodeType;

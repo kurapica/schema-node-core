@@ -231,10 +231,10 @@ export interface IProperty {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
 
   /** Apply the property effect to the target. */
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void;
+  effect(target: IValueAccess): void;
 
   /** Clear the property effect from the target. */
-  clear(target: IValueAccess, source?: IValueAccess): void;
+  clear(target: IValueAccess): void;
 }
 
 /** The property constructor */

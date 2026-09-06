@@ -16,7 +16,6 @@ import { Relation } from '../../attribute/relation';
 import { logger } from '../../utility/logger';
 
 import type { IConstraintProperty, IValueAccess } from '../../interface';
-import type { FuncCall } from '../../schema/function/type';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
 
@@ -28,12 +27,12 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUN
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
 @Relation(Default, Assign, NS_SYSTEM_BOOL, 'valid.return')
 export class Valid extends FuncCallProperty implements IConstraintProperty {
-  effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
-    this.clear(target, source);
+  effect(target: IValueAccess): void {
+    this.clear(target);
 
-    if ((newValue as FuncCall).args?.length) {
-      source ??= this.source ?? target;
-      for (let arg of (newValue as FuncCall).args) {
+    if (this._value?.args?.length) {
+      const source = this.source ?? target;
+      for (let arg of this._value!.args) {
         if (arg.source) {
           const t = source?.getAccessValue(arg.source!, target);
           if (t && t !== target) 
@@ -46,7 +45,7 @@ export class Valid extends FuncCallProperty implements IConstraintProperty {
     }
   }
 
-  clear(target: IValueAccess, source?: IValueAccess): void {
+  clear(target: IValueAccess): void {
     target.clearSubscription(this);
   }
 

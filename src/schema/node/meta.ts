@@ -19,13 +19,15 @@ import { ReadOnly } from '../../property/common/readOnly';
 import { Immutable } from '../../property/common/immutable';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { NodeType } from './runtime';
-
-import type { CompatibleSchema, NodeSchema } from './type';
-
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_ERROR, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
 import { UpLimitString } from '../string/property/upLimit';
 import { Append } from '../../property/core/append';
 import { Display } from '../../property/common/display';
+import { LeafOnly } from '../enum/property/leafOnly';
+
+import type { CompatibleSchema, NodeSchema } from './type';
+
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
+
 
 /** The meta definition of the node schema */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_NODE])
@@ -78,4 +80,5 @@ class AnyTypeMeta {}
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, NODE_SELF))
+@Meta(LeafOnly, true)
 class ValueTypeMeta {}

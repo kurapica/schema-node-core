@@ -135,7 +135,7 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
     if (this.genericParams?.length)
       this.genericParams.forEach(g => g.removeUsedBy(this));
     else
-      this.getRefTypes().forEach(g => g.removeUsedBy(this));
+      this._refTypes?.forEach(g => g.removeUsedBy(this));
     this.unload();
     this._props = undefined;
     this._refTypes = undefined;

@@ -118,7 +118,6 @@ export class EnumType extends ValueType {
     const source = await getNodeType(entrySource.func) as FunctionType;
     if (!source) return [];
 
-    console.warn("getEnumEntryAccess", value, start, source.args, entrySource.args);
     access = await source.call(source.args.map((a, i) => {
       const m = entrySource.args[i];
       if (!m || isNull(m.source) && isNull(m.value)) {

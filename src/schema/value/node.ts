@@ -91,14 +91,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     for(const prop of Array.from(this.filterProperties(() => true)))
       prop.clear(this);
 
-    // validate dynamic constraints
-    if (this._props) {
-      for(const records of this._props.values())
-        for(const record of records)
-          record.property.clear(this, record.source);
-    }
-
-
     this._dataOb?.dispose();
     this._selfPropObs?.forEach(p => p.dispose());
     this._selfPropObs?.clear();
@@ -205,7 +197,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** Apply property effects */
   applyPropertyEffects() {
     for(const prop of Array.from(this.filterProperties(() => true)))
-      prop.effect(this, prop.getValue());
+      prop.effect(this);
   }
 
   /** Gets the property */
@@ -296,28 +288,34 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     logger.verbose('[NODE][Property]', this.access, '=>', propCtor.name, '=', value, '[From]', source?.access)
 
     source ??= this;
+    value = trimValue(value);
+    let isClear = isEmpty(value);
 
-    let oldValue = this.getPropertyValue<T>(propCtor);
     let props = this._props?.get(propCtor);
     let record = props?.find(p => p.source === source);
-
-    value = trimValue(value);
+    let oldValue = record?.property.getValue();
+    let topProp: IProperty | undefined = undefined;
 
     // clear
-    if (isEmpty(value)) {
-      if (!record || !record.property.hasValue) return;
+    if (isClear) {
+      if (!record) return;
       record.property.setValue(value);
       props = props!.filter(d => d.source !== source)
       this._props!.set(propCtor, props);
     }
-    // set
+    // update
     else if (record)
     {
       if (isEqual(record.property.getValue(), value)) return;
       record.property.setValue(value);
+      topProp = props![0].property;
     }
+    // insert
     else
     {
+      topProp = this.getProperty(propCtor);
+      
+      // add new property
       this._props ??= new Map();
       record = { source, level: calcLevel(this, source), property: new propCtor(source) };
       record.property.setValue(value);
@@ -330,11 +328,18 @@ export class DataNode implements IValueAccess, IPropertyProvider {
         props = [record];
       }
       this._props.set(propCtor, props);
+
+      // replace the top property
+      if (props[0] == record) {
+        if (!topProp?.stackable) topProp?.clear(this);
+        oldValue = topProp?.getValue();
+        topProp = record.property;
+      }
     }
 
     // Validate constraint
     if (isConstraintProperty(record.property)) {
-      if (isEmpty(value))
+      if (isClear)
       {
         if (record.valid == false) // clear violated
           this.onNextViolated();
@@ -352,12 +357,28 @@ export class DataNode implements IValueAccess, IPropertyProvider {
       }
     }
 
-    // public property change
-    if (!props?.length || props[0].level <= record.level) {
-      if (isEmpty(value))
-        record.property.clear(this, source);
-      else
-        record.property.effect(this, record.property.getValue(), oldValue, source); // apply side effect
+    // apply side effect
+    if (record.property.stackable) {
+      if (isClear) {
+        record.property.clear(this);
+      } else {
+        record.property.effect(this);
+      }
+      this.onNextProperty(propCtor, record.property.getValue(), oldValue);
+    }
+    else if (isClear)
+    {
+      // If clear the top property, apply side effect
+      if (!props?.length || props[0].level < record.level) {
+        record.property.clear(this);
+
+        topProp = this.getProperty(propCtor);
+        topProp?.effect(this);
+        this.onNextProperty(propCtor, topProp?.getValue(), oldValue);
+      }
+    }
+    else if (topProp == record.property) {
+      record.property.effect(this);
       this.onNextProperty(propCtor, record.property.getValue(), oldValue);
     }
   }

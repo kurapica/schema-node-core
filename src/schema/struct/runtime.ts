@@ -95,7 +95,7 @@ export class StructType extends ValueType implements IRelationProvider {
 
       // for simple, only check field type now
       if (!fieldType.type)
-        console.error(`The struct ${this.name}'s field ${fieldType.name}'s type ${field.type} cant be solved.`)
+        logger.error(`The struct ${this.name}'s field ${fieldType.name}'s type ${field.type} cant be solved.`)
     }
 
     // attach properties from type

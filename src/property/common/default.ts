@@ -21,15 +21,22 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  N
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 @Relation(`${NS_SYSTEM_SCHEMA_PRO_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER))
 export class Default extends Property<unknown> {
+  private oldValue: unknown;
+
+  override setValue<TValue>(value: TValue): void {
+    this.oldValue = this.getValue();
+    super.setValue(value);
+  }
+  
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
     if (!isNull(field) || !isNull(descriptorOrIndex)) return;
     target = typeof target === 'function' ? target : target.constructor;
     (target as unknown as Record<string, unknown>).default = this.getValue()!; // avoid cycle reference
   }
 
-  override effect(target: IValueAccess, newValue?: unknown, oldValue?: unknown, source?: IValueAccess): void {
+  override effect(target: IValueAccess): void {
     const origin = target.getValue();
-    if (isEmpty(origin) || isEqual(origin, oldValue))
-      target.setValue(newValue);
+    if (isEmpty(origin) || isEqual(origin, this.oldValue))
+      target.setValue(this.getValue()); 
   }
 }

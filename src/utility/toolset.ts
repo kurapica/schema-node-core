@@ -17,7 +17,7 @@ export function splitString(str: string, delimiter: string = '.', count?: number
     let dotIndex = str.indexOf(delimiter);
     while (dotIndex >= 0 && count > 1)
     {
-      if (dotIndex > startIdx + 1) // skip empty delimiter
+      if (dotIndex > startIdx) // skip empty delimiter
         res.push(str.substring(startIdx, dotIndex));
       startIdx = dotIndex + 1;
       dotIndex = str.indexOf(delimiter, startIdx);
@@ -260,6 +260,7 @@ export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
       querys[key].querys.forEach(q => q.resolve(querymap[key]))
       delete querys[key]
       delete process[key]
+      return
     }
 
     // Process
@@ -353,7 +354,7 @@ export function deepClone(value: any, noemptyarr = false): any
   }
   else if (value && typeof (value) === "object")
   {
-    if (value instanceof Date) return value
+    if (value instanceof Date) return new Date(value.getTime())
     const ret:any = {}
     for (var k in value)
     {

@@ -50,13 +50,15 @@ import { ArgName } from './property/argName';
 import { FuncProperty } from './func';
 import { Generics } from '../generic/generics';
 import { Append } from '../../property/core/append';
+import { TypeProvider } from '../../property/core/typeProvider';
+import { LeafOnly } from '../enum/property/leafOnly';
 
 import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type';
 import type { NodeSchema } from '../node/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
 import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT } from '../../utility/constant';
-import { TypeProvider } from '../../property';
+
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
@@ -220,6 +222,7 @@ class CallArgMeta implements CallArg {
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_FUNCTION))
+@Meta(LeafOnly, true)
 class FunctionTypeMeta {}
 
 /** Represents the validation function type */

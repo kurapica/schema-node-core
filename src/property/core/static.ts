@@ -18,7 +18,7 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOOL } f
  */
 @Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.stackable`)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.static`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)
 export class Static extends Property<boolean> {

@@ -121,7 +121,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       f.setValue(d);
     }
 
-    packFields.sort((a, b) => a instanceof StructNode ? -1 : 1);
+    packFields.sort((a, b) => (b instanceof StructNode ? 1 : 0) - (a instanceof StructNode ? 1 : 0));
     for (const f of packFields)
     {
       if (f instanceof StructNode)
@@ -350,6 +350,11 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
         type = newStrucType;
 
         if (!this._fields.length) {
+          newStrucType.unloadType();
+          return;
+        }
+        // a newer override may have replaced this node while awaiting
+        if (this._fields[index] !== node) {
           newStrucType.unloadType();
           return;
         }
