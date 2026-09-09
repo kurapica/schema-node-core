@@ -1,13 +1,13 @@
 /** The entry interface */
 export interface Entry<T> {
-    /** The entry value */
-    value: T;
+  /** The entry value */
+  value: T;
 
-    /** Whether has child entries */
-    hasChildren: boolean;
+  /** Whether has child entries */
+  hasChildren?: boolean;
 
-    /** The children entries of the <see cref='entry'> */
-    children?: Entry<T>[];
+  /** The children entries of the <see cref='entry'> */
+  children?: Entry<T>[];
 }
 
 /** The entry access interface */

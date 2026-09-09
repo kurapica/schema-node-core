@@ -29,7 +29,7 @@ class EntryMeta<T> implements Entry<T> {
 
   /** Has children entries */
   @Meta(SchemaType, NS_SYSTEM_BOOL)
-  hasChildren: boolean = false;
+  hasChildren?: boolean;
 }
 
 /** The entry access, works for cascade selection */

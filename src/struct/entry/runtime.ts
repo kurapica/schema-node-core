@@ -200,7 +200,7 @@ export class EntryType<T> implements Entry<T> {
     return entries?.map(c => {
       const entry = new EntryType<T>();
       entry.value = c.value;
-      entry.hasChildren = c.hasChildren;
+      entry.hasChildren = c.hasChildren ?? false;
       entry._entry = c;
       entry._parent = root;
       entry._valueMaps = this._valueMaps;

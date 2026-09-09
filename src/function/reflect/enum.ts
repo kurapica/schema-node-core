@@ -16,6 +16,8 @@ import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { ValueType } from '../../schema/value/runtime';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
+import { ServerOnly } from '../../schema/function/property/serverOnly';
+
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
@@ -136,7 +138,7 @@ export class SystemReflectEnum {
   }
 
   /** Gets the entry access for the given enum value type */
-  @Meta(Return, `system.list<${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.entryaccess>`)
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getenumaccess(
     @Meta(ArgName, 'type') @Meta(SchemaType, NS_SYSTEM_STRING) type: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value?: string,
@@ -149,6 +151,7 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the given value is a descendant of the given root */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static async isdescendant(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -166,6 +169,7 @@ export class SystemReflectEnum {
   }
 
   /** Checks if the given value is a descendant of any of the given roots */
+  @Meta(Return, NS_SYSTEM_BOOL)
   static async isdescendantany(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -183,6 +187,7 @@ export class SystemReflectEnum {
   }
 
   /** Gets the parent of the given enum value */
+  @Meta(Return, NS_SYSTEM_STRING)
   static async parent(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -201,6 +206,7 @@ export class SystemReflectEnum {
   }
 
   /** Gets the depth of the given enum value */
+  @Meta(Return, NS_SYSTEM_INT)
   static async depth(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'value') @Meta(SchemaType, NS_SYSTEM_STRING) value: string,
@@ -215,6 +221,7 @@ export class SystemReflectEnum {
   }
 
   /** Gets the lowest common ancestor of the given enum values */
+  @Meta(Return, NS_SYSTEM_STRING)
   static async lca(
     @Meta(ArgName, 'enum') @Meta(SchemaType, NS_SYSTEM_STRING) enumTypeStr: string,
     @Meta(ArgName, 'values') @Meta(SchemaType, `system.list<${NS_SYSTEM_STRING}>`) values: string[],

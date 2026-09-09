@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /** Gets the combine name */
 export function combinePaths(...names: string[])
 {
@@ -235,7 +237,7 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
 /**
  * Wrap a function so the same query will not be executed multiple times
  */
-export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
+export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>, cacheTime?: number)
 {
   const querys: {
     [key: string]: {
@@ -266,7 +268,12 @@ export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
     // Process
     queryFunc(...querys[key].args)
       .then(res => {
-        querymap[key] = res
+        if (cacheTime !== 0) {
+          querymap[key] = res
+          if (cacheTime) {
+            setTimeout(() => delete querymap[key], cacheTime)
+          }
+        }
         querys[key].querys.forEach(q => q.resolve(res))
       })
       .catch(ex => {
@@ -324,9 +331,14 @@ export function useQueueQuery<T>(
           task.resolve(await queryFunc(...task.args))
         }
         catch (ex) {
+          logger.error("useQueueQuery", ex)
           task.reject(ex)
         }
       }
+    }
+    catch(ex){
+      logger.error("useQueueQuery", ex)
+      throw ex
     }
     finally {
       processing = false

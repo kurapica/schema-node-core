@@ -138,7 +138,7 @@ function localeStringToString(value: LocaleString | string | null | undefined): 
   }
   
   const tran = value.trans?.find(t => currLang.startsWith(t.lang) || t.lang.startsWith(currLang))
-  return tran?.tran ?? currLocale[value.key] ?? value.key ?? ""
+  return tran?.tran ?? currLocale[value.key] ?? currLocale[value.key.toLowerCase()] ?? value.key ?? ""
 }
 
 /** format string */

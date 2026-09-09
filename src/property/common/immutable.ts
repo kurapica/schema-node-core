@@ -11,7 +11,6 @@ import { PropertyValueType } from '../core/propertyValueType';
 import { Static } from '../core/static';
 import { ReadOnly } from './readOnly';
 import { isEmpty } from '../../utility/toolset';
-import { DataNode } from '../../schema/value/node';
 
 import type { IValueAccess } from '../../interface';
 
@@ -27,10 +26,11 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } fro
 @Meta(Static, true)
 export class Immutable extends Property<boolean> {
   override effect(target: IValueAccess): void {
-    if (this.getValue() && target instanceof DataNode) // static property only effect once
-    {
-      if (!isEmpty(target.original))
-        target.setPropertyValue(ReadOnly, true);
-    }
+    this.clear(target);
+    target.recordSubscription(target.subscribe(() => target.setPropertyValue(ReadOnly, !isEmpty(target.original) || undefined), true), this);
+  }
+
+  override clear(target: IValueAccess): void {
+    target.clearSubscription(this);
   }
 }

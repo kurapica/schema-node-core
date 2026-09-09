@@ -155,7 +155,7 @@ export abstract class ScalarNode extends DataNode {
         this._entrySourceInfo.root = root;
         this._entrySourceInfo.rootEntry = new EntryType<any>();
         this._entrySourceInfo.rootEntry.value = root;
-        this._entrySourceInfo.args = entrySource!.args.map(a => this._callArgToEntrySource(owner!, a));
+        this._entrySourceInfo.args = entrySource!.args?.map(a => this._callArgToEntrySource(owner!, a)) || [];
         
         this._entrySourceInfo.valids = [];
         for(const item of valids)
@@ -295,7 +295,7 @@ export abstract class ScalarNode extends DataNode {
     if (!this._entrySourceInfo?.source || !this._entrySourceInfo?.args) return [];
 
     // call entry source function
-    const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args.map((a, i) => {
+    const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args?.map((a, i) => {
       const c = this._entrySourceInfo!.args![i];
       if (!c || isNull(c.source) && isNull(c.value)) {
         if (a.getPropertyValue(EntryRoot)) return this._entrySourceInfo!.root;
@@ -303,7 +303,7 @@ export abstract class ScalarNode extends DataNode {
       }
       if (c.source) return c.source === this ? value : c.source.getValue();
       return c.value;
-    })) as EntryAccess<any>[];
+    }) ?? []) as EntryAccess<any>[] ?? [];
 
     // valid
     if (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length)

@@ -34,6 +34,15 @@ const _schemaKindProperties = new Map<string, IProperty[]>();
 /** The node schema generators */
 const _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
 
+/** The schema kind properties from server */
+const _schemaKindServerProperties = new Map<string, string[]>();
+
+/** Sets the schema kind properties from server */
+export function setSchemaKindServerProperties(map: Record<string, string[]>) {
+  for (let kind in map)
+    _schemaKindServerProperties.set(kind, map[kind].map(e => e.toLowerCase()));
+}
+
 /**
  * Get the properties associated with a specific schema kind.
  * @param kind The schema kind
@@ -43,6 +52,21 @@ export function *getSchemaKindPropertyTypes(kind: string): Generator<PropertyCto
   const props = _schemaKindPropertyTypes.get(kind);
   if (!props) return;
   yield* props;
+}
+
+/** Gets the schema kind properties from server */
+export function *getSchemaKindSchemaProperties(kind: string): Generator<string> {
+  const serverProps = _schemaKindServerProperties.get(kind) ?? [];
+  const props = _schemaKindPropertyTypes.get(kind) ?? [];
+  
+  const temp = new Set<string>(serverProps);
+  yield* serverProps;
+
+  for (const prop of props) {
+    const schemaType = (prop as unknown as Record<string, string>)?.schemaType?.toLowerCase();
+    if (!schemaType || temp.has(schemaType)) continue;
+    yield schemaType;
+  }
 }
 
 /** Gets the schema kinds the property can works with */
@@ -164,7 +188,7 @@ export function saveNodeSchema(schema: NodeSchema | NodeSchema[], loadStage: Sch
   // System schema, register in the namespace tree
   _registerInNamespace(schema.namespace ?? '', schema);
   _schemaIndex.set(getNodeSchemaName(schema), schema);
-  logger.verbose("Register schema:", schema);
+  logger.verbose("[Schema][Register]", schema);
 }
 
 /** Look up a schema by full name. */
@@ -176,16 +200,18 @@ export function getSystemSchema(fullName: string): NodeSchema | undefined {
   const { schemas, ...clone } = schema
   if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
-  logger.verbose("Get schema:", schema);
+  logger.verbose("[Schema][Get]", schema);
   return clone;
 }
 
 // #region ── Internal ──
 
 /** Set the load state flags for a schema and its children. */
-function _setLoadState(schema: NodeSchema, loadStage: SchemaLoadState): void {
+function _setLoadState(schema: NodeSchema & { system?: boolean }, loadStage: SchemaLoadState): void {
   schema.loadState ??= loadStage;
   schema.loadState! |= loadStage;
+  if (loadStage & SchemaLoadState.System)
+    schema.system = true;
 
   if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas) {
     for (const child of schema.schemas) {
@@ -209,13 +235,14 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
     current.schemas ??= [];
     let child = current.schemas.find((s) => s.name === part);
     if (child && child.kind !== SCHEMA_KIND_NAMESPACE) {
-      throw new Error(`Schema conflict: ${getNodeSchemaName(child)} is not a namespace`);
+      throw new Error(`[Schema][Conflict]: ${getNodeSchemaName(child)} is not a namespace`);
     }
 
     if (!child) {
       child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE, loadState: schema.loadState };
       (child as any).display = { key: child.namespace ? `${child.namespace}.${part}` : part }; // for simple
       current.schemas.push(child);
+      logger.verbose("[Schema][Register]", child);
     }
     current = child;
   }
@@ -224,7 +251,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
   const idx = current.schemas.findIndex((s) => s.name === schema.name);
   if (idx >= 0) {
     if (current.schemas[idx].kind !== schema.kind)
-      throw new Error(`Schema conflict: ${getNodeSchemaName(current.schemas[idx])} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
+      throw new Error(`[Schema][Conflict]: ${getNodeSchemaName(current.schemas[idx])} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
     current.schemas[idx] = schema; // replace existing
   } else {
     current.schemas.push(schema);
@@ -354,7 +381,7 @@ export function initSchemaRuntime(): void {
     const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
     
     // Call the generator to create the NodeSchema and register it
-    logger.debug('[Schema]', `[${kind}]`, type);
+    logger.debug('[Schema][Kind][Register]', type, `[${kind}]`, type);
     generator(ns, name, ctor);
   });
 }

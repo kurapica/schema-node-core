@@ -83,7 +83,7 @@ export class FunctionType extends NodeType {
   // ── Loading ─────────────────────────────────────────────────────────
 
   override loadProperties(): IProperty[] {
-    this._funcSchema = getPropertyValue<FunctionSchema>(this.schema, "func");
+    this._funcSchema = getPropertyValue<FunctionSchema>(this.schema, "function");
     return this._funcSchema ? Array.from(getPropertiesBySchemaKind(this._funcSchema, SCHEMA_KIND_FUNCTION)) : [];
   }
 

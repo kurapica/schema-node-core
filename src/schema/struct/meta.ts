@@ -82,7 +82,6 @@ class StructSchemaMeta implements StructSchema {
 }
 
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_ORDER_STRUCT])
-@Meta(Append, [Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.usage`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_USAGE)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`, TYPE_PROVIDER, NODE_SELF))

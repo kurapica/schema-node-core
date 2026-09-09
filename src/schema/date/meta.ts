@@ -52,7 +52,7 @@ class DateSchemaMeta implements DateSchema {
 
 /** The date schema usage. */
 @Meta(SchemaKind, [SCHEMA_KIND_DATE_USAGE, SCHEMA_KIND_ORDER_DATE])
-@Meta(Append, [Default, BlackList, WhiteList, Error, Valid])
+@Meta(Append, [Default, BlackList, WhiteList, Error])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.usage`)
 @Meta(Attach, SCHEMA_KIND_DATE_USAGE)
 @Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')

@@ -91,7 +91,7 @@ class EnumSchemaMeta implements EnumSchema {
 
 /** The enum schema usage */
 @Meta(SchemaKind, [SCHEMA_KIND_ENUM_USAGE, SCHEMA_KIND_ORDER_ENUM])
-@Meta(Append, [Default, BlackList, WhiteList, Valid])
+@Meta(Append, [Default, BlackList, WhiteList])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ENUM}.usage`)
 @Meta(Attach, SCHEMA_KIND_ENUM_USAGE)
 // default

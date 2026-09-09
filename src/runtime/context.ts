@@ -1,14 +1,15 @@
 import { SchemaLoadState } from "../enum/schemaLoadState";
 import { hasNodeReferences, isNamespaceNodeType } from "../interface";
-import { combineProperties } from "../property/propertyOwner";
+import { combineProperties, getPropertyValue } from "../property/propertyOwner";
 import { getSchemaProvider } from "../schema/provider";
 import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
 import { logger } from "../utility/logger";
-import { isNull, splitString } from "../utility/toolset";
+import { isNull, splitString, useQueueQuery, useShareQuery } from "../utility/toolset";
+import { SystemDefined } from "../property/core/systemDefined";
+import { getNodeSchemaName, type NodeSchema } from "../schema/node/type";
 
 import type { INamespaceNodeType, INodeReference, INodeType } from "../interface";
 import type { GenericParameter } from "../schema/generic/type";
-import type { NodeSchema } from "../schema/node/type";
 
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
 
@@ -108,15 +109,15 @@ export async function getNodeType(
   }
 
   // Try loading full namespace types if not cached
-  if (!node)
-  {
-    node = await loadNodeType(rootNamespaceType, '') as unknown as INodeType;
-    for (let i = 0; i < parts.length; i++) {
-      node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
-      if (!node) break;
+  if (!node?.loaded){
+    node = await loadNodeType(rootNamespaceType!, '') as unknown as INodeType;
+    if (parts?.length) {
+      for (let i = 0; i < parts.length; i++) {
+        node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
+        if (!node) break;
+      }
     }
   }
-
   return node;
 }
 
@@ -144,10 +145,11 @@ async function loadNodeType(
     if (isLast && reload) {
       result.loaded = false;
     }
-    else if (result.loaded || !isLast && onlyCache)
+    else if (result.loaded || !isLast && onlyCache) {
       return result;
+    }
   }
-  else if(reload)
+  else if(reload || onlyCache)
   {
     return undefined; // reload only on existing types
   }
@@ -250,15 +252,11 @@ async function loadNodeSchema(
   const provider = getSchemaProvider();
   if (provider) {
     try {
-      const loadSchemas = await provider.getSchema([schemaName]);
-      for (const loadSchema of loadSchemas) {
-        loadSchema.loadState = SchemaLoadState.Service;
-
-        if (!schema) {
-          schema = loadSchema;
-          continue;
-        }
-
+      const loadSchema = await shareGetSchemaFromProvider(schemaName);
+      if (!schema) {
+        schema = loadSchema;
+      }
+      else if (loadSchema) {
         // Merge load states
         schema.loadState = (schema.loadState ?? SchemaLoadState.None) | (loadSchema.loadState ?? SchemaLoadState.None);
 
@@ -291,12 +289,29 @@ async function loadNodeSchema(
         }
       }
     } catch (error) {
-      console.error(`Failed to load schema from provider: ${schemaName}`, error);
+      logger.error(`Failed to load schema from provider: ${schemaName}`, error);
     }
   }
 
   return schema;
 }
+
+async function getSchemaFromProvider(schemaName: string) {
+  const provider = getSchemaProvider();
+  if (provider) {
+    try {
+      const loadSchemas = await provider.getSchema([schemaName]);
+      const loadSchema = getLoadSchema(loadSchemas, schemaName);
+      if (loadSchema) updateSchemaState(loadSchema, SchemaLoadState.Service);
+      return loadSchema;
+    } catch (error) {
+      logger.error(`Failed to load schema from provider: ${schemaName}`, error);
+    }
+  }
+  return undefined;
+}
+
+const shareGetSchemaFromProvider = useShareQuery(getSchemaFromProvider, 1000);
 
 /**
  * Split generic parameters respecting nested angle brackets.
@@ -368,6 +383,36 @@ export async function exportNodeType(nodeType: INodeType, result: NodeSchema[]):
       exportNodeType(ref, result);
     }
   }
+}
+
+function getLoadSchema(schemas: NodeSchema[], schemaName: string)
+{
+  if (!schemaName) { // root schema
+    return { name: "", kind: SCHEMA_KIND_NAMESPACE, schemas: schemas };
+  }
+
+  for(let schema of schemas)
+  {
+    const name = getNodeSchemaName(schema);
+    if (name === schemaName) return schema;
+    if (schema.kind === SCHEMA_KIND_NAMESPACE && schemaName.startsWith(name + ".") && schema.schemas?.length)
+    {
+      return getLoadSchema(schema.schemas, schemaName);
+    }
+  }
+  return undefined;
+}
+
+function updateSchemaState(schema: NodeSchema, state: SchemaLoadState)
+{
+  schema.loadState ??= SchemaLoadState.None;
+  if (getPropertyValue(schema, SystemDefined))
+    schema.loadState |= SchemaLoadState.System;
+  schema.loadState |= state;
+
+  if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas?.length)
+    for(let s of schema.schemas)
+      updateSchemaState(s, state);
 }
 
 // install

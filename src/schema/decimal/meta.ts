@@ -60,7 +60,7 @@ class DecimalSchemaMeta implements DecimalSchema {
 
 /** The decimal schema usage. */
 @Meta(SchemaKind, [SCHEMA_KIND_DECIMAL_USAGE, SCHEMA_KIND_ORDER_DECIMAL])
-@Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Unit, Error, StackUpLimit, Valid])
+@Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Unit, Error, StackUpLimit])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DECIMAL}.usage`)
 @Meta(Attach, SCHEMA_KIND_DECIMAL_USAGE)
 @Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')

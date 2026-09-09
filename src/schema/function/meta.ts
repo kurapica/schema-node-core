@@ -47,7 +47,7 @@ import { AccessEntryConsumer } from '../string/property/accessEntryConsumer';
 import { AccessValueTypeResolver } from '../string/property/accessValueTypeResolver';
 import { Return } from './property/return';
 import { ArgName } from './property/argName';
-import { FuncProperty } from './func';
+import { FunctionProperty } from './func';
 import { Generics } from '../generic/generics';
 import { Append } from '../../property/core/append';
 import { TypeProvider } from '../../property/core/typeProvider';
@@ -317,7 +317,7 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
 
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor, undefined, methodName).forEach(p => setProperty(nodeSchema, p));
     getMetaPropertiesForSchema(SCHEMA_KIND_FUNCTION, ctor, undefined, methodName).forEach(p => setProperty(funcSchema, p));
-    setPropertyValue(nodeSchema, FuncProperty, funcSchema);
+    setPropertyValue(nodeSchema, FunctionProperty, funcSchema);
     saveNodeSchema(nodeSchema);
   }
 }

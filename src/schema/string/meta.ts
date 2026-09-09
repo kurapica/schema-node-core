@@ -63,7 +63,7 @@ class StringSchemaMeta implements StringSchema {
 
 /** The string schema usage. */
 @Meta(SchemaKind, [SCHEMA_KIND_STRING_USAGE, SCHEMA_KIND_ORDER_STRING])
-@Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Root, LeafOnly, Unit, Error, Valid])
+@Meta(Append, [AsSuggest, JsRegex, Default, BlackList, WhiteList, Root, LeafOnly, Unit, Error])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.usage`)
 @Meta(Attach, SCHEMA_KIND_STRING_USAGE)
 // default

@@ -60,7 +60,7 @@ class IntSchemaMeta implements IntSchema {
 
 /** The int schema usage. */
 @Meta(SchemaKind, [SCHEMA_KIND_INT_USAGE, SCHEMA_KIND_ORDER_INT])
-@Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Unit, Error, StackUpLimit, Valid])
+@Meta(Append, [AsSuggest, Default, BlackList, WhiteList, Unit, Error, StackUpLimit])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_INT}.usage`)
 @Meta(Attach, SCHEMA_KIND_INT_USAGE)
 @Relation(WhiteList,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')

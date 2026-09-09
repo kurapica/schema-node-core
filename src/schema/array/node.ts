@@ -296,15 +296,22 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
   moveRow(from: number, to: number): void {
     if (from === to || from < 0 || to < 0 || from >= this._elements.length || to >= this._elements.length) return;
     const temp = this._elements[from].value;
+    const tempOriginal = this._elements[from].original;
     if (from < to) {
       for (let i = from; i < to; i++) {
+        this._elements[i].value = this._elements[i + 1].original;
+        this._elements[i].confirm();
         this._elements[i].value = this._elements[i + 1].value;
       }
     } else {
       for (let i = from; i > to; i--) {
+        this._elements[i].value = this._elements[i - 1].original;
+        this._elements[i].confirm();
         this._elements[i].value = this._elements[i - 1].value;
       }
     }
+    this._elements[to].value = tempOriginal;
+    this._elements[to].confirm();
     this._elements[to].value = temp;
   }
 

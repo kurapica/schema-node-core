@@ -17,7 +17,7 @@ import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
 import { ValueType } from '../value/runtime';
-import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes } from '../../runtime/schemaRuntime';
+import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes, getSchemaKindSchemaProperties } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { isConstraintProperty, joinProperties } from '../../interface';
@@ -33,6 +33,7 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
 import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST } from '../../utility/constant';
+import { Stackable } from '../../property';
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -103,15 +104,14 @@ export class StructType extends ValueType implements IRelationProvider {
     const attachFields: { field: StructFieldType, priority: number }[] = [];
     const attachRelations: RelationSchema[] = [];
     if (attachKind) {
-      for(const propCtor of getSchemaKindPropertyTypes(attachKind))
+      for(const schemaType of getSchemaKindSchemaProperties(attachKind))
       {
-        const schemaType = getMetaProperty(propCtor, SchemaType)?.getValue<string>();
-        if (!schemaType) continue;
         const propType = await getNodeType(schemaType) as PropertyType;
+        logger.debug("[Struct]", this.name, "[Attach][Property]", schemaType, attachKind, schemaType, propType);
         if (!propType?.valueType) continue;
         
         const fieldType = new StructFieldType();
-        const fieldSchema = { name: propType.property!, type: propType.valueType.name };
+        const fieldSchema = { name: propType.property!, type: propType.getPropertyValue(Stackable) ? `${NS_SYSTEM_LIST}<${propType.valueType.name}>` : propType.valueType.name };
 
         // copy properties from meta property type
         for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))

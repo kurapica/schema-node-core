@@ -12,7 +12,6 @@ import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo, IVal
 import type { NodeSchema } from "../node/type";
 import type { ValueType } from "../value/runtime";
 import type { StructFieldSchema, StructSchema } from "./type";
-import { logger } from '../../utility/logger';
 
 
 /** Struct node. */

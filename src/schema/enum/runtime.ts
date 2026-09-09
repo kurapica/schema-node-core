@@ -26,7 +26,8 @@ import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { IProperty, PropertyCtor } from '../../interface';
 
-import { NODE_SELF, TYPE_PROVIDER, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+import { NODE_SELF, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+import { getSchemaProvider } from '../provider';
 
 
 export class EnumType extends ValueType {
@@ -104,12 +105,13 @@ export class EnumType extends ValueType {
 
   /** Gets the enum entry access by value and start value (Deprecated) */
   async getEnumEntryAccess(value: string | undefined = undefined, start: string | undefined = undefined): Promise<EntryAccess<string>[]>{
+    value = value ? `${value}` : undefined;
     if (isEmpty(value)) value = undefined;
     if (isEmpty(start)) start = undefined;
 
     let root:EntryType<string> | undefined = (start ? this._root.getEntry(start) : undefined) ?? this._root;
     let access: EntryAccess<string>[] | undefined = root.getAccessList(value);
-    if (access?.length || root.isFullyLoaded) return access ?? [];
+    if (access?.length || root.isFullyLoaded || !getSchemaProvider()) return access ?? [];
     
     // gets with entry source
     const entrySource = this.getProperty(EntrySource)?.getValue<FuncCall>();

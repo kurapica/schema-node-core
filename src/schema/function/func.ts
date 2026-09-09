@@ -20,7 +20,7 @@ import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTE
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_FUNC}.${SCHEMA_KIND_FUNCTION}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_FUNCTION))
-export class FuncProperty extends Property<FunctionSchema> {
+export class FunctionProperty extends Property<FunctionSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<FunctionSchema>();
     if (!otherSchema) return false;
