@@ -62,6 +62,9 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   /** The property observable */
   private _propObs?: Map<PropertyCtor, Observable<[IValueAccess, PropertyCtor, unknown, unknown]>>;
 
+  /** The move observable */
+  private _moveObs?: Observable<[IValueAccess]>;
+
   /** The subscrptions */
   private _subs?: Map<unknown, Set<Function>>;
 
@@ -99,6 +102,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._subs?.forEach(s => s.forEach(f => f()))
     this._subs?.clear();
     this._violatedOb?.dispose();
+    this._moveObs?.dispose();
 
     delete this._dataOb;
     delete this._violatedOb;  
@@ -108,6 +112,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     delete this._props;
     delete this._value;
     delete this._violated;
+    delete this._moveObs;
     clearDebounce(this.onNext);
     clearDebounce(this.onNextViolated);
   }
@@ -194,6 +199,12 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   
   // #region ── Property Access ───────────────────────────────────────────────
 
+  /** Adds a property provider */
+  addPropertyProvider(provider: IPropertyProvider | undefined) {
+    if (!provider || this.propertyProviders.includes(provider)) return;
+    this.propertyProviders.push(provider);
+  }
+
   /** Apply property effects */
   applyPropertyEffects() {
     for(const prop of Array.from(this.filterProperties(() => true)))
@@ -259,6 +270,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     for (let prop of joinProperties(this._filterProperties<T>(predicate), ...this.propertyProviders.map(p => p.filterProperties(predicate)), this.type.filterProperties(predicate))) yield prop;
   }
 
+  /** Filters the properties */
   private *_filterProperties<T extends IProperty>(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
     if (!this._props) return;
     for(let props of this._props.values())
@@ -489,6 +501,12 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     }
   }
 
+  /** Subscribe the move change and return the function for un-subscribe */
+  subscribeMove(func: Observer<[IValueAccess]>): Function {
+    this._moveObs ??= new Observable();
+    return this._moveObs.subscribe(func);
+  }
+
   /** Move subscriptions to new node before destroying this node */
   moveSubscription(newNode: DataNode): void {
     newNode._dataOb = this._dataOb;
@@ -498,6 +516,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._dataOb = undefined;
     this._propObs = undefined;
     this._violatedOb = undefined;
+
+    this._moveObs?.onNext(newNode);
   }
 
   // #endregion

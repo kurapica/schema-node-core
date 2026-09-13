@@ -54,26 +54,35 @@ export abstract class ScalarNode extends DataNode {
   get isNonLeafNodeSelectable(): boolean { return this._entrySourceInfo?.allRootPassed ?? false; }
 
   /** Gets the default display text for the current value */
-  async getDisplayValue(sep?: string): Promise<string> { 
+  async getDisplayValue(sep?: string, valuesSep?: string): Promise<string> { 
     if (isEmpty(this.value)) return "";
     if (!this.hasEntrySource) return `${this.value}`;
 
-    const access = await this.getEntryAccessList(this.value);
-    if (!access?.length || !access[access.length - 1].entry) return `${this.value}`;
+    const array = Array.isArray(this.value) ? this.value : [this.value];
+    const res: string[] = [];
 
-    if (sep) 
-    {
-      return access.filter(item => item.entry).map(item => {
-        const display = getPropertyValue<LocaleString>(item.entry, "display");
-        return display ? _L(display) : `${item.entry!.value}`;
-      }).join(sep);
+    for (const item of array) {
+      const access = await this.getEntryAccessList(item);
+      if (!access?.length || !access[access.length - 1].entry) {
+        res.push(`${item}`);
+        continue;
+      }
+
+      if (sep) 
+      {
+        res.push(access.filter(item => item.entry).map(item => {
+          const display = getPropertyValue<LocaleString>(item.entry, "display");
+          return display ? _L(display) : `${item.entry!.value}`;
+        }).join(sep));
+      }
+      else
+      {
+        const entry = access[access.length - 1].entry;
+        const display = getPropertyValue<LocaleString>(entry, "display");
+        res.push(display ? _L(display) : `${item}`);
+      }
     }
-    else
-    {
-      const entry = access[access.length - 1].entry;
-      const display = getPropertyValue<LocaleString>(entry, "display");
-      return display ? _L(display) : `${this.value}`;
-    }
+    return res.join(valuesSep ?? ', ');
   }
 
   /** refresh the options with entry source & white list & black list */
@@ -238,6 +247,13 @@ export abstract class ScalarNode extends DataNode {
 
     try
     {
+      // check root && cascade
+      if (this._entrySourceInfo.root && this._entrySourceInfo.cascade)
+      {
+        const rootAccess = await this._queryEntrySource(this._entrySourceInfo.root);
+        this._entrySourceInfo.cascade -= ((rootAccess?.length ?? 1) - 1);
+      }
+
       // white list init entry tree and as mask
       if (this._entrySourceInfo.whiteList?.length)
       {
@@ -294,11 +310,13 @@ export abstract class ScalarNode extends DataNode {
   private _queryEntrySource = async (value: any): Promise<EntryAccess<any>[]> => {
     if (!this._entrySourceInfo?.source || !this._entrySourceInfo?.args) return [];
 
+    const queryRoot = value && value == this._entrySourceInfo!.root;
+
     // call entry source function
     const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args?.map((a, i) => {
       const c = this._entrySourceInfo!.args![i];
       if (!c || isNull(c.source) && isNull(c.value)) {
-        if (a.getPropertyValue(EntryRoot)) return this._entrySourceInfo!.root;
+        if (a.getPropertyValue(EntryRoot) && !queryRoot) return this._entrySourceInfo!.root;
         return undefined;
       }
       if (c.source) return c.source === this ? value : c.source.getValue();
@@ -306,7 +324,7 @@ export abstract class ScalarNode extends DataNode {
     }) ?? []) as EntryAccess<any>[] ?? [];
 
     // valid
-    if (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length)
+    if (!queryRoot && (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length))
     {
       // check black list for entry first
       if (this._entrySourceInfo.blackList?.length)

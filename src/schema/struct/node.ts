@@ -4,7 +4,7 @@ import { OverrideType } from '../../property/core/overrideType';
 import { getNodeType } from "../../runtime/context";
 import { isEmpty, isEqual, isNull, splitString, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
-import { StructType } from "./runtime";
+import { StructFieldType, StructType } from "./runtime";
 import { SCHEMA_KIND_STRUCT } from "../../utility/constant";
 import { DisableConstraint } from "../../property/core/disableConstraint";
 
@@ -358,7 +358,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
           return;
         }
       }
-      const newNode = type.create(node.original, this, strutField.getOverrideFieldType(type)) as DataNode;
+      const newNode = type.create(node.original, this, strutField.getOverrideFieldType(type), ...node.propertyProviders.filter(p => !(p instanceof StructFieldType))) as DataNode;
       newNode.value = trimValue(node.rawValue);
       node.moveSubscription(newNode);
       
@@ -373,6 +373,8 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       if (node.type.getProperty('name')?.getValue() === '__randomStructType')
         (node.type as StructType)?.unloadType();
       node.dispose();
+
+      newNode.applyPropertyEffects();
 
       // attach relations to new node
       newNode.attachRelations(this._fieldRelations?.get(node.name!.toLowerCase()) ?? []);

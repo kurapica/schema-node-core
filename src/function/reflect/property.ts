@@ -9,9 +9,10 @@ import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
 import { OfSchema } from '../../property/core/ofSchema';
 import { Variadic } from '../../schema/function/property/variadic';
+import { PropertyValueTypeResolver } from '../../property/core/propertyValueTypeResolver';
+import { FunctionType } from '../../schema/function/runtime';
 
 import { NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
-
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
@@ -77,6 +78,14 @@ export class SystemReflectProperty {
     ownerType: string
   ): Promise<string | undefined> {
     const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
+    const resolver = prop?.getPropertyValue<string>(PropertyValueTypeResolver);
+    if (resolver) {
+      const resolveType = await getNodeType(resolver) as FunctionType;
+      const type = await resolveType.call([ownerType]) as string;
+      if (type) return type;
+    }
+
+    // default
     const name = prop?.valueType?.name;
     return name === NS_SYSTEM_OBJECT && ownerType ? ownerType : name;
   }

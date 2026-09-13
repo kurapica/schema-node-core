@@ -16,9 +16,7 @@ import type { IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
 
-/**
- * The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. 
- */
+/** The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. */
 @Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.Immutable`)

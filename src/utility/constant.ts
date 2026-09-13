@@ -68,6 +68,7 @@ export const NODE_SELF = '$self';
 export const TYPE_PROVIDER = '$type';
 export const ARRAY_PREVIOUS = '$prev';
 export const ARRAY_ELEMENT = '$ele';
+export const FUNC_RETURN = 'return';
 
 // ── Generic Pattern ────────────────────────────────────────────────────────
 

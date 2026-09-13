@@ -13,7 +13,7 @@ import { combinePaths, isNull } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
-import { isNamespaceNodeType } from '../../interface';
+import { isNamespaceNodeType, isValueTypeAccess, type IValueTypeAccess } from '../../interface';
 import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
@@ -121,7 +121,7 @@ export class SystemReflectType {
   @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
   static async getaccessentries(
     @Meta(ArgName, 'name')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     @Meta(Require, true)
     name: string,
 
@@ -134,8 +134,8 @@ export class SystemReflectType {
     @Meta(EntryRoot, true)
     root?: string
   ): Promise<EntryAccess<string>[]> {
-    let valueType = !name ? undefined : await getNodeType(name) as ValueType | undefined;
-    if (!valueType) return [];
+    let valueType: IValueTypeAccess | undefined = !name ? undefined : await getNodeType(name) as IValueTypeAccess | undefined;
+    if (!valueType || !isValueTypeAccess(valueType)) return [];
     path = path?.toLowerCase() ?? '';
     root = root?.toLowerCase() ?? '';
     if (path && root && path !== root && !path.startsWith(`${root}.`))
@@ -157,7 +157,7 @@ export class SystemReflectType {
       accessEntry.children = accesses;
 
       // check next part
-      let next: ValueType | undefined;
+      let next: IValueTypeAccess | undefined;
       for (const a of accesses)
       {
         const n = a.value;
@@ -180,7 +180,7 @@ export class SystemReflectType {
   @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   static async getaccessvaluetype(
     @Meta(ArgName, 'name')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     @Meta(Require, true)
     name: string,
 
@@ -189,8 +189,8 @@ export class SystemReflectType {
     @Meta(Require, true)
     access: string,
   ): Promise<string> {
-    let valueType = !name ? undefined : await getNodeType(name) as ValueType | undefined;
-    if (!valueType) return "";
+    let valueType: IValueTypeAccess | undefined = !name ? undefined : await getNodeType(name) as IValueTypeAccess | undefined;
+    if (!valueType || !isValueTypeAccess(valueType)) return "";
     return valueType.getAccessValueType(access)?.name ?? "";
   }
 

@@ -9,10 +9,8 @@ import { Attach } from './property/attach';
 import { Display } from '../../property/common/display';
 import { DisplayOnly } from './property/displayOnly';
 import { Require } from '../../property/common/require';
-import { SchemaType } from '../../property/core/schemaType';
 import { Unpack } from './property/unpack';
 import { Name } from '../../property/core/name';
-import { getMetaProperty } from '../../attribute/meta';
 import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
@@ -32,8 +30,9 @@ import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, I
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST } from '../../utility/constant';
-import { Stackable } from '../../property';
+import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST, ARRAY_ELEMENT } from '../../utility/constant';
+import { Stackable } from '../../property/core/stackable';
+
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
@@ -111,7 +110,8 @@ export class StructType extends ValueType implements IRelationProvider {
         if (!propType?.valueType) continue;
         
         const fieldType = new StructFieldType();
-        const fieldSchema = { name: propType.property!, type: propType.getPropertyValue(Stackable) ? `${NS_SYSTEM_LIST}<${propType.valueType.name}>` : propType.valueType.name };
+        const stackable = propType.getPropertyValue(Stackable);
+        const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType.name}>` : propType.valueType.name };
 
         // copy properties from meta property type
         for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
@@ -122,7 +122,7 @@ export class StructType extends ValueType implements IRelationProvider {
 
         // save property relations
         const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
-        if (propRelations?.length) attachRelations.push(...propRelations);
+        if (propRelations?.length) attachRelations.push(...propRelations.map(r => stackable && r.target?.startsWith(`${fieldSchema.name}.`) ? { ...r, target:`${fieldSchema.name}.${ARRAY_ELEMENT}.${r.target?.substring(fieldSchema.name.length + 1)}` } : r));
       }
     }
 

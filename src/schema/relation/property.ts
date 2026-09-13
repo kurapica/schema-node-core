@@ -30,5 +30,5 @@ export class Relations extends Property<RelationSchema[]> {
 
 /** Checks if two relation schemas are equal */
 function equal(a: RelationSchema, b: RelationSchema): boolean {
-  return a.target === b.target && a.property === b.property && a.kind === b.kind;
+  return a.target?.toLowerCase() === b.target?.toLowerCase() && a.property?.toLowerCase() === b.property?.toLowerCase() && a.kind?.toLowerCase() === b.kind?.toLowerCase();
 }

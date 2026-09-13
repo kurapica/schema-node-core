@@ -30,6 +30,12 @@ export interface IValueTypeAccess extends IPropertyProvider {
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess;
 }
 
+/** Whether the type is a value type access */
+export function isValueTypeAccess(type: any): type is IValueTypeAccess {
+    // for simple
+  return typeof (type as any).getAccessValueType === 'function';
+}
+
 /** The array value type access interface */
 export interface IArrayValueTypeAccess extends IValueTypeAccess {
   /** The array item type */
@@ -90,6 +96,9 @@ export interface IValueAccess {
   /** Subscribe the data change and return the function for un-subsribe */
   subscribe(func: Observer<[IValueAccess, unknown]>, immediate?: boolean): Function;
 
+  /** Subscribe the property change and return the function for un-subsribe */
+  subscribeProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function;
+
   /** Record subscription by source */
   recordSubscription(subscription: Function, source: unknown): void;
 
@@ -139,7 +148,9 @@ export interface IValueAccess {
 
 /** The relation interface. */
 export interface IRelation {
-  
+  /** The relation owner */
+  get owner(): IValueTypeAccess | undefined;
+
   /** The target property name */
   get target(): string;
 

@@ -1,3 +1,4 @@
+export * from './funcCallArgNode';
 export * from './funcCallArgsNode';
 export * from './funcCallNode';
 export * from './funcArgNode';

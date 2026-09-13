@@ -13,9 +13,7 @@ import type { IProperty } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 
-/**
- * The unit property is used to define the unit of measurement
- */
+/** The unit property is used to define the unit of measurement */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.Unit`)
 @Meta(PropertyValueType, NS_SYSTEM_LOCALE_STRING)

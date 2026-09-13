@@ -77,7 +77,7 @@ export class SystemReflectFunction {
       const argType = !args[i] ? undefined : await getNodeType(args[i]) as ValueType | undefined;
       if (!argType) return false;
       
-      const funcArgType = await getNodeType(funcType.args.at(i)!.type) as ValueType | undefined;
+      const funcArgType = funcType.args.at(i)!.type;
       if (!funcArgType || !funcArgType.isAssignableTo(argType)) return false;
     }
     

@@ -8,7 +8,7 @@ export class StringNode extends ScalarNode {
   override getValue() {
     let value = this.rawValue;
     if (isNull(value)) return null;
-    return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? JSON.stringify(value) : value}`
+    return `${value instanceof Date ? value.toISOString() : typeof (value) === "object" ? `${value}` : value}`
   }
 
   /** The uplimit of string */

@@ -11,11 +11,13 @@ import { Relation } from '../../attribute/relation';
 import type { IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, TYPE_PROVIDER } from '../../utility/constant';
+import { PropertyValueTypeResolver } from '../core/propertyValueTypeResolver';
 
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.blacklist`)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.blacklist.error`)
+@Meta(PropertyValueTypeResolver, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`)
 @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, TYPE_PROVIDER))
 export class BlackList extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {

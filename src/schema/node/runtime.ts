@@ -220,7 +220,7 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
   // ── Used-by tracking ─────────────────────────────────────────────────
 
   /** Whether this type is referenced by any other type. */
-  get isUsed(): boolean { return (this._usedBy?.size ?? 0) > 0; }
+  get isUsed(): boolean { return (this._usedBy?.size ?? 0) > 0 || (this.schema?.usedBy?.length ?? 0) > 0; }
 
   /** Record that another type references this one. */
   addUsedBy(type: INodeType): void {

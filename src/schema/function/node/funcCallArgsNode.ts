@@ -5,7 +5,7 @@ import { ApplyMode } from "../../../enum/applyMode/type";
 import { Observable, type Observer } from "../../../utility/observable";
 import { SystemReflectType } from "../../../function";
 import { FuncCallVarNode } from "./funcCallVarNode";
-import { _LS, splitString } from "../../../utility";
+import { _LS, isEmpty, splitString } from "../../../utility";
 import { buildFuncCall, type CallArg } from "../type";
 import { Display } from "../../../property/common/display";
 import { ReadOnly } from "../../../property/common/readOnly";
@@ -16,7 +16,9 @@ import type { LocaleString } from "../../../struct/localeString/type";
 import type { StructNode } from "../../struct/node";
 import type { StructType } from "../../struct/runtime";
 
-import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from "../../../utility/constant";
+import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN } from "../../../utility/constant";
+import type { StringNode } from "../../string";
+import { getGlobalAccessValue } from "../../../property/core/accessPath";
 
 /** The function expression arguments data node */
 export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
@@ -24,6 +26,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
   private _varArg: FuncCallVarNode | undefined;
 
   private _funcType: FunctionType | undefined;
+  private _return: StringNode | undefined;
   private _mode: ApplyMode | undefined;
   private _initData: CallArg[] | undefined;
   private _argType: StructType
@@ -32,6 +35,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
 
   constructor(type: ArrayType, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
     super(type, undefined, parent, ...propProviders);
+    this._return = (this.parent!.getAccessValue('funcReturn') as StringNode)!;
     this._argType = type.element as StructType;
     this._initData = value as CallArg[] ?? []; // waiting parent
   }
@@ -122,13 +126,15 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
 
   // special for argument choice
   override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
-    const paths = splitString(path?.toLowerCase(), '.', 2);
+    const g = super.getAccessValue(path, node);
+    if (g) return g;
 
-    // @TODO: handle the global access path later
-    const arg = this._args.find(e => e.name?.toLowerCase() == paths[0]) ?? (this._varArg?.name?.toLowerCase() == paths[0] ? this._varArg : undefined);
+    if (!path?.length) return undefined;
+    path = path.toLowerCase();
+    if (path === FUNC_RETURN) return this._return;
+
+    const arg = this.at(path);
     if (!arg) return undefined;
-    if (paths[1] === TYPE_PROVIDER) return arg.getAccessValue('sourceType');
-    if (paths[1] === NODE_SELF) return arg.getAccessValue('source');
     return arg.getAccessValue('value');
   }
 
@@ -204,8 +210,8 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
       {
         const adata = data.slice(i);
         const argName = arg.getPropertyValue<LocaleString>(Display) ?? _LS(arg.name);
-        if (!adata.length && !readonly) adata.push({ name: argName, type: arg.type });
-        adata.forEach(a => { a.type = arg.type; a.name = argName; });
+        if (!adata.length && !readonly) adata.push({ name: argName, type: arg.type?.name });
+        adata.forEach(a => { a.type = arg.type?.name; a.name = argName; });
         const node = new FuncCallVarNode(this._argType, adata, this, arg);
         if (readonly)
           node.setPropertyValue(ReadOnly, true);
@@ -219,7 +225,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
       else
       {
         const argName = arg.getPropertyValue<LocaleString>(Display) ?? _LS(arg.name);
-        const adata = typeof data[i] === 'object' ? { ...data[i], name: argName, type: arg.type } : { name: argName, type: arg.type };
+        const adata = typeof data[i] === 'object' ? { ...data[i], name: argName, type: arg.type?.name } : { name: argName, type: arg.type?.name };
         const node = this.addRow(adata, arg)!;
 
         if (readonly)
@@ -234,20 +240,35 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
       }
     }
 
-    // attach the relations
+    // attach the function relations
     if (!readonly) {
-      for (const e of this._args)
+      for (const r of this._funcType.getRelations())
       {
-        for (const r of this._funcType.args.getRelationsForArg(e.name!))
+        const target = this.getAccessValue(r.target);
+        if (target) 
         {
-          const target = this.getAccessValue(r.target, e);
-          if (target)
-            r.attach(this, target);
+          r.attach(this, target);
+          (target as DataNode)?.subscribeMove(this.applyArgRelation);
         }
       }
     }
 
     this.onNextArgs();
+  }
+
+  /** Apply the argument relation */
+  private applyArgRelation = (node: IValueAccess) => {
+    if (!this._funcType) return;
+    const parent = node.parent as DataNode;
+    const argName = parent?.name;
+    if (!argName) return;
+
+    for (const r of this._funcType.getRelations())
+    {
+      if (r.target.toLowerCase() != argName.toLowerCase()) continue;
+      r.attach(this, node);
+      (node as DataNode)?.subscribeMove(this.applyArgRelation);
+    }
   }
 
   /** Refresh the argument types */

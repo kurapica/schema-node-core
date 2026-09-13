@@ -12,9 +12,6 @@ import type { ArrayNode } from "../../array/node";
 import type { DataNode } from "../../value";
 import { SchemaLoadState } from "../../../enum";
 import { getSystemSchema } from "../../../runtime";
-import { ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_PRO_COMMON } from "../../../utility/constant";
-import { RelationType } from "../../relation/runtime";
-import type { RelationSchema } from "../../relation/type";
 
 /** The function node contains the function definition */
 export class FunctionNode extends StructNode

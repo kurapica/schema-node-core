@@ -10,6 +10,7 @@ import type { IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_COMMON } from '../../utility/constant';
 
+/** The `JsRegex` property is used to define a regular expression that validates the value of a field. */
 @Meta(Alias, 'jsregex')
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.jsregex`)

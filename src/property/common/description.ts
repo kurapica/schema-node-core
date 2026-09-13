@@ -13,9 +13,7 @@ import type { IProperty } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 
-/**
- * The Description property
- */
+/** The Description property */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.description`)
 @Meta(PropertyValueType, NS_SYSTEM_LOCALE_STRING)

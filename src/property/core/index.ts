@@ -22,3 +22,4 @@ export * from './static';
 export * from './systemDefined';
 export * from './typeProvider';
 export * from './kindProvider';
+export * from './propertyValueTypeResolver';

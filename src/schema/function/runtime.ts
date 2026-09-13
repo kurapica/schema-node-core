@@ -10,7 +10,7 @@
 // =============================================================================
 
 import { ApplyMode } from '../../enum/applyMode/type';
-import { getPropertiesBySchemaKind, getPropertyValue } from '../../property/propertyOwner';
+import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
 import { isEmpty, isNull, splitString, useQueueQuery } from '../../utility/toolset';
 import { NodeType } from '../node/runtime';
@@ -22,13 +22,17 @@ import { RelationType } from '../relation/runtime';
 import { logger } from '../../utility/logger';
 
 import type { FuncArg, FuncExp, CallArg, FunctionSchema } from './type';
-import type { IProperty, PropertyCtor, INodeReference, IValueTypeAccess, IPropertyProvider, INodeType, IRelation, IValueAccess } from '../../interface';
+import { type IProperty, type PropertyCtor, type INodeReference, type IValueTypeAccess, type IPropertyProvider, type INodeType, type IRelation, type IValueAccess, joinProperties, isRelationProvider, type IRelationProvider } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
-import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT } from '../../utility/constant';
+import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN } from '../../utility/constant';
+import { ArrayType } from '../array/runtime';
+import { Relations } from '../relation/property';
+import { Display } from '../../property/common/display';
+import { _LS } from '../../utility/locale';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -49,9 +53,10 @@ const REMOTE_CALL_DELAY = 50;
 const pendingComplexCall: Record<string, Map<any, any>> = {};
 
 /** Runtime type for function schemas. */
-export class FunctionType extends NodeType {
+export class FunctionType extends NodeType implements IValueTypeAccess, IRelationProvider {
   /** Return value type (resolved at load time). */
-  returnType?: ValueType;
+  private _returnType?: ValueType;
+  get returnType(): ValueType | undefined { return this._returnType; }
 
   /** Argument definitions. */
   get args(): FunArgsType { return this._args! }  
@@ -79,6 +84,7 @@ export class FunctionType extends NodeType {
   private _built = false;
   private _compositeFn?: (...args: unknown[]) => unknown;
   private _funcMap?: Map<string, FunctionType>;
+  private _relations: IRelation[] | undefined;
 
   // ── Loading ─────────────────────────────────────────────────────────
 
@@ -97,17 +103,32 @@ export class FunctionType extends NodeType {
     this._converter = this.getProperty("Converter")?.getValue() ?? false;
     this._serverOnly = this.getProperty("ServerOnly")?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
     this._noCache = this.getProperty("NoCache")?.getValue() ?? false;
+    this._relations = undefined;
 
     // Resolve return type
-    this.returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
+    this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
 
-    if (this._converter && this._args.length == 1 && this.returnType)
-      this._args.at(0)?.valueType?.addConverter(this.returnType, this);
+    if (this._converter && this._args.length == 1 && this._returnType)
+      this._args.at(0)?.type?.addConverter(this._returnType, this);
+
+    // Load relations from Relations property
+    const relations = getProperty(this._funcSchema, Relations)?.getValue<RelationSchema[]>();
+    if (relations?.length)
+    {
+      const rtypes: IRelation[] = [];
+      for (const r of relations)
+      {
+        const rtype = new RelationType(r, this);
+        rtypes.push(rtype);
+        await rtype.load();
+      }
+      this._relations = rtypes;
+    }
   }
 
   override unload(): void {
     if (this._converter && this._args?.length == 1 && this.returnType)
-      this._args.at(0)?.valueType?.removeConverter(this.returnType, this);
+      this._args.at(0)?.type?.removeConverter(this.returnType, this);
     
     this._funcMap = undefined;
     this._built = false;
@@ -120,6 +141,49 @@ export class FunctionType extends NodeType {
       for (const argType of this._args)
         yield* argType.getRefTypes();
     yield* super.getRefTypes();
+  }
+
+  /** Get the value type for the given access path. */
+  getAccessValueType(path: string): IValueTypeAccess | undefined {
+    if (!path.length) return undefined;
+    const paths = splitString(path, '.', 2);
+    const type = paths[0].toLowerCase() == FUNC_RETURN 
+      ? this.returnType 
+      : this._args?.find(arg => arg.name.toLowerCase() == paths[0].toLowerCase())?.type;
+    return paths.length == 1 ? type : type?.getAccessValueType(paths[1]);
+  }
+
+  /** Get access entries for this function type. */
+  getAccessEntries(): Entry<string>[] {
+    const res: Entry<string>[] = [];
+    res.push({ value: FUNC_RETURN, hasChildren: this.returnType?.hasAccessEntries } as Entry<string>);
+    for (const arg of this._args || []) { // no property field
+      if (!arg.type) continue;
+        const entry = { value: arg.name, hasChildren: arg.type?.hasAccessEntries } as Entry<string>;
+        res.push(setPropertyValue(entry, Display, arg.getPropertyValue(Display) ?? _LS(arg.name)));
+    }
+    return res;
+  }
+
+  /** Whether this function type has access entries. */
+  get hasAccessEntries(): boolean {
+    return true;
+  }
+
+  /** Whether this function type is assignable to the given type. */
+  isAssignableTo(other: IValueTypeAccess): boolean {
+    return false;
+  }
+
+  /** Create a new value instance for this type. */
+  create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess {
+    throw new Error('Function type cannot be created.');
+  }
+
+  /** Get relations defined in this function. */
+  *getRelations(): Generator<IRelation> {
+    if (this._relations)
+      yield* this._relations;
   }
 
   // ── Call ────────────────────────────────────────────────────────────
@@ -153,7 +217,7 @@ export class FunctionType extends NodeType {
         // indicate the colletion
         let arrIdx = -1;
         for (let i = 0; i < this.args.length; i++) {
-          if (this.args.at(i)?.valueType?.kind !== SCHEMA_KIND_ARRAY && Array.isArray(args[i])) {
+          if (this.args.at(i)?.type?.kind !== SCHEMA_KIND_ARRAY && Array.isArray(args[i])) {
             arrIdx = i;
             break;
           }
@@ -397,7 +461,7 @@ export class FunctionType extends NodeType {
     if (!this.exps.length) return;
 
     try {
-      this._compositeFn = await this._compileExpressions(this.exps, this.args.getArgs());
+      this._compositeFn = await this._compileExpressions(this.exps, Array.from(this.args.getArgs()));
     } catch {
       this._serverOnly = true;
     }
@@ -406,14 +470,14 @@ export class FunctionType extends NodeType {
   /** Recursively compile expressions into an executable function. */
   private async _compileExpressions(
     exps: FuncExp[],
-    args: FuncArg[],
+    args: FuncArgType[],
   ): Promise<((...callArgs: unknown[]) => unknown) | undefined> {
     const argNames = args.map(a => a.name);
 
     // Build type dictionary: name → ValueType (args + expressions)
     const expTypes = new Map<string, ValueType | undefined>();
     for (const arg of args)
-      expTypes.set(arg.name, await getNodeType(arg.type) as ValueType | undefined);
+      expTypes.set(arg.name, arg.type);
 
     // Build compiled expression info (with type-informed array analysis)
     const compiledExps: CompiledExp[] = [];
@@ -605,10 +669,8 @@ export class FunctionType extends NodeType {
 }
 
 /** The type of function arguments */
-export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<FuncArgType> {
+export class FunArgsType implements INodeReference, Iterable<FuncArgType> {
   private _args: FuncArgType[];
-  private _stringType?: ValueType;
-  private _relations: IRelation[] = [];
 
   constructor(args: FuncArg[]) {
     this._args = args.map(a => new FuncArgType(a));
@@ -624,38 +686,7 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess { throw new Error("Method not implemented."); }
 
   async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
-    this._stringType = await getNodeType(NS_SYSTEM_STRING) as ValueType;
     await Promise.all(this._args.map(a => a.load(generics, genericParams)));
-
-    // load relations
-    for (const a of this._args)
-    {
-      const relations = a.getPropertyValue<RelationSchema[]>("Relations");
-      if (relations?.length)
-      {
-        for (const r of relations) {
-          const relation = new RelationType(r, this);
-          await relation.load();
-          this._relations.push(relation);
-        }
-      }
-    }
-  }
-  
-  // ── Relations ───────────────────────────────────────────────────────
-
-  /** Get all relation types. */
-  *getRelations(): Generator<IRelation> {
-    if (!this._relations?.length) return;
-    yield* this._relations;
-  }
-
-  /** Get relations for a specific field name. */
-  *getRelationsForArg(argName: string): Generator<IRelation> {
-    if (!this._relations?.length) return;
-    for(const relation of this._relations)
-      if (relation.target?.toLowerCase() === argName.toLowerCase() || relation.target?.toLowerCase().startsWith(argName.toLowerCase() + '.'))
-        yield relation;
   }
 
   // ── Iterable ──────────────────────────────────────────────────────────────
@@ -664,9 +695,7 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
   get length(): number { return this._args?.length ?? 0; }
 
   /** Get all function arguments. */
-  getArgs(): FuncArgType[] {
-    return [...this._args];
-  }
+  *getArgs(): Generator<FuncArgType> { yield* this._args; }
 
   [Symbol.iterator](): Iterator<FuncArgType, any, any> {
     return this._args[Symbol.iterator]();
@@ -683,30 +712,9 @@ export class FunArgsType implements INodeReference, IValueTypeAccess, Iterable<F
     return this._args.find(a => a.name.toLowerCase() === argName.toLowerCase());
   }
 
-  // ── Path Navigation ───────────────────────────────────────────────────────
-
-  /** Get the access value type */
-  getAccessValueType(path: string): ValueType | undefined {
-    if (isEmpty(path) || path === NODE_SELF) return undefined;
-    path = path.toLowerCase();
-
-    const dotIdx = path.indexOf('.');
-    const first = dotIdx >= 0 ? path.substring(0, dotIdx) : path;
-    const remain = dotIdx >= 0 ? path.substring(dotIdx + 1) : '';
-    const arg = this._args.find(a => a.name.toLowerCase() === first);
-    if (!arg) return undefined;
-    if (remain === NODE_SELF) return this._stringType;
-    if (remain === TYPE_PROVIDER) return this._stringType;
-    return arg.valueType;
+  find(predicate: (value: FuncArgType, index: number) => boolean): FuncArgType | undefined {
+    return this._args.find(predicate);
   }
-
-  /** Get the access entries */
-  getAccessEntries(): Entry<string>[] {
-    return []
-  }
-
-  /** Whether this node has access entries. */
-  get hasAccessEntries(): boolean { return !!this._args.length; }
 
   // ── Reference Types ─────────────────────────────────────────────────
 
@@ -728,10 +736,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
   get name() { return this._funcArg.name; }
 
   /** Get the type of the function argument */
-  get type() { return this._valueType?.name ?? this._funcArg.type; }
-
-  /** Get the value type of the function argument */
-  get valueType() { return this._valueType; }
+  get type() { return this._valueType; }
 
   /** Whether the function argument is required. */
   get require() { return this.getPropertyValue<boolean>("Require") ?? false; }
@@ -749,6 +754,11 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
 
   async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
     this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as ValueType;
+    if (this._valueType) {
+        this._props.push(...getPropertiesBySchemaKind(this._funcArg, this._valueType.kind));
+        if (this._valueType instanceof ArrayType && this._valueType.element)
+          this._props.push(...getPropertiesBySchemaKind(this._funcArg, this._valueType.element.kind));
+    }
 
     const refTypes: INodeType[] = []
     for(let prop of this._props.filter(isTypeRefProperty))
@@ -782,12 +792,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
 
   /** Get properties by type */
   *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    if (!this._props) return;
-    for(let prop of this._props)
-    {
-      if (typeof propCtor === 'string' ? prop.name.toLowerCase() === propCtor.toLowerCase() : prop instanceof propCtor)
-        yield prop as T;
-    }
+    for (let prop of joinProperties(this._props?.filter(p => typeof propCtor === 'string' ? p.name.toLowerCase() === propCtor.toLowerCase() : p instanceof propCtor) as T[])) yield prop as T;
   }
 
   /** Gets the property values */
@@ -795,12 +800,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
 
   /** Filter properties by predicate */
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    if (!this._props) return;
-    for(let prop of this._props)
-    {
-      if (predicate(prop))
-        yield prop;
-    }
+    for (let prop of joinProperties(this._props?.filter(predicate))) yield prop;
   }
 }
 
@@ -848,7 +848,7 @@ async function _analyzeArrayDepsByType(
     if (!expArg.source) continue;
 
     // If the called function already expects an array for this param — skip
-    const fnArgType = await getNodeType(calledFunc.args.at(j)?.type ?? '')  as ValueType | undefined;
+    const fnArgType = calledFunc.args.at(j)?.type;
     if (fnArgType?.kind === SCHEMA_KIND_ARRAY) continue;
 
     // Find the array source: walk the source path to find which prefix resolves to an ArrayType

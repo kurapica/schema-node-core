@@ -27,7 +27,7 @@ export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
       if (this.length > 0)
       {
         const variadic = this._elements[this.length - 1].getAccessValue('variadic') as BoolNode;
-        variadic.setPropertyValue(InVisible, !this._showVariadic, this);
+        variadic?.setPropertyValue(InVisible, !this._showVariadic, this);
       }
     }, true));
   }

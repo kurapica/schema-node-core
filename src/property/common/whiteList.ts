@@ -12,6 +12,7 @@ import { Relation } from '../../attribute/relation';
 import { ForSchema } from '../core/forSchema';
 import { ArrayType } from '../../schema/array/runtime';
 import { EnumType } from '../../schema/enum/runtime';
+import { PropertyValueTypeResolver } from '../core/propertyValueTypeResolver';
 
 import type { IValueAccess, IValueTypeAccess } from '../../interface';
 
@@ -22,6 +23,7 @@ import { SCHEMA_KIND_PROPERTY,  NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHE
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist.error`)
+@Meta(PropertyValueTypeResolver, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`)
 @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarraytype`, TYPE_PROVIDER))
 export class WhiteList extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {

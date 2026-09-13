@@ -7,10 +7,11 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 import { Error } from '../../../property/common/error';
 import { EnumType } from '../../../schema/enum/runtime';
 import { ArrayType } from '../../../schema/array/runtime';
+import { PropertyValueTypeResolver } from '../../../property/core/propertyValueTypeResolver';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PRO_ENUM, SCHEMA_KIND_ENUM_USAGE } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_PRO_ENUM, SCHEMA_KIND_ENUM_USAGE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../../../utility/constant';
 
 /** The enum root value */
 @Meta(ForSchema, [SCHEMA_KIND_ENUM, SCHEMA_KIND_ENUM_USAGE])
@@ -18,13 +19,14 @@ import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ENUM, NS_SYSTEM_SCH
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.root`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.root.error`)
+@Meta(PropertyValueTypeResolver, `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`)
 export class Root extends ConstraintProperty<string> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty || !this._value) return undefined;
     if (node.type.kind === SCHEMA_KIND_ENUM) {
       const access = await (node.type as EnumType).getEnumEntryAccess(node.toString());
       if (!access?.length) return undefined;
-      return access.some((item) => `${item.entry?.value}` === this._value!);
+      return access.some((item) => `${item.entry?.value}` === `${this._value}`);
     }
     else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
     {
@@ -33,7 +35,7 @@ export class Root extends ConstraintProperty<string> {
       {
         const access = await (node.type.element as EnumType).getEnumEntryAccess(`${value}`);
         if (!access?.length) continue;
-        if(!access.some((item) => `${item.entry?.value}` === this._value!)) return false;
+        if(!access.some((item) => `${item.entry?.value}` === `${this._value}`)) return false;
       }
       return true;
     }
