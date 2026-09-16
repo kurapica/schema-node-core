@@ -55,7 +55,7 @@ export async function getNodeType(
   fullName: string,
   generics?: GenericParameter[],
   genericParams?: INodeType[],
-  reload = false,
+  reload?: boolean,
 ): Promise<INodeType | undefined> {
   fullName = (isNull(fullName) ? '' : fullName).toLowerCase().trim();
 
@@ -127,9 +127,9 @@ async function loadNodeType(
   segment: string,
   generics?: GenericParameter[],
   genericParams?: INodeType[],
-  reload = false,
-  isLast = false,
-  onlyCache = false, // to avoid loading full namespace if the cached schema provided in other ways, the frontend doesn't require full picture
+  reload?: boolean,
+  isLast?: boolean,
+  onlyCache?: boolean, // to avoid loading full namespace if the cached schema provided in other ways, the frontend doesn't require full picture
 ): Promise<INodeType | undefined> {
   const nsParent = isNamespaceNodeType(parent) ? parent as INamespaceNodeType : undefined;
   let result: INodeType | undefined = nsParent;
@@ -163,15 +163,14 @@ async function loadNodeType(
   result ??= new NodeTypeCtor(nsParent);
 
   // Cache in parent namespace (strip sub-schemas first — they're saved separately)
-  const schemas = schema.schemas;
-  delete schema.schemas;
+  const { schemas, ...mainSchema } = schema;
   if (nsParent !== result) {
-    nsParent?.saveSubNodeSchema(schema, true);
+    nsParent?.saveSubNodeSchema(mainSchema, true);
     nsParent?.saveNodeType(segment, result);
   }
 
   // Load the type
-  await result.loadType(schema);
+  await result.loadType(mainSchema);
 
   // Save sub-schemas into NamespaceType
   if (isNamespaceNodeType(result) && schemas?.length)
@@ -179,7 +178,7 @@ async function loadNodeType(
 
   // Generic types reloading (clone schema to avoid mutation)
   for (const g of result.getGenericTypes())
-    await g.loadType({ ...schema }, g.genericParams);
+    await g.loadType({ ...mainSchema }, g.genericParams);
   return result;
 }
 
@@ -235,7 +234,7 @@ async function loadGenericType(
 async function loadNodeSchema(
   ns: INamespaceNodeType | undefined,
   name: string,
-  reload = false,
+  reload?: boolean,
 ): Promise<NodeSchema | undefined> {
   const schemaName = ns ? (name ? `${ns.name}.${name}`.replace(/^\./, '') : ns.name) : name;
 

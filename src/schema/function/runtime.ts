@@ -97,7 +97,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     if (!this._funcSchema) return;
 
     // Load argument types
-    this._args = new FunArgsType(this._funcSchema.args);
+    this._args = new FunArgsType(this._funcSchema.args ?? []);
     await this._args.load(this.generics, this.genericParams);
     this._systemFn = this._funcSchema.func as ((...args: unknown[]) => unknown) | undefined;
     this._converter = this.getProperty("Converter")?.getValue() ?? false;

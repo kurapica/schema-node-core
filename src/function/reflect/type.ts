@@ -305,37 +305,6 @@ export class SystemReflectType {
     return false;
   }
 
-  /** Checks if the schema node with the given name is assignable to the schema node with the given target name */
-  @Meta(Return, NS_SYSTEM_BOOL)
-  static async isaccessassignableto(
-    @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    type: string,
-
-    @Meta(ArgName, 'path')
-    @Meta(SchemaType, NS_SYSTEM_STRING)
-    path: string,
-
-    @Meta(ArgName, 'matchArrayElement')
-    @Meta(SchemaType, NS_SYSTEM_BOOL)
-    matchArrayElement: boolean,
-
-    @Meta(ArgName, 'targets')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    @Meta(Variadic, true)
-    ...targets: string[]
-  ): Promise<boolean> {
-    let nodeType = !type ? undefined : await getNodeType(type) as ValueType;
-    nodeType = nodeType?.getAccessValueType(path);
-    if (!(nodeType instanceof ValueType)) return false;
-    for (const target of targets)
-    {
-      const targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
-      if (targetNodeType instanceof ValueType && (nodeType.isAssignableTo(targetNodeType) || matchArrayElement && nodeType instanceof ArrayType && nodeType.element?.isAssignableTo(targetNodeType))) return true;
-    }
-    return false;
-  }
-
   /** The value type is indexable */
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isindexable(

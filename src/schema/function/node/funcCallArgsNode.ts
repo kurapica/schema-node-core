@@ -16,9 +16,8 @@ import type { LocaleString } from "../../../struct/localeString/type";
 import type { StructNode } from "../../struct/node";
 import type { StructType } from "../../struct/runtime";
 
-import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN } from "../../../utility/constant";
+import { NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN } from "../../../utility/constant";
 import type { StringNode } from "../../string";
-import { getGlobalAccessValue } from "../../../property/core/accessPath";
 
 /** The function expression arguments data node */
 export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
@@ -131,11 +130,11 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
 
     if (!path?.length) return undefined;
     path = path.toLowerCase();
-    if (path === FUNC_RETURN) return this._return;
+    if (path === FUNC_RETURN) return this._return ?? this.parent?.getAccessValue('funcReturn');
 
     const arg = this.at(path);
     if (!arg) return undefined;
-    return arg.getAccessValue('value');
+    return arg instanceof FuncCallVarNode ? arg : arg.getAccessValue('value');
   }
 
   // #endregion
@@ -203,7 +202,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     super.setValue(data);
 
     // refresh the arguments
-    for (let i = 0; i < this._funcType.args.length; i++)
+    for (let i = 0; i < (this._funcType.args?.length ?? 0); i++)
     {
       const arg = this._funcType.args.at(i)!;
       if (arg.variadic)

@@ -9,6 +9,10 @@ import type { StructType } from "../../struct/runtime";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { MinSize } from "../../array/property/minSize";
 import { MaxSize } from "../../array/property/maxSize";
+import { ParamsList } from "../property/paramsList";
+import type { Entry } from "../../../struct/entry/type";
+import { Display } from "../../../property/common/display";
+import { getPropertyValue } from "../../../property/propertyOwner";
 
 /** The function expression variable data node */
 export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
@@ -22,6 +26,9 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
     super.setValue([]);
     if (Array.isArray(value))
       for(let e of value) this.addRow(e);
+
+    // subscribe the params list property
+    this.subscribeProperty(ParamsList, this.refreshParamsList);
    }
 
   override dispose() {
@@ -112,8 +119,32 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
     return node;
   }
 
+  private refreshParamsList = () => {
+    const paramList = this.getPropertyValue<Entry<string>[]>(ParamsList);
+    if (paramList?.length) {
+      while (this._args.length > paramList.length)
+        this._args.pop()?.dispose();
+      for (let i = 0; i < paramList.length; i++)
+      {
+        const e = paramList[i];
+        const r = this._args[i];
+        if (r) {
+          r.getAccessValue('name')?.setValue(getPropertyValue(e, Display));
+          r.getAccessValue('type')?.setValue(e.value);
+        }
+        else
+        {
+          this.addRow({ name: e.value, type: e.value });
+        }
+      }
+      this.onNextArgs();
+    }
+  }
+
   // refresh the argument types
   private refreshArgTypes = async (element: IValueAccess, value: unknown) => {
+    if (this.getProperty(ParamsList)?.hasValue) return;
+
     const arr = this.rawValue as unknown[];
     if (!Array.isArray(arr)) return;
 

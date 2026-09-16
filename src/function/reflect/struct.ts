@@ -119,7 +119,7 @@ export class SystemReflectStruct {
     path ??= '';
     const dotIndex = path.indexOf('.');
     const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
-    const field = fields.find(f => f.name === fieldName);
+    const field = fields?.find(f => f.name === fieldName);
     if (!field || !field.type) return undefined;
     const valueType = await getNodeType(field.type) as ValueType;
     return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;

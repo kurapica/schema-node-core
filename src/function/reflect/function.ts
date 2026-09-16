@@ -202,7 +202,7 @@ export class SystemReflectFunction {
     if (!path) return undefined;
     const dotIndex = path.indexOf('.');
     const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
-    const type = args.find(a => a.name.toLowerCase() === fieldName)?.type ?? exps.find(e => e.name.toLowerCase() === fieldName)?.return;
+    const type = args?.find(a => a.name.toLowerCase() === fieldName)?.type ?? exps?.find(e => e.name.toLowerCase() === fieldName)?.return;
     const valueType = type ? await getNodeType(type) as ValueType : undefined;
     return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
   }

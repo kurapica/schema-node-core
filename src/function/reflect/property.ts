@@ -103,7 +103,7 @@ export class SystemReflectProperty {
     ...kinds: string[]
   ): Promise<boolean> {
     if (!kinds.length) return false;
-    const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
-    return prop && kinds.some(kind => prop.forSchema(kind)) || false;
+    const prop = !type ? undefined : await getNodeType(type);
+    return prop instanceof PropertyType && kinds.some(kind => prop.forSchema(kind)) || false;
   }
 }

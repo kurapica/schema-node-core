@@ -105,8 +105,8 @@ export abstract class ScalarNode extends DataNode {
     valids.reverse(); // old first
 
     // access consumer to access access source from ancestors
-    const accessValueTypeConsumer = this.getPropertyValue<FuncCall>(AccessEntryConsumer);
-    if (!entrySource?.func && (accessValueTypeConsumer || this.getPropertyValue<boolean>(EntrySourceConsumer)))
+    const accessValueTypeConsumer = this.getProperty(AccessEntryConsumer);
+    if (!entrySource?.func && (accessValueTypeConsumer?.hasValue || this.getPropertyValue<boolean>(EntrySourceConsumer)))
     {
       let parent: IValueAccess | undefined = this;
       while (parent)
@@ -127,15 +127,17 @@ export abstract class ScalarNode extends DataNode {
       let parent: IValueAccess | undefined = this;
       while (parent)
       {
-        const accessValueTypeProvider = parent.getPropertyValue<FuncCall>(AccessValueTypeProvider);
-        if (accessValueTypeProvider) {
+        const accessValueTypeProvider = parent.getProperty(AccessValueTypeProvider);
+        if (accessValueTypeProvider?.hasValue) {
           this._entrySourceInfo ??= {};
 
-          this._entrySourceInfo.valueTypeProvider = accessValueTypeProvider.func ? await getNodeType(accessValueTypeProvider.func) as FunctionType : undefined;
-          this._entrySourceInfo.valueTypeProviderArgs = accessValueTypeProvider.args?.map(a => this._callArgToEntrySource(parent!, a)) || [];
+          let funcCall = accessValueTypeProvider.getValue<FuncCall>();
+          this._entrySourceInfo.valueTypeProvider = funcCall?.func ? await getNodeType(funcCall.func) as FunctionType : undefined;
+          this._entrySourceInfo.valueTypeProviderArgs = funcCall?.args?.map(a => this._callArgToEntrySource(accessValueTypeProvider.source ?? parent!, a)) || [];
 
-          this._entrySourceInfo.valueTypeConsumer = accessValueTypeConsumer.func ? await getNodeType(accessValueTypeConsumer.func) as FunctionType : undefined;
-          this._entrySourceInfo.valueTypeConsumerArgs = accessValueTypeConsumer.args?.map(a => this._callArgToEntrySource(parent!, a)) || [];
+          funcCall = accessValueTypeConsumer.getValue<FuncCall>();
+          this._entrySourceInfo.valueTypeConsumer = funcCall?.func ? await getNodeType(funcCall.func) as FunctionType : undefined;
+          this._entrySourceInfo.valueTypeConsumerArgs = funcCall?.args?.map(a => this._callArgToEntrySource(accessValueTypeConsumer.source ?? parent!, a)) || [];
 
           break;
         }
@@ -222,7 +224,7 @@ export abstract class ScalarNode extends DataNode {
   }), 10);
 
   /** convert call arg to entry source arg */
-  private _callArgToEntrySource(owner: IValueAccess, a: CallArg): IEntrySourceArg
+  private _callArgToEntrySource = (owner: IValueAccess, a: CallArg): IEntrySourceArg =>
   {
     const result: IEntrySourceArg = { value: a.value };
     if (a.source) {
@@ -324,7 +326,7 @@ export abstract class ScalarNode extends DataNode {
     }) ?? []) as EntryAccess<any>[] ?? [];
 
     // valid
-    if (!queryRoot && (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length))
+    if (!queryRoot && (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length || this._entrySourceInfo.valueTypeConsumer))
     {
       // check black list for entry first
       if (this._entrySourceInfo.blackList?.length)
@@ -406,24 +408,26 @@ export abstract class ScalarNode extends DataNode {
   /** check value value is valid */
   private _isValidEntryValue = async (value: any): Promise<boolean> => {
     const v = `${value}`;
+    if (!this._entrySourceInfo) return true;
     if (this._entrySourceInfo?.blackList?.includes(v)) return false;
-    if (!this._entrySourceInfo?.valids?.length) return true;
 
     // check cache
     if (this._entrySourceInfo?.validres?.has(v)) return this._entrySourceInfo?.validres!.get(v)!;
 
     // valid
     let isvalid = true;
-    for (const valid of this._entrySourceInfo.valids)
-    {
-      const res = await valid.func.call(valid.args?.map(a => {
-        if (!a.source) return a.value;
-        return a.source === this ? value : a.source.getValue();
-      }) || []);
-      if (!res)
+    if (this._entrySourceInfo?.valids?.length) {
+      for (const valid of this._entrySourceInfo.valids)
       {
-        isvalid = false;
-        break;
+        const res = await valid.func.call(valid.args?.map(a => {
+          if (!a.source) return a.value;
+          return a.source === this ? value : a.source.getValue();
+        }) || []);
+        if (!res)
+        {
+          isvalid = false;
+          break;
+        }
       }
     }
 
@@ -434,7 +438,7 @@ export abstract class ScalarNode extends DataNode {
         return a.value;
       })) as string;
       if (!valueType || !await this._entrySourceInfo.valueTypeConsumer.call(this._entrySourceInfo.valueTypeConsumerArgs!.map(a => {
-        if (a.source) return a.source === this ? value : a.source.getValue();
+        if (a.source) return a.source === this ? valueType : a.source.getValue();
         return a.value;
       }))) 
         isvalid = false;

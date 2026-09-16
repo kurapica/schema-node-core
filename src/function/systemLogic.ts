@@ -30,6 +30,15 @@ function compare<T>(a: T, b: T): number {
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, 'system.logic')
 export class SystemLogic {
+
+  /** always true */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  alwaysFalse(): boolean { return false; }
+
+  /** always false */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  alwaysTrue(): boolean { return true; }
+
   /** a && b */
   @Meta(Return, NS_SYSTEM_BOOL)
   static and(

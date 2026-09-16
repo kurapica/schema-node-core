@@ -41,6 +41,7 @@ export class FunctionProperty extends Property<FunctionSchema> {
     // Combine properties
     combineProperties(selfSchema, otherSchema, SCHEMA_KIND_FUNCTION);
     this.setValue(selfSchema);
+    
     return true;
   }
 }

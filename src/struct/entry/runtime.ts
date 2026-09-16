@@ -112,9 +112,13 @@ export class EntryType<T> implements Entry<T> {
       root = root?.getEntry(current.entry?.value);
       if (!root) return;
 
+      let child = current.children ?? [];
+      if (child && !Array.isArray(child)) 
+        child = Array.from(child as Iterable<Entry<T>>) ?? [];
+
       // replace
       root._children?.forEach(c => c.unregister());
-      root._children = this.genChildren(root, current.children!);
+      root._children = this.genChildren(root, child);
       if (root._children?.length) root.hasChildren = true;
     }
 
