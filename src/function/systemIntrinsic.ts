@@ -56,7 +56,7 @@ export class SystemIntrinsic {
   @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
   static ifnull<T1, T2>( 
     @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
-    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1') value: T1
   ): T1 | null { return isNull(val) ? value : null; }
 
   /** if the value is empty, return the value and stop the execution */
@@ -64,6 +64,6 @@ export class SystemIntrinsic {
   @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
   static ifempty<T1, T2>( 
     @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
-    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1') value: T1
   ): T1 | null { return isEmpty(val) ? value : null; }
 }

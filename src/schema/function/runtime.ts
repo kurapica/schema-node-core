@@ -28,7 +28,7 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
-import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN } from '../../utility/constant';
+import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN, NS_SYSTEM_OBJECT } from '../../utility/constant';
 import { ArrayType } from '../array/runtime';
 import { Relations } from '../relation/property';
 import { Display } from '../../property/common/display';
@@ -85,6 +85,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
   private _compositeFn?: (...args: unknown[]) => unknown;
   private _funcMap?: Map<string, FunctionType>;
   private _relations: IRelation[] | undefined;
+  private _objectType: IValueTypeAccess | undefined;
 
   // ── Loading ─────────────────────────────────────────────────────────
 
@@ -104,6 +105,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     this._serverOnly = this.getProperty("ServerOnly")?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
     this._noCache = this.getProperty("NoCache")?.getValue() ?? false;
     this._relations = undefined;
+    this._objectType = await getNodeType(NS_SYSTEM_OBJECT) as unknown as IValueTypeAccess;
 
     // Resolve return type
     this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
@@ -145,12 +147,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
 
   /** Get the value type for the given access path. */
   getAccessValueType(path: string): IValueTypeAccess | undefined {
-    if (!path.length) return undefined;
-    const paths = splitString(path, '.', 2);
-    const type = paths[0].toLowerCase() == FUNC_RETURN 
-      ? this.returnType 
-      : this._args?.find(arg => arg.name.toLowerCase() == paths[0].toLowerCase())?.type;
-    return paths.length == 1 ? type : type?.getAccessValueType(paths[1]);
+    return this._objectType; // pass relation check only, may handle it later
   }
 
   /** Get access entries for this function type. */
@@ -159,7 +156,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     res.push({ value: FUNC_RETURN, hasChildren: this.returnType?.hasAccessEntries } as Entry<string>);
     for (const arg of this._args || []) { // no property field
       if (!arg.type) continue;
-        const entry = { value: arg.name, hasChildren: arg.type?.hasAccessEntries } as Entry<string>;
+        const entry = { value: arg.name, hasChildren: false } as Entry<string>;
         res.push(setPropertyValue(entry, Display, arg.getPropertyValue(Display) ?? _LS(arg.name)));
     }
     return res;

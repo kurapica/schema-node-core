@@ -13,8 +13,12 @@ import { Variadic } from '../schema/function/property/variadic';
 import { Generics } from '../schema/generic/generics';
 import { Require } from '../property/common/require';
 import { isNull } from '../utility/toolset';
+import { Relation } from '../attribute/relation';
+import { EntrySource } from '../property/core/entrySource';
+import { Assign } from '../relation/assign/meta';
+import { buildFuncCall } from '../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF } from '../utility/constant';
 
 // ── SystemCollection ───────────────────────────────────────────────────
 
@@ -79,6 +83,7 @@ export class SystemCollection {
   /** Gets the field value from the object */
   @Meta(Return, 'T')
   @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
   static getfield<T>(
     @Meta(ArgName, 'obj') 
     @Meta(SchemaType, NS_SYSTEM_OBJECT) 

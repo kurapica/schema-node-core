@@ -275,6 +275,7 @@ async function loadNodeSchema(
               );
               if (existingIdx >= 0) {
                 if (schema.schemas[existingIdx].kind === other.kind) {
+                  schema.schemas[existingIdx].loadState = (schema.schemas[existingIdx].loadState ?? SchemaLoadState.None) | (other.loadState ?? SchemaLoadState.None);
                   combineProperties(schema.schemas[existingIdx], other, SCHEMA_KIND_NODE);
                 }
               } else {

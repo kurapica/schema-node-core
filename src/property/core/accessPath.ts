@@ -1,5 +1,5 @@
 import type { IAccessPathHandler, IValueAccess, IValueTypeAccess } from "../../interface";
-import { isEmpty, isNull } from "../../utility/toolset";
+import { isNull } from "../../utility/toolset";
 import { Property } from "../property";
 
 const accessPathHandlers: Map<string, IAccessPathHandler> = new Map();

@@ -5,7 +5,7 @@ import { ApplyMode } from "../../../enum/applyMode/type";
 import { Observable, type Observer } from "../../../utility/observable";
 import { SystemReflectType } from "../../../function";
 import { FuncCallVarNode } from "./funcCallVarNode";
-import { _LS, isEmpty, splitString } from "../../../utility";
+import { _LS, splitString } from "../../../utility";
 import { buildFuncCall, type CallArg } from "../type";
 import { Display } from "../../../property/common/display";
 import { ReadOnly } from "../../../property/common/readOnly";
@@ -132,9 +132,12 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     path = path.toLowerCase();
     if (path === FUNC_RETURN) return this._return ?? this.parent?.getAccessValue('funcReturn');
 
-    const arg = this.at(path);
+    const paths = splitString(path, '.', 2);
+    const arg = this.at(paths[0]);
     if (!arg) return undefined;
-    return arg instanceof FuncCallVarNode ? arg : arg.getAccessValue('value');
+    if (arg instanceof FuncCallVarNode) 
+      return paths.length == 1 ? arg : undefined; // only support direct access for variadic argument
+    return arg.getAccessValue(paths[1]);
   }
 
   // #endregion
@@ -240,34 +243,17 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     }
 
     // attach the function relations
-    if (!readonly) {
-      for (const r of this._funcType.getRelations())
-      {
-        const target = this.getAccessValue(r.target);
-        if (target) 
-        {
-          r.attach(this, target);
-          (target as DataNode)?.subscribeMove(this.applyArgRelation);
-        }
-      }
-    }
+    for (const e of this._args) this.applyFuncRelations(e);
+    if (this._varArg) this.applyFuncRelations(this._varArg);
 
     this.onNextArgs();
   }
 
-  /** Apply the argument relation */
-  private applyArgRelation = (node: IValueAccess) => {
-    if (!this._funcType) return;
-    const parent = node.parent as DataNode;
-    const argName = parent?.name;
-    if (!argName) return;
-
-    for (const r of this._funcType.getRelations())
-    {
-      if (r.target.toLowerCase() != argName.toLowerCase()) continue;
-      r.attach(this, node);
-      (node as DataNode)?.subscribeMove(this.applyArgRelation);
-    }
+  private applyFuncRelations(arg: DataNode){
+    const n = arg.name?.toLowerCase() ?? '';
+    if (!n || !this._funcType) return;
+    const r = Array.from(this._funcType.getRelations().filter(r => r.target.toLowerCase() == n || r.target.toLowerCase().startsWith(`${n}.`)));
+    if (r.length) arg.attachRelations([{ owner: this, relations: r }]);
   }
 
   /** Refresh the argument types */

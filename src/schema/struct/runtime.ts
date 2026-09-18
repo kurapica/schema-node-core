@@ -192,7 +192,8 @@ export class StructType extends ValueType implements IRelationProvider {
   // ── Path Navigation ─────────────────────────────────────────────────
 
   override getAccessValueType(path: string): ValueType | undefined {
-    if (isEmpty(path) || path === NODE_SELF) return this;
+    const g = super.getAccessValueType(path);
+    if (g) return g;
 
     const dotIdx = path.indexOf('.');
     const first = dotIdx >= 0 ? path.substring(0, dotIdx) : path;

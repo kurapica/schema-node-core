@@ -22,7 +22,7 @@ import { EntryRoot } from '../../property/core/entrySource';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT, NS_SYSTEM_OBJECT } from '../../utility/constant';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -90,12 +90,12 @@ export class SystemReflectFunction {
     @Meta(ArgName, 'args')
     @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
     @Meta(Require, true)
-    args: FuncArg[],
+    args?: FuncArg[],
 
     @Meta(ArgName, 'exps')
     @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
     @Meta(Require, true)
-    exps: FuncExp[],
+    exps?: FuncExp[],
 
     @Meta(ArgName, 'path')
     @Meta(SchemaType, NS_SYSTEM_STRING)
@@ -109,7 +109,6 @@ export class SystemReflectFunction {
     path = path?.toLowerCase() ?? '';
     root = root?.toLowerCase() ?? '';
     if (path && root && path !== root && !path.startsWith(`${root}.`)) return [];
-    if (!root) root = path;
 
     // first
     const first: Entry<string>[] = [];
@@ -117,7 +116,7 @@ export class SystemReflectFunction {
     let valueType: ValueType | undefined;
 
     // args
-    for (let a of args)
+    for (let a of args ?? [])
     {
       if (!a.name || !a.type) continue;
       const ftype = await getNodeType(a.type) as ValueType;
@@ -132,7 +131,7 @@ export class SystemReflectFunction {
     }
 
     // exps
-    for(let e of exps)
+    for(let e of exps ?? [])
     {
       if (!e.name || !e.return) continue;
       const ftype = await getNodeType(e.return) as ValueType;
@@ -146,7 +145,7 @@ export class SystemReflectFunction {
       }
     }
 
-    const result: EntryAccess<string>[] = [ { children: first} ];
+    const result: EntryAccess<string>[] = [ { children: first } ];
     while (valueType)
     {
       const accessEntry: EntryAccess<string> = {};
@@ -163,6 +162,7 @@ export class SystemReflectFunction {
 
       // check next part
       let next: ValueType | undefined;
+      let nextcurr = curr;
       for (const a of accesses)
       {
         const n = a.value;
@@ -170,15 +170,16 @@ export class SystemReflectFunction {
         if (path && (path === a.value || path.startsWith(a.value + '.')))
         {
           next = valueType.getAccessValueType(n);
-          curr = a;
+          nextcurr = a;
         }
       }
       result.push(accessEntry);
       valueType = next;
+      curr = nextcurr;
     }
 
     // cut
-    return root ? result.filter(e => (e.entry?.value?.length ?? 0) < root.length) : result;
+    return root ? result.filter(e => (e.entry?.value?.length ?? 0) >= root.length) : result;
   }
 
   /** Gets the value type of the struct field */
@@ -254,5 +255,18 @@ export class SystemReflectFunction {
       default:
         return undefined;
     }
+  }
+
+  /** Gets the simple type for argument value type */
+  @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  static async getvaluetype(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    type: string
+  ): Promise<string | undefined> {
+    const valueType = await getNodeType(type) as ValueType | undefined;
+    const eleType = valueType instanceof ArrayType ? valueType.element : valueType;
+    return eleType?.kind != SCHEMA_KIND_STRUCT ? valueType?.name : NS_SYSTEM_OBJECT;
   }
 }
