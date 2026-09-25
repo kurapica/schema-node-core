@@ -12,7 +12,16 @@ import { Converter } from '../schema/function/property/converter';
 
 import type { LocaleString } from '../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../utility/constant';
+import type { Entry, EntryAccess } from '../struct/entry/type';
+import { _LS, isNull } from '../utility';
+import { Generics } from '../schema/generic/generics';
+import { buildFuncCall } from '../schema/function/type';
+import { Assign } from '../relation/assign/meta';
+import { EntrySource } from '../property/core/entrySource';
+import { Relation } from '../attribute/relation';
+import { setPropertyValue } from '../property/propertyOwner';
+import { Display } from '../property/common/display';
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
@@ -184,6 +193,33 @@ export class SystemStrMap {
       if (t) locale.key = t.tran;
     }
     return locale;
+  }
+
+  /** Converts a list of values to an entry access */
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<T>>`)
+  @Meta(Generics,  [{ name: 'T' }])
+  static toentryaccess<T>(
+    @Meta(ArgName, 'values') @Meta(SchemaType, NS_SYSTEM_ARRAY) values: any[],
+
+    @Meta(ArgName, 'key') @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@values.sourceType'), 'key.value')
+    key: string,
+
+    @Meta(ArgName, 'display') @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@values.sourceType'), 'display.value')
+    display?: string,
+  ): EntryAccess<T>[] {
+    const children: Entry<T>[] = [];
+
+    for(const v of values) {
+      const k = v[key];
+      if (isNull(k)) continue;
+      const e: Entry<T> = { value: k };
+      setPropertyValue(e, Display, _LS(display && v[display] || k));
+      children.push(e);
+    }
+
+    return [{ children }]
   }
 }
 

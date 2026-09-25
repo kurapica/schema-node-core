@@ -161,6 +161,7 @@ export function getSchemaKindRegister(kind: string): Function | undefined {
  * @returns The schema type or undefined if not registered
  */
 export function getSchemaType(type: string): Function | undefined {
+  if (type.includes('<')) type = type.split('<')[0];
   return _schemaTypeRegistry.get(type.toLowerCase());
 }
 

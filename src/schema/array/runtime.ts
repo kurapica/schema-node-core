@@ -11,15 +11,15 @@ import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { joinProperties } from '../../interface';
 import { getNodeType } from '../../runtime/context';
+import { Display } from '../../property/common/display';
+import { _LS } from '../../utility';
 
-import type { IProperty, PropertyCtor, IRelationProvider, INodeType, IRelation, IArrayValueTypeAccess } from '../../interface';
+import type { IProperty, PropertyCtor, IRelationProvider, INodeType, IRelation, IArrayValueTypeAccess, IValueTypeAccess } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ArraySchema } from './type';
 import type { RelationSchema } from '../relation/type';
 
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
-import { Display } from '../../property/common/display';
-import { _LS } from '../../utility';
 
 export class ArrayType extends ValueType implements IRelationProvider, IArrayValueTypeAccess {
   private _arraySchema: ArraySchema | undefined;
@@ -71,6 +71,12 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
     if (this.element)
       yield this.element;
     yield* super.getRefTypes();
+  }
+
+  override isAssignableTo(other: IValueTypeAccess): boolean {
+    if (super.isAssignableTo(other)) return true;
+    if (!(other instanceof ArrayType)) return false;
+    return this.element && other.element && this.element.isAssignableTo(other.element) || false;
   }
 
   override getAccessValueType(path: string): ValueType | undefined {

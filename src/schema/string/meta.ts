@@ -38,6 +38,7 @@ import { Relation } from '../../attribute/relation';
 import { Visible } from '../../property/common/visible';
 import { OverrideType } from '../../property/core/overrideType';
 import { JsRegex } from '../../property';
+import { CascadeDepth } from '../enum';
 
 /** The string schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
@@ -46,7 +47,7 @@ import { JsRegex } from '../../property';
 @Meta(RuntimeNodeType, StringType)
 @Meta(SchemaGenerator, generateStringSchema)
 @Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_STRING}.usage`)
-@Meta(Append, [EntrySource, JsRegex, AsSuggest, Default, BlackList, WhiteList, Root, LeafOnly, Unit, Error, Valid])
+@Meta(Append, [EntrySource, JsRegex, AsSuggest, Default, BlackList, WhiteList, Root, LeafOnly, Unit, Error, Valid, CascadeDepth])
 @Meta(StringValue)
 @Meta(DataNodeType, StringNode)
 class StringKind {}

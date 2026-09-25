@@ -10,8 +10,9 @@ import { PropertyValueType } from '../core/propertyValueType';
 import { buildFuncCall } from '../../schema/function/type';
 import { isEmpty, isEqual, isNull } from '../../utility/toolset';
 import { Relation } from '../../attribute/relation';
+import { DisplayOnly } from '../../schema/struct/property/displayOnly';
 
-import type { IValueAccess } from '../../interface';
+import type { IRelation, IValueAccess } from '../../interface';
 
 import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_CORE, TYPE_PROVIDER } from '../../utility/constant';
 
@@ -38,5 +39,13 @@ export class Default extends Property<unknown> {
     const origin = target.getValue();
     if (isEmpty(origin) || isEqual(origin, this.oldValue))
       target.setValue(this.getValue()); 
+  }
+
+  override initWithRelation(relation: IRelation, owner: IValueAccess, target: IValueAccess): boolean {
+    if (target.getPropertyValue(DisplayOnly)) {
+      target.setPropertyValue(Default, this.getValue());
+      return false;
+    }
+    return true;
   }
 }

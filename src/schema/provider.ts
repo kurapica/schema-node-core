@@ -3,6 +3,7 @@
 // =============================================================================
 
 import type { ApplyMode } from "../enum/applyMode/type";
+import type { IValueAccess } from "../interface";
 import type { NodeSchema } from "./node/type";
 
 /** Interface for node schema familiy */
@@ -11,7 +12,7 @@ export interface INodeSchemaProvider {
   getSchema(names: string[]): Promise<NodeSchema[]>;
 
   /** Call the schema function */
-  callFunction(schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode): Promise<unknown>;
+  callFunction(schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode, source?: IValueAccess): Promise<unknown>;
 }
 
 let schemaProvider: INodeSchemaProvider | undefined;

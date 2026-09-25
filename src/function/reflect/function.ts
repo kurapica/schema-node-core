@@ -46,8 +46,9 @@ export class SystemReflectFunction {
     matchArrayElement: boolean = false,
   ): Promise<boolean> {
     const nodeType = !func ? undefined : await getNodeType(func) as FunctionType | undefined;
+    if (!nodeType?.returnType) return false;
     const returnType = !type ? undefined : await getNodeType(type) as ValueType | undefined;
-    if (!nodeType?.returnType || !returnType) return false;
+    if (!returnType) return true;
 
     if (nodeType.returnType.isAssignableTo(returnType)) return true;
 

@@ -10,22 +10,18 @@ import { Error } from '../common/error';
 import { StructNode } from '../../schema/struct/node';
 import { FunctionType } from '../../schema/function/runtime';
 import { getErrorMessage } from '../constraintProperty';
-import { Assign } from '../../relation/assign';
-import { Default } from '../common/default';
-import { Relation } from '../../attribute/relation';
 import { logger } from '../../utility/logger';
 
 import type { IConstraintProperty, IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../utility/constant';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC_CALL}<${NS_SYSTEM_SCHEMA_FUNC}.valid>`)
 @Meta(Stackable, true)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
-@Relation(Default, Assign, NS_SYSTEM_BOOL, 'valid.return')
 export class Valid extends FuncCallProperty implements IConstraintProperty {
   effect(target: IValueAccess): void {
     this.clear(target);

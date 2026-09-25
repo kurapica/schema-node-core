@@ -4,7 +4,6 @@
 // =============================================================================
 
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
-import { isEmpty } from '../../utility/toolset';
 import { Attach } from './property/attach';
 import { Display } from '../../property/common/display';
 import { DisplayOnly } from './property/displayOnly';
@@ -15,7 +14,7 @@ import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
 import { ValueType } from '../value/runtime';
-import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindPropertyTypes, getSchemaKindSchemaProperties } from '../../runtime/schemaRuntime';
+import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindSchemaProperties } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { isConstraintProperty, joinProperties } from '../../interface';
@@ -30,7 +29,7 @@ import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, I
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST, ARRAY_ELEMENT } from '../../utility/constant';
+import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST, ARRAY_ELEMENT } from '../../utility/constant';
 import { Stackable } from '../../property/core/stackable';
 
 
@@ -247,9 +246,10 @@ export class StructType extends ValueType implements IRelationProvider {
   override isAssignableTo(other: ValueType): boolean {
     if (super.isAssignableTo(other)) return true;
     if (!(other instanceof StructType)) return false;
-
+  
     // At least one common field, and all other fields are assignable
-    const otherFields = other.getFields();
+    const otherFields = other._fields;
+
     const hasCommon = otherFields.some(v =>
       this._fields.some(f => f.name.toLowerCase() === v.name.toLowerCase()),
     );

@@ -11,13 +11,16 @@ import { isRelation, joinProperties, isConstraintProperty } from '../../interfac
 import { getPropertyName } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
 import { logger } from '../../utility/logger';
+import { getNodeType } from '../../runtime';
+import { FunctionType } from '../function/runtime';
+import { getGlobalAccessValue } from '../../property/core/accessPath';
 
 import type { Observer } from '../../utility/observable';
 import type { IPropertyProvider, IRelation, IRelationInfo, IValueAccess, IProperty, PropertyCtor, IConstraintProperty } from '../../interface';
 import type { IValueTypeAccess } from '../../interface';
+import type { FuncCall } from '../function/type';
 
 import { DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
-import { getGlobalAccessValue } from '../../property/core/accessPath';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -194,6 +197,27 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Reset the data node value */
   reset(): void { this.value = this.original }
+
+  /** Init the data node value, should only be called by parent, like array add new row */
+  async init(): Promise<void> {
+    const prop = this.getProperty('Init');
+    if (!prop || !prop.hasValue) return;
+    const init = prop.getValue() as FuncCall;
+    const func = init.func ? await getNodeType(init.func) : undefined;
+    if (!(func instanceof FunctionType)) return;
+    try{
+      const source = prop.source ?? this;
+      const value = await func.call(init.args?.map(a => {
+        if (!a.source) return a.value;
+        return source.getAccessValue(a.source)?.getValue();
+      }) ?? [], init.mode, this);
+      if (!isEmpty(value))
+        this.setValue(value);
+    }
+    catch(err){
+      logger.error('Init data node value failed', err);
+    }
+  }
 
   // #endregion
   

@@ -189,6 +189,11 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
     this._fields.forEach(f => f.confirm());
     super.confirm();
   }
+  
+  override async init(): Promise<void> {
+    for (const f of this._fields)
+      await f.init();
+  }
 
   // #endregion
 

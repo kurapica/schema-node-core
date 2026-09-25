@@ -229,6 +229,7 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
     {
       if (!flds.has(f)) return false
     }
+    return true
   }
 
   return false

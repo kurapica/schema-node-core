@@ -106,6 +106,7 @@ export class EnumType extends ValueType {
   /** Gets the enum entry access by value and start value (Deprecated) */
   async getEnumEntryAccess(value: string | undefined = undefined, start: string | undefined = undefined): Promise<EntryAccess<string>[]>{
     value = value ? `${value}` : undefined;
+    start = start ? `${start}` : undefined;
     if (isEmpty(value)) value = undefined;
     if (isEmpty(start)) start = undefined;
 
@@ -133,7 +134,7 @@ export class EnumType extends ValueType {
         return value;
       
       return m.value;
-    })) as EntryAccess<string>[];
+    }), undefined, undefined, true) as EntryAccess<string>[];
 
     if (!access?.length) return [];
 

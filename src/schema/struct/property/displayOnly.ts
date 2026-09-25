@@ -8,8 +8,6 @@ import { SchemaType } from '../../../property/core/schemaType';
 import { ForSchema } from '../../../property/core/forSchema';
 import { Static } from '../../../property/core/static';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
-import { Default } from '../../../property/common/default';
-import { isEmpty } from '../../../utility/toolset';
 
 import type { IValueAccess } from '../../../interface';
 
@@ -26,11 +24,6 @@ import { ReadOnly } from '../../../property/common/readOnly';
 export class DisplayOnly extends Property<boolean> {
   override effect(target: IValueAccess): void {
     if (this._value) // static property only effect once
-    {
-      const value = target.getValue();
-      if (!isEmpty(value))
-        target.setPropertyValue(Default, value);
       target.setPropertyValue(ReadOnly, true);
-    }
   }
 }

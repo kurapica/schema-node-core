@@ -18,7 +18,7 @@ import type { IConstraintProperty, IValueTypeAccess, ValueAccessFactory, IValueA
 import type { Entry } from '../../struct/entry/type';
 import type { INodeType } from '../../interface';
 
-import { NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_OBJECT } from '../../utility/constant';
+import { NODE_SELF, SCHEMA_KIND_ARRAY, SCHEMA_KIND_GENERIC, SCHEMA_KIND_OBJECT } from '../../utility/constant';
 
 /** Represents the value schema type */
 export abstract class ValueType extends NodeType implements IValueTypeAccess {
@@ -131,6 +131,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
   /** Check whether this type is compatible with another (for assignment). */
   isAssignableTo(other: IValueTypeAccess): boolean {
     return this === other ||
+      other.kind === SCHEMA_KIND_GENERIC ||
       this.kind === SCHEMA_KIND_OBJECT || 
       other.kind === SCHEMA_KIND_OBJECT || 
       (this._isAssignableTo ? (

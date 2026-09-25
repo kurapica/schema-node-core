@@ -19,7 +19,6 @@ import { ReadOnly } from '../../property/common/readOnly';
 import { OverrideType } from '../../property/core/overrideType';
 import { InVisible } from '../../property/common/invisible';
 import { Default } from '../../property/common/default';
-import { Immutable } from '../../property/common/immutable';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
 import { AccessValueTypeProvider } from '../../property/core/accessValueTypeProvider';
@@ -59,7 +58,7 @@ import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type
 import type { NodeSchema } from '../node/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_ARRAY, SCHEMA_KIND_ARRAY, ARRAY_PREVIOUS } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_SCHEMA_ARRAY, SCHEMA_KIND_ARRAY, ARRAY_PREVIOUS, NS_SYSTEM_ENTRY_ACCESS } from '../../utility/constant';
 import { FuncCallArgNode } from './node/funcCallArgNode';
 
 
@@ -171,7 +170,7 @@ class FuncExpMeta implements FuncExp {
 
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
 @Meta(DataNodeType, FuncCallNode)
-@Relation(Valid, Assign, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, '@func', '@funcReturn'), 'func')
+@Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_SCHEMA_FUNC_TYPE]}])
 class FuncCallMeta implements FuncCall {
   /** The return type of the function */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
@@ -193,9 +192,10 @@ class FuncCallMeta implements FuncCall {
   funcReturn?: string;
 
   /** Fully qualified function schema name. */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+  @Meta(SchemaType, 'T')
   @Meta(Require, true)
   @Relation(Visible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@mode'))
+  @Relation(Valid, Assign, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, '@func', '@funcReturn'))
   func!: string;
 
   /** Call arguments. */
@@ -265,6 +265,12 @@ class ValidFuncTypeMeta {}
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE))
 class TypeFuncTypeMeta {}
+
+@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.entrysource`)
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`))
+class EntrySourceFuncType {}
 
 // #endregion
 

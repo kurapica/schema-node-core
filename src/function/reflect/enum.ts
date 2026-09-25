@@ -16,8 +16,6 @@ import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { ValueType } from '../../schema/value/runtime';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
-import { ServerOnly } from '../../schema/function/property/serverOnly';
-
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)

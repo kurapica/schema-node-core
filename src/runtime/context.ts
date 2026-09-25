@@ -4,7 +4,7 @@ import { combineProperties, getPropertyValue } from "../property/propertyOwner";
 import { getSchemaProvider } from "../schema/provider";
 import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
 import { logger } from "../utility/logger";
-import { isNull, splitString, useQueueQuery, useShareQuery } from "../utility/toolset";
+import { isNull, splitString, useShareQuery } from "../utility/toolset";
 import { SystemDefined } from "../property/core/systemDefined";
 import { getNodeSchemaName, type NodeSchema } from "../schema/node/type";
 
@@ -12,8 +12,6 @@ import type { INamespaceNodeType, INodeReference, INodeType } from "../interface
 import type { GenericParameter } from "../schema/generic/type";
 
 import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
-
-const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: INamespaceNodeType | undefined;
@@ -222,7 +220,8 @@ async function loadGenericType(
   genType = new NodeTypeCtor(node.namespace);
   if (!isTemplate)
     node.setGenericType(inner, genType);
-
+  
+  // Load the type
   await genType.loadType(node.getNodeSchema()!, genParams);
   return genType;
 }

@@ -128,7 +128,9 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     this._elements.forEach(e => e?.confirm());
     super.confirm();
   }
-
+  
+  override async init(): Promise<void> {}
+  
   // #endregion
 
   // #region ── Property ──────────────────────────────────────────────────────
@@ -277,6 +279,9 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     }
     else
       this.onNextItem(index!);
+
+    /** Init the new element node */
+    setTimeout(async () => node.init(), 1);
     return node;
   }
 

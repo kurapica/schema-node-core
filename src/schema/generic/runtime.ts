@@ -3,7 +3,7 @@
 // Mirrors C# SchemaNode.Core/Runtime/Type/GenericType.cs
 // =============================================================================
 
-import { ValueType } from "../value";
+import { ValueType } from "../value/runtime";
 
 /** The generic type parameter placeholder */
 export class GenericType extends ValueType {

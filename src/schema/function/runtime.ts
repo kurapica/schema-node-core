@@ -12,27 +12,26 @@
 import { ApplyMode } from '../../enum/applyMode/type';
 import { getPropertiesBySchemaKind, getProperty, getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { getSchemaProvider } from '../../schema/provider';
-import { isEmpty, isNull, splitString, useQueueQuery } from '../../utility/toolset';
+import { deepClone, isEmpty, isNull, splitString, useQueueQuery } from '../../utility/toolset';
 import { NodeType } from '../node/runtime';
-import { ValueType } from '../value/runtime';
 import { getNodeType } from '../../runtime/context';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
 import { Name } from '../../property/core/name';
 import { RelationType } from '../relation/runtime';
 import { logger } from '../../utility/logger';
+import { Relations } from '../relation/property';
+import { Display } from '../../property/common/display';
+import { _LS } from '../../utility/locale';
+import { SourceTrack } from './property/sourceTrack';
 
 import type { FuncArg, FuncExp, CallArg, FunctionSchema } from './type';
-import { type IProperty, type PropertyCtor, type INodeReference, type IValueTypeAccess, type IPropertyProvider, type INodeType, type IRelation, type IValueAccess, joinProperties, isRelationProvider, type IRelationProvider } from '../../interface';
+import { type IProperty, type PropertyCtor, type INodeReference, type IValueTypeAccess, type IPropertyProvider, type INodeType, type IRelation, type IValueAccess, joinProperties, type IRelationProvider } from '../../interface';
 import type { Entry } from '../../struct/entry/type';
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
-import { NODE_SELF, TYPE_PROVIDER, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN, NS_SYSTEM_OBJECT } from '../../utility/constant';
-import { ArrayType } from '../array/runtime';
-import { Relations } from '../relation/property';
-import { Display } from '../../property/common/display';
-import { _LS } from '../../utility/locale';
+import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN, NS_SYSTEM_OBJECT, ARRAY_ELEMENT } from '../../utility/constant';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -42,8 +41,8 @@ const pendingCall: Record<string, { resolve: (v: unknown) => void; reject: (e: u
 
 /** Queue remote callFunction through useQueueQuery to serialize requests. */
 const callSchemaFunctionQueue = useQueueQuery(
-  (schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode) =>
-    getSchemaProvider()!.callFunction(schemaName, args, retType, applyMode),
+  (schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode, source?: IValueAccess) =>
+    getSchemaProvider()!.callFunction(schemaName, args, retType, applyMode, source),
 );
 
 /** Delay (ms) to batch concurrent remote calls before execution. */
@@ -55,8 +54,8 @@ const pendingComplexCall: Record<string, Map<any, any>> = {};
 /** Runtime type for function schemas. */
 export class FunctionType extends NodeType implements IValueTypeAccess, IRelationProvider {
   /** Return value type (resolved at load time). */
-  private _returnType?: ValueType;
-  get returnType(): ValueType | undefined { return this._returnType; }
+  private _returnType?: IValueTypeAccess;
+  get returnType(): IValueTypeAccess | undefined { return this._returnType; }
 
   /** Argument definitions. */
   get args(): FunArgsType { return this._args! }  
@@ -83,7 +82,6 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
   private _noCache = false;
   private _built = false;
   private _compositeFn?: (...args: unknown[]) => unknown;
-  private _funcMap?: Map<string, FunctionType>;
   private _relations: IRelation[] | undefined;
   private _objectType: IValueTypeAccess | undefined;
 
@@ -108,7 +106,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     this._objectType = await getNodeType(NS_SYSTEM_OBJECT) as unknown as IValueTypeAccess;
 
     // Resolve return type
-    this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as ValueType | undefined;
+    this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as IValueTypeAccess | undefined;
 
     if (this._converter && this._args.length == 1 && this._returnType)
       this._args.at(0)?.type?.addConverter(this._returnType, this);
@@ -132,13 +130,12 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     if (this._converter && this._args?.length == 1 && this.returnType)
       this._args.at(0)?.type?.removeConverter(this.returnType, this);
     
-    this._funcMap = undefined;
     this._built = false;
   }
 
   override *getRefTypes(): Generator<INodeType> {
     if (this.returnType)
-      yield this.returnType;
+      yield this.returnType as unknown as INodeType;
     if (this._args)
       for (const argType of this._args)
         yield* argType.getRefTypes();
@@ -177,6 +174,10 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     throw new Error('Function type cannot be created.');
   }
 
+  addConverter(other: IValueTypeAccess, converter: INodeType): void {}
+  getConverter(other: IValueTypeAccess): INodeType | undefined { return undefined; }
+  removeConverter(other: IValueTypeAccess, converter: INodeType): void {}
+
   /** Get relations defined in this function. */
   *getRelations(): Generator<IRelation> {
     if (this._relations)
@@ -187,26 +188,33 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
 
   /**
    * Call this function with the given arguments.
-   * - System fn → direct
-   * - Composite → interpret expression tree (recursive sub-calls)
-   * - Remote → queue + cache via schemaProvider
+   * @param args The arguments to pass to the function.
+   * @param applyMode The mode to apply to the function call.
+   * @param source The source value access triggering the function call.
+   * @param remote Whether to call the function remotely or locally.
+   * @returns The result of the function call.
    */
-  async call(args: unknown[], applyMode: ApplyMode = ApplyMode.Call): Promise<unknown> {
+  async call(args: unknown[], applyMode: ApplyMode = ApplyMode.Call, source?: IValueAccess, remote?: boolean): Promise<unknown> {
     try
     {
       let res: unknown;
+
+      // arguments check
+      for (let i = 0; i < this.args.length; i++) {
+        if ((args.length <= i || isNull(args[i])) && this.args.at(i)?.require)
+          return undefined;
+      }
 
       // Build composite function if not yet built
       if (!this._built)
         await this._buildComposite();
 
       // 1. Remote Call — via schemaProvider with queue + cache
-      if (this.isRemote)
-        res = await this._callRemote(this.name, args, applyMode);
+      if (this.isRemote || remote)
+        res = await this._callRemote(this.name, args, applyMode, this.getPropertyValue(SourceTrack) ? source : undefined);
 
-      else if (applyMode === ApplyMode.Call) {
+      else if (applyMode === ApplyMode.Call)
         res = await this._callLocale(args);
-      }
 
       // Collection mode
       else 
@@ -332,12 +340,12 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
         }
       }
 
-      logger.verbose('[Function][Call]', this.name, args, res);
+      logger.verbose('[Function][Call]', this.isRemote ? '[Remote]' : '[Locale]', this.name, args, res);
       return res;
     }
     catch (ex)
     {
-      logger.error('[Function][Call]', this.name, args, ex);
+      logger.error('[Function][Call]', this.isRemote ? '[Remote]' : '[Locale]', this.name, args, ex);
       throw ex;
     }
   }
@@ -360,16 +368,19 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
    * - Delay-based batching (REMOTE_CALL_DELAY ms)
    * - Queue-based serialization via useQueueQuery
    */
-  private async _callRemote(schemaName: string, args: unknown[], applyMode: ApplyMode = ApplyMode.Call): Promise<unknown> {
+  private async _callRemote(schemaName: string, args: unknown[], applyMode: ApplyMode = ApplyMode.Call, source?: IValueAccess): Promise<unknown> {
     if (!getSchemaProvider()) throw new Error('Schema provider not provided');
 
+    if (source || this._noCache)
+      return await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
+
     // Token-based cache for simple (serializable) args
-    const token = this._buildCacheToken(schemaName, args, applyMode);
+    const token = source ? undefined : this._buildCacheToken(schemaName, args, applyMode);
 
     if (token) {
       // Check shared cache
       const cached = shareFuncCallResult.get(token);
-      if (cached !== undefined) return cached;
+      if (cached !== undefined) return deepClone(cached);
 
       // Dedup concurrent calls
       if (pendingCall[token])
@@ -381,8 +392,11 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       await new Promise(resolve => setTimeout(resolve, REMOTE_CALL_DELAY));
 
       try {
-        const res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
-        if (!this._noCache) shareFuncCallResult.set(token, res);
+        let res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
+        if (!this._noCache) {
+          shareFuncCallResult.set(token, res);
+          res = deepClone(res);
+        }
         pendingCall[token].forEach(c => c.resolve(res));
         return res;
       } catch (ex) {
@@ -400,6 +414,16 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     if (!root) {
       root = new Map();
       pendingComplexCall[schemaName] = root;
+    }
+
+    // Add source to tree
+    if (source) {
+      let next = root.get(source);
+      if (!next) {
+        next = new Map();
+        root.set(source, next);
+      }
+      root = next;
     }
 
     for (const arg of args) {
@@ -428,7 +452,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     delete pendingComplexCall[schemaName];
 
     try {
-      const res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
+      const res = await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode, source);
       queue.forEach((c: any) => c.resolve(res));
       return res;
     } catch (ex) {
@@ -472,7 +496,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     const argNames = args.map(a => a.name);
 
     // Build type dictionary: name → ValueType (args + expressions)
-    const expTypes = new Map<string, ValueType | undefined>();
+    const expTypes = new Map<string, IValueTypeAccess | undefined>();
     for (const arg of args)
       expTypes.set(arg.name, arg.type);
 
@@ -497,7 +521,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       }
 
       // Resolve return type and store
-      const expRetType = await getNodeType(exp.return) as ValueType | undefined;
+      const expRetType = await getNodeType(exp.return) as IValueTypeAccess | undefined;
       expTypes.set(exp.name, expRetType);
 
       // Analyze array dependencies using type compatibility
@@ -727,7 +751,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
   private _funcArg: FuncArg;
   private _props: IProperty[];
   private _refTypes?: INodeType[];
-  private _valueType?: ValueType;
+  private _valueType?: IValueTypeAccess;
 
   /** Get the name of the function argument */
   get name() { return this._funcArg.name; }
@@ -750,11 +774,15 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
   }
 
   async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
-    this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as ValueType;
+    this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as unknown as IValueTypeAccess;
     if (this._valueType) {
         this._props.push(...getPropertiesBySchemaKind(this._funcArg, this._valueType.kind));
-        if (this._valueType instanceof ArrayType && this._valueType.element)
-          this._props.push(...getPropertiesBySchemaKind(this._funcArg, this._valueType.element.kind));
+        if (this._valueType.kind === SCHEMA_KIND_ARRAY)
+        {
+          const eleKind = this._valueType.getAccessValueType(ARRAY_ELEMENT)?.kind;
+          if (eleKind)
+            this._props.push(...getPropertiesBySchemaKind(this._funcArg, eleKind));
+        }
     }
 
     const refTypes: INodeType[] = []
@@ -832,7 +860,7 @@ interface CompiledExp {
 async function _analyzeArrayDepsByType(
   exp: FuncExp,
   calledFunc: FunctionType | undefined,
-  expTypes: Map<string, ValueType | undefined>,
+  expTypes: Map<string, IValueTypeAccess | undefined>,
 ): Promise<ArrayDepInfo | undefined> {
   if (!exp.call.args || !exp.call.args.length || !calledFunc) return undefined;
 
@@ -878,7 +906,7 @@ async function _analyzeArrayDepsByType(
  */
 function _findArraySourceByType(
   source: string,
-  expTypes: Map<string, ValueType | undefined>,
+  expTypes: Map<string, IValueTypeAccess | undefined>,
 ): { sourceName: string; direct: boolean } | undefined {
   if (!source) return undefined;
 
@@ -969,14 +997,14 @@ function _extractSubValue(obj: unknown, path: string): unknown {
  * is NOT assignable to it, collect struct field names for result construction.
  */
 async function _resolveStructReturnFields(
-  returnType: ValueType | undefined,
+  returnType: IValueTypeAccess | undefined,
   lastExpReturn: string | undefined,
   generics?: GenericParameter[],
   genericParams?: INodeType[],
 ): Promise<string[] | undefined> {
   if (!(returnType?.kind === SCHEMA_KIND_STRUCT) || !lastExpReturn) return undefined;
 
-  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as ValueType | undefined;
+  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as IValueTypeAccess | undefined;
   if (!lastExpType) return undefined;
 
   if (lastExpType.isAssignableTo(returnType)) return undefined;

@@ -13,7 +13,7 @@ import { Root } from "../enum/property/root";
 import { CascadeDepth } from "../enum/property/cascadeDepth";
 import { AccessEntryConsumer } from "../string/property/accessEntryConsumer";
 import { EntrySourceConsumer } from "../string/property/entrySourceConsumer";
-import { debounce, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
+import { debounce, deepClone, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
 import { _L, _LS } from "../../utility/locale";
 
 import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
@@ -315,7 +315,7 @@ export abstract class ScalarNode extends DataNode {
     const queryRoot = value && value == this._entrySourceInfo!.root;
 
     // call entry source function
-    const result = await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args?.map((a, i) => {
+    const result = deepClone(await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args?.map((a, i) => {
       const c = this._entrySourceInfo!.args![i];
       if (!c || isNull(c.source) && isNull(c.value)) {
         if (a.getPropertyValue(EntryRoot) && !queryRoot) return this._entrySourceInfo!.root;
@@ -323,7 +323,7 @@ export abstract class ScalarNode extends DataNode {
       }
       if (c.source) return c.source === this ? value : c.source.getValue();
       return c.value;
-    }) ?? []) as EntryAccess<any>[] ?? [];
+    }) ?? []) as EntryAccess<any>[] ?? []) as EntryAccess<any>[];
 
     // valid
     if (!queryRoot && (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length || this._entrySourceInfo.valueTypeConsumer))

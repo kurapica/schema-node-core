@@ -15,3 +15,4 @@ export * from './unit';
 export * from './valid';
 export * from './visible';
 export * from './whiteList';
+export * from './init';

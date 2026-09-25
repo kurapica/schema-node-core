@@ -26,6 +26,15 @@ export interface IValueTypeAccess extends IPropertyProvider {
   /** Check whether this type is compatible with another (for assignment). */
   isAssignableTo(other: IValueTypeAccess): boolean;
   
+  /** Add converter */
+  addConverter(other: IValueTypeAccess, converter: INodeType): void;
+
+  /** Get converter */
+  getConverter(other: IValueTypeAccess): INodeType | undefined;
+
+  /** Remove converter */
+  removeConverter(other: IValueTypeAccess, converter: INodeType): void;
+
   /** Create a value access instance */
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess;
 }
@@ -246,6 +255,9 @@ export interface IProperty {
 
   /** Clear the property effect from the target. */
   clear(target: IValueAccess): void;
+
+  /** Whether to apply the relation to the property immediately. */
+  initWithRelation(relation: IRelation, owner: IValueAccess, target: IValueAccess): boolean;
 }
 
 /** The property constructor */

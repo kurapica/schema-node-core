@@ -16,9 +16,8 @@ import { logger } from '../../utility/logger';
 
 import type { RelationSchema } from './type';
 import type { IRelationProcess } from './interface';
-import type { DataNode } from '../value';
 
-import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation } from '../../interface';
+import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation, IProperty } from '../../interface';
 
 /** The relation type */
 export class RelationType implements INodeReference, IErrorProvider, IRelation {
@@ -37,6 +36,7 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
   private _property?: PropertyType;
   private _propCtor?: PropertyCtor;
   private _process?: IRelationProcess;
+  private _propertyInstance?: IProperty;
 
   /** A guid */
   readonly guid = generateGuid();
@@ -70,6 +70,7 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
   async load() {
     this._property = await getNodeType(this._relationSchema.property) as PropertyType;
     this._propCtor = this._property ? getSchemaType(this._property.name) as PropertyCtor : undefined;
+    this._propertyInstance = this._propCtor ? new this._propCtor() : undefined;
 
     // load process
     for(const propCtor of getSchemaKindPropertyTypes(SCHEMA_KIND_RELATION))
@@ -101,11 +102,13 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
   /** Attach the relation to target with the owner */
   attach(owner: IValueAccess, target: IValueAccess)
   {
-    logger.verbose('[Relation][Attach]', '[Property]', this._property?.property, '[Owner]', (owner as DataNode).access ?? owner, '[Target]', (target as DataNode).access ?? target  );
+    logger.verbose('[Relation][Attach]', '[Property]', this._property?.property, '[Owner]', (owner as IValueAccess).access ?? owner, '[Target]', (target as IValueAccess).access ?? target  );
 
     if (!this._propCtor) return;
     this._process?.detach(this, owner, target); // clear first
     this._process?.attach(this, owner, target);
+    if (this._propertyInstance?.initWithRelation(this, owner, target))
+      return this.process(owner, target);
   }
 
   /** Detach the relation from the target with the owner */

@@ -13,12 +13,13 @@ import { combinePaths, isEmpty, splitString } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
+import { SystemReflectType } from './type';
+import { EntryRoot } from '../../property/core/entrySource';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
-
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT, NODE_SELF } from '../../utility/constant';
-import { EntryRoot } from '../../property/core/entrySource';
 import type { LocaleString } from '../../struct/localeString/type';
+
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from '../../utility/constant';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -183,5 +184,44 @@ export class SystemReflectArray {
     return paths[0]?.toLowerCase() === ARRAY_ELEMENT 
       ? paths.length > 1 ? elementType.getAccessValueType(paths[1])?.name : elementType?.name
       : undefined;
+  }
+
+  /** Gets the sub entries of the array element type */
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
+  static async getelementaccessentries(
+    @Meta(ArgName, 'name')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    name: string,
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path?: string,
+
+    @Meta(ArgName, 'root')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    @Meta(EntryRoot, true)
+    root?: string
+  ): Promise<EntryAccess<string>[]> {
+    let type: ValueType | undefined   = await getNodeType(name) as ValueType;
+    type = (type instanceof ArrayType) ? type.element : type;
+    return type ? await SystemReflectType.getaccessentries(type.name, path, root) : [];
+  }
+
+  /** Gets the value type of the array element field */
+  @Meta(Return, NS_SYSTEM_STRING)
+  static async getelementaccessvaluetype(
+    @Meta(ArgName, 'name')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    name: string,
+
+    @Meta(ArgName, 'path')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    path: string
+  ): Promise<string | undefined> {
+    let type: ValueType | undefined   = await getNodeType(name) as ValueType;
+    type = (type instanceof ArrayType) ? type.element : type;
+    return type ? await SystemReflectType.getaccessvaluetype(type.name, path) : undefined;
   }
 }

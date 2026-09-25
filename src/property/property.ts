@@ -8,7 +8,7 @@
 ;
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 
-import type { IValueAccess, IProperty, PropertyCtor } from "../interface";
+import type { IValueAccess, IProperty, PropertyCtor, IRelation } from "../interface";
 import { deepClone, isEqual, trimValue } from "../utility/toolset";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
@@ -98,6 +98,11 @@ export abstract class Property<T> implements IProperty {
 
   /** Clear the property effect from the target. */
   clear(target: IValueAccess): void {}
+
+  /** Whether to apply the relation to the property immediately. */
+  initWithRelation(relation: IRelation, owner: IValueAccess, target: IValueAccess): boolean {
+    return true;
+  }
 }
 
 /** Get the property name of the property constructor. */

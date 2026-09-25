@@ -1,10 +1,8 @@
 import { Meta } from '../../../attribute/meta';
-import { Relation } from '../../../attribute/relation';
 import { ReadOnly } from '../../../property/common/readOnly';
 import { InVisible } from '../../../property/common/invisible';
-import { Valid } from '../../../property/common/valid';
 import { FuncCallProperty } from '../../../property/funcCallProperty';
-import { buildFuncCall, type FuncCall } from '../../../schema/function/type';
+import { type FuncCall } from '../../../schema/function/type';
 import { ForSchema } from '../../../property/core/forSchema';
 import { OfSchema } from '../../../property/core/ofSchema';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
@@ -12,7 +10,7 @@ import { SchemaType } from '../../../property/core/schemaType';
 import { Static } from '../../../property/core/static';
 import { Error } from '../../../property/common/error';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRING, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_BOOL, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON } from '../../../utility/constant';
+import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../../utility/constant';
 import type { IConstraintProperty, IValueAccess, IValueTypeAccess } from '../../../interface';
 import type { FunctionType } from '../../function/runtime';
 import { getNodeType } from '../../../runtime/context';
@@ -26,11 +24,10 @@ import type { ValueType } from '../../value';
 @Meta(ForSchema, [SCHEMA_KIND_STRING])
 @Meta(OfSchema, SCHEMA_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessEntryConsumer`)
-@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC}.funccall`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC_CALL}<${NS_SYSTEM_SCHEMA_FUNC}.valid>`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
-@Relation(Valid,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.withreturn`, NODE_SELF, NS_SYSTEM_BOOL), "accessValueTypeConsumer.func")
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
 export class AccessEntryConsumer extends FuncCallProperty implements IConstraintProperty {
   effect(target: IValueAccess): void {

@@ -22,6 +22,7 @@ import type { RelationSchema } from './type';
 
 import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PRO } from '../../utility/constant';
 import { KindResolver } from '../string';
+import { InVisible } from '../../property';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_RELATION, SCHEMA_KIND_ORDER_RELATION])
@@ -45,6 +46,7 @@ class RelationSchemaMeta implements RelationSchema {
   /** The kind of the target */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   @Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
   targetKind?: string;
 
@@ -52,6 +54,7 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(KindResolver, true)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   ownerKind?: boolean;
 
   /** The property the relation applies to */
@@ -65,6 +68,7 @@ class RelationSchemaMeta implements RelationSchema {
   /** The value type of the property */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property', '@targetType'))
   valueType?: string;
 

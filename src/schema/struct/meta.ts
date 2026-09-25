@@ -37,14 +37,6 @@ import { Primary } from '../array/property/primary';
 import { Indexes, type DataIndex } from '../array/property/indexes';
 import { Generics } from '../generic/generics';
 import { ArrayProperty } from '../array/array';
-
-import type { GenericParameter } from  '../../schema/generic/type';
-import type { StructFieldSchema, StructSchema } from './type';
-import type { NodeSchema } from '../node/type';
-import type { ArraySchema } from '../array/type';
-import type { LocaleString } from '../../struct/localeString/type';
-
-import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_STRUCT_DEFINE, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC } from '../../utility/constant';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Unpack } from './property';
 import { Visible } from '../../property/common/visible';
@@ -55,6 +47,15 @@ import { InVisible } from '../../property/common/invisible';
 import { Immutable } from '../../property/common/immutable';
 import { ReadOnly } from '../../property/common/readOnly';
 import { KindProvider } from '../../property/core/kindProvider';
+import { Init } from '../../property/common/init';
+
+import type { GenericParameter } from  '../../schema/generic/type';
+import type { StructFieldSchema, StructSchema } from './type';
+import type { NodeSchema } from '../node/type';
+import type { ArraySchema } from '../array/type';
+import type { LocaleString } from '../../struct/localeString/type';
+
+import { SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, SCHEMA_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, SCHEMA_KIND_STRUCT_USAGE, SCHEMA_KIND_STRUCT_DEFINE, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE, NS_SYSTEM_INTRINSIC } from '../../utility/constant';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -89,7 +90,7 @@ class StructSchemaMeta implements StructSchema {
 class StructUsage {}
 
 @Meta(SchemaKind, [SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_ORDER_STRUCT_FIELD])
-@Meta(Append, [Disable, Display, Description, Visible, InVisible, Immutable, ReadOnly, Require, OverrideType])
+@Meta(Append, [Disable, Display, Description, Visible, InVisible, Immutable, ReadOnly, Require, OverrideType, Init])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
 @Meta(Attach, SCHEMA_KIND_STRUCT_FIELD)
 class StructFieldDefine {}
@@ -97,6 +98,8 @@ class StructFieldDefine {}
 /** The struct field schema meta */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.field`)
 @Meta(TypeProvider, 'type')
+@Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", false, SCHEMA_KIND_STRING, SCHEMA_KIND_INT, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DATE), 'fieldDefine.init')
+@Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'), 'fieldDefine.init.return')
 class StructFieldSchemaMeta implements StructFieldSchema {
   /** The field name */
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)

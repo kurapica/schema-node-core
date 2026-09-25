@@ -20,6 +20,8 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 
 import { SCHEMA_KIND_NODE } from '../../utility/constant';
 
+const _loadingNodeTypes = new Set<INodeType>();
+
 export class NodeType implements INodeType, IPropertyProvider, INodeReference {
   readonly id = generateGuid();
 
@@ -88,45 +90,59 @@ export class NodeType implements INodeType, IPropertyProvider, INodeReference {
 
   /** Load type-specific data from the NodeSchema. Subclasses override. */
   async loadType(schema: NodeSchema, genericParams?: INodeType[]): Promise<void> {
-    this.unloadType();
+    if (_loadingNodeTypes.has(this))
+    {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      return;
+    }
 
-    this.schema = schema;
-    this._genericParams = genericParams?.length ? genericParams : undefined;
-    this.loaded = true;
+    try
+    {
+      _loadingNodeTypes.add(this);
+      this.unloadType();
 
-    logger.debug("[Node][Load]", this.name);
+      this.schema = schema;
+      this._genericParams = genericParams?.length ? genericParams : undefined;
 
-    // load properties
-    this._props = Array.from(getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE)).concat(this.loadProperties());
+      logger.debug("[Node][Load]", this.name);
 
-    // Generic check
-    this._generics = this.getProperty(Generics)?.getValue();
-    
-    // load ref types from properties
-    this._refTypes = [];
-    if (!genericParams?.length){
-      for(let prop of this._props.filter(isTypeRefProperty))
-      {
-        for(let type of (prop as ITypeRefProperty).getRefTypes())
+      // load properties
+      this._props = Array.from(getPropertiesBySchemaKind(schema, SCHEMA_KIND_NODE)).concat(this.loadProperties());
+
+      // Generic check
+      this._generics = this.getProperty(Generics)?.getValue();
+      
+      // load ref types from properties
+      this._refTypes = [];
+      if (!genericParams?.length){
+        for(let prop of this._props.filter(isTypeRefProperty))
         {
-          const nodeType = await getNodeType(type);
-          if (nodeType && !this._refTypes.includes(nodeType)) 
-            this._refTypes.push(nodeType);
+          for(let type of (prop as ITypeRefProperty).getRefTypes())
+          {
+            const nodeType = await getNodeType(type);
+            if (nodeType && !this._refTypes.includes(nodeType)) 
+              this._refTypes.push(nodeType);
+          }
         }
       }
-    }
 
-    // load schema specific data
-    await this.load();
+      // load schema specific data
+      await this.load();
 
-    // register used by
-    if (genericParams?.length)
-    {
-      genericParams.forEach(g => g.addUsedBy(this));
+      // register used by
+      if (genericParams?.length)
+      {
+        genericParams.forEach(g => g.addUsedBy(this));
+      }
+      else
+      {
+        this._refTypes.forEach(g => g.addUsedBy(this));
+      }
+      this.loaded = true;
     }
-    else
+    finally
     {
-      this._refTypes.forEach(g => g.addUsedBy(this));
+      _loadingNodeTypes.delete(this);
     }
   }
 

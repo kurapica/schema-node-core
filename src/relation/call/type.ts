@@ -47,8 +47,6 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
       }
       target.recordSubscription(node.subscribe(handler), relation);
     });
-
-    handler();
   }
 
   detach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void {
@@ -63,7 +61,7 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
         if (isEmpty(a.source)) return a.value;
         const node = owner.getAccessValue(a.source!, target);
         return node?.getValue();
-      }) ?? [], this._call?.mode);
+      }) ?? [], this._call?.mode, owner);
     }
     catch (error)
     {
