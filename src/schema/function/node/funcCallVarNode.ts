@@ -1,8 +1,8 @@
-import { isEmpty, isNull } from "../../../utility/toolset";
+import { isEmpty, isNull, splitString } from "../../../utility/toolset";
 import { DataNode } from "../../value/node";
 
 import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../../interface";
-import { type CallArg } from "../type";
+import { buildFuncCall, type CallArg } from "../type";
 import type { StructNode } from "../../struct/node";
 import { Observable, type Observer } from "../../../utility/observable";
 import type { StructType } from "../../struct/runtime";
@@ -13,12 +13,15 @@ import { ParamsList } from "../property/paramsList";
 import type { Entry } from "../../../struct/entry/type";
 import { Display } from "../../../property/common/display";
 import { getPropertyValue } from "../../../property/propertyOwner";
+import { AccessEntryConsumer } from "../../string/property/accessEntryConsumer";
+import { ARRAY_ELEMENT, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from "../../../utility/constant";
 
 /** The function expression variable data node */
 export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
   private _args: StructNode[] = [];
   private _argType: StructType
   private _argCountOb?: Observable<[IValueAccess, number]>;
+  private _colSelectable: boolean = false;
 
   constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
     super(type, undefined, parent, ...propProviders);
@@ -71,6 +74,23 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
     return result;
   }
 
+  override get submitValue(): unknown {
+    const result: CallArg[] = this._args.map(e => e.submitValue as CallArg);
+
+    // clear empty arguments
+    for (let i = result.length - 1; i >= 0; i--)
+      if (isNull(result[i].value) && isNull(result[i].source))
+        result.splice(i, 1);
+    return result;
+  }
+
+  async setCollectionSelectable(selectable: boolean) {
+    this._colSelectable = selectable;
+    const node = this._args[0];
+    if (!node) return;
+    node.getAccessValue('source')?.setPropertyValue(AccessEntryConsumer, selectable ? buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, true, `@${ARRAY_ELEMENT}.type`) : undefined, node.parent);
+  }
+
   // #endregion
 
   // #region ── Args Changed ───────────────────────────────────────────────
@@ -104,6 +124,24 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
     return this._args.find(e => e.name?.toLowerCase() == index.toLowerCase());
   }
 
+  // special for argument choice
+  override getAccessValue(path: string, node?: IValueAccess): IValueAccess | undefined {
+    const g = super.getAccessValue(path, node);
+    if (g) return g;
+
+    if (!path?.length) return undefined;
+    
+    const paths = splitString(path, '.', 2);
+    if (paths[0] == ARRAY_ELEMENT) {
+      let item = node;
+      while (item && item.parent != this)
+        item = item.parent;
+      return paths.length == 1 ? item : item?.getAccessValue(paths[1]);
+    }
+
+    return undefined;
+  }
+
   // #endregion
 
   // #region ── Utility ───────────────────────────────────────────────────────
@@ -116,6 +154,8 @@ export class FuncCallVarNode extends DataNode implements Iterable<StructNode> {
     this._args.push(node);
     node.applyPropertyEffects();
     node.recordSubscription(node.subscribe(this.refreshArgTypes));
+    if (this._args.length == 1 && this._colSelectable)
+      this.setCollectionSelectable(true);
     return node;
   }
 

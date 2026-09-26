@@ -12,13 +12,15 @@ import { ArgName } from '../schema/function/property/argName';
 import { Variadic } from '../schema/function/property/variadic';
 import { Generics } from '../schema/generic/generics';
 import { Require } from '../property/common/require';
-import { isNull } from '../utility/toolset';
+import { compare, isNull } from '../utility/toolset';
 import { Relation } from '../attribute/relation';
 import { EntrySource } from '../property/core/entrySource';
 import { Assign } from '../relation/assign/meta';
 import { buildFuncCall } from '../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF } from '../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, FUNC_RETURN } from '../utility/constant';
+import { AccessEntryConsumer } from '../schema';
+import { AccessValueTypeProvider } from '../property';
 
 // ── SystemCollection ───────────────────────────────────────────────────
 
@@ -107,6 +109,9 @@ export class SystemCollection {
   /** Gets fields from the objects in the array to a new array */
   @Meta(Return, NS_SYSTEM_ARRAY)
   @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@array.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@array.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.isassignabletoelement`, NODE_SELF, `@${FUNC_RETURN}`), 'field.value')
   static getfields<T>(
     @Meta(ArgName, 'array') 
     @Meta(SchemaType, NS_SYSTEM_ARRAY) 
@@ -178,4 +183,149 @@ export class SystemCollection {
     @Meta(Require, true)
     count: number,
   ): T[] { return count >= array.length ? [...array] : array.slice(0, count); }
+
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldeq<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) === 0;
+  }
+  
+  /** a != b */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldneq<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) !== 0; }
+
+  /** a >= b */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldge<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) >= 0; }
+
+  /** a > b */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldgt<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) > 0; }
+
+  /** a <= b */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldle<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) <= 0; }
+
+  /** a < b */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  @Meta(Generics, [{ name: 'T' }])
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessValueTypeProvider, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessvaluetype`, '@obj.sourceType', NODE_SELF), 'field.value')
+  @Relation(AccessEntryConsumer, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, false, '@value.type'), 'field.value')
+  static fieldlt<T>(
+    @Meta(ArgName, 'obj') 
+    @Meta(SchemaType, NS_SYSTEM_OBJECT) 
+    @Meta(Require, true)
+    obj: Record<string, unknown>,
+
+    @Meta(ArgName, 'field') 
+    @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Meta(Require, true)
+    field: string,
+
+    @Meta(ArgName, 'value') 
+    @Meta(SchemaType, 'T') 
+    value: T,
+  ): boolean {
+    const fieldNode = obj[field];
+    return isNull(fieldNode) ? false : compare(fieldNode, value) < 0;
+  }
 }

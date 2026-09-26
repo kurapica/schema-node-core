@@ -8,7 +8,7 @@ export class FuncArgNode extends StructNode
   set unModifiable(value: boolean) {
     this.getAccessValue("name")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
     this.getAccessValue("type")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
-    this.getAccessValue("require")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
-    this.getAccessValue("variadic")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
+    this.getAccessValue("argDefine.require")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
+    this.getAccessValue("argDefine.variadic")?.setPropertyValue(ReadOnly, value ? true : undefined, this.parent);
   }
 }

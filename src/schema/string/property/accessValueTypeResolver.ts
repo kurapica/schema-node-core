@@ -40,6 +40,7 @@ export class AccessValueTypeResolver extends Property<string> {
     if (!this._value) return;
     setTimeout(() => {
       let provider: IValueAccess | undefined = target;
+      let source: IValueAccess | undefined = this.source ?? target.parent;
 
       // find the access value provider
       while (provider)
@@ -51,9 +52,10 @@ export class AccessValueTypeResolver extends Property<string> {
             const func = await getNodeType(accessProvider.func) as FunctionType;
             let value = await func?.call(accessProvider.args.map(a => {
               if (!a.source) return a.value;
-              if (a.source === NODE_SELF) return target.parent?.getAccessValue(this._value!)?.rawValue;
-              return provider?.getAccessValue(a.source)?.rawValue;
+              if (a.source === NODE_SELF) return source?.getAccessValue(this._value!, target)?.rawValue;
+              return provider?.getAccessValue(a.source, target)?.rawValue;
             }));
+            
             target.setPropertyValue(Default, value, provider);
           }
 
@@ -61,8 +63,8 @@ export class AccessValueTypeResolver extends Property<string> {
           accessProvider.args.forEach(a => {
             if (!a.source) return;
             const node = a.source == NODE_SELF 
-            ? target.parent?.getAccessValue(this._value!) 
-            : provider?.getAccessValue(a.source);
+              ? source?.getAccessValue(this._value!, target) 
+              : provider?.getAccessValue(a.source, target);
             if (node)
               target.recordSubscription(node.subscribe(resolve), this);
           });

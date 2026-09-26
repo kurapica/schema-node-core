@@ -1,4 +1,4 @@
-import { deepClone, isEmpty } from "../../utility/toolset";
+import { debounce, deepClone, isEmpty } from "../../utility/toolset";
 import { FunctionType } from "../../schema/function/runtime";
 import { getPropertyValue } from "../../property/propertyOwner";
 import { getNodeType } from "../../runtime/context";
@@ -10,6 +10,8 @@ import type { CallArg } from "../../schema/function/type";
 import type { RelationSchema } from "../../schema/relation/type";
 import type { FuncCall } from '../../schema/function/type';
 import type { ApplyMode } from "../../enum";
+
+import { DEBOUNCE_TIME } from "../../utility/constant";
 
 /** The any relation process */
 export class AnyProcess implements IRelationProcess, IErrorProvider {
@@ -44,7 +46,7 @@ export class AnyProcess implements IRelationProcess, IErrorProvider {
 
   attach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void {
     if (this._error) return;
-    const handler = () => relation.process(owner, target);
+    const handler = debounce(async (): Promise<void> => await relation.process(owner, target), DEBOUNCE_TIME);
 
     // Subscribe the source node for data changes
     for (const call of this._funcCalls) {

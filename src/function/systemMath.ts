@@ -11,10 +11,11 @@ import { Return } from '../schema/function/property/return';
 import { Generics } from '../schema/generic/generics';
 import { ArgName } from '../schema/function/property/argName';
 import { Variadic } from '../schema/function/property/variadic';
+import { isNull } from '../utility/toolset';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
 
-function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(v as BigNumber.Value); }
+function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(isNull(v) ? 0 : v as BigNumber.Value); }
 
 // ── Main class ─────────────────────────────────────────────────────────────
 

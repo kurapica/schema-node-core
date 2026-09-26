@@ -161,7 +161,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Sets the value. */
   setValue(value: unknown): void{
-    if (this._value === value) return;
+    if (this._value == value) return;
     this._value = value;
 
     // notify changes
@@ -321,8 +321,6 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Sets the value of the given property */
   setPropertyValue<T>(propCtor: PropertyCtor, value?: T, source?: IValueAccess): void {
-    logger.verbose('[NODE][Property]', this.access, '=>', propCtor.name, '=', value, '[From]', source?.access)
-
     source ??= this;
     value = trimValue(value);
     let isClear = isEmpty(value);
@@ -432,11 +430,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Publish the value change */
-  onNext = debounce(() => {
+  onNext = () => {
     this._dataOb?.onNext(this, this.rawValue);
     this._validated = false;
     this.validate();
-  }, DEBOUNCE_TIME);
+  }
    
   /** Subscribe self property change and return the function for un-subscribe */
   protected subscribeSelfProperty(propCtor: PropertyCtor, func: Observer<[IValueAccess, PropertyCtor, unknown, unknown]>, immediate?: boolean): Function {
@@ -613,7 +611,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   get isValid(): boolean { return this.disableConstraint || (this.violated().next().done ?? false); }
 
   /** Validate the node. */
-  async validate() {
+  validate = debounce(async () => {
     if (this.disableConstraint) 
       return;
 
@@ -621,8 +619,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     this._validated = true;
     
     // validate static constraints
-    for (const constraint of joinProperties(...this.propertyProviders.map(p => p.filterProperties(isConstraintProperty)), 
-                                            this.type.filterProperties(isConstraintProperty)) as Generator<IConstraintProperty>) {
+    for (const constraint of joinProperties(...this.propertyProviders.map(p =>  p.filterProperties(isConstraintProperty)), 
+      this.type.filterProperties(isConstraintProperty)) as Generator<IConstraintProperty>) {
       this.recordConstraint(constraint, await constraint.validate(this));
     }
 
@@ -646,7 +644,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
         }
       }
     }
-  }
+  }, DEBOUNCE_TIME);
 
   /** Record violated constraint property */
   recordConstraint(constraint: IConstraintProperty, valid?: boolean): void {

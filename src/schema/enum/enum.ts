@@ -40,7 +40,15 @@ export class EnumProperty extends Property<EnumSchema> {
 
     // combine enum values
     for (let i = 0; i < Math.min(selfSchema.values.length, otherSchema.values.length); i++)
-      combineProperties(selfSchema.values[i], otherSchema.values[i], SCHEMA_KIND_ENTRY);
+    {
+      var selfValue = selfSchema.values[i];
+      var otherValue = otherSchema.values.find(v => v.value == selfValue.value);
+      if (otherValue)
+        combineProperties(selfValue, otherValue, SCHEMA_KIND_ENTRY);
+    }
+    const appendValues = otherSchema.values.filter(v => !selfSchema.values.find(s => s.value == v.value));
+    if (appendValues.length)
+      selfSchema.values.push(...appendValues);
 
     // combine properties
     combineProperties(selfSchema, otherSchema, SCHEMA_KIND_ENUM);

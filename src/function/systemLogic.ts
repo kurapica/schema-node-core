@@ -3,7 +3,6 @@
 // Mirrors C# SchemaNode.Core/Function/SystemLogic.cs
 // =============================================================================
 
-import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
 import { OfSchema } from '../property/core/ofSchema';
 import { SchemaType } from '../property/core/schemaType';
@@ -12,18 +11,11 @@ import { ArgName } from '../schema/function/property/argName';
 import { Generics } from '../schema/generic/generics';
 import { Default } from '../property/common/default';
 import { Require } from '../property/common/require';
-import { isNull, isEmpty } from '../utility/toolset';
+import { isNull, isEmpty, compare } from '../utility/toolset';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER, NS_SYSTEM_INT } from '../utility/constant';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function compare<T>(a: T, b: T): number {
-  if (isNull(a) || isNull(b)) return 1;
-  if (a instanceof BigNumber && b instanceof BigNumber) return a.comparedTo(b) ?? 0;
-  if (a === b) return 0;
-  return (a as unknown as number) < (b as unknown as number) ? -1 : 1;
-}
 
 // ── Class ──────────────────────────────────────────────────────────────────
 

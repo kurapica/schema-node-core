@@ -22,7 +22,7 @@ import { EntryRoot } from '../../property/core/entrySource';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT, NS_SYSTEM_OBJECT } from '../../utility/constant';
+import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT, NS_SYSTEM_OBJECT, SCHEMA_KIND_ARRAY } from '../../utility/constant';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -122,7 +122,7 @@ export class SystemReflectFunction {
       if (!a.name || !a.type) continue;
       const ftype = await getNodeType(a.type) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: a.name, hasChildren: ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: a.name, hasChildren: ftype.kind !== SCHEMA_KIND_ARRAY && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(a, Display) ?? _LS(a.name));
       first.push(entry);
       if (!curr && path && (path === a.name.toLowerCase() || path.startsWith(`${a.name.toLowerCase()}.`))) {
@@ -137,7 +137,7 @@ export class SystemReflectFunction {
       if (!e.name || !e.return) continue;
       const ftype = await getNodeType(e.return) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: e.name, hasChildren: ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: e.name, hasChildren: ftype.kind !== SCHEMA_KIND_ARRAY && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(e, Display) ?? _LS(e.name));
       first.push(entry);
       if (!curr && path && (path === e.name.toLowerCase() || path.startsWith(`${e.name.toLowerCase()}.`))) {
@@ -150,7 +150,7 @@ export class SystemReflectFunction {
     while (valueType)
     {
       const accessEntry: EntryAccess<string> = {};
-      const accesses = valueType.getAccessEntries();
+      const accesses = valueType.kind !== SCHEMA_KIND_ARRAY ? valueType.getAccessEntries() : [];
       if (curr)
       {
         accessEntry.entry = setPropertyValue(
@@ -167,10 +167,12 @@ export class SystemReflectFunction {
       for (const a of accesses)
       {
         const n = a.value;
+        const nvtype = valueType.getAccessValueType(n);
         if (curr) a.value = combinePaths(curr.value, n);
+        if (nvtype?.kind === SCHEMA_KIND_ARRAY) a.hasChildren = false;
         if (path && (path === a.value || path.startsWith(a.value + '.')))
         {
-          next = valueType.getAccessValueType(n);
+          next = nvtype;
           nextcurr = a;
         }
       }

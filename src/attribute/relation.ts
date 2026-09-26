@@ -11,20 +11,34 @@ import type { RelationSchema } from '../schema/relation/type';
 import { NODE_SELF } from '../utility/constant';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
+const FUNC_RELATION_KEY = Symbol.for('schema-node:func-relation');
 
 /** Resolve the canonical constructor for storing metadata. */
 function getConstructor(target: object): Function {
   return typeof target === 'function' ? target : target.constructor;
 }
 
-function ensureStore(ctor: Function): RelationSchema[] {
-  const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
-  let store = rec[RELATION_KEY];
-  if (!store) {
-    store = [];
-    rec[RELATION_KEY] = store;
+function ensureStore(ctor: Function, func?: string): RelationSchema[] {
+  if (func) {
+    const rec = ctor as unknown as Record<symbol, Record<string, RelationSchema[]>>;
+    let store = rec[FUNC_RELATION_KEY];
+    if (!store) {
+      store = {};
+      rec[FUNC_RELATION_KEY] = store;
+    }
+    if (!store[func])
+      store[func] = [];
+    return store[func]!;
   }
-  return store;
+  else {
+    const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
+    let store = rec[RELATION_KEY];
+    if (!store) {
+      store = [];
+      rec[RELATION_KEY] = store;
+    }
+    return store;
+  }
 }
 
 // ── @Relation(propClass, kind, data[, target]) — Call relation ──────────────────
@@ -51,13 +65,19 @@ export function Relation(
       kind,
       [kind]: value
     };
-    ensureStore(ctor).push(schema);
+
+    // means function relation
+    if (typeof descriptorOrIndex === 'number' || descriptorOrIndex && descriptorOrIndex?.value) {
+      ensureStore(ctor, _memberKey).push(schema);
+    }
+    else
+      ensureStore(ctor).push(schema);
   }) as ClassDecorator & PropertyDecorator & ParameterDecorator;
 }
 
 // ── Retrieval ──────────────────────────────────────────────────────────────
 
 /** Get all relation entries declared on a class constructor. */
-export function getRelationSchemas(ctor: Function): RelationSchema[] {
-  return (ctor as unknown as Record<symbol, RelationSchema[]>)[RELATION_KEY] ?? [];
+export function getRelationSchemas(ctor: Function, func?: string): RelationSchema[] {
+  return ensureStore(ctor, func);
 }

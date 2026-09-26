@@ -199,7 +199,6 @@ export class SystemReflectType {
   static async isschemakind(
     @Meta(ArgName, 'name')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    @Meta(Require, true)
     name: string,
 
     @Meta(ArgName, 'matchArrayElement')

@@ -16,7 +16,7 @@ import type { LocaleString } from "../../../struct/localeString/type";
 import type { StructNode } from "../../struct/node";
 import type { StructType } from "../../struct/runtime";
 
-import { NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN } from "../../../utility/constant";
+import { NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN, NODE_SELF, ARRAY_ELEMENT } from "../../../utility/constant";
 import type { StringNode } from "../../string";
 
 /** The function expression arguments data node */
@@ -84,6 +84,15 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     return result;
   }
 
+  override get submitValue() {
+    if (this._initData) return this._initData;
+
+    const result: CallArg[] = this._args.map(e => e.submitValue as CallArg);
+    if (this._varArg) result.push(...this._varArg.submitValue as CallArg[]);
+
+    return result;
+  }
+
   override get changed() { return this._args.some(e => e.changed) || this._varArg?.changed || false; }
 
   override get isValid() { return this._args.every(e => e.isValid) && (this._varArg?.isValid ?? true); }
@@ -133,6 +142,13 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     if (path === FUNC_RETURN) return this._return ?? this.parent?.getAccessValue('funcReturn');
 
     const paths = splitString(path, '.', 2);
+    if (paths[0] == ARRAY_ELEMENT) {
+      let item = node;
+      while (item && item.parent != this)
+        item = item.parent;
+      return paths.length == 1 ? item : item?.getAccessValue(paths[1]);
+    }
+
     const arg = this.at(paths[0]);
     if (!arg) return undefined;
     if (arg instanceof FuncCallVarNode) 
@@ -222,6 +238,10 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
           node.recordSubscription(node.subscribe(this.writeBackRawValue));
         }
         this._varArg = node;
+        if (this._mode !== ApplyMode.Call) {
+          node.setCollectionSelectable(true);
+          node.recordSubscription(node.subscribe(() => this.refreshArgTypes()));
+        }
         break; // variadic arguments are the last
       }
       else
@@ -235,7 +255,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
         else { 
           node.recordSubscription(node.subscribe(this.writeBackRawValue));
           if (this._mode !== ApplyMode.Call) {
-            node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, '@source', true, arg.type ?? '@type'), node);
+            node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, true, `@${ARRAY_ELEMENT}.type`), node.parent);
             node.recordSubscription(node.subscribe(() => this.refreshArgTypes()));
           }
         }
@@ -274,15 +294,29 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
         }
       }
     }
+    if (colIdx < 0 && this._varArg?.length)
+    {
+      const e = this._varArg.at(0)!;
+      const type = (e.rawValue! as any)?.type;
+      const source = (e.rawValue! as any)?.sourceType;
+      if (source && type && source !== type)
+      {
+        if (!await SystemReflectType.isassignableto(source, false, type) && await SystemReflectType.isassignableto(source, true, type))
+          colIdx = this._args.length;
+      }
+    }
     if (colIdx != this._preColIdx)
     {
       for (let i = 0; i < this._args.length; i++)
       {
-        const arg = this._funcType!.args.at(i)!;
         const node = this._args[i];
-        node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, '@source', colIdx < 0 || colIdx == i, arg.type ?? '@type'), node);
+        node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, colIdx < 0 || colIdx == i ? buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, true, `@${ARRAY_ELEMENT}.type`) : undefined, node.parent);
       }
       this._preColIdx = colIdx;
+      if (colIdx >= 0 && colIdx < this._args.length)
+        this._varArg?.setCollectionSelectable(false);
+      else if (colIdx < 0)
+        this._varArg?.setCollectionSelectable(true);
     }
   }
 

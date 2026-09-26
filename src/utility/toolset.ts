@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+import BigNumber from 'bignumber.js';
 
 /** Gets the combine name */
 export function combinePaths(...names: string[])
@@ -51,26 +52,40 @@ export function parseDate(value: unknown, isYear: boolean = false): Date | undef
 }
 
 /** Trim value of array, object, string, number */
-export function trimValue(value: any)
-{
-  if (Array.isArray(value))
-  {
-    value = value.map((v: any) => trimValue(v))
-    while (value.length && isEmpty(value[value.length - 1])) value.pop()
-  }
-  else if (value && typeof (value) === "object")
-  {
-    if (value instanceof Date) return value
-    for (let k in value)
-    {
-      value[k] = trimValue(value[k])
+export function trimValue(value: any, seen = new WeakSet<object>()) {
+  if (Array.isArray(value)) {
+    if (seen.has(value)) {
+      console.warn("duplicate array:", value);
+      return value;
     }
+    seen.add(value);
+
+    value = value.map((v: any) => trimValue(v, seen));
+
+    while (value.length && isEmpty(value[value.length - 1])) {
+      value.pop();
+    }
+  } 
+  else if (value && typeof value === "object") {
+    if (value instanceof Date) return value;
+
+    if (seen.has(value)) {
+      console.warn("duplicate object:", value);
+      return value;
+    }
+    seen.add(value);
+
+    for (let k in value) {
+      if (value.hasOwnProperty(k)) {
+        value[k] = trimValue(value[k], seen);
+      }
+    }
+  } 
+  else if (typeof value === "string") {
+    value = value.trim();
   }
-  else if (typeof (value) === "string")
-  {
-    value = value.trim()
-  }
-  return value
+
+  return value;
 }
 
 /**
@@ -95,6 +110,16 @@ export function isEmpty(value: any): boolean
     return true
   }
   return false
+}
+
+/**
+ * Compare two values
+ */
+export function compare<T>(a: T, b: T): number {
+  if (isNull(a) || isNull(b)) return 1;
+  if (a instanceof BigNumber && b instanceof BigNumber) return a.comparedTo(b) ?? 0;
+  if (a === b) return 0;
+  return (a as unknown as number) < (b as unknown as number) ? -1 : 1;
 }
 
 /**

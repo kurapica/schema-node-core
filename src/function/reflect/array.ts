@@ -20,6 +20,7 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from '../../utility/constant';
+import { Variadic } from '../../schema/function/property/variadic';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -223,5 +224,28 @@ export class SystemReflectArray {
     let type: ValueType | undefined   = await getNodeType(name) as ValueType;
     type = (type instanceof ArrayType) ? type.element : type;
     return type ? await SystemReflectType.getaccessvaluetype(type.name, path) : undefined;
+  }
+
+  /** Checks if the type is assignable to the array element type */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isassignabletoelement(
+      @Meta(ArgName, 'type')
+      @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+      type: string,
+  
+      @Meta(ArgName, 'target')
+      @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
+      @Meta(Variadic, true)
+      ...targets: string[]
+    ): Promise<boolean> {
+      const nodeType = type ? await getNodeType(type) : undefined;
+      if (!(nodeType instanceof ValueType)) return false;
+      for (const target of targets)
+      {
+        let targetNodeType = !target ? undefined : await getNodeType(target) as ValueType;
+        if (targetNodeType instanceof ArrayType) targetNodeType = targetNodeType.element;
+        if (targetNodeType && nodeType?.isAssignableTo(targetNodeType)) return true;
+      }
+      return false;
   }
 }

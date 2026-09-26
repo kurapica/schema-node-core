@@ -11,7 +11,7 @@ import { hasNodeReferences } from '../../interface';
 import { PropertyType } from '../property/runtime';
 import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
 import { getNodeType } from '../../runtime/context';
-import { SCHEMA_KIND_RELATION } from '../../utility/constant';
+import { DEBOUNCE_TIME, SCHEMA_KIND_RELATION } from '../../utility/constant';
 import { logger } from '../../utility/logger';
 
 import type { RelationSchema } from './type';

@@ -266,8 +266,8 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
               while (isNull(args[resIdx]) && startIdx < col.length)
                 args[resIdx] = col[startIdx++];
 
-              for (let item = col[startIdx]; item !== undefined; item = col[startIdx++] as unknown){
-                args[arrIdx] = item;
+              for (let i = startIdx; i < col.length; i++) {
+                args[arrIdx] = col[i];
                 const r = await this._callLocale(args);
                 if (!isNull(r)) args[resIdx] = r;
               }
@@ -372,7 +372,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     if (!getSchemaProvider()) throw new Error('Schema provider not provided');
 
     if (source || this._noCache)
-      return await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode);
+      return await callSchemaFunctionQueue(schemaName, args, this.returnType?.name, applyMode, source);
 
     // Token-based cache for simple (serializable) args
     const token = source ? undefined : this._buildCacheToken(schemaName, args, applyMode);

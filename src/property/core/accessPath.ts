@@ -14,7 +14,7 @@ export class AccessPathHandler extends Property<string> {
 
 /** Get the access value type from the owner by path. */
 export function getGlobalAccessValueType(owner: IValueTypeAccess, path: string): IValueTypeAccess | undefined{
-  const dotIdx = path.indexOf('.');
+  const dotIdx = (path ?? '').indexOf('.');
   const curr = dotIdx === -1 ? path : path.substring(0, dotIdx);
   const remain = dotIdx === -1 ? '' : path.substring(dotIdx + 1);
   const target = accessPathHandlers.get(curr.toLowerCase())?.getAccessValueType(owner);
@@ -23,7 +23,11 @@ export function getGlobalAccessValueType(owner: IValueTypeAccess, path: string):
 
 /** Get the access value from the owner by path. */
 export function getGlobalAccessValue(owner: IValueAccess, path: string, node?: IValueAccess): IValueAccess | undefined{
-  const dotIdx = path.indexOf('.');
+  if (typeof(path) !== 'string') {
+    console.warn(`Access path is not a string:`, path);
+    return undefined;
+  }
+  const dotIdx = (path ?? '').indexOf('.');
   const curr = dotIdx === -1 ? path : path.substring(0, dotIdx);
   const remain = dotIdx === -1 ? '' : path.substring(dotIdx + 1);
   const target = accessPathHandlers.get(curr.toLowerCase())?.getAccessValue(owner, node);

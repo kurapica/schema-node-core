@@ -20,14 +20,14 @@ export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
     this.recordSubscription(this.subscribeItem(() => {
       for (let i = 0; i < this.length - 1; i++)
       {
-        const variadic = this._elements[i]?.getAccessValue('variadic') as BoolNode;
+        const variadic = this._elements[i]?.getAccessValue('argDefine.variadic') as BoolNode;
         if (!variadic) continue;
         variadic.value = false;
         variadic.setPropertyValue(InVisible, true, this);
       }
       if (this.length > 0)
       {
-        const variadic = this._elements[this.length - 1]?.getAccessValue('variadic') as BoolNode;
+        const variadic = this._elements[this.length - 1]?.getAccessValue('argDefine.variadic') as BoolNode;
         variadic?.setPropertyValue(InVisible, !this._showVariadic, this);
       }
     }, true));
@@ -43,6 +43,6 @@ export class FuncArgsNode extends ArrayNodeTemplate<FuncArgNode>
   set showVariadic(value: boolean) {
     this._showVariadic = value;
     if (!this._elements.length) return;
-    this._elements[this._elements.length - 1].getAccessValue('variadic')?.setPropertyValue(InVisible, !value);
+    this._elements[this._elements.length - 1].getAccessValue('argDefine.variadic')?.setPropertyValue(InVisible, !value);
   }
 }

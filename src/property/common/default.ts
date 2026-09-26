@@ -41,9 +41,16 @@ export class Default extends Property<unknown> {
       target.setValue(this.getValue()); 
   }
 
+  override clear(target: IValueAccess): void {
+    if (!target.getPropertyValue(DisplayOnly)) return;
+    const origin = target.getValue();
+    if (!isEmpty(this.oldValue) && isEqual(origin, this.oldValue))
+      target.setValue(undefined); 
+  }
+
   override initWithRelation(relation: IRelation, owner: IValueAccess, target: IValueAccess): boolean {
-    if (target.getPropertyValue(DisplayOnly)) {
-      target.setPropertyValue(Default, this.getValue());
+    if (target.getPropertyValue(DisplayOnly) && !target.isEmpty) {
+      target.setPropertyValue(Default, target.getValue());
       return false;
     }
     return true;
