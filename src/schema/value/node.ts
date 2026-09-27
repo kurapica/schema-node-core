@@ -118,6 +118,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     delete this._moveObs;
     clearDebounce(this.onNext);
     clearDebounce(this.onNextViolated);
+    clearDebounce(this.validate);
   }
 
   // #endregion

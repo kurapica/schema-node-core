@@ -13,7 +13,7 @@ import { Root } from "../enum/property/root";
 import { CascadeDepth } from "../enum/property/cascadeDepth";
 import { AccessEntryConsumer } from "../string/property/accessEntryConsumer";
 import { EntrySourceConsumer } from "../string/property/entrySourceConsumer";
-import { debounce, deepClone, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
+import { clearDebounce, debounce, deepClone, isEmpty, isEqual, isNull, useQueueQuery } from "../../utility/toolset";
 import { _L, _LS } from "../../utility/locale";
 
 import type { IPropertyProvider, IValueAccess, IValueTypeAccess } from "../../interface";
@@ -28,6 +28,7 @@ export abstract class ScalarNode extends DataNode {
   // #region ── ctor & dtor ───────────────────────────────────────────────────
 
   private _entrySourceInfo?: IEntrySourceInfo;
+  private _disposed = false;
 
   /** Construct the data node with value type, parent and init value, alternative property provider */
   constructor(type: IValueTypeAccess, value: unknown, parent?: IValueAccess, ...propProviders: IPropertyProvider[]) {
@@ -38,6 +39,22 @@ export abstract class ScalarNode extends DataNode {
     this.recordSubscription(this.subscribeSelfProperty(Root, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(CascadeDepth, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(EntrySource, this._refreshEntrySource, true));
+  }
+
+  override dispose() {
+    this._disposed = true;
+
+    // Unsubscribe the entry-source subscriptions registered on OTHER (source) nodes.
+    // Without this, a disposed scalar node keeps its handlers in the source nodes'
+    // observables, so long-lived ancestors retain the detached node subtree forever.
+    this._entrySourceInfo?.subscribes?.forEach(sub => sub());
+    delete this._entrySourceInfo;
+
+    // Cancel pending debounced timers that close over this node.
+    clearDebounce(this._delayInitEntryOptions);
+    clearDebounce(this._refreshEntrySource);
+
+    super.dispose();
   }
 
   // #endregion
@@ -87,6 +104,7 @@ export abstract class ScalarNode extends DataNode {
 
   /** refresh the options with entry source & white list & black list */
   private _refreshEntrySource = debounce(useQueueQuery(async () => {
+    if (this._disposed) return;
     this._entrySourceInfo ??= {};
     this._entrySourceInfo.initing = true;
 
@@ -227,7 +245,7 @@ export abstract class ScalarNode extends DataNode {
   private _callArgToEntrySource = (owner: IValueAccess, a: CallArg): IEntrySourceArg =>
   {
     const result: IEntrySourceArg = { value: a.value };
-    if (a.source) {
+    if (a.source && !this._disposed) {
       result.source = (owner ?? this)?.getAccessValue(a.source, this);
       if (result.source && result.source !== this) {
         this._entrySourceInfo ??= {};
@@ -240,7 +258,7 @@ export abstract class ScalarNode extends DataNode {
 
   /** init options with entry source args */
   private _initEntryOptions = async () => {
-    if (this._entrySourceInfo?.initing) return;
+    if (this._disposed || this._entrySourceInfo?.initing) return;
     
     this._entrySourceInfo ??= {};
     this._entrySourceInfo.initing = true;
