@@ -37,18 +37,13 @@ export class FunctionNode extends StructNode
     this.exps   = this.getAccessValue("exps") as ArrayNode;
     this.others = Array.from(this.fields).filter((f) => f.name != "return" && f.name != "args" && f.name != "exps");
 
-    const ns  = this.parent?.getAccessValue("namespace");
-    const name= this.parent?.getAccessValue("name");
-    if (ns && name) {
-      this.recordSubscription(ns.subscribe(this._refreshState));
-      this.recordSubscription(name.subscribe(this._refreshState));
-    }
+    setTimeout(() => this._refreshState(), 0);
   }
 
   private _refreshState = async () => {
     const ns  = this.parent?.getAccessValue("namespace")?.getValue() as string;
     const name= this.parent?.getAccessValue("name")?.getValue() as string;
-    const funcName = ns ? `${ns}.${name}` : name;
+    const funcName = ns && name ? `${ns}.${name}` : name;
 
     const schema = funcName ? getSystemSchema(funcName) : undefined;
 

@@ -9,7 +9,7 @@ import type { NodeSchema } from "./node/type";
 /** Interface for node schema familiy */
 export interface INodeSchemaProvider {
   /** Gets the node schemas */
-  getSchema(names: string[]): Promise<NodeSchema[]>;
+  getSchema(names: string[], includeRefs?: boolean): Promise<NodeSchema[]>;
 
   /** Call the schema function */
   callFunction(schemaName: string, args: unknown[], retType?: string, applyMode?: ApplyMode, source?: IValueAccess): Promise<unknown>;

@@ -102,6 +102,7 @@ export function isEmpty(value: any): boolean
   if (Array.isArray(value)) return value.length === 0 || value.every((v: any) => isEmpty(v))
   if (typeof(value) === "object")
   {
+    if (value instanceof Date) return false
     for (let k in value)
     {
       if (!isEmpty(value[k]))
