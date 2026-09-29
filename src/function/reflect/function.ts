@@ -23,6 +23,7 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT, NS_SYSTEM_OBJECT, SCHEMA_KIND_ARRAY } from '../../utility/constant';
+import { StructType } from '../../schema/struct/runtime';
 
 
 @Meta(OfSchema, SCHEMA_KIND_FUNCTION)
@@ -38,13 +39,13 @@ export class SystemReflectFunction {
 
     @Meta(ArgName, 'type')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-    @Meta(Require, true)
     type: string,
 
     @Meta(ArgName, 'matchArrayElement')
     @Meta(SchemaType, NS_SYSTEM_BOOL)
     matchArrayElement: boolean = false,
   ): Promise<boolean> {
+    if (!type?.length) return true;
     const nodeType = !func ? undefined : await getNodeType(func) as FunctionType | undefined;
     if (!nodeType?.returnType) return false;
     const returnType = !type ? undefined : await getNodeType(type) as ValueType | undefined;
@@ -271,5 +272,53 @@ export class SystemReflectFunction {
     const valueType = await getNodeType(type) as ValueType | undefined;
     const eleType = valueType instanceof ArrayType ? valueType.element : valueType;
     return eleType?.kind != SCHEMA_KIND_STRUCT ? valueType?.name : NS_SYSTEM_OBJECT;
+  }
+
+  /** Gets the sub entries of the struct fields */
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<${NS_SYSTEM_STRING}>>`)
+  static async getreturnfields(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    type: string,
+
+    @Meta(ArgName, 'args')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.args`)
+    @Meta(Require, true)
+    args?: FuncArg[],
+
+    @Meta(ArgName, 'exps')
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.exps`)
+    @Meta(Require, true)
+    exps?: FuncExp[],
+  ): Promise<EntryAccess<string>[]> {
+    let valueType = await getNodeType(type) as ValueType | undefined;
+    if (!(valueType && valueType instanceof StructType)) return [];
+    return [
+      {
+        children: Array.from(valueType.getFields()
+          .filter(f => !f.displayOnly && !args?.some(a => a.name.toLowerCase() === f.name.toLowerCase()) && !exps?.some(e => e.name.toLowerCase() === f.name.toLowerCase())))
+          .map(f => ({ value: f.name, display: f.getPropertyValue(Display) ?? f.name }))
+      }
+    ]
+  }
+
+  /** Gets the type of the return field */
+  @Meta(Return, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+  static async getreturnfieldtype(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    @Meta(Require, true)
+    type: string,
+
+    @Meta(ArgName, 'field')
+    @Meta(SchemaType, NS_SYSTEM_STRING)
+    field: string
+  ): Promise<string | undefined> {
+    let valueType = type ? await getNodeType(type) as ValueType | undefined : undefined;
+    if (!valueType || !field) return undefined;
+    if (valueType instanceof ArrayType) valueType = valueType.element;
+    if (!(valueType && valueType instanceof StructType)) return undefined;
+    return valueType.getField(field)?.type?.name ?? undefined;
   }
 }

@@ -122,6 +122,6 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
   /** Execute the relation and set new property to the target */
   async process(owner: IValueAccess, target: IValueAccess) {
     if (!this._propCtor) return undefined;
-    target.setPropertyValue(this._propCtor, await this._process?.process(owner, target), owner);
+    target.setPropertyValue(this._propCtor, await this._process?.process(owner, target), owner, this);
   }
 }

@@ -321,13 +321,12 @@ export class DataNode implements IValueAccess, IPropertyProvider {
   }
 
   /** Sets the value of the given property */
-  setPropertyValue<T>(propCtor: PropertyCtor, value?: T, source?: IValueAccess): void {
+  setPropertyValue<T>(propCtor: PropertyCtor, value?: T, source?: IValueAccess, relation?: IRelation): void {
     source ??= this;
     value = trimValue(value);
     let isClear = isEmpty(value);
-
     let props = this._props?.get(propCtor);
-    let record = props?.find(p => p.source === source);
+    let record = props?.find(p => p.source === source && (relation ? p.relation === relation : isNull(p.relation)));
     let oldValue = record?.property.getValue();
     let topProp: IProperty | undefined = undefined;
 
@@ -335,7 +334,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
     if (isClear) {
       if (!record) return;
       record.property.setValue(value);
-      props = props!.filter(d => d.source !== source)
+      props = props!.filter(d => d !== record);
       this._props!.set(propCtor, props);
     }
     // update
@@ -352,7 +351,7 @@ export class DataNode implements IValueAccess, IPropertyProvider {
       
       // add new property
       this._props ??= new Map();
-      record = { source, level: calcLevel(this, source), property: new propCtor(source) };
+      record = { source, relation, level: calcLevel(this, source), property: new propCtor(source) };
       record.property.setValue(value);
       if (props) {
         props.push(record);
@@ -730,6 +729,7 @@ function calcLevel(self: IValueAccess, source: IValueAccess)
 
 interface IPropertyRecord {
   source: IValueAccess;
+  relation?: IRelation;
   level: number;
   property: IProperty;
   valid?: boolean;

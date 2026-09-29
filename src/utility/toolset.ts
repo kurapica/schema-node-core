@@ -237,8 +237,10 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
   }
 
   // Common
-  if (a instanceof Date && b instanceof Date)
+  if (a instanceof Date || b instanceof Date)
   {
+    a = a instanceof Date ? a : parseDate(a)
+    b = b instanceof Date ? b : parseDate(b)
     return a.getTime() === b.getTime()
   }
   

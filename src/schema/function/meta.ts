@@ -34,7 +34,7 @@ import { FuncArgNode } from './node/funcArgNode';
 import { buildFuncCall } from './type';
 import { Relations } from '../relation/property';
 import { FunctionType } from './runtime';
-import { Assign } from '../../relation';
+import { Assign, Call } from '../../relation';
 import { FuncCallArgsNode } from './node/funcCallArgsNode';
 import { UpLimitString } from '../string/property/upLimit';
 import { Require } from '../../property/common/require';
@@ -51,7 +51,7 @@ import { Generics } from '../generic/generics';
 import { Append } from '../../property/core/append';
 import { TypeProvider } from '../../property/core/typeProvider';
 import { LeafOnly } from '../enum/property/leafOnly';
-import { KindProvider } from '../../property';
+import { AsSuggest, EntrySource, KindProvider } from '../../property';
 import { Unpack } from '../struct/property/unpack';
 
 import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type';
@@ -79,6 +79,8 @@ class FunctionKind {}
 @Meta(DataNodeType, FunctionNode)
 @Meta(KindProvider, SCHEMA_KIND_FUNC_ARG)
 @Relation(Visible, Assign, false, 'relations') // kept it for system only now
+@Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getreturnfields`, '@return','@args', `@exps.${ARRAY_PREVIOUS}`), `exps.${ARRAY_ELEMENT}.name`)
+@Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getreturnfieldtype`, '@return', `@exps.${ARRAY_ELEMENT}.name`), `exps.${ARRAY_ELEMENT}.return`)
 class FunctionSchemaMeta implements FunctionSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
@@ -152,6 +154,7 @@ class FuncExpMeta implements FuncExp {
   @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(Require, true)
+  @Meta(AsSuggest, true)
   name: string = '';
 
   /** the return value type */

@@ -58,11 +58,7 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
     if (!this._func) return undefined;
     try
     {
-      return await this._func.call(this._call!.args?.map(a => {
-        if (isEmpty(a.source)) return a.value;
-        const node = owner.getAccessValue(a.source!, target);
-        return node?.getValue();
-      }) ?? [], this._call?.mode, owner);
+      return await this._func.call(this._call!.args?.map(a => isEmpty(a.source) ? a.value : owner.getAccessValue(a.source!, target)?.getValue()) ?? [], this._call?.mode, owner);
     }
     catch (error)
     {

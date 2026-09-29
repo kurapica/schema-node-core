@@ -19,7 +19,7 @@ import { Assign } from '../relation/assign/meta';
 import { buildFuncCall } from '../schema/function/type';
 
 import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, FUNC_RETURN } from '../utility/constant';
-import { AccessEntryConsumer } from '../schema';
+import { AccessEntryConsumer } from '../schema/string/property/accessEntryConsumer';
 import { AccessValueTypeProvider } from '../property';
 
 // ── SystemCollection ───────────────────────────────────────────────────

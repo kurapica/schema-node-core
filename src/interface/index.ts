@@ -96,7 +96,7 @@ export interface IValueAccess {
   getPropertyValues<T>(propCtor: PropertyCtor): Generator<T>;
 
   /** Sets the value of the given property from relations */
-  setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess): void;
+  setPropertyValue(propCtor: PropertyCtor, value?: unknown, source?: IValueAccess, relation?: IRelation): void;
 
   // #endregion
 

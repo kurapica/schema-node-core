@@ -116,13 +116,88 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     this.refreshElementNames(); // override name
   }
 
+  /** Get the value of the array. */
   override getValue(): unknown { return trimValue(this._elements.map(e => e.value)); }
 
+  /** Get the empty status of the array. */
   override get isEmpty(): boolean { return !this._elements.length; }
 
-  override get changed(): boolean { return this._elements.some(e => e.changed); }
+  /** Get the changed status of the array. */
+  override get changed(): boolean { return this._elements.some(e => e.changed) || this.original?.length !== this.length; }
 
-  override get submitValue(): unknown { return trimValue(this._elements.map(e => e.submitValue)); }
+  /** The submit value for the pageable array */
+  get submitValue(): unknown {
+    const primarys = (this.type as any).primary;
+    if (!primarys?.length) return trimValue(this._elements.map(e => e.submitValue));
+
+    const result: any[] = [];
+    const keys = new Set<string>();
+
+    /** unlike page node, push all if there are relations working on the previous nodes */
+    this._elements
+      .forEach((e) => {
+        const key = this.getPrimaryKey(e);
+        if (key) {
+          keys.add(key);
+          result.push(e.submitValue);
+        }
+      });
+
+    return result;
+  }
+
+  /** The delete value for the pageable array */
+  get deletes(): any[] {
+    const primary = (this.type as any).primary || [];
+    if (!primary.length) return [];
+
+    const deletes: any[] = [];
+    const keys = new Set<string>();
+
+    this._elements
+      .forEach((e) => {
+        const key = this.getPrimaryKey(e);
+        if (key)
+          keys.add(key);
+      });
+    
+    for (let i = 0; i < this.original?.length; i++) {
+      const key = this.getPrimaryKey(this.original[i]);
+      if (key && !keys.has(key))
+      {
+        deletes.push(this.original[i]);
+        keys.add(key);
+      }
+    }
+
+    return deletes;
+  }
+
+  /** get the primary key for the pageable array */
+  getPrimaryKey(node: DataNode | any): string | undefined {
+    const primarys = (this.type as any).primary;
+    if (!primarys?.length) return undefined;
+    const keys: string[] = [];
+
+    if (node instanceof DataNode) {
+      for (let i = 0; i < primarys.length; i++) {
+        const k = primarys[i];
+        const child = node.getAccessValue(k);
+        const v = child?.rawValue;
+        if (isNull(v)) return undefined;
+        keys.push(`${v}`);
+      }
+    } else {
+      for (let i = 0; i < primarys.length; i++) {
+        const k = primarys[i];
+        const v = node[k];
+        if (isNull(v)) return undefined;
+        keys.push(`${v}`);
+      }
+    }
+
+    return keys.join(".");
+  }
 
   override confirm(): void {
     this._elements.forEach(e => e?.confirm());
