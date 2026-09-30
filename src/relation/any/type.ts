@@ -85,4 +85,6 @@ export class AnyProcess implements IRelationProcess, IErrorProvider {
       return undefined;
     }
   }
+  
+  hasDepends(): boolean { return this._funcCalls.some(call => call.args.some(a => !isEmpty(a.source))); }
 }

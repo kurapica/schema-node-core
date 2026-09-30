@@ -66,4 +66,6 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
       return undefined;
     }
   }
+
+  hasDepends(): boolean { return this._call?.args?.some(a => !isEmpty(a.source)) ?? false; }
 }

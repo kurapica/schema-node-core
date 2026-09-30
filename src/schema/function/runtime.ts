@@ -124,6 +124,9 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       }
       this._relations = rtypes;
     }
+
+    // builf the function
+    await this._buildComposite();
   }
 
   override unload(): void {
@@ -204,10 +207,6 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
         if ((args.length <= i || isNull(args[i])) && this.args.at(i)?.require)
           return undefined;
       }
-
-      // Build composite function if not yet built
-      if (!this._built)
-        await this._buildComposite();
 
       // 1. Remote Call — via schemaProvider with queue + cache
       if (this.isRemote || remote)
@@ -340,12 +339,12 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
         }
       }
 
-      logger.verbose('[Function][Call]', this.isRemote ? '[Remote]' : '[Locale]', this.name, args, res);
+      logger.verbose('[Function][Call]', (this.isRemote || remote) ? '[Remote]' : '[Locale]', this._serverOnly, this.name, args, res);
       return res;
     }
     catch (ex)
     {
-      logger.error('[Function][Call]', this.isRemote ? '[Remote]' : '[Locale]', this.name, args, ex);
+      logger.error('[Function][Call]', (this.isRemote || remote) ? '[Remote]' : '[Locale]', this.name, args, ex);
       throw ex;
     }
   }

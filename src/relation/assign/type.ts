@@ -23,4 +23,6 @@ export class AssignProcess implements IRelationProcess {
   async process(owner: IValueAccess, target: IValueAccess): Promise<unknown> {
     return this._value;
   }
+
+  hasDepends(): boolean { return false; }
 }

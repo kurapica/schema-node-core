@@ -166,6 +166,9 @@ export interface IRelation {
   /** The property constructor */
   get propertyCtor(): PropertyCtor | undefined;
 
+  /** Whether the relation depends on other nodes */
+  hasDepends(): boolean;
+
   /** Attach the relation to target with the owner */
   attach(owner: IValueAccess, target: IValueAccess): void;
 

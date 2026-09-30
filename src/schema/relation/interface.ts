@@ -3,6 +3,9 @@ import type { RelationSchema } from "./type";
 
 /** The handler to process the relations */
 export interface IRelationProcess {
+  /** Whether the relation depends on other nodes */
+  hasDepends: () => boolean;
+
   /** load relation kind data from relation schema */
   load(schema: RelationSchema): Promise<void>;
 

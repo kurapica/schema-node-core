@@ -111,6 +111,11 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
       return this.process(owner, target);
   }
 
+  /** Whether the relation depends on other nodes */
+  hasDepends(): boolean {
+    return this._process?.hasDepends() ?? false;
+  }
+
   /** Detach the relation from the target with the owner */
   detach(owner: IValueAccess, target: IValueAccess)
   {

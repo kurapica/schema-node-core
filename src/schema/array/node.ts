@@ -108,7 +108,7 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
     this._elements.length = Math.min(this._elements.length, data.length);
 
     for (let i = this._elements.length; i < data.length; i++) {
-      const node = elementType.create(data[i], this, ...this.propertyProviders);
+      const node = elementType.create(data[i], this);
       this._elements.push(node as T);
       node.recordSubscription(node.subscribe(this.writeBackRawValue, true), this); // so subscription will be disposed when node is disposed
       if (this._relations?.length) node.attachRelations(this._relations); // attach all relations from self and parents
@@ -331,11 +331,11 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
     const node = propertyProvider 
       ? ctor 
-        ? new ctor(elementType, data, this, propertyProvider, ...this.propertyProviders) as T 
-        : elementType.create(data, this, propertyProvider, ...this.propertyProviders) as T
+        ? new ctor(elementType, data, this, propertyProvider) as T 
+        : elementType.create(data, this, propertyProvider) as T
       :ctor 
-        ? new ctor(elementType, data, this, ...this.propertyProviders) as T 
-        : elementType.create(data, this, ...this.propertyProviders) as T;
+        ? new ctor(elementType, data, this) as T 
+        : elementType.create(data, this) as T;
     if (!node) return undefined;
 
     if (isNull(index)) index = this._elements.length;
