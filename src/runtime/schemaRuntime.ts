@@ -334,7 +334,7 @@ export function initSchemaRuntime(): void {
         _nodeTypeGenerator.set(nodeKind, nodeTypeGenerator as new () => INodeType)
     }
 
-    logger.debug('[Kind]:', kind, ' '.repeat(16 - kind.length), nodeKind ? '[NodeType] Yes' : '[NodeType] No ', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
+    logger.debug('[Kind]:', kind, nodeKind ? '[NodeType] Yes' : '[NodeType] No ', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
   });
 
   // Special types: system.array & system.list
