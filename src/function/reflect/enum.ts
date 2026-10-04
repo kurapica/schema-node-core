@@ -1,6 +1,6 @@
 import { Meta } from '../../attribute/meta';
 import { EnumValueType } from '../../enum/enumValueType/type';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { setPropertyValue } from '../../property/propertyOwner';
 import { Display } from '../../property/common/display';
@@ -15,9 +15,9 @@ import { Require } from '../../property/common/require';
 import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { ValueType } from '../../schema/value/runtime';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ENUM, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_ENTRYS, NS_SYSTEM_INT, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST } from '../../utility/constant';
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ENUM)
 export class SystemReflectEnum {
   /** Gets the entry type for the given enum value type */

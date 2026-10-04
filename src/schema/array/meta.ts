@@ -7,12 +7,12 @@ import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
 import { SchemaKind } from '../../property/record/schemaKind';
-import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
-import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { NodeKind } from '../../property/record/nodeKind';
+import { NodeValueKind } from '../../property/record/nodeValueKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../struct/property/attach';
 import { Append } from '../../property/core/append';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { Valid } from '../../property/common/valid';
 import { Require } from '../../property/common/require';
 import { EntrySourceProvider } from '../../property/core/entrySourceProvider';
@@ -30,13 +30,13 @@ import { EntrySource } from '../../property/core/entrySource';
 
 import type { ArraySchema } from './type';
 
-import { SCHEMA_KIND_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_ARRAY_DEFINE, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, SCHEMA_KIND_STRUCT, ARRAY_ELEMENT, SCHEMA_KIND_ARRAY_USAGE, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_ARRAY, NS_SYSTEM_SCHEMA_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_KIND_STRING, NS_SYSTEM_SCHEMA_ARRAY_TYPE, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, SCHEMA_KIND_ORDER_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NODE_KIND_STRUCT, ARRAY_ELEMENT, SCHEMA_KIND_NODE_ARRAY_USAGE, SCHEMA_KIND_NODE_STRUCT_FIELD, NODE_KIND_ARRAY } from '../../utility/constant';
 import { KindProvider } from '../../property';
 
 /** The array schema kind */
-@Meta(SchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
-@Meta(NodeSchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
-@Meta(ValueSchemaKind, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
+@Meta(NodeKind, [NODE_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
+@Meta(NodeValueKind, [NODE_KIND_ARRAY, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(RuntimeNodeType, ArrayType)
 @Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
 @Meta(Append, [Generics, Relations])
@@ -45,16 +45,16 @@ import { KindProvider } from '../../property';
 class ArrayKind{}
 
 /** Meta registration class (NOT exported). */
-@Meta(SchemaKind, [SCHEMA_KIND_ARRAY_DEFINE, SCHEMA_KIND_ORDER_ARRAY])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_ARRAY_DEFINE, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(Append, [Generics, Relations])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.schema`)
-@Meta(Attach, SCHEMA_KIND_ARRAY_DEFINE)
-@Meta(KindProvider, SCHEMA_KIND_STRUCT_FIELD)
+@Meta(Attach, SCHEMA_KIND_NODE_ARRAY_DEFINE)
+@Meta(KindProvider, SCHEMA_KIND_NODE_STRUCT_FIELD)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessentries`, '@element', NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getaccessvaluetype`, '@element', NODE_SELF))
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', true, SCHEMA_KIND_STRUCT), 'primary')
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@element', true, NODE_KIND_STRUCT), 'primary')
 @Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `primary.${ARRAY_ELEMENT}`)
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@element', true, SCHEMA_KIND_STRUCT), 'indexes')
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@element', true, NODE_KIND_STRUCT), 'indexes')
 @Relation(EntrySource,'assign', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_STRUCT}.getindexablefields`, '@element'), `indexes.${ARRAY_ELEMENT}.fields.${ARRAY_ELEMENT}`)
 class ArraySchemaMeta implements ArraySchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
@@ -63,20 +63,20 @@ class ArraySchemaMeta implements ArraySchema {
 }
 
 /** The array usage schema kind */
-@Meta(SchemaKind, [SCHEMA_KIND_ARRAY_USAGE, SCHEMA_KIND_ORDER_ARRAY])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_ARRAY_USAGE, SCHEMA_KIND_ORDER_ARRAY])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
-@Meta(Attach, SCHEMA_KIND_ARRAY_USAGE)
+@Meta(Attach, SCHEMA_KIND_NODE_ARRAY_USAGE)
 class ArrayUsage {}
 
 /** Represents the array value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_ARRAY))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_SELF, false, NODE_KIND_ARRAY))
 class ArrayTypeMeta {}
 
 /** Represents the array element value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE, NODE_SELF))

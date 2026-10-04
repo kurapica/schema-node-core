@@ -11,7 +11,7 @@ import { hasNodeReferences } from '../../interface';
 import { PropertyType } from '../property/runtime';
 import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
 import { getNodeType } from '../../runtime/context';
-import { DEBOUNCE_TIME, SCHEMA_KIND_RELATION } from '../../utility/constant';
+import { DEBOUNCE_TIME, SCHEMA_KIND_NODE_RELATION } from '../../utility/constant';
 import { logger } from '../../utility/logger';
 
 import type { RelationSchema } from './type';
@@ -73,7 +73,7 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
     this._propertyInstance = this._propCtor ? new this._propCtor() : undefined;
 
     // load process
-    for(const propCtor of getSchemaKindPropertyTypes(SCHEMA_KIND_RELATION))
+    for(const propCtor of getSchemaKindPropertyTypes(SCHEMA_KIND_NODE_RELATION))
     {
       const kind = getMetaProperty(propCtor, RelationKind);
       if (kind?.hasValue && kind.getValue() === this._relationSchema.kind)

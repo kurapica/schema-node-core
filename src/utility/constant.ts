@@ -8,38 +8,38 @@ export const DEBOUNCE_TIME = 20;
 // ── Schema Kind ────────────────────────────────────────────────────────────
 
 export const SCHEMA_KIND_NODE = "node";
-export const SCHEMA_KIND_NAMESPACE = "namespace";
-export const SCHEMA_KIND_OBJECT = "object";
-export const SCHEMA_KIND_BOOL = "bool";
-export const SCHEMA_KIND_BOOL_USAGE = "bool.usage";
-export const SCHEMA_KIND_INT = "int";
-export const SCHEMA_KIND_INT_DEFINE = "int.define";
-export const SCHEMA_KIND_INT_USAGE = "int.usage";
-export const SCHEMA_KIND_DECIMAL = "decimal";
-export const SCHEMA_KIND_DECIMAL_DEFINE = "decimal.define";
-export const SCHEMA_KIND_DECIMAL_USAGE = "decimal.usage";
-export const SCHEMA_KIND_STRING = "string";
-export const SCHEMA_KIND_STRING_DEFINE = "string.define";
-export const SCHEMA_KIND_STRING_USAGE = "string.usage";
-export const SCHEMA_KIND_DATE = "date";
-export const SCHEMA_KIND_DATE_DEFINE = "date.define";
-export const SCHEMA_KIND_DATE_USAGE = "date.usage";
-export const SCHEMA_KIND_ENUM = "enum";
-export const SCHEMA_KIND_ENUM_DEFINE = "enum.define";
-export const SCHEMA_KIND_ENUM_USAGE = "enum.usage";
-export const SCHEMA_KIND_STRUCT = "struct";
-export const SCHEMA_KIND_STRUCT_DEFINE = "struct.define";
-export const SCHEMA_KIND_STRUCT_USAGE = "struct.usage";
-export const SCHEMA_KIND_STRUCT_FIELD = "struct.field";
-export const SCHEMA_KIND_ARRAY = "array";
-export const SCHEMA_KIND_ARRAY_DEFINE = "array.define";
-export const SCHEMA_KIND_ARRAY_USAGE = "array.usage";
-export const SCHEMA_KIND_FUNCTION = "function";
-export const SCHEMA_KIND_PROPERTY = "property";
-export const SCHEMA_KIND_RELATION = "relation";
-export const SCHEMA_KIND_FUNC_ARG = "function.arg";
-export const SCHEMA_KIND_ENTRY = "entry";
-export const SCHEMA_KIND_GENERIC = 'generic';
+export const SCHEMA_KIND_NODE_NAMESPACE = "node.namespace";
+export const SCHEMA_KIND_NODE_OBJECT = "node.object";
+export const SCHEMA_KIND_NODE_BOOL = "node.bool";
+export const SCHEMA_KIND_NODE_BOOL_USAGE = "node.bool.usage";
+export const SCHEMA_KIND_NODE_INT = "node.int";
+export const SCHEMA_KIND_NODE_INT_DEFINE = "node.int.define";
+export const SCHEMA_KIND_NODE_INT_USAGE = "node.int.usage";
+export const SCHEMA_KIND_NODE_DECIMAL = "node.decimal";
+export const SCHEMA_KIND_NODE_DECIMAL_DEFINE = "node.decimal.define";
+export const SCHEMA_KIND_NODE_DECIMAL_USAGE = "node.decimal.usage";
+export const SCHEMA_KIND_NODE_STRING = "node.string";
+export const SCHEMA_KIND_NODE_STRING_DEFINE = "node.string.define";
+export const SCHEMA_KIND_NODE_STRING_USAGE = "node.string.usage";
+export const SCHEMA_KIND_NODE_DATE = "node.date";
+export const SCHEMA_KIND_NODE_DATE_DEFINE = "node.date.define";
+export const SCHEMA_KIND_NODE_DATE_USAGE = "node.date.usage";
+export const SCHEMA_KIND_NODE_ENUM = "node.enum";
+export const SCHEMA_KIND_NODE_ENUM_DEFINE = "node.enum.define";
+export const SCHEMA_KIND_NODE_ENUM_USAGE = "node.enum.usage";
+export const SCHEMA_KIND_NODE_STRUCT = "node.struct";
+export const SCHEMA_KIND_NODE_STRUCT_DEFINE = "node.struct.define";
+export const SCHEMA_KIND_NODE_STRUCT_USAGE = "node.struct.usage";
+export const SCHEMA_KIND_NODE_STRUCT_FIELD = "node.struct.field";
+export const SCHEMA_KIND_NODE_ARRAY = "node.array";
+export const SCHEMA_KIND_NODE_ARRAY_DEFINE = "node.array.define";
+export const SCHEMA_KIND_NODE_ARRAY_USAGE = "node.array.usage";
+export const SCHEMA_KIND_NODE_FUNCTION = "node.function";
+export const SCHEMA_KIND_NODE_PROPERTY = "node.property";
+export const SCHEMA_KIND_NODE_RELATION = "node.relation";
+export const SCHEMA_KIND_NODE_FUNC_ARG = "node.function.arg";
+export const SCHEMA_KIND_NODE_ENTRY = "node.entry";
+export const SCHEMA_KIND_NODE_GENERIC = 'node.generic';
 
 // ── Schema Kind Order ──────────────────────────────────────────────────────
 
@@ -61,6 +61,22 @@ export const SCHEMA_KIND_ORDER_STRUCT_FIELD = 14;
 export const SCHEMA_KIND_ORDER_FUNC_ARG = 15;
 export const SCHEMA_KIND_ORDER_ENTRY = 16;
 export const SCHEMA_KIND_ORDER_GENERIC = 99;
+
+// ── Node Kind ──────────────────────────────────────────────────────
+export const NODE_KIND_NAMESPACE = "namespace";
+export const NODE_KIND_OBJECT = "object";
+export const NODE_KIND_BOOL = "bool";
+export const NODE_KIND_INT = "int";
+export const NODE_KIND_DECIMAL = "decimal";
+export const NODE_KIND_STRING = "string";
+export const NODE_KIND_DATE = "date";
+export const NODE_KIND_ENUM = "enum";
+export const NODE_KIND_STRUCT = "struct";
+export const NODE_KIND_ARRAY = "array";
+export const NODE_KIND_FUNCTION = "function";
+export const NODE_KIND_PROPERTY = "property";
+export const NODE_KIND_RELATION = "relation";
+export const NODE_KIND_GENERIC = "generic";
 
 // ── Relation Path ──────────────────────────────────────────────────────────
 
@@ -187,7 +203,7 @@ export const NS_SYSTEM_SCHEMA_REFLECT_ENUM = `${NS_SYSTEM_SCHEMA_REFLECT}.enum`;
 export const NS_SYSTEM_SCHEMA_REFLECT_STRUCT = `${NS_SYSTEM_SCHEMA_REFLECT}.struct`;
 export const NS_SYSTEM_SCHEMA_REFLECT_PROPERTY = `${NS_SYSTEM_SCHEMA_REFLECT}.prop`;
 
-export const NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND = `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isschemakind`;
+export const NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isnodekind`;
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND = `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isvaluekind`;
 export const NS_SYSTEM_SCHEMA_REFLECT_GET_ACCESS_ENTRIES = `${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessentries`;
 export const NS_SYSTEM_SCHEMA_REFLECT_IS_ARRAY_ELE = `${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.isarrayele`;

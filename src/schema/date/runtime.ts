@@ -5,7 +5,7 @@ import { ScalarType } from "../value/scalar";
 import type { IProperty } from '../../interface';
 import type { DateSchema } from "./type";
 
-import { SCHEMA_KIND_DATE } from "../../utility/constant";
+import { SCHEMA_KIND_NODE_DATE } from "../../utility/constant";
 
 export class DateType extends ScalarType {
   private _dateSchema: DateSchema | undefined
@@ -14,7 +14,7 @@ export class DateType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._dateSchema = getPropertyValue<DateSchema>(this.schema, "date");
-    return this._dateSchema ? Array.from(getPropertiesBySchemaKind(this._dateSchema, SCHEMA_KIND_DATE)) : [];
+    return this._dateSchema ? Array.from(getPropertiesBySchemaKind(this._dateSchema, SCHEMA_KIND_NODE_DATE)) : [];
   }
 
   override async load() {

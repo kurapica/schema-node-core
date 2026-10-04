@@ -5,14 +5,14 @@ import { ScalarType } from "../value/scalar";
 import type { IProperty } from "../../interface";
 import type { DecimalSchema } from "./type";
 
-import { SCHEMA_KIND_DECIMAL } from "../../utility/constant";
+import { SCHEMA_KIND_NODE_DECIMAL } from "../../utility/constant";
 
 export class DecimalType extends ScalarType {
   private _decimalSchema: DecimalSchema | undefined
 
   override loadProperties(): IProperty[] {
     this._decimalSchema = getPropertyValue<DecimalSchema>(this.schema, "decimal");
-    return this._decimalSchema ? Array.from(getPropertiesBySchemaKind(this._decimalSchema, SCHEMA_KIND_DECIMAL)) : [];
+    return this._decimalSchema ? Array.from(getPropertiesBySchemaKind(this._decimalSchema, SCHEMA_KIND_NODE_DECIMAL)) : [];
   }
 
   override async load() {

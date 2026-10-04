@@ -5,7 +5,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema } from '../property/core/ofSchema';
+import { OfNodeKind } from '../property/core/ofNodeKind';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../schema/function/property/return';
 import { ArgName } from '../schema/function/property/argName';
@@ -18,13 +18,13 @@ import { EntrySource } from '../property/core/entrySource';
 import { Assign } from '../relation/assign/meta';
 import { buildFuncCall } from '../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, FUNC_RETURN } from '../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_ARRAY, NS_SYSTEM_COLLECTION, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, FUNC_RETURN } from '../utility/constant';
 import { AccessEntryConsumer } from '../schema/string/property/accessEntryConsumer';
 import { AccessValueTypeProvider } from '../property';
 
 // ── SystemCollection ───────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_COLLECTION)
 export class SystemCollection {
 

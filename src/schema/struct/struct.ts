@@ -1,7 +1,7 @@
 import { Meta, Relation } from "../../attribute";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
-import { OfSchema } from "../../property/core/ofSchema";
+import { OfNodeKind } from "../../property/core/ofNodeKind";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
@@ -11,14 +11,14 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from "../../interface";
 import type { StructSchema, StructFieldSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_STRUCT, SCHEMA_KIND_STRUCT_FIELD } from "../../utility";
+import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_NODE_STRUCT_FIELD, NODE_KIND_STRUCT } from "../../utility";
 
 /** Property bridge. */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.${SCHEMA_KIND_STRUCT}`)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.${NODE_KIND_STRUCT}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRUCT}.schema`)
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_STRUCT))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', NODE_KIND_STRUCT))
 export class StructProperty extends Property<StructSchema> {
   combine(other: IProperty): boolean {
     const otherSchema = other?.getValue<StructSchema>();
@@ -53,7 +53,7 @@ export class StructProperty extends Property<StructSchema> {
             combineFields.push(existField);
           }
         }
-        combineFields.push(combineProperties(selfSchema.fields[index], otherField, SCHEMA_KIND_STRUCT_FIELD));
+        combineFields.push(combineProperties(selfSchema.fields[index], otherField, SCHEMA_KIND_NODE_STRUCT_FIELD));
       }
       else
         combineFields.push(otherField);
@@ -62,7 +62,7 @@ export class StructProperty extends Property<StructSchema> {
     selfSchema.fields = combineFields;
 
     // combine properties
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_STRUCT);
+    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_NODE_STRUCT);
     this.setValue(selfSchema);
     return true;
   }

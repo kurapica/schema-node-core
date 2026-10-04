@@ -7,10 +7,10 @@ import { Meta, getMetaMethods, getMetaProperty, getMetaProperties } from '../../
 import { getRelationSchemas, Relation } from '../../attribute/relation';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { SchemaKind } from '../../property/record/schemaKind';
-import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { NodeKind } from '../../property/record/nodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../struct/property/attach';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { Display } from '../../property/common/display';
 import { Visible } from '../../property/common/visible';
@@ -58,14 +58,14 @@ import type { CallArg, FuncArg, FuncCall, FuncExp, FunctionSchema } from './type
 import type { NodeSchema } from '../node/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, SCHEMA_KIND_INT, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT, ARRAY_PREVIOUS, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_FUNCTION, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL_ARG, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, SCHEMA_KIND_ORDER_FUNC, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, SCHEMA_KIND_ORDER_FUNC_ARG, SCHEMA_KIND_NODE_FUNC_ARG, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_COLLECTION, ARRAY_ELEMENT, ARRAY_PREVIOUS, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_FUNC_CALL, NODE_KIND_STRING, NODE_KIND_NAMESPACE, NODE_KIND_BOOL, NODE_KIND_DATE, NODE_KIND_ENUM, NODE_KIND_FUNCTION, NODE_KIND_INT } from '../../utility/constant';
 import { FuncCallArgNode } from './node/funcCallArgNode';
 
 
 // #region ── FunctionSchema ─────────────────────────────────────────────────────
 
-@Meta(SchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
-@Meta(NodeSchemaKind, [SCHEMA_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
+@Meta(NodeKind, [NODE_KIND_FUNCTION, SCHEMA_KIND_ORDER_FUNC])
 @Meta(RuntimeNodeType, FunctionType)
 @Meta(SchemaGenerator, generateFunctionSchema)
 @Meta(Append, [Generics, Relations])
@@ -73,11 +73,11 @@ class FunctionKind {}
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
-@Meta(Attach, SCHEMA_KIND_FUNCTION)
+@Meta(Attach, SCHEMA_KIND_NODE_FUNCTION)
 @Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', `@exps.${ARRAY_PREVIOUS}`, NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`, '@args', `@exps.${ARRAY_PREVIOUS}`, NODE_SELF))
 @Meta(DataNodeType, FunctionNode)
-@Meta(KindProvider, SCHEMA_KIND_FUNC_ARG)
+@Meta(KindProvider, SCHEMA_KIND_NODE_FUNC_ARG)
 @Relation(Visible, Assign, false, 'relations') // kept it for system only now
 @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getreturnfields`, '@return','@args', `@exps.${ARRAY_PREVIOUS}`), `exps.${ARRAY_ELEMENT}.name`)
 @Relation(Default, Call, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getreturnfieldtype`, '@return', `@exps.${ARRAY_ELEMENT}.name`), `exps.${ARRAY_ELEMENT}.return`)
@@ -99,10 +99,10 @@ class FunctionSchemaMeta implements FunctionSchema {
 
 // #region ── FuncArg ────────────────────────────────────────────────────────────
 
-@Meta(SchemaKind, [SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_ORDER_FUNC_ARG])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_FUNC_ARG, SCHEMA_KIND_ORDER_FUNC_ARG])
 @Meta(Append, [Display, Default, Require])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.argdefine`)
-@Meta(Attach, SCHEMA_KIND_FUNC_ARG)
+@Meta(Attach, SCHEMA_KIND_NODE_FUNC_ARG)
 @Relation(Visible, 'assign', false, 'default')
 class FuncArgKind {}
 
@@ -131,7 +131,7 @@ class FuncArgMeta implements FuncArg {
   /** The argument array define */
   /*@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
   @Meta(Unpack, true)
-  @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, "@type", false, SCHEMA_KIND_ARRAY))
+  @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, "@type", false, NODE_KIND_ARRAY))
   arrayDefine?: {};*/
 
   /** The argument value define */
@@ -241,7 +241,7 @@ class CallArgMeta implements CallArg {
   @Meta(SchemaType, NS_SYSTEM_OBJECT)
   @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getvaluetype`, '@type'))
   @Relation(InVisible,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
-  @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, '@type', true, SCHEMA_KIND_INT, SCHEMA_KIND_STRING, SCHEMA_KIND_DATE, SCHEMA_KIND_BOOL, SCHEMA_KIND_ENUM))
+  @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@type', true, NODE_KIND_INT, NODE_KIND_STRING, NODE_KIND_DATE, NODE_KIND_BOOL, NODE_KIND_ENUM))
   value?: unknown;
 }
 
@@ -250,28 +250,28 @@ class CallArgMeta implements CallArg {
 // #region ── FunType ───────────────────────────────────────────────────────
 
 /** Represents the function type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_FUNC_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_FUNCTION))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_SELF, false, NODE_KIND_FUNCTION))
 @Meta(LeafOnly, true)
 class FunctionTypeMeta {}
 
 /** Represents the validation function type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valid`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_BOOL))
 class ValidFuncTypeMeta {}
 
 /** Represents the function return value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.valuetype`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE))
 class TypeFuncTypeMeta {}
 
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(Base, NS_SYSTEM_SCHEMA_FUNC_TYPE)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.entrysource`)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_FUNC_WITH_RETURN, NODE_SELF, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}>`))
@@ -284,7 +284,7 @@ class EntrySourceFuncType {}
 /**
  * Generate a FunctionSchema for each public static method of a function class.
  *
- * Each method must carry @Meta(OfSchema, SCHEMA_KIND_FUNCTION) plus at least
+ * Each method must carry @Meta(OfNodeKind, NODE_KIND_FUNCTION) plus at least
  * @Meta(SchemaType, 'ns.funcName') and @Meta(Return, 'returnType').
  * Parameter types are declared via @Meta(SchemaType, 'type') on each parameter.
  */
@@ -293,7 +293,7 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
   
   // save the namespace
   const nsName = combinePaths(namespace, name);
-  const nsSchema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_NAMESPACE };
+  const nsSchema: NodeSchema = { namespace, name, kind: NODE_KIND_NAMESPACE };
   setPropertyValue(nsSchema, Display, { key: nsName });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nsSchema, p));
   saveNodeSchema(nsSchema);
@@ -338,7 +338,7 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
     }
 
     // Build NodeSchema
-    const nodeSchema: NodeSchema = { namespace: methodNs, name: methodNameOnly, kind: SCHEMA_KIND_FUNCTION };
+    const nodeSchema: NodeSchema = { namespace: methodNs, name: methodNameOnly, kind: NODE_KIND_FUNCTION };
     setPropertyValue(nodeSchema, Display, { key: combinePaths(methodNs, methodNameOnly) });
 
     // Build FunctionSchema
@@ -354,7 +354,7 @@ function generateFunctionSchema(namespace: string, name: string, ctor: Function)
       setPropertyValue(funcSchema, Relations, relations);
 
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor, undefined, methodName).forEach(p => setProperty(nodeSchema, p));
-    getMetaPropertiesForSchema(SCHEMA_KIND_FUNCTION, ctor, undefined, methodName).forEach(p => setProperty(funcSchema, p));
+    getMetaPropertiesForSchema(SCHEMA_KIND_NODE_FUNCTION, ctor, undefined, methodName).forEach(p => setProperty(funcSchema, p));
     setPropertyValue(nodeSchema, FunctionProperty, funcSchema);
     saveNodeSchema(nodeSchema);
   }

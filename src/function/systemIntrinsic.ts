@@ -4,16 +4,16 @@
 
 import { Meta } from '../attribute/meta';
 import { ArgName } from '../schema/function/property/argName';
-import { OfSchema } from '../property/core/ofSchema';
+import { OfNodeKind } from '../property/core/ofNodeKind';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../schema/function/property/return';
 import { Require } from '../property/common/require';
 import { Generics } from '../schema/generic/generics';
 import { deepClone, isEmpty, isNull } from '../utility/toolset';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_INTRINSIC)
 export class SystemIntrinsic {
   /** Assign value */

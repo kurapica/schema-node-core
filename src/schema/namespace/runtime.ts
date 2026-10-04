@@ -9,7 +9,7 @@ import { NodeType } from '../node/runtime';
 import type { INamespaceNodeType, INodeType } from '../../interface';
 import type { NodeSchema } from '../node/type';
 
-import { SCHEMA_KIND_NAMESPACE } from '../../utility/constant';
+import { NODE_KIND_NAMESPACE } from '../../utility/constant';
 
 /** Namespace type */
 export class NamespaceType extends NodeType implements INamespaceNodeType {
@@ -62,7 +62,7 @@ export class NamespaceType extends NodeType implements INamespaceNodeType {
     }
 
     // Create sub namespace types to save the schemas
-    if (schemas?.length && schema.kind == SCHEMA_KIND_NAMESPACE)
+    if (schemas?.length && schema.kind == NODE_KIND_NAMESPACE)
     {
       let type = this._subTypes.get(name);
       if (!type) {

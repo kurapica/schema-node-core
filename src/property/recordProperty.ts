@@ -16,7 +16,7 @@ const _recordedValues = new Map<Function, Map<string, IOrderProperty>>();
 
 /**
  * Base for properties whose values auto-register into a global record.
- * E.g., SchemaKind, NodeSchemaKind, RelationKind — each value records itself
+ * E.g., SchemaKind, NodeKind, RelationKind — each value records itself
  * so the runtime can enumerate all known kinds.
  */
 export abstract class RecordProperty<T> extends OrderProperty<T> {

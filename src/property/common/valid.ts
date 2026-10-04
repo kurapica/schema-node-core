@@ -1,6 +1,6 @@
 import { FuncCallProperty } from '../funcCallProperty';
 import { Meta } from '../../attribute/meta';
-import { OfSchema } from '../core/ofSchema';
+import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { Stackable } from '../core/stackable';
@@ -14,10 +14,10 @@ import { logger } from '../../utility/logger';
 
 import type { IConstraintProperty, IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../utility/constant';
 
 /** The valid constraint. Check if the node is valid. If not, return the error message. */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC_CALL}<${NS_SYSTEM_SCHEMA_FUNC}.valid>`)
 @Meta(Stackable, true)

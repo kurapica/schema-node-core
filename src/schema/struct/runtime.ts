@@ -14,7 +14,7 @@ import { _LS } from '../../utility/locale';
 import { PropertyType } from '../property/runtime';
 import { ArrayType } from '../array/runtime';
 import { ValueType } from '../value/runtime';
-import { filterSchemaKindProperties, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindSchemaProperties } from '../../runtime/schemaRuntime';
+import { filterSchemaKindProperties, getSchemaKindByNodeKind, getSchemaKindProperties, getSchemaKindProperty, getSchemaKindSchemaProperties } from '../../runtime/schemaRuntime';
 import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { isConstraintProperty, joinProperties } from '../../interface';
@@ -29,20 +29,20 @@ import type { IConstraintProperty, IProperty, PropertyCtor, IPropertyProvider, I
 import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 
-import { SCHEMA_KIND_STRUCT_FIELD, SCHEMA_KIND_STRUCT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ENUM, SCHEMA_KIND_STRING, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_BOOL, SCHEMA_KIND_DATE, NS_SYSTEM_LOCALE_STRING, SCHEMA_KIND_OBJECT, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST, ARRAY_ELEMENT } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_NODE_STRUCT, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_RANGE_YEAR, NS_SYSTEM_RANGE_MONTH, NS_SYSTEM_RANGE_DATE, NS_SYSTEM_RANGE_FULL_DATE, NS_SYSTEM_LIST, ARRAY_ELEMENT, NODE_KIND_BOOL, NODE_KIND_ARRAY, NODE_KIND_DATE, NODE_KIND_DECIMAL, NODE_KIND_ENUM, NODE_KIND_OBJECT, NODE_KIND_STRING, NODE_KIND_STRUCT } from '../../utility/constant';
 import { Stackable } from '../../property/core/stackable';
 
 
 // ── StructType ────────────────────────────────────────────────────────────
 const VALUE_TYPE_PRIORITY: Record<string, number> = {
-  [SCHEMA_KIND_BOOL]: 9000,
-  [SCHEMA_KIND_ENUM]: 8000,
-  [SCHEMA_KIND_STRING]: 7000,
-  [SCHEMA_KIND_DECIMAL]: 6000,
-  [SCHEMA_KIND_DATE]: 5000,
-  [SCHEMA_KIND_OBJECT]: 0,
-  [SCHEMA_KIND_STRUCT]: 3000,
-  [SCHEMA_KIND_ARRAY]: 2000,
+  [NODE_KIND_BOOL]: 9000,
+  [NODE_KIND_ENUM]: 8000,
+  [NODE_KIND_STRING]: 7000,
+  [NODE_KIND_DECIMAL]: 6000,
+  [NODE_KIND_DATE]: 5000,
+  [NODE_KIND_OBJECT]: 0,
+  [NODE_KIND_STRUCT]: 3000,
+  [NODE_KIND_ARRAY]: 2000,
 }
 
 const STRUCT_TYPE_PRIORITY: Record<string, number> = {
@@ -80,7 +80,7 @@ export class StructType extends ValueType implements IRelationProvider {
 
   override loadProperties(): IProperty[] {
     this._structSchema = getPropertyValue<StructSchema>(this.getNodeSchema(), "struct");
-    return this._structSchema ? Array.from(getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_STRUCT)) : [];
+    return this._structSchema ? Array.from(getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_NODE_STRUCT)) : [];
   }
 
   override async load(): Promise<void> {
@@ -113,7 +113,7 @@ export class StructType extends ValueType implements IRelationProvider {
         const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType.name}>` : propType.valueType.name };
 
         // copy properties from meta property type
-        for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_STRUCT_FIELD, propType.valueType!.kind, propType.valueType instanceof ArrayType ? propType.valueType.element!.kind : SCHEMA_KIND_STRUCT_FIELD)))
+        for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_NODE_STRUCT_FIELD, getSchemaKindByNodeKind(propType.valueType!.kind), propType.valueType instanceof ArrayType ? getSchemaKindByNodeKind(propType.valueType.element!.kind) : SCHEMA_KIND_NODE_STRUCT_FIELD)))
           setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
 
         await fieldType.load(fieldSchema);
@@ -221,15 +221,15 @@ export class StructType extends ValueType implements IRelationProvider {
 
   override getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
     // enable prototype properties
-    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
+    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_NODE_STRUCT, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor))) yield prop as T;
+    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(SCHEMA_KIND_NODE_STRUCT, propCtor))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(SCHEMA_KIND_NODE_STRUCT, predicate))) yield prop;
   }
 
   // ── References ──────────────────────────────────────────────────────
@@ -341,10 +341,10 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     if (!this.type) return;
 
     // Collect properties from schema kind registries
-    const props = Array.from(getPropertiesBySchemaKind(field, SCHEMA_KIND_STRUCT_FIELD));
-    props.push(...getPropertiesBySchemaKind(field, this.type.kind));
+    const props = Array.from(getPropertiesBySchemaKind(field, SCHEMA_KIND_NODE_STRUCT_FIELD));
+    props.push(...getPropertiesBySchemaKind(field, getSchemaKindByNodeKind(this.type.kind)));
     if (this.type instanceof ArrayType && this.type.element)
-      props.push(...getPropertiesBySchemaKind(field, this.type.element.kind));
+      props.push(...getPropertiesBySchemaKind(field, getSchemaKindByNodeKind(this.type.element.kind)));
 
     this._props = props;
 

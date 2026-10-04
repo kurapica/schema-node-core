@@ -1,6 +1,6 @@
 import { ForSchema } from '../../../property/core/forSchema';
 import { ConstraintProperty } from '../../../property/constraintProperty';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { SchemaType } from '../../../property/core/schemaType';
 import { Meta } from '../../../attribute/meta';
@@ -9,11 +9,11 @@ import { LowLimitInt } from '../../int/property/lowLimit';
 
 import type { IValueAccess } from '../../../interface';
 
-import { NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_USAGE, SCHEMA_KIND_PROPERTY } from '../../../utility/constant';
+import { NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_USAGE, NODE_KIND_PROPERTY } from '../../../utility/constant';
 
 /** The maximum size constraint property for array data node */
-@Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_USAGE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_USAGE])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.maxsize`)
 @Meta(PropertyValueType, NS_SYSTEM_INT)
 @Meta(LowLimitInt, 0)

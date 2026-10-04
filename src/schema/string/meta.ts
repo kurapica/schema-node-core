@@ -1,13 +1,13 @@
 import { getMetaProperty, Meta } from '../../attribute/meta';
 import { Attach } from '../struct/property/attach';
 import { Display } from '../../property/common/display';
-import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
-import { OfSchema } from '../../property/core/ofSchema';
+import { NodeKind } from '../../property/record/nodeKind';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaGenerator } from '../../property/core/schemaGenerator';
 import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/common/valid';
-import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { NodeValueKind } from '../../property/record/nodeValueKind';
 import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
@@ -33,7 +33,7 @@ import { Unit } from '../../property/common/unit';
 import type { NodeSchema } from '../node/type';
 import type { StringSchema } from './type';
 
-import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_STRING_DEFINE, SCHEMA_KIND_STRING_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_ENUM, TYPE_PROVIDER } from '../../utility/constant';
+import { NS_SYSTEM_SCHEMA_STRING_TYPE, SCHEMA_KIND_NODE_STRING, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_STRING, NS_SYSTEM_SCHEMA_STRING, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, SCHEMA_KIND_NODE_STRING_DEFINE, SCHEMA_KIND_NODE_STRING_USAGE, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_REFLECT_ENUM, TYPE_PROVIDER, NODE_KIND_STRING } from '../../utility/constant';
 import { Relation } from '../../attribute/relation';
 import { Visible } from '../../property/common/visible';
 import { OverrideType } from '../../property/core/overrideType';
@@ -41,9 +41,9 @@ import { JsRegex } from '../../property';
 import { CascadeDepth } from '../enum';
 
 /** The string schema kind. */
-@Meta(SchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
-@Meta(NodeSchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
-@Meta(ValueSchemaKind, [SCHEMA_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRING, SCHEMA_KIND_ORDER_STRING])
+@Meta(NodeKind, [NODE_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
+@Meta(NodeValueKind, [NODE_KIND_STRING, SCHEMA_KIND_ORDER_STRING])
 @Meta(RuntimeNodeType, StringType)
 @Meta(SchemaGenerator, generateStringSchema)
 @Meta(SchemaUsage, `${NS_SYSTEM_SCHEMA_STRING}.usage`)
@@ -53,20 +53,20 @@ import { CascadeDepth } from '../enum';
 class StringKind {}
 
 /** the date schema meta */
-@Meta(SchemaKind, [SCHEMA_KIND_STRING_DEFINE, SCHEMA_KIND_ORDER_STRING])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRING_DEFINE, SCHEMA_KIND_ORDER_STRING])
 @Meta(Append, [EntrySource, JsRegex, Unit, Error, Valid])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
-@Meta(Attach, SCHEMA_KIND_STRING_DEFINE)
+@Meta(Attach, SCHEMA_KIND_NODE_STRING_DEFINE)
 class StringSchemaMeta implements StringSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_STRING_TYPE)
   base?: string;
 }
 
 /** The string schema usage. */
-@Meta(SchemaKind, [SCHEMA_KIND_STRING_USAGE, SCHEMA_KIND_ORDER_STRING])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRING_USAGE, SCHEMA_KIND_ORDER_STRING])
 @Meta(Append, [AsSuggest, JsRegex, Default, BlackList, WhiteList, Root, LeafOnly, Unit, Error])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRING}.usage`)
-@Meta(Attach, SCHEMA_KIND_STRING_USAGE)
+@Meta(Attach, SCHEMA_KIND_NODE_STRING_USAGE)
 // default
 @Relation(Root,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@root'), 'default')
 @Relation(LeafOnly,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@leafOnly'), 'default')
@@ -85,21 +85,21 @@ class StringSchemaMeta implements StringSchema {
 class StringUsage {}
 
 /** Represents the string value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_STRING_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_STRING))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_SELF, false, NODE_KIND_STRING))
 class StringTypeMeta {}
 
 /** Generate the date schema */
 function generateStringSchema(namespace: string, name: string, ctor: Function)
 {
-  const nodeSchema : NodeSchema = { namespace, name, kind: SCHEMA_KIND_STRING };
+  const nodeSchema : NodeSchema = { namespace, name, kind: NODE_KIND_STRING };
   const stringSchema : StringSchema = { base : getMetaProperty(ctor, Base)?.getValue<string>() ?? undefined };
 
   setPropertyValue(nodeSchema, Display, { key: combinePaths(namespace, name) });
   getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => setProperty(nodeSchema, p));
-  getMetaPropertiesForSchema(SCHEMA_KIND_STRING, ctor).forEach(p => setProperty(stringSchema, p));
+  getMetaPropertiesForSchema(SCHEMA_KIND_NODE_STRING, ctor).forEach(p => setProperty(stringSchema, p));
   setPropertyValue(nodeSchema, StringProperty, stringSchema);
   saveNodeSchema(nodeSchema);
 }

@@ -19,7 +19,7 @@ import type { Entry } from '../../struct/entry/type';
 import type { ArraySchema } from './type';
 import type { RelationSchema } from '../relation/type';
 
-import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_ARRAY } from '../../utility/constant';
+import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_NODE_ARRAY } from '../../utility/constant';
 
 export class ArrayType extends ValueType implements IRelationProvider, IArrayValueTypeAccess {
   private _arraySchema: ArraySchema | undefined;
@@ -59,7 +59,7 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
 
   override loadProperties(): IProperty[]{
     this._arraySchema = getPropertyValue<ArraySchema>(this.schema, "array");
-    return this._arraySchema ? Array.from(getPropertiesBySchemaKind(this._arraySchema, SCHEMA_KIND_ARRAY)) : [];
+    return this._arraySchema ? Array.from(getPropertiesBySchemaKind(this._arraySchema, SCHEMA_KIND_NODE_ARRAY)) : [];
   }
 
   override unload(): void {
@@ -104,15 +104,15 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
   override get hasAccessEntries(): boolean { return true; }
 
   override getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
-    return super.getProperty(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
+    return super.getProperty(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_NODE_ARRAY, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(super.getProperties(propCtor), getSchemaKindProperties(this.kind, propCtor))) yield prop as T;
+    for (let prop of joinProperties(super.getProperties(propCtor), getSchemaKindProperties(SCHEMA_KIND_NODE_ARRAY, propCtor))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(SCHEMA_KIND_NODE_ARRAY, predicate))) yield prop;
   }
 
   *getRelations(): Generator<IRelation> {

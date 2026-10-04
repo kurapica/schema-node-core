@@ -11,7 +11,7 @@ import { SchemaKind } from '../../property/record/schemaKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Attach } from '../struct/property/attach';
 import { PrimaryIndex } from '../../property/core/indexes';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { EntrySource } from '../../property/core/entrySource';
 import { Valid } from '../../property/common/valid';
 import { Require } from '../../property/common/require';
@@ -26,7 +26,7 @@ import { LeafOnly } from '../enum/property/leafOnly';
 
 import type { CompatibleSchema, NodeSchema } from './type';
 
-import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, SCHEMA_KIND_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
+import { SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_SCHEMA_NAMESPACE_TYPE, NS_SYSTEM_IDENTIFIER, NODE_KIND_STRING, NS_SYSTEM_STRING, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_ORDER_NODE, NS_SYSTEM_LOGIC, NS_SYSTEM_SCHEMA_REFLECT_TYPE } from '../../utility/constant';
 
 
 /** The meta definition of the node schema */
@@ -68,7 +68,7 @@ class NodeSchemaMeta implements NodeSchema {
 }
 
 /** Represents the namespace type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Base, NS_SYSTEM_STRING)
 @Meta(UpLimitString, PRIMARY_KEY_MAX_LEN)
@@ -76,7 +76,7 @@ class NodeSchemaMeta implements NodeSchema {
 class AnyTypeMeta {}
 
 /** Represents the value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_TYPE)
 @Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_VALUE_KIND, NODE_SELF))

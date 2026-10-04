@@ -9,7 +9,7 @@ import { NodeType } from '../node/runtime';
 import { type INodeType, type IProperty, type IValueTypeAccess } from '../../interface';
 import type { PropertySchema } from './type';
 
-import { SCHEMA_KIND_PROPERTY } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_PROPERTY } from '../../utility/constant';
 
 export class PropertyType extends NodeType {
   private _propertySchema: PropertySchema | undefined
@@ -30,7 +30,7 @@ export class PropertyType extends NodeType {
 
   override loadProperties(): IProperty[] {
     this._propertySchema = getPropertyValue<PropertySchema>(this.schema, "property");
-    return this._propertySchema ? Array.from(getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_PROPERTY)) : [];
+    return this._propertySchema ? Array.from(getPropertiesBySchemaKind(this._propertySchema, SCHEMA_KIND_NODE_PROPERTY)) : [];
   }
 
   override async load() {

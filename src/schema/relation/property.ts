@@ -1,5 +1,5 @@
 import { Meta } from "../../attribute/meta";
-import { OfSchema } from "../../property/core/ofSchema";
+import { OfNodeKind } from "../../property/core/ofNodeKind";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { Property } from "../../property/property";
@@ -7,10 +7,10 @@ import { Property } from "../../property/property";
 import type { IProperty } from "../../interface";
 import type { RelationSchema } from "./type";
 
-import { NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_PROPERTY } from "../../utility/constant";
+import { NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_RELATION, NODE_KIND_PROPERTY } from "../../utility/constant";
 
 /** The relations property */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.relations`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_RELATION}.schemas`)
 export class Relations extends Property<RelationSchema[]> {

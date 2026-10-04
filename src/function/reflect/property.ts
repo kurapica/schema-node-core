@@ -7,14 +7,14 @@ import { Stackable } from '../../property/core/stackable';
 import { Static } from '../../property/core/static';
 import { getNodeType } from '../../runtime/context';
 import { PropertyType } from '../../schema/property/runtime';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { Variadic } from '../../schema/function/property/variadic';
 import { PropertyValueTypeResolver } from '../../property/core/propertyValueTypeResolver';
 import { FunctionType } from '../../schema/function/runtime';
 
-import { NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_FUNCTION } from '../../utility/constant';
+import { NS_SYSTEM_BOOL, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NS_SYSTEM_STRING, NODE_KIND_FUNCTION } from '../../utility/constant';
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY)
 export class SystemReflectProperty {
   /** Whether the property is static */

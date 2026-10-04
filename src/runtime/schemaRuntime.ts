@@ -21,7 +21,7 @@ import type { NodeSchema } from '../schema/node/type';
 import type { ArraySchema } from '../schema/array/type';
 import type { GenericParameter } from '../schema/generic/type';
 
-import { NS_SYSTEM, NS_SYSTEM_OBJECT, SCHEMA_KIND_ARRAY, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_STRUCT } from '../utility/constant';
+import { NODE_KIND_NAMESPACE, NS_SYSTEM, NS_SYSTEM_OBJECT, SCHEMA_KIND_NODE, NODE_KIND_ARRAY, NODE_KIND_STRUCT } from '../utility/constant';
 
 // #region ── Schema Kind Configuration ───────────────────────────────────────
 
@@ -31,11 +31,11 @@ const _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
 /** The schema kind prototype properties */
 const _schemaKindProperties = new Map<string, IProperty[]>();
 
-/** The node schema generators */
-const _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
-
 /** The schema kind properties from server */
 const _schemaKindServerProperties = new Map<string, string[]>();
+
+/** The node schema generators */
+const _nodeSchemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
 
 /** Sets the schema kind properties from server */
 export function setSchemaKindServerProperties(map: Record<string, string[]>) {
@@ -130,7 +130,7 @@ const _schemaPropertyRegistry = new Set<Function>();
 const _schemaTypeRegistry = new Map<string, Function>();
 
 /** Root namespace — holds all registered schemas in a tree. */
-const rootNamespace : NodeSchema = { namespace: "", name: "", kind : SCHEMA_KIND_NAMESPACE };
+const rootNamespace : NodeSchema = { namespace: "", name: "", kind : NODE_KIND_NAMESPACE };
 
 /** Schema lookups by full name for fast access. */
 const _schemaIndex = new Map<string, NodeSchema>();
@@ -199,7 +199,7 @@ export function getSystemSchema(fullName: string): NodeSchema | undefined {
   if (!schema) return undefined;
 
   const { schemas, ...clone } = schema
-  if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
+  if (schema?.kind === NODE_KIND_NAMESPACE && schema.schemas)
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
   logger.verbose("[Schema][Get]", schema);
   return clone;
@@ -214,7 +214,7 @@ function _setLoadState(schema: NodeSchema & { system?: boolean }, loadStage: Sch
   if (loadStage & SchemaLoadState.System)
     schema.system = true;
 
-  if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas) {
+  if (schema.kind === NODE_KIND_NAMESPACE && schema.schemas) {
     for (const child of schema.schemas) {
       _setLoadState(child, loadStage);
     }
@@ -235,12 +235,12 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
   for (const part of parts) {
     current.schemas ??= [];
     let child = current.schemas.find((s) => s.name === part);
-    if (child && child.kind !== SCHEMA_KIND_NAMESPACE) {
+    if (child && child.kind !== NODE_KIND_NAMESPACE) {
       throw new Error(`[Schema][Conflict]: ${getNodeSchemaName(child)} is not a namespace`);
     }
 
     if (!child) {
-      child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE, loadState: schema.loadState };
+      child = { namespace : getNodeSchemaName(current), name: part, kind : NODE_KIND_NAMESPACE, loadState: schema.loadState };
       (child as any).display = { key: child.namespace ? `${child.namespace}.${part}` : part }; // for simple
       current.schemas.push(child);
       logger.verbose("[Schema][Register]", child);
@@ -278,10 +278,16 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 // #region ── Node Type Resolution ────────────────────────────────────────────
 
 const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
+const _nodeKind2SchemaKind = new Map<string, string>();
 
 /** Get the node type generator for a kind. */
-export function getNodeTypeGenerator(kind: string): (new (parent?: INodeType) => INodeType) | undefined {
-  return _nodeTypeGenerator.get(kind);
+export function getNodeTypeGenerator(nodeKind: string): (new (parent?: INodeType) => INodeType) | undefined {
+  return _nodeTypeGenerator.get(nodeKind);
+}
+
+/** Get the schema kind for a node kind. */
+export function getSchemaKindByNodeKind(nodeKind: string): string {
+  return _nodeKind2SchemaKind.get(nodeKind)!;
 }
 
 //#endregion
@@ -292,11 +298,7 @@ export function getNodeTypeGenerator(kind: string): (new (parent?: INodeType) =>
 export function initSchemaRuntime(): void {
   // Scan schema kinds
   _schemaKindRegistry.forEach((ctor, kind) => {
-    // generator check
-    const generator = (ctor as unknown as Record<string, Function>).schemaGenerator;
-    if (generator) {
-      _schemaGenerators.set(kind, generator as (namespace: string, name: string, target: object) => void);
-    }
+    const nodeKind = (ctor as unknown as Record<string, string>).nodeKind ?? (kind === SCHEMA_KIND_NODE ? kind : '');
 
     // append properties to the schema kind registry
     const appendProperties = (ctor as unknown as Record<string, PropertyCtor[]>).append;
@@ -311,22 +313,28 @@ export function initSchemaRuntime(): void {
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
     } 
 
-    // node type check
-    const nodeSchemaKind = (ctor as unknown as Record<string, string>).nodeSchemaKind;
-    if (nodeSchemaKind)
-    {
-      const nodeTypeGenerator = (ctor as unknown as Record<string, new () => INodeType>).runtimeNodeType;
-      if (nodeTypeGenerator)
-        _nodeTypeGenerator.set(nodeSchemaKind, nodeTypeGenerator as new () => INodeType)
-    }
-
     // Prototype properties
     const prototypeProps = getMetaProperties(ctor).filter(p => appendProperties?.includes(p.constructor as PropertyCtor) || (p.constructor as unknown as Record<string, string[]>).forSchema?.includes(kind))
     if (prototypeProps?.length) {
       _schemaKindProperties.set(kind, prototypeProps);
     }
 
-    logger.debug('[Kind]:', kind, ' '.repeat(16 - kind.length), generator ? '[Generator] Yes' : '[Generator] No ', nodeSchemaKind ? '[NodeType] Yes' : '[NodeType] No ', '[NodeType]', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
+    // node type registration
+    if (nodeKind)
+    {
+      _nodeKind2SchemaKind.set(nodeKind, kind);
+      
+      // generator check
+      const generator = (ctor as unknown as Record<string, Function>).schemaGenerator;
+      if (generator)
+        _nodeSchemaGenerators.set(nodeKind, generator as (namespace: string, name: string, target: object) => void);
+
+      const nodeTypeGenerator = (ctor as unknown as Record<string, new () => INodeType>).runtimeNodeType;
+      if (nodeTypeGenerator)
+        _nodeTypeGenerator.set(nodeKind, nodeTypeGenerator as new () => INodeType)
+    }
+
+    logger.debug('[Kind]:', kind, ' '.repeat(16 - kind.length), nodeKind ? '[NodeType] Yes' : '[NodeType] No ', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
   });
 
   // Special types: system.array & system.list
@@ -334,7 +342,7 @@ export function initSchemaRuntime(): void {
     const systemArray: NodeSchema & { display: { key: string }, array: ArraySchema } = {
       namespace: NS_SYSTEM,
       name: 'array',
-      kind: SCHEMA_KIND_ARRAY,
+      kind: NODE_KIND_ARRAY,
       display: { key: combinePaths(NS_SYSTEM, 'array') },
       array: { element: NS_SYSTEM_OBJECT }
     };
@@ -343,7 +351,7 @@ export function initSchemaRuntime(): void {
     const systemList: NodeSchema & { display: { key: string }, array: ArraySchema & { generics: GenericParameter[] } } = {
       namespace: NS_SYSTEM,
       name: 'list',
-      kind: SCHEMA_KIND_ARRAY,
+      kind: NODE_KIND_ARRAY,
       display: { key: combinePaths(NS_SYSTEM, 'list') },
       array: { element: 'T', generics: [{ name: 'T' }] }
     };
@@ -370,9 +378,9 @@ export function initSchemaRuntime(): void {
 
   // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
   _schemaTypeRegistry.forEach((ctor, type) => {
-    const ofSchema = (ctor as unknown as Record<string, string>).ofSchema;
-    const kind = ofSchema ?? SCHEMA_KIND_STRUCT;
-    const generator = _schemaGenerators.get(kind);
+    const ofNodeKind = (ctor as unknown as Record<string, string>).ofNodeKind;
+    const kind = ofNodeKind ?? NODE_KIND_STRUCT;
+    const generator = _nodeSchemaGenerators.get(kind);
     if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
 
     // Split the schema type into namespace and name

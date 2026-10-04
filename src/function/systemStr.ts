@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema } from '../property/core/ofSchema';
+import { OfNodeKind } from '../property/core/ofNodeKind';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../schema/function/property/return';
 import { ArgName } from '../schema/function/property/argName';
@@ -12,7 +12,7 @@ import { Converter } from '../schema/function/property/converter';
 
 import type { LocaleString } from '../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../utility/constant';
 import type { Entry, EntryAccess } from '../struct/entry/type';
 import { _LS, isNull } from '../utility';
 import { Generics } from '../schema/generic/generics';
@@ -25,7 +25,7 @@ import { Display } from '../property/common/display';
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_STR)
 export class SystemStr {
   // No methods on the root — all are in sub-namespaces below
@@ -33,7 +33,7 @@ export class SystemStr {
 
 // ── Logic ──────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.logic`)
 export class SystemStrLogic {
   /** str.startwith(prefix) */
@@ -81,7 +81,7 @@ export class SystemStrLogic {
 
 // ── State ──────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.state`)
 export class SystemStrState {
   /** str.length */
@@ -96,7 +96,7 @@ export class SystemStrState {
 
 // ── Convert ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.convert`)
 export class SystemStrConvert {
   /** a..b */
@@ -165,7 +165,7 @@ export class SystemStrConvert {
 
 // ── Map ────────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.map')
 export class SystemStrMap {
   /** Converts a string to a locale string */
@@ -225,7 +225,7 @@ export class SystemStrMap {
 
 // ── Util ───────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.util')
 export class SystemStrUtil {
   @Meta(Return, NS_SYSTEM_STRING)

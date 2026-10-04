@@ -13,6 +13,7 @@ import type { IPropertyProvider, IRelationInfo, IValueAccess, ValueAccessFactory
 import type { Observer } from "../../utility/observable";
 
 import { ARRAY_ELEMENT, ARRAY_PREVIOUS } from "../../utility/constant";
+import { getSchemaKindByNodeKind } from "../../runtime/schemaRuntime";
 
 /** The array node contains the array data values */
 export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements Iterable<T> {
@@ -212,7 +213,8 @@ export class ArrayNodeTemplate<T extends DataNode> extends DataNode implements I
 
   override setPropertyValues(props: Record<string, unknown>, source?: IValueAccess, ...kinds: string[]): void {
     const eleKind = (this.type as ArrayType).element?.kind;
-    if (eleKind && !kinds.includes(eleKind)) kinds.push(eleKind);
+    const eleSchemaKind = eleKind ? getSchemaKindByNodeKind(eleKind) : undefined;
+    if (eleSchemaKind && !kinds.includes(eleSchemaKind)) kinds.push(eleSchemaKind);
     super.setPropertyValues(props, source, ...kinds);
   }
 

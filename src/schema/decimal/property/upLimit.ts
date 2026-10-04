@@ -1,7 +1,7 @@
 import { Meta } from "../../../attribute/meta";
 import { Alias } from "../../../property/core/alias";
 import { ForSchema } from "../../../property/core/forSchema";
-import { OfSchema } from "../../../property/core/ofSchema";
+import { OfNodeKind } from "../../../property/core/ofNodeKind";
 import { PropertyValueType } from "../../../property/core/propertyValueType";
 import { SchemaType } from "../../../property/core/schemaType";
 import { Error } from "../../../property/common/error";
@@ -11,11 +11,11 @@ import { StackUpLimit } from "../../../property/common/stackUpLimit";
 
 import type { IValueAccess } from "../../../interface";
 
-import { NS_SYSTEM_NUMBER, NS_SYSTEM_SCHEMA_PRO_DECIMAL, SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DECIMAL_DEFINE, SCHEMA_KIND_DECIMAL_USAGE, SCHEMA_KIND_PROPERTY } from "../../../utility/constant";
+import { NS_SYSTEM_NUMBER, NS_SYSTEM_SCHEMA_PRO_DECIMAL, SCHEMA_KIND_NODE_DECIMAL, SCHEMA_KIND_NODE_DECIMAL_DEFINE, SCHEMA_KIND_NODE_DECIMAL_USAGE, NODE_KIND_PROPERTY } from "../../../utility/constant";
 
 @Meta(Alias, 'uplimit')
-@Meta(ForSchema, [SCHEMA_KIND_DECIMAL, SCHEMA_KIND_DECIMAL_DEFINE, SCHEMA_KIND_DECIMAL_USAGE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_DECIMAL, SCHEMA_KIND_NODE_DECIMAL_DEFINE, SCHEMA_KIND_NODE_DECIMAL_USAGE])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.uplimit`)
 @Meta(PropertyValueType, NS_SYSTEM_NUMBER)
 @Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.uplimit.error`)

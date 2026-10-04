@@ -11,7 +11,6 @@ import { isRelation, joinProperties, isConstraintProperty } from '../../interfac
 import { getPropertyName } from '../../property/property';
 import { formatLocaleString } from '../../struct/localeString/type';
 import { logger } from '../../utility/logger';
-import { getNodeType } from '../../runtime';
 import { FunctionType } from '../function/runtime';
 import { getGlobalAccessValue } from '../../property/core/accessPath';
 
@@ -21,6 +20,8 @@ import type { IValueTypeAccess } from '../../interface';
 import type { FuncCall } from '../function/type';
 
 import { DEBOUNCE_TIME, SCHEMA_KIND_NODE } from '../../utility/constant';
+import { getNodeType } from '../../runtime/context';
+import { getSchemaKindByNodeKind } from '../../runtime/schemaRuntime';
 
 /** A DataNode holds a value (or children) governed by a runtime ValueType. */
 export class DataNode implements IValueAccess, IPropertyProvider {
@@ -312,7 +313,8 @@ export class DataNode implements IValueAccess, IPropertyProvider {
 
   /** Sets the property values */
   setPropertyValues(props: Record<string, unknown>, source?: IValueAccess, ...kinds: string[]) {
-    if (!kinds.includes(this.type.kind)) kinds.push(this.type.kind);
+    const schemaKind = getSchemaKindByNodeKind(this.type.kind);
+    if (!kinds.includes(schemaKind)) kinds.push(schemaKind);
     if (!kinds.includes(SCHEMA_KIND_NODE)) kinds.push(SCHEMA_KIND_NODE);
 
     for (const kind of kinds)

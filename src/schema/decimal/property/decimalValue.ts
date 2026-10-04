@@ -3,7 +3,7 @@ import { Default } from '../../../property/common/default';
 import { InVisible } from '../../../property/common/invisible';
 import { Alias } from '../../../property/core/alias';
 import { ForSchema } from '../../../property/core/forSchema';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { SchemaType } from '../../../property/core/schemaType';
 import { Static } from '../../../property/core/static';
@@ -13,11 +13,11 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_DECIMAL, NS_SYSTEM_SCHEMA_PRO_DECIMAL } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_NODE_DECIMAL, NS_SYSTEM_SCHEMA_PRO_DECIMAL } from '../../../utility/constant';
 
 @Meta(Alias, 'decimal')
-@Meta(ForSchema, [SCHEMA_KIND_DECIMAL])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_DECIMAL])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)

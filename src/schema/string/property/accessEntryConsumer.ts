@@ -4,13 +4,13 @@ import { InVisible } from '../../../property/common/invisible';
 import { FuncCallProperty } from '../../../property/funcCallProperty';
 import { type FuncCall } from '../../../schema/function/type';
 import { ForSchema } from '../../../property/core/forSchema';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { SchemaType } from '../../../property/core/schemaType';
 import { Static } from '../../../property/core/static';
 import { Error } from '../../../property/common/error';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRING, SCHEMA_KIND_NODE_STRING, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../../utility/constant';
 import type { IConstraintProperty, IValueAccess, IValueTypeAccess } from '../../../interface';
 import type { FunctionType } from '../../function/runtime';
 import { getNodeType } from '../../../runtime/context';
@@ -21,8 +21,8 @@ import { AccessValueTypeProvider } from '../../../property/core/accessValueTypeP
 import type { ValueType } from '../../value';
 
 /** The access value consumer property */
-@Meta(ForSchema, [SCHEMA_KIND_STRING])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_STRING])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessEntryConsumer`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC_CALL}<${NS_SYSTEM_SCHEMA_FUNC}.valid>`)
 @Meta(Static, true)

@@ -7,9 +7,9 @@ import { Base } from '../../property/core/base';
 import { RuntimeNodeType } from '../../property/core/runtimeNodeType';
 import { buildFuncCall } from '../../schema/function/type';
 import { SchemaKind } from '../../property/record/schemaKind';
-import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
-import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
-import { OfSchema } from '../../property/core/ofSchema';
+import { NodeKind } from '../../property/record/nodeKind';
+import { NodeValueKind } from '../../property/record/nodeValueKind';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Valid } from '../../property/common/valid';
 import { Display } from '../../property/common/display';
@@ -23,28 +23,28 @@ import { SchemaGenerator } from '../../property/core/schemaGenerator';
 
 import type { NodeSchema } from '../node/type';
 
-import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, SCHEMA_KIND_NODE, SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT, SCHEMA_KIND_STRING } from '../../utility/constant';
+import { NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_OBJECT_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, SCHEMA_KIND_NODE, SCHEMA_KIND_NODE_OBJECT, SCHEMA_KIND_ORDER_OBJECT, NODE_KIND_STRING, NODE_KIND_OBJECT } from '../../utility/constant';
 
 /** Meta registration class (NOT exported). */
-@Meta(SchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
-@Meta(NodeSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
-@Meta(ValueSchemaKind, [SCHEMA_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
+@Meta(NodeKind, [NODE_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
+@Meta(NodeValueKind, [NODE_KIND_OBJECT, SCHEMA_KIND_ORDER_OBJECT])
 @Meta(SchemaGenerator, generateObjectSchema)
 @Meta(RuntimeNodeType, ObjectType)
 @Meta(DataNodeType, AnyNode)
 class ObjectKind {}
 
 /** Represents the object value type */
-@Meta(OfSchema, SCHEMA_KIND_STRING)
+@Meta(OfNodeKind, NODE_KIND_STRING)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_OBJECT_TYPE)
 @Meta(Base, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_SCHEMA_KIND, NODE_SELF, false, SCHEMA_KIND_OBJECT))
+@Meta(Valid, buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_SELF, false, NODE_KIND_OBJECT))
 class ObjectTypeMeta {}
 
 /** Generate the object schema type */
 function generateObjectSchema(namespace: string, name: string, ctor: Function)
 {
-    const nodeschema: NodeSchema = { namespace, name, kind: SCHEMA_KIND_OBJECT }
+    const nodeschema: NodeSchema = { namespace, name, kind: NODE_KIND_OBJECT }
     setPropertyValue(nodeschema, Display, { key : combinePaths(namespace, name)})
     getMetaPropertiesForSchema(SCHEMA_KIND_NODE, ctor).forEach(p => { setProperty(nodeschema, p) });
     saveNodeSchema(nodeschema);

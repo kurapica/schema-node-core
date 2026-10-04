@@ -2,7 +2,7 @@ import { Meta } from "../../attribute/meta";
 import { Relation } from "../../attribute/relation";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
-import { OfSchema } from "../../property/core/ofSchema";
+import { OfNodeKind } from "../../property/core/ofNodeKind";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
 import { buildFuncCall } from '../../schema/function/type';
@@ -12,14 +12,14 @@ import { combineProperties } from "../../property/propertyOwner";
 import type { IProperty } from "../../interface";
 import type { IntSchema } from "./type";
 
-import { SCHEMA_KIND_NODE, SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_INT, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_INT, SCHEMA_KIND_INT } from "../../utility/constant";
+import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_INT, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_INT, SCHEMA_KIND_NODE_INT, NODE_KIND_INT } from "../../utility/constant";
 
 /** The int property for node schema */
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_INT}.${SCHEMA_KIND_INT}`)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_INT}.${NODE_KIND_INT}`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_INT}.schema`)
-@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', SCHEMA_KIND_INT))
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', NODE_KIND_INT))
 export class IntProperty extends Property<IntSchema>
 {
   combine(other: IProperty): boolean {
@@ -31,7 +31,7 @@ export class IntProperty extends Property<IntSchema>
       this.setValue(otherSchema);
       return true;
     }
-    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_INT);
+    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_NODE_INT);
     this.setValue(selfSchema);
     return true;
   }

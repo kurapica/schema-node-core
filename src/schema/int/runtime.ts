@@ -5,7 +5,7 @@ import { ScalarType } from "../value/scalar";
 import type { IProperty } from "../../interface";
 import type { IntSchema } from "./type";
 
-import { SCHEMA_KIND_INT } from "../../utility/constant";
+import { SCHEMA_KIND_NODE_INT } from "../../utility/constant";
 
 export class IntType extends ScalarType {
   private _intSchema: IntSchema | undefined
@@ -14,7 +14,7 @@ export class IntType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._intSchema = getPropertyValue<IntSchema>(this.schema, "int");
-    return this._intSchema ? Array.from(getPropertiesBySchemaKind(this._intSchema, SCHEMA_KIND_INT)) : [];
+    return this._intSchema ? Array.from(getPropertiesBySchemaKind(this._intSchema, SCHEMA_KIND_NODE_INT)) : [];
   }
 
   override async load() {

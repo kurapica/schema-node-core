@@ -5,7 +5,7 @@ import { ScalarType } from "../value/scalar";
 import type { IProperty } from "../../interface";
 import type { StringSchema } from "./type";
 
-import { ENTITY_PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_STRING } from "../../utility/constant";
+import { ENTITY_PRIMARY_KEY_MAX_LEN, SCHEMA_KIND_NODE_STRING } from "../../utility/constant";
 import { UpLimitString } from "./property/upLimit";
 
 export class StringType extends ScalarType {
@@ -18,7 +18,7 @@ export class StringType extends ScalarType {
 
   override loadProperties(): IProperty[] {
     this._stringSchema = getPropertyValue<StringSchema>(this.schema, "string");
-    return this._stringSchema ? Array.from(getPropertiesBySchemaKind(this._stringSchema, SCHEMA_KIND_STRING)) : [];
+    return this._stringSchema ? Array.from(getPropertiesBySchemaKind(this._stringSchema, SCHEMA_KIND_NODE_STRING)) : [];
   }
 
   override async load() {

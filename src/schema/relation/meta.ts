@@ -20,14 +20,14 @@ import { AccessValueTypeResolver } from '../string/property/accessValueTypeResol
 
 import type { RelationSchema } from './type';
 
-import { SCHEMA_KIND_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PRO } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PRO } from '../../utility/constant';
 import { KindResolver } from '../string';
 import { InVisible } from '../../property';
 
 /** Meta registration class (NOT exported). */
-@Meta(SchemaKind, [SCHEMA_KIND_RELATION, SCHEMA_KIND_ORDER_RELATION])
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_RELATION, SCHEMA_KIND_ORDER_RELATION])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.schema`)
-@Meta(Attach, SCHEMA_KIND_RELATION)
+@Meta(Attach, SCHEMA_KIND_NODE_RELATION)
 @Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.forschema`, NODE_SELF, '@targetKind', '@ownerKind'), 'property')
 class RelationSchemaMeta implements RelationSchema {
   /** The target of the relation */

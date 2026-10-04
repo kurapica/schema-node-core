@@ -6,19 +6,19 @@ import { Meta } from '../../attribute/meta';
 import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
-import { OfSchema } from './ofSchema';
+import { OfNodeKind } from './ofNodeKind';
 import { PropertyValueType } from './propertyValueType';
 import { SchemaType } from './schemaType';
 import { Static } from './static';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOOL, NODE_KIND_PROPERTY } from '../../utility/constant';
 
 /**
  * Declare whether duplicate properties from different sources stack (accumulate) vs override.
  * Mirrors C# SchemaNode.Core/Property/Core/Stackable.cs
  */
-@Meta(ForSchema, [SCHEMA_KIND_PROPERTY])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_PROPERTY])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.stackable`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(Static, true)

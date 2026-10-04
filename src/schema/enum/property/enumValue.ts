@@ -3,7 +3,7 @@ import { EnumValueType } from '../../../enum/enumValueType/type';
 import { isNull } from '../../../utility/toolset';
 import { Alias } from '../../../property/core/alias';
 import { ForSchema } from '../../../property/core/forSchema';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { InVisible } from '../../../property/common/invisible';
@@ -16,11 +16,11 @@ import { ArrayType } from '../../array/runtime';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, SCHEMA_KIND_ENUM, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_ENUM } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, SCHEMA_KIND_NODE_ENUM, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_PRO_ENUM, NODE_KIND_ENUM } from '../../../utility/constant';
 
 @Meta(Alias, 'enum')
-@Meta(ForSchema, [SCHEMA_KIND_ENUM])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_ENUM])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)
@@ -32,10 +32,10 @@ export class EnumValue extends ConstraintProperty<boolean> {
 
   async validate(node: IValueAccess): Promise<boolean | undefined> {
     if (node.isEmpty) return undefined;
-    if (node.type.kind === SCHEMA_KIND_ENUM) {
+    if (node.type.kind === NODE_KIND_ENUM) {
       return this.validateEnumValue(node.type as EnumType, node.getValue());
     }
-    else if (node.type instanceof ArrayType && node.type.element?.kind === SCHEMA_KIND_ENUM)
+    else if (node.type instanceof ArrayType && node.type.element?.kind === NODE_KIND_ENUM)
     {
       const values = node.getValue() as unknown[];
       for(let value of values)

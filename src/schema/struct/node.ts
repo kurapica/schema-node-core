@@ -5,7 +5,7 @@ import { getNodeType } from "../../runtime/context";
 import { isEmpty, isEqual, isNull, splitString, trimValue } from "../../utility/toolset";
 import { DataNode } from "../value/node";
 import { StructFieldType, StructType } from "./runtime";
-import { SCHEMA_KIND_STRUCT } from "../../utility/constant";
+import { NODE_KIND_STRUCT } from "../../utility/constant";
 import { DisableConstraint } from "../../property/core/disableConstraint";
 
 import type { IPropertyProvider, PropertyCtor, IValueAccess, IRelationInfo, IValueTypeAccess } from "../../interface";
@@ -348,7 +348,7 @@ export class StructNode extends DataNode implements Iterable<IValueAccess> {
       else
       {
         // Generate a random struct type for override fields
-        const nodeSchema: NodeSchema & { struct: StructSchema } = { name: '__randomStructType', kind: SCHEMA_KIND_STRUCT, struct: { fields: newValue as StructFieldSchema[] ?? [] } };
+        const nodeSchema: NodeSchema & { struct: StructSchema } = { name: '__randomStructType', kind: NODE_KIND_STRUCT, struct: { fields: newValue as StructFieldSchema[] ?? [] } };
         const newStrucType = new StructType();
         await newStrucType.loadType(nodeSchema);
         type = newStrucType;

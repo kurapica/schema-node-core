@@ -3,7 +3,7 @@ import { Default } from '../../../property/common/default';
 import { InVisible } from '../../../property/common/invisible';
 import { Alias } from '../../../property/core/alias';
 import { ForSchema } from '../../../property/core/forSchema';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { SchemaType } from '../../../property/core/schemaType';
 import { Static } from '../../../property/core/static';
@@ -12,13 +12,13 @@ import { ConstraintProperty } from '../../../property/constraintProperty';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_STRUCT } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_NODE_STRUCT } from '../../../utility/constant';
 import { NS_SYSTEM_SCHEMA_PRO_STRUCT } from '../../../utility/constant';
 import { StructNode } from '../node';
 
 @Meta(Alias, 'struct')
-@Meta(ForSchema, [SCHEMA_KIND_STRUCT])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.valid`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 @Meta(InVisible, true)

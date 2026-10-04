@@ -1,11 +1,11 @@
 import { Meta } from '../../attribute/meta';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Return } from '../../schema/function/property/return';
 import { ArgName } from '../../schema/function/property/argName';
 import { Require } from '../../property/common/require';
 import { getRecordedValues } from '../../property/recordProperty';
-import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { NodeValueKind } from '../../property/record/nodeValueKind';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
 import { _LS } from '../../utility/locale';
@@ -19,11 +19,11 @@ import { EntryRoot } from '../../property/core/entrySource';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, SCHEMA_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from '../../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_ARRAY_ELEMENT, NS_SYSTEM_LIST, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_NODE_TYPE, NODE_KIND_ARRAY, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, ARRAY_PREVIOUS, ARRAY_ELEMENT } from '../../utility/constant';
 import { Variadic } from '../../schema/function/property/variadic';
 
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_ARRAY)
 export class SystemReflectArray {
   /** Generates the array name for the given element type */
@@ -89,8 +89,8 @@ export class SystemReflectArray {
   ): Promise<boolean> {
     const nodeType = !name ? undefined : await getNodeType(name);
     if (!nodeType) return false;
-    if (nodeType.kind.toLowerCase() === SCHEMA_KIND_ARRAY.toLowerCase()) return false;
-    const valueKinds = getRecordedValues(ValueSchemaKind);
+    if (nodeType.kind.toLowerCase() === NODE_KIND_ARRAY) return false;
+    const valueKinds = getRecordedValues(NodeValueKind);
     return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
   }
   

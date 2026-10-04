@@ -4,7 +4,7 @@ import { generateGuid, isEqual, isNull } from "../../utility/toolset";
 
 import type { Entry, EntryAccess } from "./type";
 
-import { SCHEMA_KIND_ENTRY } from "../../utility/constant";
+import { SCHEMA_KIND_NODE_ENTRY } from "../../utility/constant";
 
 /** The runtime entry  */
 export class EntryType<T> implements Entry<T> {
@@ -44,7 +44,7 @@ export class EntryType<T> implements Entry<T> {
   /** Gets the entry as a plain object */
   get entry(): Entry<T> {
     const entry = { value: this.value, hasChildren: this.hasChildren };
-    combineProperties(entry, this._entry, SCHEMA_KIND_ENTRY);
+    combineProperties(entry, this._entry, SCHEMA_KIND_NODE_ENTRY);
     return entry;
   }
 

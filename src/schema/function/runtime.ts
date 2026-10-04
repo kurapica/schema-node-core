@@ -31,7 +31,8 @@ import type { ITypeRefProperty } from '../../property/typeRefProperty';
 import type { GenericParameter } from '../generic/type';
 import type { RelationSchema } from '../relation/type';
 
-import { SCHEMA_KIND_ARRAY, SCHEMA_KIND_FUNC_ARG, SCHEMA_KIND_FUNCTION, SCHEMA_KIND_STRUCT, FUNC_RETURN, NS_SYSTEM_OBJECT, ARRAY_ELEMENT } from '../../utility/constant';
+import { NODE_KIND_ARRAY, SCHEMA_KIND_NODE_FUNC_ARG, SCHEMA_KIND_NODE_FUNCTION, FUNC_RETURN, NS_SYSTEM_OBJECT, ARRAY_ELEMENT, NODE_KIND_STRUCT } from '../../utility/constant';
+import { getSchemaKindByNodeKind } from '../../runtime';
 
 /** Shared result cache for remote calls (keyed by token). */
 const shareFuncCallResult = new Map<string, unknown>();
@@ -89,7 +90,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
 
   override loadProperties(): IProperty[] {
     this._funcSchema = getPropertyValue<FunctionSchema>(this.schema, "function");
-    return this._funcSchema ? Array.from(getPropertiesBySchemaKind(this._funcSchema, SCHEMA_KIND_FUNCTION)) : [];
+    return this._funcSchema ? Array.from(getPropertiesBySchemaKind(this._funcSchema, SCHEMA_KIND_NODE_FUNCTION)) : [];
   }
 
   override async load() {
@@ -221,7 +222,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
         // indicate the colletion
         let arrIdx = -1;
         for (let i = 0; i < this.args.length; i++) {
-          if (this.args.at(i)?.type?.kind !== SCHEMA_KIND_ARRAY && Array.isArray(args[i])) {
+          if (this.args.at(i)?.type?.kind !== NODE_KIND_ARRAY && Array.isArray(args[i])) {
             arrIdx = i;
             break;
           }
@@ -696,7 +697,7 @@ export class FunArgsType implements INodeReference, Iterable<FuncArgType> {
     this._args = args.map(a => new FuncArgType(a));
   }
   get name(): string { return '' }
-  get kind(): string { return SCHEMA_KIND_FUNC_ARG; }
+  get kind(): string { return SCHEMA_KIND_NODE_FUNC_ARG; }
   isAssignableTo(other: IValueTypeAccess): boolean { return false; }
   getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined { return undefined }
   getPropertyValue<T>(propCtor: PropertyCtor | string): T | undefined { return undefined }
@@ -766,7 +767,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
 
   constructor(funcArg: FuncArg) {
     this._funcArg = funcArg;
-    this._props = Array.from(getPropertiesBySchemaKind(funcArg, SCHEMA_KIND_FUNC_ARG));
+    this._props = Array.from(getPropertiesBySchemaKind(funcArg, SCHEMA_KIND_NODE_FUNC_ARG));
     const name = new Name();
     name.setValue(this.name);
     this._props.unshift(name);
@@ -775,12 +776,12 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
   async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
     this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as unknown as IValueTypeAccess;
     if (this._valueType) {
-        this._props.push(...getPropertiesBySchemaKind(this._funcArg, this._valueType.kind));
-        if (this._valueType.kind === SCHEMA_KIND_ARRAY)
+        this._props.push(...getPropertiesBySchemaKind(this._funcArg, getSchemaKindByNodeKind(this._valueType.kind)));
+        if (this._valueType.kind === NODE_KIND_ARRAY)
         {
           const eleKind = this._valueType.getAccessValueType(ARRAY_ELEMENT)?.kind;
           if (eleKind)
-            this._props.push(...getPropertiesBySchemaKind(this._funcArg, eleKind));
+            this._props.push(...getPropertiesBySchemaKind(this._funcArg, getSchemaKindByNodeKind(eleKind)));
         }
     }
 
@@ -873,7 +874,7 @@ async function _analyzeArrayDepsByType(
 
     // If the called function already expects an array for this param — skip
     const fnArgType = calledFunc.args.at(j)?.type;
-    if (fnArgType?.kind === SCHEMA_KIND_ARRAY) continue;
+    if (fnArgType?.kind === NODE_KIND_ARRAY) continue;
 
     // Find the array source: walk the source path to find which prefix resolves to an ArrayType
     const sourceInfo = _findArraySourceByType(expArg.source, expTypes);
@@ -913,13 +914,13 @@ function _findArraySourceByType(
   let type = expTypes.get(parts[0]);
 
   // Direct: the first part is an array
-  if (type?.kind === SCHEMA_KIND_ARRAY)
+  if (type?.kind === NODE_KIND_ARRAY)
     return { sourceName: parts[0], direct: parts.length === 1 };
 
   for (let i = 1; i < parts.length; i++) {
     type = type?.getAccessValueType(parts[i]);
     if (!type) break;
-    if (type.kind === SCHEMA_KIND_ARRAY) {
+    if (type.kind === NODE_KIND_ARRAY) {
       return { sourceName: parts.slice(0, i + 1).join('.'), direct: false };
     }
   }
@@ -1001,7 +1002,7 @@ async function _resolveStructReturnFields(
   generics?: GenericParameter[],
   genericParams?: INodeType[],
 ): Promise<string[] | undefined> {
-  if (!(returnType?.kind === SCHEMA_KIND_STRUCT) || !lastExpReturn) return undefined;
+  if (!(returnType?.kind === NODE_KIND_STRUCT) || !lastExpReturn) return undefined;
 
   const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as IValueTypeAccess | undefined;
   if (!lastExpType) return undefined;

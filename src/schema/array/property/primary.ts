@@ -1,5 +1,5 @@
 import { Meta } from '../../../attribute/meta';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { ForSchema } from '../../../property/core/forSchema';
@@ -10,13 +10,13 @@ import { Error } from '../../../property/common/error';
 
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_ARRAY, SCHEMA_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_ARRAY_DEFINE, NS_SYSTEM_INTRINSIC, ARRAY_ELEMENT, ARRAY_PREVIOUS } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_NODE_ARRAY, NODE_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE, NS_SYSTEM_INTRINSIC, ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_KIND_ARRAY } from '../../../utility/constant';
 import { Relation } from '../../../attribute';
 import { BlackList } from '../../../property';
 import { buildFuncCall } from '../../function';
 
-@Meta(ForSchema, [SCHEMA_KIND_ARRAY, SCHEMA_KIND_ARRAY_DEFINE])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary`)
 @Meta(Static, true)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
@@ -24,7 +24,7 @@ import { buildFuncCall } from '../../function';
 @Relation(BlackList, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, `@primary.${ARRAY_PREVIOUS}`), `primary.${ARRAY_ELEMENT}`)
 export class Primary extends ConstraintProperty<string[]> {
   async validate(node: IValueAccess): Promise<boolean | undefined> {
-    if (node.isEmpty || !this._value?.length || node.type.kind !== SCHEMA_KIND_ARRAY) return undefined;
+    if (node.isEmpty || !this._value?.length || node.type.kind !== NODE_KIND_ARRAY) return undefined;
 
     const keys = new Set<string>();
     for (const item of (node as unknown as Iterable<IValueAccess>))
@@ -43,7 +43,7 @@ export class Primary extends ConstraintProperty<string[]> {
   }
 
   private recordViolation(node: IValueAccess, result: boolean) {
-    if (node.type.kind === SCHEMA_KIND_STRUCT)
+    if (node.type.kind === NODE_KIND_STRUCT)
     {
       for (let i = this._value!.length; i--;) {
         const last = node.getAccessValue(this._value![i]);

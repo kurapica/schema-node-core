@@ -26,7 +26,7 @@ import type { Entry, EntryAccess } from '../../struct/entry/type';
 import type { EnumSchema } from './type';
 import type { IProperty, PropertyCtor } from '../../interface';
 
-import { NODE_SELF, SCHEMA_KIND_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
+import { NODE_SELF, SCHEMA_KIND_NODE_ENUM, NS_SYSTEM_SCHEMA_REFLECT_ENUM } from '../../utility/constant';
 import { getSchemaProvider } from '../provider';
 
 
@@ -48,7 +48,7 @@ export class EnumType extends ValueType {
     this._enumSchema = getPropertyValue<EnumSchema>(this.schema, "enum");
     const entrySource = new EntrySource();
     entrySource.setValue<FuncCall>(buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ENUM}.getenumaccess`, this.name, NODE_SELF));
-    return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_ENUM)).concat(entrySource) : [entrySource];
+    return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_NODE_ENUM)).concat(entrySource) : [entrySource];
   }
 
   override async load()
@@ -74,15 +74,15 @@ export class EnumType extends ValueType {
 
   override getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
     // enable prototype properties
-    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(this.kind, propCtor);
+    return super.getProperty<T>(propCtor) ?? getSchemaKindProperty<T>(SCHEMA_KIND_NODE_ENUM, propCtor);
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
-    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(this.kind, propCtor))) yield prop as T;
+    for (let prop of joinProperties(super.getProperties<T>(propCtor), getSchemaKindProperties<T>(SCHEMA_KIND_NODE_ENUM, propCtor))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(this.kind, predicate))) yield prop;
+    for (let prop of joinProperties(super.filterProperties(predicate), filterSchemaKindProperties(SCHEMA_KIND_NODE_ENUM, predicate))) yield prop;
   }
 
   override isAssignableTo(other: ValueType): boolean {

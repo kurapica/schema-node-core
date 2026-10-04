@@ -1,16 +1,16 @@
 import { Meta } from "../../attribute/meta";
 import { Property } from "../property";
-import { OfSchema } from "./ofSchema";
+import { OfNodeKind } from "./ofNodeKind";
 import { PropertyValueType } from "./propertyValueType";
 import { SchemaType } from "./schemaType";
 import { Static } from "./static";
 
-import { NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_STRING, SCHEMA_KIND_PROPERTY } from "../../utility/constant";
+import { NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_STRING, NODE_KIND_PROPERTY } from "../../utility/constant";
 import { ReadOnly } from "../common/readOnly";
 import { InVisible } from "../common/invisible";
 
 /** The schema kind provider property. */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.kindprovider`)
 @Meta(Static, true)
 @Meta(ReadOnly, true)

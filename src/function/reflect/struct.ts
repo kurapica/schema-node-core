@@ -1,7 +1,7 @@
 import { Meta } from '../../attribute/meta';
 import { Display } from '../../property/common/display';
 import { getPropertyValue, setPropertyValue } from '../../property/propertyOwner';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { combinePaths, isEmpty, isNull } from '../../utility/toolset';
 import { _LS } from '../../utility/locale';
@@ -25,10 +25,11 @@ import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { StructFieldSchema } from '../../schema/struct/type';
 import type { RelationType } from '../../schema/relation/runtime';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY, NS_SYSTEM_SCHEMA_PRO_TYPE, SCHEMA_KIND_STRUCT_FIELD } from '../../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_STRUCT, PRIMARY_KEY_MAX_LEN, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_STRUCT_FIELD, NS_SYSTEM_ENTRY, NS_SYSTEM_SCHEMA_PRO_TYPE, SCHEMA_KIND_NODE_STRUCT_FIELD } from '../../utility/constant';
+import { getSchemaKindByNodeKind } from '../../runtime';
 
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_STRUCT)
 export class SystemReflectStruct {
     
@@ -149,8 +150,8 @@ export class SystemReflectStruct {
     const propType = await getNodeType(property);
     if (!(valueType instanceof ValueType)) return false;
     if (!(propType instanceof PropertyType)) return false;
-    if (propType.forSchema(valueType.kind)) return true;
-    if (!propType.forSchema(SCHEMA_KIND_STRUCT_FIELD)) return false;
+    if (propType.forSchema(getSchemaKindByNodeKind(valueType.kind))) return true;
+    if (!propType.forSchema(SCHEMA_KIND_NODE_STRUCT_FIELD)) return false;
 
     // check with relations
     const structDefineType = await getNodeType(`${NS_SYSTEM_SCHEMA_STRUCT}.field`) as StructType;

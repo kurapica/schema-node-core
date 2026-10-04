@@ -10,7 +10,7 @@ export * from './forSchema';
 export * from './fromEnum';
 export * from './indexes';
 export * from './name';
-export * from './ofSchema';
+export * from './ofNodeKind';
 export * from './overrideType';
 export * from './propertyValueType';
 export * from './relationProcess';

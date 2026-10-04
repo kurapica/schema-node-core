@@ -1,5 +1,5 @@
 import { Meta } from '../../attribute/meta';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Return } from '../../schema/function/property/return';
 import { ArgName } from '../../schema/function/property/argName';
@@ -22,11 +22,11 @@ import { EntryRoot } from '../../property/core/entrySource';
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { FuncArg, FuncExp } from '../../schema/function/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, SCHEMA_KIND_STRUCT, NS_SYSTEM_OBJECT, SCHEMA_KIND_ARRAY } from '../../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_ENTRYS, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_STRING, NODE_KIND_STRUCT, NS_SYSTEM_OBJECT, NODE_KIND_ARRAY } from '../../utility/constant';
 import { StructType } from '../../schema/struct/runtime';
 
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_FUNC)
 export class SystemReflectFunction {
   /** Checks if the function type's return type match the given type */
@@ -123,7 +123,7 @@ export class SystemReflectFunction {
       if (!a.name || !a.type) continue;
       const ftype = await getNodeType(a.type) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: a.name, hasChildren: ftype.kind !== SCHEMA_KIND_ARRAY && ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: a.name, hasChildren: ftype.kind !== NODE_KIND_ARRAY && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(a, Display) ?? _LS(a.name));
       first.push(entry);
       if (!curr && path && (path === a.name.toLowerCase() || path.startsWith(`${a.name.toLowerCase()}.`))) {
@@ -138,7 +138,7 @@ export class SystemReflectFunction {
       if (!e.name || !e.return) continue;
       const ftype = await getNodeType(e.return) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: e.name, hasChildren: ftype.kind !== SCHEMA_KIND_ARRAY && ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: e.name, hasChildren: ftype.kind !== NODE_KIND_ARRAY && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(e, Display) ?? _LS(e.name));
       first.push(entry);
       if (!curr && path && (path === e.name.toLowerCase() || path.startsWith(`${e.name.toLowerCase()}.`))) {
@@ -151,7 +151,7 @@ export class SystemReflectFunction {
     while (valueType)
     {
       const accessEntry: EntryAccess<string> = {};
-      const accesses = valueType.kind !== SCHEMA_KIND_ARRAY ? valueType.getAccessEntries() : [];
+      const accesses = valueType.kind !== NODE_KIND_ARRAY ? valueType.getAccessEntries() : [];
       if (curr)
       {
         accessEntry.entry = setPropertyValue(
@@ -170,7 +170,7 @@ export class SystemReflectFunction {
         const n = a.value;
         const nvtype = valueType.getAccessValueType(n);
         if (curr) a.value = combinePaths(curr.value, n);
-        if (nvtype?.kind === SCHEMA_KIND_ARRAY) a.hasChildren = false;
+        if (nvtype?.kind === NODE_KIND_ARRAY) a.hasChildren = false;
         if (path && (path === a.value || path.startsWith(a.value + '.')))
         {
           next = nvtype;
@@ -271,7 +271,7 @@ export class SystemReflectFunction {
   ): Promise<string | undefined> {
     const valueType = await getNodeType(type) as ValueType | undefined;
     const eleType = valueType instanceof ArrayType ? valueType.element : valueType;
-    return eleType?.kind != SCHEMA_KIND_STRUCT ? valueType?.name : NS_SYSTEM_OBJECT;
+    return eleType?.kind != NODE_KIND_STRUCT ? valueType?.name : NS_SYSTEM_OBJECT;
   }
 
   /** Gets the sub entries of the struct fields */

@@ -1,5 +1,5 @@
 import { Meta } from '../../attribute/meta';
-import { OfSchema } from '../core/ofSchema';
+import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { ConstraintProperty } from '../constraintProperty';
@@ -8,9 +8,9 @@ import { Visible } from './visible';
 
 import type { IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL } from '../../utility/constant';
+import { NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL, NODE_KIND_PROPERTY } from '../../utility/constant';
 
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.require`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 export class Require extends ConstraintProperty<boolean> {

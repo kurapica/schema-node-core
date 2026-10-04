@@ -4,7 +4,7 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
-import { OfSchema } from '../core/ofSchema';
+import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
 import { buildFuncCall } from '../../schema/function/type';
@@ -14,10 +14,10 @@ import { DisplayOnly } from '../../schema/struct/property/displayOnly';
 
 import type { IRelation, IValueAccess } from '../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_CORE, TYPE_PROVIDER } from '../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_CORE, TYPE_PROVIDER } from '../../utility/constant';
 
 /** The Default property represents the default value */
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.default`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
 @Relation(`${NS_SYSTEM_SCHEMA_PRO_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER))

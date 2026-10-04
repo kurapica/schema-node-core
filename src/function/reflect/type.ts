@@ -1,5 +1,5 @@
 import { getMetaProperty, Meta } from '../../attribute/meta';
-import { OfSchema } from '../../property/core/ofSchema';
+import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { SchemaType } from '../../property/core/schemaType';
 import { Return } from '../../schema/function/property/return';
 import { ArgName } from '../../schema/function/property/argName';
@@ -8,23 +8,23 @@ import { Display } from '../../property/common/display';
 import { Require } from '../../property/common/require';
 import { Variadic } from '../../schema/function/property/variadic';
 import { getRecordedValues } from '../../property/recordProperty';
-import { ValueSchemaKind } from '../../property/record/valueSchemaKind';
+import { NodeValueKind } from '../../property/record/nodeValueKind';
 import { combinePaths, isNull } from '../../utility/toolset';
 import { getNodeType } from '../../runtime/context';
 import { ValueType } from '../../schema/value/runtime';
 import { ArrayType } from '../../schema/array/runtime';
 import { isNamespaceNodeType, isValueTypeAccess, type IValueTypeAccess } from '../../interface';
-import { NodeSchemaKind } from '../../property/record/nodeSchemaKind';
+import { NodeKind } from '../../property/record/nodeKind';
 
 import type { EntryAccess, Entry } from '../../struct/entry/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, SCHEMA_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_DESIGN } from '../../utility/constant';
-import { getSchemaKindRegister } from '../../runtime';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NODE_KIND_NAMESPACE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_KIND, NS_SYSTEM_SCHEMA_DESIGN, NS_SYSTEM_SCHEMA_NODE } from '../../utility/constant';
+import { getSchemaKindByNodeKind, getSchemaKindRegister } from '../../runtime';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { EntryRoot } from '../../property/core/entrySource';
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_SCHEMA_REFLECT_TYPE)
 export class SystemReflectType {
 
@@ -44,7 +44,7 @@ export class SystemReflectType {
     if (!typeNode) return undefined;
     if (arrayElement && typeNode instanceof ArrayType) typeNode = typeNode.element;
     if (!typeNode) return undefined;
-    const ctor = getSchemaKindRegister(typeNode.kind);
+    const ctor = getSchemaKindRegister(getSchemaKindByNodeKind(typeNode.kind));
     if (!ctor) return undefined;
     return getMetaProperty(ctor, SchemaUsage)?.getValue<string>();
   }
@@ -80,14 +80,14 @@ export class SystemReflectType {
     if (!ns) return [];
 
     let result: EntryAccess<string>[] = [];
-    const recordes = getRecordedValues(NodeSchemaKind);
+    const recordes = getRecordedValues(NodeKind);
     while (ns != null)
     {
       let access: EntryAccess<string> = {};
       if (ns.namespace != null)
       {
         access.entry = setPropertyValue(
-          { value: ns.name, hasChildren: ns.kind === SCHEMA_KIND_NAMESPACE },
+          { value: ns.name, hasChildren: ns.kind === NODE_KIND_NAMESPACE },
           Display,
           ns.getProperty(Display)?.getValue<LocaleString>()
         );
@@ -103,7 +103,7 @@ export class SystemReflectType {
 
         access.children = nodeSchemas.map(s => {
           return setPropertyValue(
-            { value: combinePaths(ns!.name, s.name), hasChildren: s.kind === SCHEMA_KIND_NAMESPACE },
+            { value: combinePaths(ns!.name, s.name), hasChildren: s.kind === NODE_KIND_NAMESPACE },
             Display,
             getPropertyValue(s, Display)
           );
@@ -196,7 +196,7 @@ export class SystemReflectType {
 
   /** Checks if the schema kind of the schema node with the given name is the same as the given kind */
   @Meta(Return, NS_SYSTEM_BOOL)
-  static async isschemakind(
+  static async isnodekind(
     @Meta(ArgName, 'name')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     name: string,
@@ -206,7 +206,7 @@ export class SystemReflectType {
     matchArrayElement: boolean,
 
     @Meta(ArgName, 'kind')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.kind`)
     @Meta(Require, true)
     @Meta(Variadic, true)
     ...kinds: string[]
@@ -221,7 +221,7 @@ export class SystemReflectType {
 
   /** hecks if value type of the give access from the type match the given schema kinds */
   @Meta(Return, NS_SYSTEM_BOOL)
-  static async isschemakindaccess(
+  static async isnodekindaccess(
     @Meta(ArgName, 'name')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
     @Meta(Require, true)
@@ -237,7 +237,7 @@ export class SystemReflectType {
     matchArrayElement: boolean,
 
     @Meta(ArgName, 'kind')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
+    @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_NODE}.kind`)
     @Meta(Require, true)
     @Meta(Variadic, true)
     ...kinds: string[]
@@ -261,7 +261,7 @@ export class SystemReflectType {
   ): Promise<string | undefined> {
     const nodeType = !type ? undefined : await getNodeType(type);
     if (!nodeType) return undefined;
-    return nodeType.kind;
+    return nodeType.kind ? getSchemaKindByNodeKind(nodeType.kind) : undefined;
   }
 
   /** Checks if the schema kind of the schema node with the given name is a value schema kind */
@@ -274,7 +274,7 @@ export class SystemReflectType {
   ): Promise<boolean> {
     const nodeType = isNull(name) ? undefined : await getNodeType(name);
     if (!nodeType) return false;
-    const valueKinds = getRecordedValues(ValueSchemaKind);
+    const valueKinds = getRecordedValues(NodeValueKind);
     return valueKinds.some(v => v.getValue<string>()?.toLowerCase() === nodeType.kind.toLowerCase());
   }
 
@@ -313,24 +313,5 @@ export class SystemReflectType {
   ): Promise<boolean> {
     const nodeType = !type ? undefined : await getNodeType(type) as ValueType;
     return nodeType?.isIndexable ?? false;
-  }
-
-  /** Gets the design schema name of the given schema kind */
-  @Meta(Return, NS_SYSTEM_STRING)
-  static async getdesignschema(
-    @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_TYPE)
-    @Meta(Require, true)
-    type: string,
-
-    @Meta(ArgName, 'element')
-    @Meta(SchemaType, NS_SYSTEM_BOOL)
-    element?: boolean
-  ): Promise<string> {
-    let nodeType = !type ? undefined : await getNodeType(type);
-    if (element && nodeType instanceof ArrayType) nodeType = nodeType.element;
-    if (!nodeType) return '';
-    const kind = nodeType.kind.toLowerCase();
-    return `${NS_SYSTEM_SCHEMA_DESIGN}.${kind}`;
   }
 }

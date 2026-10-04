@@ -2,7 +2,7 @@ import { SchemaLoadState } from "../enum/schemaLoadState";
 import { hasNodeReferences, isNamespaceNodeType } from "../interface";
 import { combineProperties, getPropertyValue } from "../property/propertyOwner";
 import { getSchemaProvider } from "../schema/provider";
-import { getSchemaKindRegister, getSystemSchema } from "./schemaRuntime";
+import { getNodeTypeGenerator, getSystemSchema } from "./schemaRuntime";
 import { logger } from "../utility/logger";
 import { isNull, splitString, useShareQuery } from "../utility/toolset";
 import { SystemDefined } from "../property/core/systemDefined";
@@ -11,20 +11,16 @@ import { getNodeSchemaName, type NodeSchema } from "../schema/node/type";
 import type { INamespaceNodeType, INodeReference, INodeType } from "../interface";
 import type { GenericParameter } from "../schema/generic/type";
 
-import { SCHEMA_KIND_GENERIC, SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE } from "../utility/constant";
+import { SCHEMA_KIND_NODE, NODE_KIND_NAMESPACE, NODE_KIND_GENERIC } from "../utility/constant";
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: INamespaceNodeType | undefined;
-
-function getRuntimeNodeType(kind: string){
-  return (getSchemaKindRegister(kind)! as unknown as Record<string, new (parent?: INodeType) => INodeType>)?.runtimeNodeType
-}
 
 /** Get the cached NodeType type by full schema name. */
 export function getCachedNodeType(fullName: string): INodeType | undefined {
   const split = splitString(fullName);
   if (!rootNamespaceType) {
-    const runtime = getRuntimeNodeType(SCHEMA_KIND_NAMESPACE)!;
+    const runtime = getNodeTypeGenerator(NODE_KIND_NAMESPACE)!;
     rootNamespaceType = new runtime() as INamespaceNodeType;
   }
 
@@ -63,7 +59,7 @@ export async function getNodeType(
     if (gIdx >= 0) {
       if (genericParams && gIdx < genericParams.length)
         return genericParams[gIdx];
-      const runtime = getRuntimeNodeType(SCHEMA_KIND_GENERIC)!;
+      const runtime = getNodeTypeGenerator(NODE_KIND_GENERIC)!;
       const compatibles = [];
       if (generics[gIdx].compatibles?.length)
       {
@@ -95,7 +91,7 @@ export async function getNodeType(
 
   // Load nodes
   if (!rootNamespaceType) {
-    const runtime = getRuntimeNodeType(SCHEMA_KIND_NAMESPACE)!;
+    const runtime = getNodeTypeGenerator(NODE_KIND_NAMESPACE)!;
     rootNamespaceType = new runtime() as INamespaceNodeType;
   }
   let node: INodeType | undefined = rootNamespaceType;
@@ -157,7 +153,7 @@ async function loadNodeType(
   if (!schema) return undefined;
 
   // Resolve NodeType class from _nodeTypeGenerator
-  const NodeTypeCtor = getRuntimeNodeType(schema.kind) ?? getRuntimeNodeType(SCHEMA_KIND_NODE)!;
+  const NodeTypeCtor = getNodeTypeGenerator(schema.kind) ?? getNodeTypeGenerator(SCHEMA_KIND_NODE)!;
   result ??= new NodeTypeCtor(nsParent);
 
   // Cache in parent namespace (strip sub-schemas first — they're saved separately)
@@ -240,7 +236,7 @@ async function loadNodeSchema(
   // 1. Check namespace cache (unless reloading)
   if (!reload && name.length) {
     const cachedNodeSchema = ns?.getSubNodeSchema(name);
-    if (cachedNodeSchema && cachedNodeSchema.kind !== SCHEMA_KIND_NAMESPACE) return cachedNodeSchema;
+    if (cachedNodeSchema && cachedNodeSchema.kind !== NODE_KIND_NAMESPACE) return cachedNodeSchema;
   }
 
   // 2. Try system (built-in) schema
@@ -262,7 +258,7 @@ async function loadNodeSchema(
         combineProperties(schema, loadSchema, SCHEMA_KIND_NODE);
 
         // For namespace schemas, merge sub-schemas
-        if (loadSchema.kind === SCHEMA_KIND_NAMESPACE && loadSchema.schemas?.length) {
+        if (loadSchema.kind === NODE_KIND_NAMESPACE && loadSchema.schemas?.length) {
           if (!schema.schemas?.length) {
             schema.schemas = loadSchema.schemas;
           } else {
@@ -387,14 +383,14 @@ export async function exportNodeType(nodeType: INodeType, result: NodeSchema[]):
 function getLoadSchema(schemas: NodeSchema[], schemaName: string)
 {
   if (!schemaName) { // root schema
-    return { name: "", kind: SCHEMA_KIND_NAMESPACE, schemas: schemas };
+    return { name: "", kind: NODE_KIND_NAMESPACE, schemas: schemas };
   }
 
   for(let schema of schemas)
   {
     const name = getNodeSchemaName(schema);
     if (name === schemaName) return schema;
-    if (schema.kind === SCHEMA_KIND_NAMESPACE && schemaName.startsWith(name + ".") && schema.schemas?.length)
+    if (schema.kind === NODE_KIND_NAMESPACE && schemaName.startsWith(name + ".") && schema.schemas?.length)
     {
       return getLoadSchema(schema.schemas, schemaName);
     }
@@ -409,7 +405,7 @@ function updateSchemaState(schema: NodeSchema, state: SchemaLoadState)
     schema.loadState |= SchemaLoadState.System;
   schema.loadState |= state;
 
-  if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas?.length)
+  if (schema.kind === NODE_KIND_NAMESPACE && schema.schemas?.length)
     for(let s of schema.schemas)
       updateSchemaState(s, state);
 }

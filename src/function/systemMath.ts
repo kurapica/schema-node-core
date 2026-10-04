@@ -5,7 +5,7 @@
 
 import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
-import { OfSchema } from '../property/core/ofSchema';
+import { OfNodeKind } from '../property/core/ofNodeKind';
 import { SchemaType } from '../property/core/schemaType';
 import { Return } from '../schema/function/property/return';
 import { Generics } from '../schema/generic/generics';
@@ -13,13 +13,13 @@ import { ArgName } from '../schema/function/property/argName';
 import { Variadic } from '../schema/function/property/variadic';
 import { isNull } from '../utility/toolset';
 
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
+import { NODE_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
 
 function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(isNull(v) ? 0 : v as BigNumber.Value); }
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_MATH)
 export class SystemMath {
   /** a + b + c + ... */
@@ -57,7 +57,7 @@ export class SystemMath {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.const`)
 export class SystemMathConstants {
   @Meta(Return, NS_SYSTEM_NUMBER)
@@ -69,7 +69,7 @@ export class SystemMathConstants {
 
 // ── Numeric ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.numeric`)
 export class SystemMathNumeric {
   @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
@@ -145,7 +145,7 @@ export class SystemMathNumeric {
 
 // ── Conversion ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.conversion`)
 export class SystemMathConversion {
   @Meta(Return, NS_SYSTEM_NUMBER)
@@ -163,7 +163,7 @@ export class SystemMathConversion {
 
 // ── Bitwise ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.bitwise`)
 export class SystemMathBitwise {
   @Meta(Return, NS_SYSTEM_INT)
@@ -187,7 +187,7 @@ export class SystemMathBitwise {
 
 // ── Trigonometry ───────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.trigonometry`)
 export class SystemMathTrigonometry {
   

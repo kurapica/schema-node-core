@@ -8,7 +8,7 @@ import { buildFuncCall } from '../../../schema/function/type';
 import { getNodeType } from '../../../runtime/context';
 import { FunctionType } from '../../../schema/function/runtime';
 import { ForSchema } from '../../../property/core/forSchema';
-import { OfSchema } from '../../../property/core/ofSchema';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { Static } from '../../../property/core/static';
@@ -18,11 +18,11 @@ import { AccessValueTypeProvider } from '../../../property/core/accessValueTypeP
 import type { FuncCall } from '../../../schema/function/type';
 import type { IValueAccess } from '../../../interface';
 
-import { SCHEMA_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_STRING, NS_SYSTEM_SCHEMA_PRO_STRING } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_NODE_STRING, NS_SYSTEM_SCHEMA_PRO_STRING } from '../../../utility/constant';
 
 /** The access value provider property */
-@Meta(ForSchema, [SCHEMA_KIND_STRING])
-@Meta(OfSchema, SCHEMA_KIND_PROPERTY)
+@Meta(ForSchema, [SCHEMA_KIND_NODE_STRING])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessValueTypeResolver`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)
 @Meta(Static, true)
