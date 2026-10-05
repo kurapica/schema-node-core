@@ -17,9 +17,9 @@ export class DateType extends ScalarType {
     return this._dateSchema ? Array.from(getPropertiesBySchemaKind(this._dateSchema, SCHEMA_KIND_NODE_DATE)) : [];
   }
 
-  override async load() {
+  override async load(threadId?: string) {
     this.baseType = this._dateSchema?.base
-      ? await getNodeType(this._dateSchema.base) as DateType
+      ? await getNodeType(this._dateSchema.base, undefined, undefined, undefined, threadId) as DateType
       : undefined;
   }
 }

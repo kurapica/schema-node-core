@@ -51,7 +51,7 @@ export class EnumType extends ValueType {
     return this._enumSchema ? Array.from(getPropertiesBySchemaKind(this._enumSchema, SCHEMA_KIND_NODE_ENUM)).concat(entrySource) : [entrySource];
   }
 
-  override async load()
+  override async load(threadId?: string)
   {
     if (this._enumSchema?.type === EnumValueType.Flags)
     {

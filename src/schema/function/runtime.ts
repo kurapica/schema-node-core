@@ -93,41 +93,43 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     return this._funcSchema ? Array.from(getPropertiesBySchemaKind(this._funcSchema, SCHEMA_KIND_NODE_FUNCTION)) : [];
   }
 
-  override async load() {
+  override async load(threadId?: string) {
     if (!this._funcSchema) return;
 
     // Load argument types
     this._args = new FunArgsType(this._funcSchema.args ?? []);
-    await this._args.load(this.generics, this.genericParams);
+    await this._args.load(this.generics, this.genericParams, threadId);
     this._systemFn = this._funcSchema.func as ((...args: unknown[]) => unknown) | undefined;
     this._converter = this.getProperty("Converter")?.getValue() ?? false;
     this._serverOnly = this.getProperty("ServerOnly")?.getValue() ?? (this.exps.length === 0 && !this.isSystem);
     this._noCache = this.getProperty("NoCache")?.getValue() ?? false;
     this._relations = undefined;
-    this._objectType = await getNodeType(NS_SYSTEM_OBJECT) as unknown as IValueTypeAccess;
+    this._objectType = await getNodeType(NS_SYSTEM_OBJECT, undefined, undefined, undefined, threadId) as unknown as IValueTypeAccess;
 
     // Resolve return type
-    this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams) as IValueTypeAccess | undefined;
+    this._returnType = await getNodeType(this._funcSchema.return, this.generics, this.genericParams, undefined, threadId) as IValueTypeAccess | undefined;
 
     if (this._converter && this._args.length == 1 && this._returnType)
       this._args.at(0)?.type?.addConverter(this._returnType, this);
 
     // Load relations from Relations property
-    const relations = getProperty(this._funcSchema, Relations)?.getValue<RelationSchema[]>();
-    if (relations?.length)
-    {
-      const rtypes: IRelation[] = [];
-      for (const r of relations)
+    if (!this.isGeneric) {
+      const relations = getProperty(this._funcSchema, Relations)?.getValue<RelationSchema[]>();
+      if (relations?.length)
       {
-        const rtype = new RelationType(r, this);
-        rtypes.push(rtype);
-        await rtype.load();
+        const rtypes: IRelation[] = [];
+        for (const r of relations)
+        {
+          const rtype = new RelationType(r, this);
+          rtypes.push(rtype);
+          await rtype.load(threadId, SCHEMA_KIND_NODE_FUNC_ARG);
+        }
+        this._relations = rtypes;
       }
-      this._relations = rtypes;
     }
 
-    // builf the function
-    await this._buildComposite();
+    // server build
+    await this._buildComposite(threadId);
   }
 
   override unload(): void {
@@ -148,6 +150,11 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
 
   /** Get the value type for the given access path. */
   getAccessValueType(path: string): IValueTypeAccess | undefined {
+    const access = splitString(path, ".", 2);
+    if (access[0].toLowerCase() === FUNC_RETURN) return this.returnType;
+
+    const arg = this._args?.find(arg => arg.name.toLowerCase() === access[0].toLowerCase());
+    if (arg) return arg.type;
     return this._objectType; // pass relation check only, may handle it later
   }
 
@@ -208,6 +215,9 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
         if ((args.length <= i || isNull(args[i])) && this.args.at(i)?.require)
           return undefined;
       }
+
+      // build the function
+      await this._buildComposite();
 
       // 1. Remote Call — via schemaProvider with queue + cache
       if (this.isRemote || remote)
@@ -476,13 +486,13 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
    * If any sub-expression references a server-only function, mark as remote
    * and fall back to schemaProvider remote call.
    */
-  private async _buildComposite(): Promise<void> {
+  private async _buildComposite(threadId?: string): Promise<void> {
     if (this._built) return;
     this._built = true;
     if (!this.exps.length) return;
 
     try {
-      this._compositeFn = await this._compileExpressions(this.exps, Array.from(this.args.getArgs()));
+      this._compositeFn = await this._compileExpressions(this.exps, Array.from(this.args.getArgs()), threadId);
     } catch {
       this._serverOnly = true;
     }
@@ -492,6 +502,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
   private async _compileExpressions(
     exps: FuncExp[],
     args: FuncArgType[],
+    threadId?: string,
   ): Promise<((...callArgs: unknown[]) => unknown) | undefined> {
     const argNames = args.map(a => a.name);
 
@@ -506,13 +517,12 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       const call = exp.call;
 
       // Resolve the called function's type for arg type analysis
-      const calledFunc = await getNodeType(call.func) as FunctionType | undefined;
+      const calledFunc = await getNodeType(call.func, undefined, undefined, undefined, threadId) as FunctionType | undefined;
       if (!calledFunc) return undefined;
-      await calledFunc._buildComposite();
+      await calledFunc._buildComposite(threadId);
 
       // Gets the function
       const expFn = calledFunc._systemFn ?? calledFunc._compositeFn;
-
       if (calledFunc._noCache) this._noCache = true;
       if (calledFunc._serverOnly || !expFn)
       {
@@ -521,12 +531,12 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       }
 
       // Resolve return type and store
-      const expRetType = await getNodeType(exp.return) as IValueTypeAccess | undefined;
+      const expRetType = await getNodeType(exp.return, undefined, undefined, undefined, threadId) as IValueTypeAccess | undefined;
       expTypes.set(exp.name, expRetType);
 
       // Analyze array dependencies using type compatibility
       const arrayInfo = call.mode !== ApplyMode.Call
-        ? await _analyzeArrayDepsByType(exp, calledFunc, expTypes)
+        ? _analyzeArrayDepsByType(exp, calledFunc, expTypes)
         : undefined;
 
       // Build require flags from called function's arg nullability
@@ -546,6 +556,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
       exps.length > 0 ? exps[exps.length - 1].return : undefined,
       this.generics,
       this.genericParams,
+      threadId,
     );
 
     return async (...callArgs: unknown[]): Promise<unknown> => {
@@ -706,8 +717,12 @@ export class FunArgsType implements INodeReference, Iterable<FuncArgType> {
   *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> { return }
   create(value: unknown, parent?: IValueAccess, propProvider?: IPropertyProvider): IValueAccess { throw new Error("Method not implemented."); }
 
-  async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
-    await Promise.all(this._args.map(a => a.load(generics, genericParams)));
+  async load(generics?: GenericParameter[], genericParams?: INodeType[], threadId?: string) {
+    // Sequential (not Promise.all): the global load lock treats a re-entry on
+    // the same threadId as a circular dependency, so concurrent sibling loads
+    // sharing this threadId would wrongly receive partially-loaded results.
+    for (const a of this._args)
+      await a.load(generics, genericParams, threadId);
   }
 
   // ── Iterable ──────────────────────────────────────────────────────────────
@@ -773,8 +788,8 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
     this._props.unshift(name);
   }
 
-  async load(generics?: GenericParameter[], genericParams?: INodeType[]) {
-    this._valueType = await getNodeType(this._funcArg.type, generics, genericParams) as unknown as IValueTypeAccess;
+  async load(generics?: GenericParameter[], genericParams?: INodeType[], threadId?: string) {
+    this._valueType = await getNodeType(this._funcArg.type, generics, genericParams, undefined, threadId) as unknown as IValueTypeAccess;
     if (this._valueType) {
         this._props.push(...getPropertiesBySchemaKind(this._funcArg, getSchemaKindByNodeKind(this._valueType.kind)));
         if (this._valueType.kind === NODE_KIND_ARRAY)
@@ -790,7 +805,7 @@ export class FuncArgType implements INodeReference, IPropertyProvider {
     {
       for(let n of (prop as unknown as ITypeRefProperty).getRefTypes())
       {
-        const type = await getNodeType(n);
+        const type = await getNodeType(n, undefined, undefined, undefined, threadId);
         if (type && !refTypes.includes(type))
           refTypes.push(type);
       }
@@ -857,11 +872,11 @@ interface CompiledExp {
  * parameter list, but IS an array in the expression context → that's the array source.
  * Also handles nested struct field access to find arrays.
  */
-async function _analyzeArrayDepsByType(
+function _analyzeArrayDepsByType(
   exp: FuncExp,
   calledFunc: FunctionType | undefined,
   expTypes: Map<string, IValueTypeAccess | undefined>,
-): Promise<ArrayDepInfo | undefined> {
+): ArrayDepInfo | undefined {
   if (!exp.call.args || !exp.call.args.length || !calledFunc) return undefined;
 
   const arrayIndexes: number[] = [];
@@ -1001,10 +1016,11 @@ async function _resolveStructReturnFields(
   lastExpReturn: string | undefined,
   generics?: GenericParameter[],
   genericParams?: INodeType[],
+  threadId?: string,
 ): Promise<string[] | undefined> {
   if (!(returnType?.kind === NODE_KIND_STRUCT) || !lastExpReturn) return undefined;
 
-  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams) as IValueTypeAccess | undefined;
+  const lastExpType = await getNodeType(lastExpReturn, generics, genericParams, undefined, threadId) as IValueTypeAccess | undefined;
   if (!lastExpType) return undefined;
 
   if (lastExpType.isAssignableTo(returnType)) return undefined;

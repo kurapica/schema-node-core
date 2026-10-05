@@ -39,9 +39,9 @@ export class NamespaceType extends NodeType implements INamespaceNodeType {
   // ── NodeSchema management (for reload detection & provider merging) ─────
 
   /** Cache a NodeSchema keyed by name (used for reload detection). */
-  saveSubNodeSchema(schema: NodeSchema | NodeSchema[], reload= false): void {
+  saveSubNodeSchema(schema: NodeSchema | NodeSchema[], reload= false, threadId?: string): void {
     if (Array.isArray(schema)) {
-      schema.forEach((s) => this.saveSubNodeSchema(s, reload));
+      schema.forEach((s) => this.saveSubNodeSchema(s, reload, threadId));
       return;
     }
 
@@ -67,9 +67,12 @@ export class NamespaceType extends NodeType implements INamespaceNodeType {
       let type = this._subTypes.get(name);
       if (!type) {
         type = new NamespaceType(this);
-        type.loadType(schema).then(() => type!.loaded = false);
+        // Pre-build the namespace structure on the SAME loading thread so it
+        // never spawns a competing loader; it is marked not-loaded and fully
+        // (re)loaded on demand later.
+        type.loadType(schema, undefined, threadId).then(() => type!.loaded = false);
       }
-      (type as NamespaceType).saveSubNodeSchema(schemas, reload);
+      (type as NamespaceType).saveSubNodeSchema(schemas, reload, threadId);
     }
   }
 

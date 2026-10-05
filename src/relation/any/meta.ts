@@ -18,6 +18,6 @@ import { Property } from "../../property";
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_FUNC_CALL}<{${NS_SYSTEM_SCHEMA_FUNC}.valid>>`)
 @Meta(RelationKind, 'any')
 @Meta(RelationProcess, AnyProcess)
-@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.invisible`,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.neq`, '@kind', 'any'))
-@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.visible`,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@valueType', NODE_KIND_BOOL))
+@Relation('invisible','call', buildFuncCall(`${NS_SYSTEM_LOGIC}.neq`, '@kind', 'any'))
+@Relation('visible','call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@valueType', NODE_KIND_BOOL))
 export class Any extends Property<FuncCall[]> {}

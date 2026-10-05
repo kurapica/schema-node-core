@@ -19,7 +19,7 @@ import type { Entry } from '../../struct/entry/type';
 import type { ArraySchema } from './type';
 import type { RelationSchema } from '../relation/type';
 
-import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_NODE_ARRAY } from '../../utility/constant';
+import { ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_SELF, SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_STRUCT_FIELD } from '../../utility/constant';
 
 export class ArrayType extends ValueType implements IRelationProvider, IArrayValueTypeAccess {
   private _arraySchema: ArraySchema | undefined;
@@ -34,15 +34,16 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
   /** The relation types */
   private _relations?: IRelation[];
 
-  override async load() {
+  override async load(threadId?: string) {
     this._element = this._arraySchema?.element
-      ? await getNodeType(this._arraySchema.element, this.generics, this.genericParams) as ValueType
+      ? await getNodeType(this._arraySchema.element, this.generics, this.genericParams, undefined, threadId) as ValueType
       : undefined;
     this.primary = this.getProperty("Primary")?.getValue<string[]>() ?? [];
 
     this.element?.setArrayType(this);
 
     // Load relations from Relations property
+    if (this.isGeneric) return;
     const relations = getProperty(this._arraySchema, Relations)?.getValue<RelationSchema[]>();
     if (relations?.length)
     {
@@ -51,7 +52,7 @@ export class ArrayType extends ValueType implements IRelationProvider, IArrayVal
       {
         const rtype = new RelationType(r, this);
         rtypes.push(rtype);
-        await rtype.load();
+        await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
       }
       this._relations = rtypes;
     }

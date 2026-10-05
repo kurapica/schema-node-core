@@ -27,11 +27,11 @@ export class AnyProcess implements IRelationProcess, IErrorProvider {
   /** The error */
   get error() { return this._error }
 
-  async load(schema: RelationSchema) {
+  async load(schema: RelationSchema, threadId?: string) {
     const calls = getPropertyValue<FuncCall[]>(schema, 'any') ?? [];
     for (const call of calls) {
       if (isEmpty(call.func)) continue;
-      const func = await getNodeType(call.func) as FunctionType;
+      const func = await getNodeType(call.func, undefined, undefined, undefined, threadId) as FunctionType;
       if (!func){
         this._error = 'RELATION_FUNC_NOT_EXIST'; // @TODO: handle error later
         return;

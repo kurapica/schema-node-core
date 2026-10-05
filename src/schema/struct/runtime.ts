@@ -83,13 +83,13 @@ export class StructType extends ValueType implements IRelationProvider {
     return this._structSchema ? Array.from(getPropertiesBySchemaKind(this._structSchema, SCHEMA_KIND_NODE_STRUCT)) : [];
   }
 
-  override async load(): Promise<void> {
+  override async load(threadId?: string): Promise<void> {
     this._fields = [];
     this._relations = undefined;
 
     for (const field of this._structSchema?.fields ?? []) {
       const fieldType = new StructFieldType();
-      await fieldType.load(field, this.generics, this.genericParams);
+      await fieldType.load(field, this.generics, this.genericParams, threadId);
       this._fields.push(fieldType);
 
       // for simple, only check field type now
@@ -104,19 +104,19 @@ export class StructType extends ValueType implements IRelationProvider {
     if (attachKind) {
       for(const schemaType of getSchemaKindSchemaProperties(attachKind))
       {
-        const propType = await getNodeType(schemaType) as PropertyType;
-        logger.debug("[Struct]", this.name, "[Attach][Property]", schemaType, attachKind, schemaType, propType);
+        const propType = await getNodeType(schemaType, undefined, undefined, undefined, threadId) as PropertyType;
+        logger.debug("[Struct]", this.name, "[Attach][Property]", schemaType, attachKind, schemaType, propType?.valueType);
         if (!propType?.valueType) continue;
         
         const fieldType = new StructFieldType();
         const stackable = propType.getPropertyValue(Stackable);
-        const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType.name}>` : propType.valueType.name };
+        const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType?.name}>` : propType.valueType?.name };
 
         // copy properties from meta property type
         for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_NODE_STRUCT_FIELD, getSchemaKindByNodeKind(propType.valueType!.kind), propType.valueType instanceof ArrayType ? getSchemaKindByNodeKind(propType.valueType.element!.kind) : SCHEMA_KIND_NODE_STRUCT_FIELD)))
           setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
 
-        await fieldType.load(fieldSchema);
+        await fieldType.load(fieldSchema, undefined, undefined, threadId);
         attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
 
         // save property relations
@@ -144,6 +144,7 @@ export class StructType extends ValueType implements IRelationProvider {
       this._fields.push(field.field);
 
     // Load relations from Relations property
+    if (this.isGeneric) return;
     const relations = getProperty(this._structSchema, Relations)?.getValue<RelationSchema[]>();
     if (relations?.length)
     {
@@ -152,7 +153,7 @@ export class StructType extends ValueType implements IRelationProvider {
       {
         const rtype = new RelationType(r, this);
         rtypes.push(rtype);
-        await rtype.load();
+        await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
       }
       this._relations = rtypes;
     }
@@ -163,7 +164,7 @@ export class StructType extends ValueType implements IRelationProvider {
     {
       const rtype = new RelationType(r, this);
       rtypes.push(rtype);
-      await rtype.load();
+      await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
     }
     this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
   }
@@ -333,11 +334,12 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     field: StructFieldSchema,
     generics?: GenericParameter[],
     genericParams?: INodeType[],
+    threadId?: string
   ): Promise<void> {
     this._fieldSchema = field;
 
     // Resolve the field's value type
-    this._type = await getNodeType(field.type, generics, genericParams) as ValueType | undefined;
+    this._type = await getNodeType(field.type, generics, genericParams, undefined, threadId) as ValueType | undefined;
     if (!this.type) return;
 
     // Collect properties from schema kind registries
@@ -353,7 +355,7 @@ export class StructFieldType implements INodeReference, IPropertyProvider {
     {
       for(let n of (prop as unknown as ITypeRefProperty).getRefTypes())
       {
-        const type = await getNodeType(n);
+        const type = await getNodeType(n, undefined, undefined, undefined, threadId);
         if (type && !refTypes.includes(type))
           refTypes.push(type);
       }

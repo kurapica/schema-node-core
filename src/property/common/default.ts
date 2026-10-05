@@ -20,7 +20,7 @@ import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_OBJECT,  NS_
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.default`)
 @Meta(PropertyValueType, NS_SYSTEM_OBJECT)
-@Relation(`${NS_SYSTEM_SCHEMA_PRO_CORE}.overridetype`,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER))
+@Relation('overridetype','call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getarrayelement`, TYPE_PROVIDER))
 export class Default extends Property<unknown> {
   private oldValue: unknown;
 

@@ -55,8 +55,8 @@ class DateSchemaMeta implements DateSchema {
 @Meta(Append, [Default, BlackList, WhiteList, Error])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_DATE}.usage`)
 @Meta(Attach, SCHEMA_KIND_NODE_DATE_USAGE)
-@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
-@Relation(`${NS_SYSTEM_SCHEMA_PRO_COMMON}.blacklist`,'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
+@Relation('whitelist','call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@whiteList'), 'default')
+@Relation('blacklist','call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@blackList'), 'default')
 class DateUsage {}
 
 /** Represents the date value type */

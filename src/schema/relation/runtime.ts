@@ -8,10 +8,9 @@ import { RelationKind } from '../../property/record/relationKind';
 import { RelationProcess } from '../../property/core/relationProcess';
 import { deepClone, generateGuid } from '../../utility/toolset';
 import { hasNodeReferences } from '../../interface';
-import { PropertyType } from '../property/runtime';
-import { getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
-import { getNodeType } from '../../runtime/context';
-import { DEBOUNCE_TIME, SCHEMA_KIND_NODE_RELATION } from '../../utility/constant';
+import { getPropertyType, PropertyType } from '../property/runtime';
+import { getSchemaKindByNodeKind, getSchemaKindPropertyTypes, getSchemaType } from '../../runtime/schemaRuntime';
+import { SCHEMA_KIND_NODE_RELATION } from '../../utility/constant';
 import { logger } from '../../utility/logger';
 
 import type { RelationSchema } from './type';
@@ -67,10 +66,17 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
 
   // ── Methods ────────────────────────────────────────────────────────────
 
-  async load() {
-    this._property = await getNodeType(this._relationSchema.property) as PropertyType;
+  async load(threadId?: string, ...kinds: (string | undefined)[]) {
+    const nodeKind = this._owner?.getAccessValueType(this._relationSchema.target)?.kind;
+    const kind = nodeKind ? getSchemaKindByNodeKind(nodeKind) : undefined;
+    if (kind && !kinds.includes(kind)) kinds.push(kind);
+
+    this._property = await getPropertyType(this._relationSchema.property, ...kinds, threadId) as PropertyType;
     this._propCtor = this._property ? getSchemaType(this._property.name) as PropertyCtor : undefined;
     this._propertyInstance = this._propCtor ? new this._propCtor() : undefined;
+
+    if (!this._property) 
+      logger.error('[Relation][Load]', this._owner?.name, "[Target]",this._owner?.getAccessValueType(this._relationSchema.target), "[Schema]", this._relationSchema, '[Kinds]', ...kinds);
 
     // load process
     for(const propCtor of getSchemaKindPropertyTypes(SCHEMA_KIND_NODE_RELATION))
@@ -82,7 +88,7 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
         if (processCtor)
         {
           const process = new processCtor();
-          await process.load(this._relationSchema);
+          await process.load(this._relationSchema, threadId);
           this._process = process;
         }
         break;

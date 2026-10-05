@@ -4,7 +4,7 @@ import { combineProperties, getPropertyValue } from "../property/propertyOwner";
 import { getSchemaProvider } from "../schema/provider";
 import { getNodeTypeGenerator, getSystemSchema } from "./schemaRuntime";
 import { logger } from "../utility/logger";
-import { isNull, splitString, useShareQuery } from "../utility/toolset";
+import { generateGuid, isNull, splitString, useShareQuery } from "../utility/toolset";
 import { SystemDefined } from "../property/core/systemDefined";
 import { getNodeSchemaName, type NodeSchema } from "../schema/node/type";
 
@@ -15,6 +15,16 @@ import { SCHEMA_KIND_NODE, NODE_KIND_NAMESPACE, NODE_KIND_GENERIC } from "../uti
 
 /** Root namespace type (lazy-init on first getNodeType call). */
 let rootNamespaceType: INamespaceNodeType | undefined;
+
+/**
+ * Single global schema-load lock. Only one thread may drive schema loading at a
+ * time; every other caller waits and consumes the cached result once it is
+ * loaded. This avoids deadlocks where per-type locks would let multiple threads
+ * hold different locks and wait on each other. The same thread may re-enter for
+ * circular dependencies (it does not re-acquire / release the lock).
+ */
+const GLOBAL_LOAD_LOCK = "__GLOBAL_SCHEMA_LOAD__";
+const lockLoad = new Map<string, string>();
 
 /** Get the cached NodeType type by full schema name. */
 export function getCachedNodeType(fullName: string): INodeType | undefined {
@@ -50,8 +60,10 @@ export async function getNodeType(
   generics?: GenericParameter[],
   genericParams?: INodeType[],
   reload?: boolean,
+  threadId?: string
 ): Promise<INodeType | undefined> {
   fullName = (isNull(fullName) ? '' : fullName).toLowerCase().trim();
+  threadId ??= crypto ? crypto.randomUUID() : generateGuid();
 
   // Generic type — the name matches a generic parameter → return the concrete type
   if (generics?.length) {
@@ -65,7 +77,7 @@ export async function getNodeType(
       {
         for (const c of generics[gIdx].compatibles)
         {
-          const type = await getNodeType(c);
+          const type = await getNodeType(c, undefined, undefined, undefined, threadId);
           if (type) compatibles.push(type);
         }
       }
@@ -98,7 +110,7 @@ export async function getNodeType(
 
   // Try loading cached types first
   for (let i = 0; i < parts.length; i++) {
-    node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, true);
+    node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, true, threadId);
     if (!node) break;
   }
 
@@ -107,7 +119,7 @@ export async function getNodeType(
     node = await loadNodeType(rootNamespaceType!, '') as unknown as INodeType;
     if (parts?.length) {
       for (let i = 0; i < parts.length; i++) {
-        node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length);
+        node = await loadNodeType(node, parts[i], generics, genericParams, reload, i + 1 == parts.length, false, threadId);
         if (!node) break;
       }
     }
@@ -124,12 +136,13 @@ async function loadNodeType(
   reload?: boolean,
   isLast?: boolean,
   onlyCache?: boolean, // to avoid loading full namespace if the cached schema provided in other ways, the frontend doesn't require full picture
+  threadId?: string
 ): Promise<INodeType | undefined> {
   const nsParent = isNamespaceNodeType(parent) ? parent as INamespaceNodeType : undefined;
   let result: INodeType | undefined = nsParent;
   if (segment.length) {
     // Generic types: segment starts with '<', e.g. "list<system.string>"
-    if (segment.startsWith('<')) return loadGenericType(parent, segment, generics, genericParams);
+    if (segment.startsWith('<')) return loadGenericType(parent, segment, generics, genericParams, threadId);
     result = nsParent?.getNodeType(segment);
   }
 
@@ -148,32 +161,79 @@ async function loadNodeType(
     return undefined; // reload only on existing types
   }
 
-  // Load the NodeSchema
-  const schema = await loadNodeSchema(nsParent, segment, reload);
-  if (!schema) return undefined;
+  // lock and load — a SINGLE global load lock. Only one thread may drive schema
+  // loading at a time; all other threads wait and consume the cached result once
+  // it is loaded. The same thread may re-enter for nested loads.
+  const lockName = GLOBAL_LOAD_LOCK;
+  const loadName = nsParent?.name && nsParent != result ? `${nsParent.name}.${segment}` : segment;
 
-  // Resolve NodeType class from _nodeTypeGenerator
-  const NodeTypeCtor = getNodeTypeGenerator(schema.kind) ?? getNodeTypeGenerator(SCHEMA_KIND_NODE)!;
-  result ??= new NodeTypeCtor(nsParent);
+  // Re-entrant: this thread already holds the global lock. That happens for BOTH
+  //   (a) circular dependency  — the target type is already cached mid-load; and
+  //   (b) an ordinary nested load of a NEW type the chain touches for the first time.
+  // Only (a) must short-circuit with the cached partial instance. For (b) result is
+  // still undefined, so returning it would wrongly make an existing type unresolvable;
+  // fall through and load it (without touching the lock held by the outer call).
+  const reentrant = threadId !== undefined && lockLoad.get(lockName) === threadId;
+  const circular = reentrant && segment.length > 0 && !!result && result !== nsParent;
+  if (circular)
+    return result;
 
-  // Cache in parent namespace (strip sub-schemas first — they're saved separately)
-  const { schemas, ...mainSchema } = schema;
-  if (nsParent !== result) {
-    nsParent?.saveSubNodeSchema(mainSchema, true);
-    nsParent?.saveNodeType(segment, result);
+  let acquiredLock = false;
+  if (!reentrant && threadId) {
+    // Wait for any other thread to finish its entire load chain.
+    while (lockLoad.has(lockName)) {
+      result ??= nsParent?.getNodeType(segment);
+      if (result?.loaded) return result;
+      await new Promise(resolve => setTimeout(resolve, 10));
+      logger.verbose(`Thread ${threadId} is waiting for load lock ${loadName}`);
+    }
+    lockLoad.set(lockName, threadId);
+    acquiredLock = true;
   }
 
-  // Load the type
-  await result.loadType(mainSchema);
+  try
+  {
+    // Another thread may have finished loading this type right when the lock flipped;
+    // consume it instead of loading twice. (finally releases the lock we acquired.)
+    if (acquiredLock && segment.length) {
+      const cached = nsParent?.getNodeType(segment);
+      if (cached?.loaded) return cached;
+      if (cached) result = cached;
+    }
 
-  // Save sub-schemas into NamespaceType
-  if (isNamespaceNodeType(result) && schemas?.length)
-    result.saveSubNodeSchema(schemas);
+    // Load the NodeSchema
+    const schema = await loadNodeSchema(nsParent, segment, reload);
+    if (!schema) return undefined;
 
-  // Generic types reloading (clone schema to avoid mutation)
-  for (const g of result.getGenericTypes())
-    await g.loadType({ ...mainSchema }, g.genericParams);
-  return result;
+    // Resolve NodeType class from _nodeTypeGenerator
+    const NodeTypeCtor = getNodeTypeGenerator(schema.kind) ?? getNodeTypeGenerator(SCHEMA_KIND_NODE)!;
+    result ??= new NodeTypeCtor(nsParent);
+
+    // Cache in parent namespace (strip sub-schemas first — they're saved separately)
+    const { schemas, ...mainSchema } = schema;
+    if (nsParent !== result) {
+      nsParent?.saveSubNodeSchema(mainSchema, true, threadId);
+      nsParent?.saveNodeType(segment, result);
+    }
+
+    // Load the type
+    await result.loadType(mainSchema, undefined, threadId);
+
+    // Save sub-schemas into NamespaceType
+    if (isNamespaceNodeType(result) && schemas?.length)
+      result.saveSubNodeSchema(schemas, false, threadId);
+
+    // Generic types reloading (clone schema to avoid mutation)
+    for (const g of result.getGenericTypes())
+      await g.loadType({ ...mainSchema }, g.genericParams, threadId);
+    return result;
+  }
+  finally{
+    // Only release the lock if this call acquired it. An inner (re-entrant) call
+    // for a circular dependency must NOT delete the lock held by the outer call.
+    if (acquiredLock)
+      lockLoad.delete(lockName);
+  }
 }
 
 /** Load a generic type like "list<system.string>". */
@@ -182,8 +242,9 @@ async function loadGenericType(
   segment: string,
   generics?: GenericParameter[],
   genericParams?: INodeType[],
+  threadId?: string
 ): Promise<INodeType | undefined> {
-  const inner = segment.slice(1, -1); // strip '<' and '>'
+  let inner = segment.slice(1, -1); // strip '<' and '>'
   if (!node.generics) return undefined;
 
   // Check cache
@@ -204,22 +265,60 @@ async function loadGenericType(
         }
       }
     }
-    const resolved = await getNodeType(paramName, generics, genericParams);
+    const resolved = await getNodeType(paramName, generics, genericParams, undefined, threadId);
     if (!resolved) return undefined;
     genParams.push(resolved);
   }
+  if (isTemplate) return node; // template type, return self
 
   if (node.generics.length !== genParams.length) return undefined;
+  inner = genParams.map(p => p.name).join(', ');
 
-  // Create generic type instance
-  const NodeTypeCtor = node.constructor as new (parent?: INodeType) => INodeType;
-  genType = new NodeTypeCtor(node.namespace);
-  if (!isTemplate)
-    node.setGenericType(inner, genType);
-  
-  // Load the type
-  await genType.loadType(node.getNodeSchema()!, genParams);
-  return genType;
+  genType = node.getGenericType(inner);
+  if (genType && genType.loaded) return genType;
+
+  // Re-entrant: same thread already holds the global load lock. Only treat it as a
+  // circular dependency when the generic instance is ALREADY cached mid-load; if it
+  // is not cached yet, this is the first time the chain builds this instance, so
+  // continue and create it (do not return undefined).
+  const reentrant = threadId !== undefined && lockLoad.get(GLOBAL_LOAD_LOCK) === threadId;
+  if (reentrant && genType)
+    return genType;
+
+  let acquiredLock = false;
+  if (!reentrant && threadId) {
+    // Wait for any other thread to finish its entire load chain.
+    while (lockLoad.has(GLOBAL_LOAD_LOCK)) {
+      genType ??= node.getGenericType(inner);
+      if (genType && genType.loaded) return genType;
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    lockLoad.set(GLOBAL_LOAD_LOCK, threadId);
+    acquiredLock = true;
+  }
+
+  try{
+    // Consume an instance another thread finished while the lock flipped. The
+    // lock being released means its loadType completed, so it is fully loaded.
+    if (acquiredLock) {
+      const cached = node.getGenericType(inner);
+      if (cached) return cached;
+    }
+
+    // Create generic type instance
+    const NodeTypeCtor = node.constructor as new (parent?: INodeType) => INodeType;
+    genType = new NodeTypeCtor(node.namespace);
+    if (!isTemplate)
+      node.setGenericType(inner, genType);
+
+    // Load the type
+    await genType.loadType(node.getNodeSchema()!, genParams, threadId);
+    return genType;
+  }
+  finally{
+    if (acquiredLock)
+      lockLoad.delete(GLOBAL_LOAD_LOCK);
+  }
 }
 
 /**

@@ -369,7 +369,7 @@ export interface INodeType extends IPropertyProvider {
   getNodeSchema(): NodeSchema;
 
   /** Load the type from the schema. */
-  loadType(schema: NodeSchema, genericParams?: INodeType[]): Promise<void>;
+  loadType(schema: NodeSchema, genericParams?: INodeType[], threadId?: string): Promise<void>;
 
   // ── Generic Types ────────────────────────────────────────────────────
   /** Whether the type is generic */
@@ -410,7 +410,7 @@ export interface INamespaceNodeType extends INodeType {
   // ── NodeSchema management (for reload detection & provider merging) ─────
 
   /** Cache a NodeSchema keyed by name (used for reload detection). */
-  saveSubNodeSchema(schema: NodeSchema | NodeSchema[], reload?: boolean): void;
+  saveSubNodeSchema(schema: NodeSchema | NodeSchema[], reload?: boolean, threadId?: string): void;
 
   /** Remove a sub node schema */
   removeSubNodeSchema(name: string): void;

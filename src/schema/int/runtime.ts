@@ -17,9 +17,9 @@ export class IntType extends ScalarType {
     return this._intSchema ? Array.from(getPropertiesBySchemaKind(this._intSchema, SCHEMA_KIND_NODE_INT)) : [];
   }
 
-  override async load() {
+  override async load(threadId?: string) {
     this.baseType = this._intSchema?.base
-      ? await getNodeType(this._intSchema.base) as IntType
+      ? await getNodeType(this._intSchema.base, undefined, undefined, undefined, threadId) as IntType
       : undefined;
   }
 }

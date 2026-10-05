@@ -21,9 +21,9 @@ export class StringType extends ScalarType {
     return this._stringSchema ? Array.from(getPropertiesBySchemaKind(this._stringSchema, SCHEMA_KIND_NODE_STRING)) : [];
   }
 
-  override async load() {
+  override async load(threadId?: string) {
     this.baseType = this._stringSchema?.base
-      ? await getNodeType(this._stringSchema.base) as StringType
+      ? await getNodeType(this._stringSchema.base, undefined, undefined, undefined, threadId) as StringType
       : undefined;
   }
 }

@@ -12,7 +12,7 @@ export class AssignProcess implements IRelationProcess {
   /** The assign value. */
   get value(): unknown { return deepClone(this._value); }
 
-  async load(schema: RelationSchema) {
+  async load(schema: RelationSchema, threadId?: string) {
     this._value = getPropertyValue<unknown>(schema, 'assign');
   }
 

@@ -3,12 +3,11 @@
 // Mirrors C# SchemaNode.Core/Attribute/RelationAttribute.cs
 // =============================================================================
 
-import { getTypeSchemaName } from '../runtime/schemaRuntime';
-
 import type { PropertyCtor } from '../interface';
 import type { RelationSchema } from '../schema/relation/type';
 
 import { NODE_SELF } from '../utility/constant';
+import { getPropertyName } from '../property/property';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
 const FUNC_RELATION_KEY = Symbol.for('schema-node:func-relation');
@@ -61,7 +60,7 @@ export function Relation(
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
       target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ''),
-      property: typeof propClass === 'string' ? propClass : getTypeSchemaName(propClass)!,
+      property: typeof propClass === 'string' ? propClass : getPropertyName(propClass)!,
       kind,
       [kind]: value
     };

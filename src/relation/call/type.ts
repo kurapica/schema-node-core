@@ -27,9 +27,9 @@ export class CallProcess implements IRelationProcess, IErrorProvider {
   /** The error */
   get error() { return this._error }
 
-  async load(schema: RelationSchema) {
+  async load(schema: RelationSchema, threadId?: string) {
     this._call = getPropertyValue<FuncCall>(schema, 'call');
-    this._func = this._call?.func ? await getNodeType(this._call.func) as FunctionType : undefined;
+    this._func = this._call?.func ? await getNodeType(this._call.func, undefined, undefined, undefined, threadId) as FunctionType : undefined;
     if (!this._func)
       this._error = 'RELATION_FUNC_NOT_EXIST'; // @TODO: handle error later
   }

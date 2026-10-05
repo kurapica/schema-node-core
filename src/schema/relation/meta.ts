@@ -13,22 +13,21 @@ import { buildFuncCall } from '../../schema/function/type';
 import { Require } from '../../property/common/require';
 import { Default } from '../../property/common/default';
 import { EntrySourceConsumer } from '../string/property/entrySourceConsumer';
-import { Root } from '../enum/property/root';
 import { DisplayOnly } from '../struct/property/displayOnly';
 import { Assign } from '../../relation/assign/meta';
 import { AccessValueTypeResolver } from '../string/property/accessValueTypeResolver';
 
 import type { RelationSchema } from './type';
 
-import { SCHEMA_KIND_NODE_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_PRO_TYPE, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PRO } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_RELATION, NS_SYSTEM_SCHEMA_RELATION, SCHEMA_KIND_ORDER_RELATION, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_RELATION_KIND, NS_SYSTEM_SCHEMA_REFLECT_PROPERTY, NODE_SELF, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_TYPE, NS_SYSTEM_SCHEMA_PRO, NS_SYSTEM_STR } from '../../utility/constant';
 import { KindResolver } from '../string';
-import { InVisible } from '../../property';
+import { InVisible } from '../../property/common/invisible';
+import { EntrySource } from '../../property/core/entrySource';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE_RELATION, SCHEMA_KIND_ORDER_RELATION])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_RELATION}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE_RELATION)
-@Relation(Valid, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.forschema`, NODE_SELF, '@targetKind', '@ownerKind'), 'property')
 class RelationSchemaMeta implements RelationSchema {
   /** The target of the relation */
   @Meta(SchemaType, NS_SYSTEM_STRING)
@@ -46,30 +45,27 @@ class RelationSchemaMeta implements RelationSchema {
   /** The kind of the target */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
   @Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
   targetKind?: string;
 
-  /** The kind of the property */
+  /** The owner kind of the property */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(KindResolver, true)
   @Meta(DisplayOnly, true)
-  @Meta(InVisible, true)
   ownerKind?: boolean;
 
   /** The property the relation applies to */
-  @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
+  @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(PrimaryIndex, 1)
   @Meta(Require, true)
-  @Meta(Valid, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.notstatic`, NODE_SELF))
-  @Meta(Root, NS_SYSTEM_SCHEMA_PRO)
+  @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getkindproperties`, '@targetKind', '@ownerKind'), 'property')
   property!: string;
 
   /** The value type of the property */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
-  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getvaluetype`, '@property', '@targetType'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getkindpropvaluetype`, '@property', '@targetKind', '@ownerKind'))
   valueType?: string;
 
   /** The relation kind */

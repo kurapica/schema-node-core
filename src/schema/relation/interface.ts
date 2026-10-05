@@ -7,7 +7,7 @@ export interface IRelationProcess {
   hasDepends: () => boolean;
 
   /** load relation kind data from relation schema */
-  load(schema: RelationSchema): Promise<void>;
+  load(schema: RelationSchema, threadId?: string): Promise<void>;
 
   /** Attach the relation to the target */
   attach(relation: IRelation, owner: IValueAccess, target: IValueAccess): void;
