@@ -26,6 +26,32 @@ let rootNamespaceType: INamespaceNodeType | undefined;
 const GLOBAL_LOAD_LOCK = "__GLOBAL_SCHEMA_LOAD__";
 const lockLoad = new Map<string, string>();
 
+/**
+ * Deferred load tasks. Some associations (e.g. prototype properties mounted as
+ * struct attach fields) only surface DURING loading and may form cycles: the
+ * mount target is still mid-load, so the mount only sees a partial instance and
+ * cannot complete. Such work is deferred and flushed by the outermost load
+ * holder right before it releases the global lock — at that point every type in
+ * the chain is fully loaded, so the mount can be retried to completion.
+ */
+const deferredLoadTasks: Array<(threadId?: string) => Promise<void>> = [];
+
+/** Defer a load task until the current load chain's outermost call completes. */
+export function deferLoadTask(task: (threadId?: string) => Promise<void>): void {
+  deferredLoadTasks.push(task);
+}
+
+/** Run all deferred load tasks (and any they enqueue) sequentially. */
+async function flushDeferredLoadTasks(threadId?: string): Promise<void> {
+  while (deferredLoadTasks.length) {
+    const tasks = deferredLoadTasks.splice(0, deferredLoadTasks.length);
+    for (const task of tasks) {
+      try { await task(threadId); }
+      catch (error) { logger.error('[Load][Deferred] Task failed:', error); }
+    }
+  }
+}
+
 /** Get the cached NodeType type by full schema name. */
 export function getCachedNodeType(fullName: string): INodeType | undefined {
   const split = splitString(fullName);
@@ -231,8 +257,12 @@ async function loadNodeType(
   finally{
     // Only release the lock if this call acquired it. An inner (re-entrant) call
     // for a circular dependency must NOT delete the lock held by the outer call.
-    if (acquiredLock)
-      lockLoad.delete(lockName);
+    if (acquiredLock) {
+      // Flush deferred load tasks while still holding the lock, so their nested
+      // loads re-enter cleanly on this thread instead of competing for the lock.
+      try { await flushDeferredLoadTasks(threadId); }
+      finally { lockLoad.delete(lockName); }
+    }
   }
 }
 
@@ -316,8 +346,11 @@ async function loadGenericType(
     return genType;
   }
   finally{
-    if (acquiredLock)
-      lockLoad.delete(GLOBAL_LOAD_LOCK);
+    if (acquiredLock) {
+      // Flush deferred load tasks while still holding the lock (see loadNodeType).
+      try { await flushDeferredLoadTasks(threadId); }
+      finally { lockLoad.delete(GLOBAL_LOAD_LOCK); }
+    }
   }
 }
 

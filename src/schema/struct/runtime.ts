@@ -19,7 +19,7 @@ import { Relations } from '../relation/property';
 import { RelationType } from '../relation/runtime';
 import { isConstraintProperty, joinProperties } from '../../interface';
 import { isTypeRefProperty } from '../../property/typeRefProperty';
-import { getNodeType } from '../../runtime/context';
+import { getNodeType, deferLoadTask } from '../../runtime/context';
 import { logger } from '../../utility';
 
 import type { Entry } from '../../struct/entry/type';
@@ -105,23 +105,17 @@ export class StructType extends ValueType implements IRelationProvider {
       for(const schemaType of getSchemaKindSchemaProperties(attachKind))
       {
         const propType = await getNodeType(schemaType, undefined, undefined, undefined, threadId) as PropertyType;
-        logger.debug("[Struct]", this.name, "[Attach][Property]", schemaType, attachKind, schemaType, propType?.valueType);
-        if (!propType?.valueType) continue;
-        
-        const fieldType = new StructFieldType();
-        const stackable = propType.getPropertyValue(Stackable);
-        const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType?.name}>` : propType.valueType?.name };
-
-        // copy properties from meta property type
-        for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_NODE_STRUCT_FIELD, getSchemaKindByNodeKind(propType.valueType!.kind), propType.valueType instanceof ArrayType ? getSchemaKindByNodeKind(propType.valueType.element!.kind) : SCHEMA_KIND_NODE_STRUCT_FIELD)))
-          setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
-
-        await fieldType.load(fieldSchema, undefined, undefined, threadId);
-        attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
-
-        // save property relations
-        const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
-        if (propRelations?.length) attachRelations.push(...propRelations.map(r => stackable && r.target?.startsWith(`${fieldSchema.name}.`) ? { ...r, target:`${fieldSchema.name}.${ARRAY_ELEMENT}.${r.target?.substring(fieldSchema.name.length + 1)}` } : r));
+        if (!propType) continue;
+        if (!propType.valueType) {
+          // The property type is still mid-load (circular re-entry handed back the
+          // cached partial instance), so its value type is not resolved yet. Defer
+          // mounting it until the outermost load chain completes instead of dropping
+          // the prototype property permanently.
+          if (!propType.loaded) 
+            deferLoadTask((id) => this.mountAttachField(schemaType, id));
+          continue;
+        }
+        await this.buildAttachField(propType, threadId, attachFields, attachRelations);
       }
     }
 
@@ -145,33 +139,96 @@ export class StructType extends ValueType implements IRelationProvider {
 
     // Load relations from Relations property
     if (this.isGeneric) return;
+    const relations = [...(getProperty(this._structSchema, Relations)?.getValue<RelationSchema[]>() ?? []), ...attachRelations];
+    deferLoadTask((id) => this.applyRelation(relations, id));
+  }
+
+  override unload(): void {
+    this._fields = [];
+    this._relations = undefined;
+  }
+
+  /**
+   * Mount one prototype property as an attach field. Runs as a deferred task
+   * after the whole load chain completed, so the property type is fully loaded
+   * by then. Idempotent — the field is skipped when it is already present.
+   */
+  private async mountAttachField(schemaType: string, threadId?: string): Promise<void> {
+    const propType = await getNodeType(schemaType, undefined, undefined, undefined, threadId) as PropertyType;
+    if (!propType?.valueType || !propType.property) return; // still not resolvable — give up (no re-defer)
+    if (this.getField(propType.property)) return; // already mounted
+
+    const attachFields: { field: StructFieldType, priority: number }[] = [];
+    const attachRelations: RelationSchema[] = [];
+    await this.buildAttachField(propType, threadId, attachFields, attachRelations);
+
+    for (const field of attachFields)
+      this._fields.push(field.field);
+    if (this.isGeneric) return; // mirror load(): generic structs carry no attach relations
+
     const relations = getProperty(this._structSchema, Relations)?.getValue<RelationSchema[]>();
     if (relations?.length)
     {
       const rtypes: IRelation[] = [];
       for (const r of relations)
       {
-        const rtype = new RelationType(r, this);
-        rtypes.push(rtype);
-        await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
+        if (r.target.toLowerCase() === propType.property.toLowerCase() || r.target.toLowerCase().startsWith(`${propType.property.toLowerCase()}.`)) {
+          console.warn('Apply Relation', r, propType.property);
+          if (!this.getAccessValueType(r.target)) continue;
+          const rtype = new RelationType(r, this);
+          rtypes.push(rtype);
+          await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
+        }
       }
-      this._relations = rtypes;
+      this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
     }
 
-    // Attach relations from attach properties
-    const rtypes: RelationType[] = [];
     for (const r of attachRelations)
+    {
+      const rtype = new RelationType(r, this);
+      await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
+      this._relations = [...(this._relations ?? []), rtype];
+    }
+  }
+
+  /** Build the attach field (and its relations) for a resolved prototype property. */
+  private async buildAttachField(
+    propType: PropertyType,
+    threadId: string | undefined,
+    attachFields: { field: StructFieldType, priority: number }[],
+    attachRelations: RelationSchema[]
+  ): Promise<void> {
+    if (!propType.valueType) return;
+
+    logger.debug("[Struct]", this.name, "[Attach][Property]", propType?.property);
+
+    const stackable = propType.getPropertyValue(Stackable);
+    const fieldSchema = { name: propType.property!, type: stackable ? `${NS_SYSTEM_LIST}<${propType.valueType?.name}>` : propType.valueType?.name };
+
+    // copy properties from meta property type
+    for (const prop of propType.filterProperties(v => v.hasValue).filter((prop) => prop.forSchema(SCHEMA_KIND_NODE_STRUCT_FIELD, getSchemaKindByNodeKind(propType.valueType!.kind), propType.valueType instanceof ArrayType ? getSchemaKindByNodeKind(propType.valueType.element!.kind) : SCHEMA_KIND_NODE_STRUCT_FIELD)))
+      setPropertyValue(fieldSchema, prop.constructor as PropertyCtor, prop.getValue());
+
+    const fieldType = new StructFieldType();
+    await fieldType.load(fieldSchema, undefined, undefined, threadId);
+    attachFields.push({ field: fieldType, priority: getAttachPropertyPriority(propType) });
+
+    // save property relations
+    const propRelations = propType.getProperty(Relations)?.getValue<RelationSchema[]>();
+    if (propRelations?.length) attachRelations.push(...propRelations.map(r => stackable && r.target?.startsWith(`${fieldSchema.name}.`) ? { ...r, target:`${fieldSchema.name}.${ARRAY_ELEMENT}.${r.target?.substring(fieldSchema.name.length + 1)}` } : r));
+  }
+
+  /** Apply relations to the struct. */
+  private async applyRelation(relations: RelationSchema[], threadId?: string): Promise<void> {
+    if (!relations?.length) return;
+    const rtypes: IRelation[] = [];
+    for (const r of relations)
     {
       const rtype = new RelationType(r, this);
       rtypes.push(rtype);
       await rtype.load(threadId, SCHEMA_KIND_NODE_STRUCT_FIELD);
     }
-    this._relations = this._relations ? [...this._relations, ...rtypes] : rtypes;
-  }
-
-  override unload(): void {
-    this._fields = [];
-    this._relations = undefined;
+    this._relations = rtypes;
   }
 
   // ── Field Access ────────────────────────────────────────────────────

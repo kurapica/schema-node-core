@@ -17,6 +17,7 @@ import type { RelationSchema } from './type';
 import type { IRelationProcess } from './interface';
 
 import type { PropertyCtor, INodeReference, IErrorProvider, IValueAccess, IValueTypeAccess, INodeType, IRelation, IProperty } from '../../interface';
+import { Attach } from '../struct/property/attach';
 
 /** The relation type */
 export class RelationType implements INodeReference, IErrorProvider, IRelation {
@@ -70,6 +71,9 @@ export class RelationType implements INodeReference, IErrorProvider, IRelation {
     const nodeKind = this._owner?.getAccessValueType(this._relationSchema.target)?.kind;
     const kind = nodeKind ? getSchemaKindByNodeKind(nodeKind) : undefined;
     if (kind && !kinds.includes(kind)) kinds.push(kind);
+
+    const attachKind = this._owner?.getPropertyValue<string>(Attach);
+    if (attachKind && !kinds.includes(attachKind)) kinds.push(attachKind);
 
     this._property = await getPropertyType(this._relationSchema.property, ...kinds, threadId) as PropertyType;
     this._propCtor = this._property ? getSchemaType(this._property.name) as PropertyCtor : undefined;
