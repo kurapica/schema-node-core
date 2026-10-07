@@ -11,7 +11,7 @@ import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
 import type { IValueAccess, IProperty, PropertyCtor, IRelation } from "../interface";
 import { deepClone, isEqual, trimValue } from "../utility/toolset";
 
-/** Cache for property names derived from class names (PascalCase → camelCase). */
+/** Cache for property names declared via @Meta(Alias, ...). */
 const _nameCache = new Map<Function, string>();
 const _saveableCache = new Map<Function, boolean>();
 
@@ -105,17 +105,20 @@ export abstract class Property<T> implements IProperty {
   }
 }
 
-/** Get the property name of the property constructor. */
+/**
+ * Get the property name of the property constructor.
+ * The name MUST be declared explicitly via @Meta(Alias, '...').
+ * Deriving it from the class name is unsafe: class names are mangled by minifiers
+ * in production builds, so schema keys would drift between builds.
+ */
 export function getPropertyName(ctor: PropertyCtor): string {
   let n = _nameCache.get(ctor);
   if (!n) {
     n = (ctor as unknown as Record<string, string>).alias;
     if (!n)
     {
-      let name = ctor.name ?? '';
-      if (name.endsWith('Property')) name = name.slice(0, -8);
-      if (name.length === 0) return name;
-      n = name[0].toLowerCase() + name.slice(1);
+      console.error("[Property]", (ctor as unknown as Record<string, string>));
+      throw new Error(`Property class ${ctor.name || '(anonymous)'} must declare its property name via @Meta(Alias, '...')`);
     }
     _nameCache.set(ctor, n);
   }

@@ -1,4 +1,5 @@
 import { Meta } from "../../attribute/meta";
+import { Alias } from "../../property/core/alias";
 import { OfNodeKind } from "../../property/core/ofNodeKind";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { SchemaType } from "../../property/core/schemaType";
@@ -10,6 +11,7 @@ import type { RelationSchema } from "./type";
 import { NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_RELATION, NODE_KIND_PROPERTY } from "../../utility/constant";
 
 /** The relations property */
+@Meta(Alias, 'relations')
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.relations`)
 @Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_RELATION}.schemas`)

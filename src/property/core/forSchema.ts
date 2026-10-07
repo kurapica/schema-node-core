@@ -2,6 +2,8 @@
 // Mirrors C# SchemaNode.Core/Property/Core/ForSchema.cs
 // =============================================================================
 
+import { Meta } from '../../attribute/meta';
+import { Alias } from './alias';
 import { registerSchemaProperty } from '../../runtime/schemaRuntime';
 import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
@@ -9,6 +11,7 @@ import { Property } from '../property';
 /**
  * Describes the schema kinds that this property is for. This is used to filter properties when generating code for a specific schema.
  */
+@Meta(Alias, 'forSchema')
 export class ForSchema extends Property<string[]> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
         if (!isNull(field) || !isNull(descriptorOrIndex)) return;

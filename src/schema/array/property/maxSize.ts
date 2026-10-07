@@ -1,3 +1,4 @@
+import { Alias } from '../../../property/core/alias';
 import { ForSchema } from '../../../property/core/forSchema';
 import { ConstraintProperty } from '../../../property/constraintProperty';
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
@@ -12,6 +13,7 @@ import type { IValueAccess } from '../../../interface';
 import { NS_SYSTEM_INT, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_USAGE, NODE_KIND_PROPERTY } from '../../../utility/constant';
 
 /** The maximum size constraint property for array data node */
+@Meta(Alias, 'maxSize')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_USAGE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.maxsize`)

@@ -1,4 +1,5 @@
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
@@ -15,6 +16,7 @@ import { Relation } from '../../../attribute';
 import { BlackList } from '../../../property';
 import { buildFuncCall } from '../../function';
 
+@Meta(Alias, 'primary')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary`)

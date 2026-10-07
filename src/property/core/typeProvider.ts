@@ -1,4 +1,5 @@
 import { Meta } from "../../attribute/meta";
+import { Alias } from "./alias";
 import { Property } from "../property";
 import { OfNodeKind } from "./ofNodeKind";
 import { PropertyValueType } from "./propertyValueType";
@@ -10,6 +11,7 @@ import { ReadOnly } from "../common/readOnly";
 import { InVisible } from "../common/invisible";
 
 /** The type provider property. */
+@Meta(Alias, 'typeProvider')
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.typeprovider`)
 @Meta(Static, true)

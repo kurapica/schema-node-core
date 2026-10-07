@@ -2,6 +2,8 @@
 // Mirrors C# SchemaNode.Core/Property/Core/Append.cs
 // =============================================================================
 
+import { Meta } from "../../attribute/meta";
+import { Alias } from "./alias";
 import { isNull } from "../../utility/toolset";
 import { Property } from "../property";
 
@@ -14,6 +16,7 @@ import { registerSchemaProperty } from "../../runtime";
  * This allows extending schema kinds with pre-defined property types without modifying the property class.
  * @example @Meta(Append, [Relations])
  */
+@Meta(Alias, 'append')
 export class Append extends Property<PropertyCtor[]> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
         if (!isNull(field) || !isNull(descriptorOrIndex)) return;

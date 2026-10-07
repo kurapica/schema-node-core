@@ -1,4 +1,5 @@
 import { Meta, Relation } from "../../attribute";
+import { Alias } from "../../property/core/alias";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfNodeKind } from "../../property/core/ofNodeKind";
@@ -14,6 +15,7 @@ import type { StructSchema, StructFieldSchema } from "./type";
 import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRUCT, NS_SYSTEM_SCHEMA_STRUCT, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_NODE_STRUCT_FIELD, NODE_KIND_STRUCT } from "../../utility";
 
 /** Property bridge. */
+@Meta(Alias, 'struct')
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.${NODE_KIND_STRUCT}`)

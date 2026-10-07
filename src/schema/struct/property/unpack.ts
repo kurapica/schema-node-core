@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { ForSchema } from '../../../property/core/forSchema';
 import { SchemaType } from '../../../property/core/schemaType';
@@ -17,6 +18,7 @@ import { Property } from '../../../property/property';
 /**
  * Declare the struct field is used for pack all non-struct fields data into it
  */
+@Meta(Alias, 'unpack')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT_FIELD])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.unpack`)

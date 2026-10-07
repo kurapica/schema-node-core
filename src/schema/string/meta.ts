@@ -29,6 +29,7 @@ import { WhiteList } from '../../property/common/whiteList';
 import { Root } from '../enum/property/root';
 import { LeafOnly } from '../enum/property/leafOnly';
 import { Unit } from '../../property/common/unit';
+import { Error } from '../../property/common/error';
 
 import type { NodeSchema } from '../node/type';
 import type { StringSchema } from './type';

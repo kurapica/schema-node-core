@@ -1,5 +1,6 @@
 import { RecordProperty } from '../recordProperty';
 import { Meta } from '../../attribute/meta';
+import { Alias } from '../core/alias';
 import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
@@ -8,6 +9,7 @@ import { isNull } from '../../utility/toolset';
 
 import { NODE_KIND_ENUM, NS_SYSTEM_SCHEMA, NS_SYSTEM_STRING } from '../../utility/constant';
 
+@Meta(Alias, 'schemaKind')
 @Meta(OfNodeKind, NODE_KIND_ENUM)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA}.kind`)
 @Meta(PropertyValueType, NS_SYSTEM_STRING)

@@ -1,5 +1,6 @@
 import { Meta } from "../../attribute/meta";
 import { Relation } from "../../attribute/relation";
+import { Alias } from '../../property/core/alias';
 import { ForSchema } from '../../property/core/forSchema';
 import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { RelationKind } from '../../property/record/relationKind';
@@ -12,6 +13,7 @@ import { PropertyValueType } from "../../property/core/propertyValueType";
 import { NS_SYSTEM_LIST, NS_SYSTEM_LOGIC,  NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_PRO_RELATION, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_KIND_BOOL, NODE_KIND_PROPERTY, SCHEMA_KIND_NODE_RELATION } from "../../utility/constant";
 import { Property } from "../../property";
 
+@Meta(Alias, 'any')
 @Meta(ForSchema, SCHEMA_KIND_NODE_RELATION)
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_RELATION}.any`)

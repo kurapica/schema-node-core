@@ -1,4 +1,5 @@
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { Relation } from '../../../attribute/relation';
 import { ReadOnly } from '../../../property/common/readOnly';
 import { InVisible } from '../../../property/common/invisible';
@@ -21,6 +22,7 @@ import type { IValueAccess } from '../../../interface';
 import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_REFLECT_FUNC, NODE_SELF, NS_SYSTEM_STRING, SCHEMA_KIND_NODE_STRING, NS_SYSTEM_SCHEMA_PRO_STRING } from '../../../utility/constant';
 
 /** The access value provider property */
+@Meta(Alias, 'accessValueTypeResolver')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRING])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessValueTypeResolver`)

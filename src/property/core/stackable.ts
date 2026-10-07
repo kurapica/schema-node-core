@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { Meta } from '../../attribute/meta';
+import { Alias } from './alias';
 import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 import { ForSchema } from './forSchema';
@@ -17,6 +18,7 @@ import { SCHEMA_KIND_NODE_PROPERTY, NS_SYSTEM_SCHEMA_PRO_PROPERTY, NS_SYSTEM_BOO
  * Declare whether duplicate properties from different sources stack (accumulate) vs override.
  * Mirrors C# SchemaNode.Core/Property/Core/Stackable.cs
  */
+@Meta(Alias, 'stackable')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_PROPERTY])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_PROPERTY}.stackable`)

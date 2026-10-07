@@ -1,5 +1,6 @@
 import { Meta } from "../../attribute/meta";
 import { Relation } from "../../attribute/relation";
+import { Alias } from "../../property/core/alias";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfNodeKind } from "../../property/core/ofNodeKind";
@@ -15,6 +16,7 @@ import type { DecimalSchema } from "./type";
 import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_DECIMAL, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_DECIMAL, SCHEMA_KIND_NODE_DECIMAL, NODE_KIND_DECIMAL } from "../../utility/constant";
 
 /** The decimal property for node schema */
+@Meta(Alias, 'decimal')
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_DECIMAL}.${NODE_KIND_DECIMAL}`)

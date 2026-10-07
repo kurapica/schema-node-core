@@ -1,4 +1,5 @@
 import { Meta } from '../../attribute/meta';
+import { Alias } from '../core/alias';
 import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
@@ -13,6 +14,7 @@ import type { IValueAccess } from '../../interface';
 import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, TYPE_PROVIDER } from '../../utility/constant';
 import { PropertyValueTypeResolver } from '../core/propertyValueTypeResolver';
 
+@Meta(Alias, 'blackList')
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.blacklist`)
 @Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)

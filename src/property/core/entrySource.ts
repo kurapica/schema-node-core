@@ -1,5 +1,6 @@
 import { FuncCallProperty } from '../funcCallProperty';
 import { Meta } from '../../attribute/meta';
+import { Alias } from './alias';
 import { OfNodeKind } from './ofNodeKind';
 import { ForSchema } from './forSchema';
 import { SchemaType } from './schemaType';
@@ -12,6 +13,7 @@ import { InVisible } from '../common/invisible';
 import { SCHEMA_KIND_NODE_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_FUNC, SCHEMA_KIND_NODE_FUNC_ARG, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_FUNC_CALL, NODE_KIND_PROPERTY } from '../../utility/constant';
 
 /** The entry source function */
+@Meta(Alias, 'entrySource')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_PROPERTY])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.entrysource`)
@@ -19,6 +21,7 @@ import { SCHEMA_KIND_NODE_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_
 export class EntrySource extends FuncCallProperty {}
 
 /** The entry root tag for function argument */
+@Meta(Alias, 'entryRoot')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_FUNC_ARG])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.entryroot`)
@@ -29,4 +32,5 @@ export class EntrySource extends FuncCallProperty {}
 export class EntryRoot extends Property<boolean> {}
 
 /** The entry source version used to notify the view force rebuild the options */
+@Meta(Alias, 'entrySourceVersion')
 export class EntrySourceVersion extends Property<number> {}

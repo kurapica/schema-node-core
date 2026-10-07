@@ -1,5 +1,6 @@
 import { Meta } from "../../attribute/meta";
 import { Relation } from "../../attribute/relation";
+import { Alias } from '../../property/core/alias';
 import { ForSchema } from '../../property/core/forSchema';
 import { OfNodeKind } from '../../property/core/ofNodeKind';
 import { OverrideType } from '../../property/core/overrideType';
@@ -14,6 +15,7 @@ import { PropertyValueType } from "../../property/core/propertyValueType";
 
 import { NS_SYSTEM_INTRINSIC, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_OBJECT, NS_SYSTEM_SCHEMA_PRO_RELATION, NODE_KIND_PROPERTY, SCHEMA_KIND_NODE_RELATION } from "../../utility/constant";
 
+@Meta(Alias, 'assign')
 @Meta(ForSchema, SCHEMA_KIND_NODE_RELATION)
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_RELATION}.assign`)

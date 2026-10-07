@@ -1,4 +1,5 @@
 import { Meta } from '../../attribute/meta';
+import { Alias } from './alias';
 import { ReadOnly } from '../common/readOnly';
 import { InVisible } from '../common/invisible';
 import { FuncCallProperty } from "../funcCallProperty";
@@ -11,6 +12,7 @@ import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_SCHEMA_FUNC, S
 import { ForSchema } from './forSchema';
 
 /** The access value provider property */
+@Meta(Alias, 'accessValueTypeProvider')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRING])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.AccessValueTypeProvider`)

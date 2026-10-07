@@ -2,11 +2,14 @@
 // Mirrors C# SchemaNode.Core/Property/Core/NodeType.cs
 // =============================================================================
 
+import { Meta } from '../../attribute/meta';
+import { Alias } from './alias';
 import type { INodeType } from '../../interface';
 import { isNull } from '../../utility/toolset';
 import { Property } from '../property';
 
 /** Define the runtime type of a node schema kind. */
+@Meta(Alias, 'runtimeNodeType')
 export class RuntimeNodeType extends Property<new (parent?: INodeType) => INodeType> {
     apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
         if (!isNull(field) || !isNull(descriptorOrIndex)) return;

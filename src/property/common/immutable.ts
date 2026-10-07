@@ -4,6 +4,7 @@
 
 import { Property } from '../property';
 import { Meta } from '../../attribute/meta';
+import { Alias } from '../core/alias';
 import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { ForSchema } from '../core/forSchema';
@@ -17,6 +18,7 @@ import type { IValueAccess } from '../../interface';
 import { SCHEMA_KIND_NODE_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_BOOL, NODE_KIND_PROPERTY } from '../../utility/constant';
 
 /** The `Immutable` property indicates whether a field is immutable, meaning that its value cannot be changed after it has been set. */
+@Meta(Alias, 'immutable')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_PROPERTY])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.Immutable`)

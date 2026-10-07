@@ -19,11 +19,7 @@ import { DecimalType } from './runtime';
 import { DecimalValue } from './property/decimalValue';
 import { DecimalNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
-
-import type { NodeSchema } from '../node/type';
-import type { DecimalSchema } from './type';
-
-import { NODE_SELF, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, SCHEMA_KIND_NODE_DECIMAL, SCHEMA_KIND_NODE_DECIMAL_DEFINE, SCHEMA_KIND_NODE_DECIMAL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, NODE_KIND_STRING, NODE_KIND_DECIMAL } from '../../utility/constant';
+import { Error } from '../../property/common/error';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Append } from '../../property/core/append';
 import { EntrySource } from '../../property/core/entrySource';
@@ -35,6 +31,11 @@ import { Unit } from '../../property/common/unit';
 import { StackUpLimit } from '../../property/common/stackUpLimit';
 import { Relation } from '../../attribute/relation';
 import { JsRegex } from '../../property/common/jsRegex';
+
+import type { NodeSchema } from '../node/type';
+import type { DecimalSchema } from './type';
+
+import { NODE_SELF, NS_SYSTEM_INTRINSIC, NS_SYSTEM_SCHEMA_DECIMAL, NS_SYSTEM_SCHEMA_DECIMAL_TYPE, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, SCHEMA_KIND_NODE_DECIMAL, SCHEMA_KIND_NODE_DECIMAL_DEFINE, SCHEMA_KIND_NODE_DECIMAL_USAGE, SCHEMA_KIND_NODE, SCHEMA_KIND_ORDER_DECIMAL, NODE_KIND_STRING, NODE_KIND_DECIMAL } from '../../utility/constant';
 
 /** The decimal schema kind. */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE_DECIMAL, SCHEMA_KIND_ORDER_DECIMAL])

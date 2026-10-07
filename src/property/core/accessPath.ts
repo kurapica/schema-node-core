@@ -1,9 +1,12 @@
+import { Meta } from "../../attribute/meta";
+import { Alias } from "./alias";
 import type { IAccessPathHandler, IValueAccess, IValueTypeAccess } from "../../interface";
 import { isNull } from "../../utility/toolset";
 import { Property } from "../property";
 
 const accessPathHandlers: Map<string, IAccessPathHandler> = new Map();
 
+@Meta(Alias, 'accessPathHandler')
 export class AccessPathHandler extends Property<string> {
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {
     if (!isNull(field) || !isNull(descriptorOrIndex)) return;

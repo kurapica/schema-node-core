@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { ForSchema } from '../../../property/core/forSchema';
@@ -16,6 +17,7 @@ import { Property } from '../../../property/property';
 import { ReadOnly } from '../../../property/common/readOnly';
 
 /* The struct field is display only, meaning it is not editable in the UI and is not persisted to the database.*/
+@Meta(Alias, 'displayOnly')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT_FIELD])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.DisplayOnly`)

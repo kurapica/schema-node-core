@@ -1,6 +1,6 @@
 {
   "name": "schema-node-core",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "TypeScript schema execution framework — mirrors C# SchemaNode.Core. Language-agnostic core for declarative schema definition via @Meta decorators, property composition, and extensible schema families.",
   "type": "module",
   "main": "dist/index.js",

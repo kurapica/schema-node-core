@@ -11,6 +11,7 @@
 // =============================================================================
 
 import { getMetaProperties } from '../attribute/meta';
+import { getPropertyName } from '../property/property';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { combinePaths, splitString } from '../utility/toolset';
 import { getNodeSchemaName } from '../schema/node/type';
@@ -363,17 +364,18 @@ export function initSchemaRuntime(): void {
     const forSchema = (ctor as unknown as Record<string, string[]>).forSchema;
     if (forSchema?.length) {
       const kinds = typeof forSchema === 'string' ? [forSchema] : forSchema;
-      logger.debug('[Property]', ctor.name, '->', kinds);
+      const propName = getPropertyName(ctor as unknown as PropertyCtor);
+      logger.debug('[Property]', propName, '->', kinds);
 
       for (const kind of kinds) {
         let existed = _schemaKindPropertyTypes.get(kind) ?? [];
-        if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
+        if (existed.some((f) => f.name === propName)) continue; // avoid duplicates
         existed.push(ctor as unknown as PropertyCtor);
         _schemaKindPropertyTypes.set(kind, existed);
       }
     }
     else
-      logger.debug('[Property]', ctor.name, '->', 'None');
+      logger.debug('[Property]', (ctor as unknown as { name: string }).name, '->', 'None');
   });
 
   // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime

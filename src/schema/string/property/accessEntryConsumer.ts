@@ -1,4 +1,5 @@
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { ReadOnly } from '../../../property/common/readOnly';
 import { InVisible } from '../../../property/common/invisible';
 import { FuncCallProperty } from '../../../property/funcCallProperty';
@@ -21,6 +22,7 @@ import { AccessValueTypeProvider } from '../../../property/core/accessValueTypeP
 import type { ValueType } from '../../value';
 
 /** The access value consumer property */
+@Meta(Alias, 'accessEntryConsumer')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRING])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.AccessEntryConsumer`)

@@ -1,4 +1,5 @@
 import { Meta, Relation } from "../../attribute";
+import { Alias } from "../../property/core/alias";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
 import { OfNodeKind } from "../../property/core/ofNodeKind";
@@ -15,6 +16,7 @@ import type { EnumSchema } from "./type";
 import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_ENUM, NS_SYSTEM_SCHEMA_ENUM, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_NODE_ENUM, SCHEMA_KIND_NODE_ENTRY, NODE_KIND_ENUM } from "../../utility/constant";
 
 /** The enum property of node schema */
+@Meta(Alias, 'enum')
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.${NODE_KIND_ENUM}`)

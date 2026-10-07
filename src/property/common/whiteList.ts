@@ -10,6 +10,7 @@ import { Error } from '../common/error';
 import { isNull } from '../../utility/toolset';
 import { Relation } from '../../attribute/relation';
 import { ForSchema } from '../core/forSchema';
+import { Alias } from '../core/alias';
 import { ArrayType } from '../../schema/array/runtime';
 import { EnumType } from '../../schema/enum/runtime';
 import { PropertyValueTypeResolver } from '../core/propertyValueTypeResolver';
@@ -18,6 +19,7 @@ import type { IValueAccess, IValueTypeAccess } from '../../interface';
 
 import { NODE_KIND_PROPERTY,  NS_SYSTEM_LIST, NS_SYSTEM_STRING, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_PRO_COMMON, SCHEMA_KIND_NODE_ENUM, SCHEMA_KIND_NODE_STRING, SCHEMA_KIND_NODE_INT } from '../../utility/constant';
 
+@Meta(Alias, 'whiteList')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_ENUM, SCHEMA_KIND_NODE_STRING, SCHEMA_KIND_NODE_INT])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.whitelist`)

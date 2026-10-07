@@ -1,4 +1,5 @@
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
 import { PropertyValueType } from '../../../property/core/propertyValueType';
@@ -13,6 +14,7 @@ import type { IValueAccess } from '../../../interface';
 import { NODE_KIND_PROPERTY, NS_SYSTEM_BOOL, SCHEMA_KIND_NODE_ENUM, SCHEMA_KIND_NODE_ENUM_USAGE, NS_SYSTEM_SCHEMA_PRO_ENUM, NODE_KIND_ENUM } from '../../../utility/constant';
 import { CascadeDepth } from './cascadeDepth';
 
+@Meta(Alias, 'leafOnly')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_ENUM, SCHEMA_KIND_NODE_ENUM_USAGE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ENUM}.leafonly`)

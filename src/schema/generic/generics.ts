@@ -1,4 +1,5 @@
 import { Meta } from "../../attribute/meta";
+import { Alias } from "../../property/core/alias";
 import { PropertyValueType } from "../../property/core/propertyValueType";
 import { ReadOnly } from "../../property/common/readOnly";
 import { ForSchema } from "../../property/core/forSchema";
@@ -15,6 +16,7 @@ import { InVisible } from "../../property/common/invisible";
 /**
  * A collection of generic type parameter declarations for a schema.
  */
+@Meta(Alias, 'generics')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_FUNCTION])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(ReadOnly, true)

@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { Meta } from '../../attribute/meta';
+import { Alias } from '../core/alias';
 import { OfNodeKind } from '../core/ofNodeKind';
 import { SchemaType } from '../core/schemaType';
 import { PropertyValueType } from '../core/propertyValueType';
@@ -14,6 +15,7 @@ import type { IProperty } from '../../interface';
 import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_LOCALE_STRING } from '../../utility/constant';
 
 /** The Description property */
+@Meta(Alias, 'description')
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.description`)
 @Meta(PropertyValueType, NS_SYSTEM_LOCALE_STRING)

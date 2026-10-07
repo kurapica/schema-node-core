@@ -1,5 +1,6 @@
 import { Meta } from "../../attribute/meta";
 import { Relation } from "../../attribute/relation";
+import { Alias } from "../../property/core/alias";
 import { Default } from "../../property/common/default";
 import { Visible } from "../../property/common/visible";
 import { ForSchema } from "../../property/core/forSchema";
@@ -16,6 +17,7 @@ import type { ArraySchema } from "./type";
 import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_LOGIC_EQ, SCHEMA_KIND_NODE_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY, NS_SYSTEM_SCHEMA_PRO_ARRAY, NODE_KIND_ARRAY } from "../../utility/constant";
 
 /** The array property for node schema */
+@Meta(Alias, 'array')
 @Meta(ForSchema, [SCHEMA_KIND_NODE])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.${NODE_KIND_ARRAY}`)

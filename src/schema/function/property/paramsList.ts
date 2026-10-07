@@ -1,4 +1,5 @@
 import { Meta } from "../../../attribute/meta";
+import { Alias } from "../../../property/core/alias";
 import { InVisible } from "../../../property";
 import { ForSchema } from "../../../property/core/forSchema";
 import { OfNodeKind } from "../../../property/core/ofNodeKind";
@@ -10,6 +11,7 @@ import type { Entry } from "../../../struct/entry/type";
 import { SCHEMA_KIND_NODE_FUNC_ARG, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_FUNC, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE } from "../../../utility";
 
 /** The params list */
+@Meta(Alias, 'paramsList')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_FUNC_ARG])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_FUNC}.paramsList`)

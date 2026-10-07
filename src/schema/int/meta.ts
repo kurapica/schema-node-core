@@ -21,6 +21,7 @@ import { IntNode } from './node';
 import { DataNodeType } from '../../property/core/dataNodeType';
 import { SchemaUsage } from '../../property/core/schemaUsage';
 import { Append } from '../../property/core/append';
+import { Error } from '../../property/common/error';
 
 import type { NodeSchema } from '../node/type';
 import type { IntSchema } from './type';

@@ -5,6 +5,7 @@
 import { Property } from '../../../property/property';
 import { ForSchema } from '../../../property/core/forSchema';
 import { Meta } from '../../../attribute/meta';
+import { Alias } from '../../../property/core/alias';
 
 import { OfNodeKind } from '../../../property/core/ofNodeKind';
 import { SchemaType } from '../../../property/core/schemaType';
@@ -17,6 +18,7 @@ import { NS_SYSTEM_SCHEMA, SCHEMA_KIND_NODE_STRUCT, NS_SYSTEM_SCHEMA_PRO_CORE, N
 /**
  * Attach the properties of a schema kind to the struct type
  */
+@Meta(Alias, 'attach')
 @Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.attach`)
