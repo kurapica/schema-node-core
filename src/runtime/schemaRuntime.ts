@@ -10,65 +10,89 @@
 // Notice: There is no need to create an instance of SchemaRuntime, it is a singleton and all methods are static.
 // =============================================================================
 
-import { getNodeSchemaName, NodeSchema } from '../schema/nodeSchema';
-import type { IProperty } from '../property/property';
-import { ForSchema, OfSchema, SchemaGenerator, Append, GenericParameter, NodeSchemaKind, SchemaType } from '../property/index';
-import { getMetaProperties, getMetaProperty } from '../attribute/meta';
-import { SCHEMA_KIND_NAMESPACE, SCHEMA_KIND_NODE, SCHEMA_KIND_STRUCT } from '../utility/constant';
-import { SchemaKind } from '../property/record/schemaKind';
-import { NamespaceType, NodeType, GenericType } from './type';
+import { getMetaProperties } from '../attribute/meta';
 import { SchemaLoadState } from '../enum/schemaLoadState';
-import { RuntimeNodeType } from '../property/core/runtimeNodeType';
-import { getSchemaProvider } from '../schema/provider/schemaProvider';
-import { combineProperties } from '../property/propertyOwner';
+import { combinePaths, splitString } from '../utility/toolset';
+import { getNodeSchemaName } from '../schema/node/type';
+import { logger } from '../utility/logger';
 
-// #region ── Schema Kind Configuration ─────────────────────────────────────────────
+import type { IProperty, PropertyCtor, INodeType } from '../interface';
+import type { NodeSchema } from '../schema/node/type';
+import type { ArraySchema } from '../schema/array/type';
+import type { GenericParameter } from '../schema/generic/type';
 
-/** The schema kind holder */
-let _schemaKindHolder = new Map<string, Function>();
+import { NODE_KIND_NAMESPACE, NS_SYSTEM, NS_SYSTEM_OBJECT, SCHEMA_KIND_NODE, NODE_KIND_ARRAY, NODE_KIND_STRUCT } from '../utility/constant';
+
+// #region ── Schema Kind Configuration ───────────────────────────────────────
 
 /** The schema kind property types */
-let _schemaKindPropertyTypes = new Map<string, (new () => IProperty)[]>();
+const _schemaKindPropertyTypes = new Map<string, PropertyCtor[]>();
 
 /** The schema kind prototype properties */
-let _schemaKindProperties = new Map<string, IProperty[]>();
+const _schemaKindProperties = new Map<string, IProperty[]>();
+
+/** The schema kind properties from server */
+const _schemaKindServerProperties = new Map<string, string[]>();
 
 /** The node schema generators */
-let _schemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
+const _nodeSchemaGenerators = new Map<string, (namespace: string, name: string, target: object) => void>();
+
+/** Sets the schema kind properties from server */
+export function setSchemaKindServerProperties(map: Record<string, string[]>) {
+  for (let kind in map)
+    _schemaKindServerProperties.set(kind, map[kind].map(e => e.toLowerCase()));
+}
 
 /**
  * Get the properties associated with a specific schema kind.
  * @param kind The schema kind
  * @returns An array of property factory functions
  */
-export function *getSchemaKindPropertyTypes(kind: string): Generator<(new () => IProperty)> {
+export function *getSchemaKindPropertyTypes(kind: string): Generator<PropertyCtor> {
   const props = _schemaKindPropertyTypes.get(kind);
   if (!props) return;
-  for (let prop of props) yield prop;
+  yield* props;
+}
+
+/** Gets the schema kind properties from server */
+export function *getSchemaKindSchemaProperties(kind: string): Generator<string> {
+  const serverProps = _schemaKindServerProperties.get(kind) ?? [];
+  const props = _schemaKindPropertyTypes.get(kind) ?? [];
+  
+  const temp = new Set<string>(serverProps);
+  yield* serverProps;
+
+  for (const prop of props) {
+    const schemaType = (prop as unknown as Record<string, string>)?.schemaType?.toLowerCase();
+    if (!schemaType || temp.has(schemaType)) continue;
+    yield schemaType;
+  }
 }
 
 /** Gets the schema kinds the property can works with */
-export function getPropertyTypeSupportSchemas(prop: new () => IProperty) : string[] {
+export function getPropertyTypeSupportSchemas(prop: PropertyCtor) : string[] {
   return Array.from(_schemaKindPropertyTypes.keys().filter(e => _schemaKindPropertyTypes.get(e)?.includes(prop)))
 }
 
 /** Whether the property works for the schema kind */
-export function isSchemaKindPropertyType(kind: string, prop: new () => IProperty) : boolean {
+export function isSchemaKindPropertyType(kind: string, prop: PropertyCtor) : boolean {
   return _schemaKindPropertyTypes.get(kind)?.includes(prop) ?? false;
 }
 
 /** Gets the schema kind prototype property */
-export function getSchemaKindProperty<T extends IProperty>(kind: string, propCtor: new () => IProperty): T | undefined {
-  return _schemaKindProperties.get(kind)?.find(p => p instanceof propCtor) as T;
+export function getSchemaKindProperty<T extends IProperty>(kind: string, propCtor: PropertyCtor | string): T | undefined {
+  return typeof propCtor === 'string'
+    ? _schemaKindProperties.get(kind)?.find(p => p.name.toLowerCase() === propCtor.toLowerCase()) as T
+    : _schemaKindProperties.get(kind)?.find(p => p instanceof propCtor) as T;
 }
 
 /** Gets the schema kind prototype properties */
-export function *getSchemaKindProperties<T extends IProperty>(kind: string, propCtor: new () => IProperty): Generator<T> {
+export function *getSchemaKindProperties<T extends IProperty>(kind: string, propCtor: PropertyCtor | string): Generator<T> {
   const props = _schemaKindProperties.get(kind);
   if (!props?.length) return;
   for (let prop of props)
   {
-    if (prop instanceof propCtor)
+    if (typeof propCtor === 'string' ? prop.name.toLowerCase() === propCtor.toLowerCase() : prop instanceof propCtor)
     {
       yield prop as T;
       if (!prop.stackable) return;
@@ -92,7 +116,7 @@ export function *filterSchemaKindProperties(kind: string, predicate: (prop: IPro
 
 // #endregion
 
-// #region ── System Schema Registration (NodeSchema family) ────────────────────────────
+// #region ── System Schema Registration (NodeSchema family) ──────────────────
 
 /** The schema kind registry */
 const _schemaKindRegistry = new Map<string, Function>();
@@ -106,7 +130,7 @@ const _schemaPropertyRegistry = new Set<Function>();
 const _schemaTypeRegistry = new Map<string, Function>();
 
 /** Root namespace — holds all registered schemas in a tree. */
-const rootNamespace : NodeSchema = { namespace: "", name: "", kind : SCHEMA_KIND_NAMESPACE };
+const rootNamespace : NodeSchema = { namespace: "", name: "", kind : NODE_KIND_NAMESPACE };
 
 /** Schema lookups by full name for fast access. */
 const _schemaIndex = new Map<string, NodeSchema>();
@@ -126,54 +150,71 @@ export function registerSchemaType(type: string, typeCtor: Function): void {
   _schemaTypeRegistry.set(type.toLowerCase(), typeCtor);
 }
 
+/** Gets the schema type for a class constructor */
+export function getSchemaKindRegister(kind: string): Function | undefined {
+  return _schemaKindRegistry.get(kind.toLowerCase());
+}
+
 /**
  * Gets the schema type for a class constructor
  * @param typeCtor The type constructor or instance
  * @returns The schema type or undefined if not registered
  */
 export function getSchemaType(type: string): Function | undefined {
+  if (type.includes('<')) type = type.split('<')[0];
   return _schemaTypeRegistry.get(type.toLowerCase());
 }
 
 /** Gets the schema name of the type */
 export function getTypeSchemaName(typeCtor: Function): string | undefined {
-  return getMetaProperty(typeCtor, SchemaType)?.getValue<string>();
+  return (typeCtor as unknown as Record<string, string>).schemaType;
 }
 
 /**
  * Save a NodeSchema into the namespace tree.
- * This is THE public API for schema registration — mirrors C# SchemaRuntime.SaveSystemSchema().
+ * This is THE public API for schema registration — mirrors C# SchemaRuntime.saveNodeSchema().
  */
-export function saveSystemSchema(schema: NodeSchema, loadStage: SchemaLoadState = SchemaLoadState.System): void {
-  const ns = schema.namespace ?? '';
-
+export function saveNodeSchema(schema: NodeSchema | NodeSchema[], loadStage: SchemaLoadState = SchemaLoadState.System): void {
+  if (Array.isArray(schema)) {
+    for (const s of schema) {
+      saveNodeSchema(s, loadStage);
+    }
+    return;
+  }
+  if (!(schema)) return;
+  
   // Set the load state flags for the schema
   _setLoadState(schema, loadStage);
 
-  _registerInNamespace(ns, schema);
+  // System schema, register in the namespace tree
+  _registerInNamespace(schema.namespace ?? '', schema);
   _schemaIndex.set(getNodeSchemaName(schema), schema);
+  logger.verbose("[Schema][Register]", schema);
 }
 
 /** Look up a schema by full name. */
-function getSystemSchema(fullName: string): NodeSchema | undefined {
+export function getSystemSchema(fullName: string): NodeSchema | undefined {
   fullName = fullName.toLowerCase();
-  const schema = _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
+  const schema = !fullName ? rootNamespace : _schemaIndex.get(fullName) ?? _findInNamespace(fullName);
   if (!schema) return undefined;
 
   const { schemas, ...clone } = schema
-  if (schema?.kind === SCHEMA_KIND_NAMESPACE && schema.schemas)
+  if (schema?.kind === NODE_KIND_NAMESPACE && schema.schemas)
     (clone as NodeSchema).schemas = schema.schemas.map(({ schemas, ...child }) => child);
+  logger.verbose("[Schema][Get]", schema);
   return clone;
 }
 
 // #region ── Internal ──
 
 /** Set the load state flags for a schema and its children. */
-function _setLoadState(schema: NodeSchema, loadStage: SchemaLoadState): void {
+function _setLoadState(schema: NodeSchema & { system?: boolean }, loadStage: SchemaLoadState): void {
   schema.loadState ??= loadStage;
   schema.loadState! |= loadStage;
+  if (loadStage & SchemaLoadState.System)
+    schema.system = true;
 
-  if (schema.kind === SCHEMA_KIND_NAMESPACE && schema.schemas) {
+  if (schema.kind === NODE_KIND_NAMESPACE && schema.schemas) {
     for (const child of schema.schemas) {
       _setLoadState(child, loadStage);
     }
@@ -188,19 +229,21 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
     return;
   }
 
-  const parts = ns.split('.');
+  const parts = splitString(ns);
   let current = rootNamespace;
 
   for (const part of parts) {
     current.schemas ??= [];
     let child = current.schemas.find((s) => s.name === part);
-    if (child && child.kind !== SCHEMA_KIND_NAMESPACE) {
-      throw new Error(`Schema conflict: ${getNodeSchemaName(child)} is not a namespace`);
+    if (child && child.kind !== NODE_KIND_NAMESPACE) {
+      throw new Error(`[Schema][Conflict]: ${getNodeSchemaName(child)} is not a namespace`);
     }
 
     if (!child) {
-      child = { namespace : getNodeSchemaName(current), name: part, kind : SCHEMA_KIND_NAMESPACE };
+      child = { namespace : getNodeSchemaName(current), name: part, kind : NODE_KIND_NAMESPACE, loadState: schema.loadState };
+      (child as any).display = { key: child.namespace ? `${child.namespace}.${part}` : part }; // for simple
       current.schemas.push(child);
+      logger.verbose("[Schema][Register]", child);
     }
     current = child;
   }
@@ -209,7 +252,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
   const idx = current.schemas.findIndex((s) => s.name === schema.name);
   if (idx >= 0) {
     if (current.schemas[idx].kind !== schema.kind)
-      throw new Error(`Schema conflict: ${getNodeSchemaName(current.schemas[idx])} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
+      throw new Error(`[Schema][Conflict]: ${getNodeSchemaName(current.schemas[idx])} is of kind ${current.schemas[idx].kind}, cannot replace with kind ${schema.kind}`);
     current.schemas[idx] = schema; // replace existing
   } else {
     current.schemas.push(schema);
@@ -218,7 +261,7 @@ function _registerInNamespace(ns: string, schema: NodeSchema): void {
 
 /** Walk the namespace tree by dotted path. */
 function _findInNamespace(path: string): NodeSchema | undefined {
-  const parts = path.split('.');
+  const parts = splitString(path);
   let current: NodeSchema | undefined = rootNamespace;
 
   for (const part of parts) {
@@ -232,326 +275,112 @@ function _findInNamespace(path: string): NodeSchema | undefined {
 
 // #endregion
 
-// #region ── Node Type Resolution ─────────────────────────────────────────────────
+// #region ── Node Type Resolution ────────────────────────────────────────────
 
-const _nodeTypeGenerator = new Map<string, new () => NodeType>();
+const _nodeTypeGenerator = new Map<string, new (parent?: INodeType) => INodeType>();
+const _nodeKind2SchemaKind = new Map<string, string>();
 
-/** Root namespace type (lazy-init on first getNodeType call). */
-let rootNamespaceType: NamespaceType | undefined;
-
-function isNamespaceType(node: NodeType): boolean {
-  return node instanceof NamespaceType;
+/** Get the node type generator for a kind. */
+export function getNodeTypeGenerator(nodeKind: string): (new (parent?: INodeType) => INodeType) | undefined {
+  return _nodeTypeGenerator.get(nodeKind);
 }
 
-/**
- * Resolve a runtime NodeType by full schema name.
- * 
- * Mirrors C# SchemaContext.GetNodeTypeAsync:
- *   1. Look up the NodeSchema by name from _schemaIndex
- *   2. Use _nodeTypeGenerator to find the NodeType class for the schema's kind
- *   3. Create the NodeType instance and call loadType()
- *
- * @param fullName   The dotted full schema name (e.g. "system.string")
- * @param generics   Optional generic parameter declarations
- * @param genericParams Optional resolved generic type arguments
- * @param reload     If true, forces re-loading from provider
- */
-export async function getNodeType(
-  fullName: string,
-  generics?: GenericParameter[],
-  genericParams?: NodeType[],
-  reload = false,
-): Promise<NodeType | undefined> {
-  fullName = fullName.toLowerCase().trim();
-
-  // Generic type — the name matches a generic parameter → return the concrete type
-  if (generics) {
-    const gIdx = generics.findIndex(g => g.name.toLowerCase() === fullName);
-    if (gIdx >= 0) {
-      if (genericParams && gIdx < genericParams.length)
-        return genericParams[gIdx];
-      return new GenericType(fullName);
-    }
-  }
-
-  // Walk namespace segments
-  let genericPart : string | undefined = undefined;
-  if (fullName.endsWith('>'))
-  {
-    const genericStart = fullName.indexOf('<');
-    if (genericStart < 0)
-    {
-      console.error(`The "${fullName}" is not a valid type name.`)
-      return undefined;
-    }
-    genericPart = fullName.substring(genericStart);
-    fullName = fullName.substring(0, genericStart);
-  }
-  const parts = fullName.split('.');
-  if (genericPart) parts.push(genericPart);
-
-  // Load nodes
-  if (!rootNamespaceType) rootNamespaceType = new NamespaceType();
-  let node: NodeType | undefined = rootNamespaceType as unknown as NodeType;
-  let currentPath = '';
-
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-    if (!node) return undefined;
-    currentPath = currentPath ? `${currentPath}.${part}` : part;
-    node = await loadNodeTypeAsync(node, part, currentPath, generics, genericParams, reload, i + 1 == parts.length);
-    if (!node) return undefined;
-  }
-
-  return node;
+/** Get the schema kind for a node kind. */
+export function getSchemaKindByNodeKind(nodeKind: string): string {
+  return _nodeKind2SchemaKind.get(nodeKind)!;
 }
 
-/** Load a single namespace segment. */
-async function loadNodeTypeAsync(
-  parent: NodeType,
-  segment: string,
-  fullPath: string,
-  generics?: GenericParameter[],
-  genericParams?: NodeType[],
-  reload = false,
-  isLast = false
-): Promise<NodeType | undefined> {
-  // Generic types: segment starts with '<', e.g. "list<system.string>"
-  if (segment.startsWith('<')) return loadGenericTypeAsync(parent, segment, generics, genericParams);
+//#endregion
 
-  // Already loaded?
-  const nsParent = isNamespaceType(parent) ? (parent as unknown as NamespaceType) : undefined;
-  let result: NodeType | undefined = nsParent?.getNodeType(segment);
-  if (result && result.loaded && !(isLast && reload)) return result;
-  if (reload && !result) return undefined; // reload only on existing types
-
-  // Load the NodeSchema
-  const schema = await loadNodeSchema(nsParent, segment, reload);
-  if (!schema) return undefined;
-
-  // Resolve NodeType class from _nodeTypeGenerator
-  const NodeTypeCtor = _nodeTypeGenerator.get(schema.kind) ?? NodeType;
-  result ??= new NodeTypeCtor();
-  result.namespace = nsParent;
-
-  // Cache in parent namespace (strip sub-schemas first — they're saved separately)
-  const schemas = schema.schemas;
-  delete schema.schemas;
-  if (nsParent !== result) {
-    nsParent?.saveSubNodeSchema(schema);
-    nsParent?.saveNodeType(segment, result);
-  }
-
-  // Load the type
-  await result.loadType(schema);
-
-  // Save sub-schemas into NamespaceType
-  if (result instanceof NamespaceType && schemas?.length)
-    for (const s of schemas) result.saveSubNodeSchema(s);
-
-  // Generic types reloading (clone schema to avoid mutation)
-  for (const g of result.getGenericTypes())
-    await g.loadType({ ...schema }, g.genericParams);
-
-  return result;
-}
-
-/** Load a generic type like "list<system.string>". */
-async function loadGenericTypeAsync(
-  node: NodeType,
-  segment: string,
-  generics?: GenericParameter[],
-  genericParams?: NodeType[],
-): Promise<NodeType | undefined> {
-  const inner = segment.slice(1, -1); // strip '<' and '>'
-  if (!node.generics) return undefined;
-
-  // Check cache
-  let genType = node.getGenericType(inner);
-  if (genType && genType.loaded) return genType;
-
-  // Parse generic params respecting nested <>, e.g. "system.point<system.int, system.number>"
-  const genParams: NodeType[] = [];
-  for (const paramName of splitGenericParams(inner)) {
-    const resolved = await getNodeType(paramName, generics, genericParams);
-    if (!resolved) return undefined;
-    genParams.push(resolved);
-  }
-
-  if (node.generics.length !== genParams.length) return undefined;
-
-  // Create generic type instance
-  const NodeTypeCtor = node.constructor as new () => NodeType;
-  genType = new NodeTypeCtor();
-  genType.namespace = node.namespace;
-  node.setGenericType(inner, genType);
-
-  await genType.loadType(node.getNodeSchema()!, genParams);
-  return genType;
-}
-
-/**
- * Load a NodeSchema — first from namespace cache, then system index, then providers.
- * Schemas from multiple providers are COMBINED (not replaced), mirroring C# merging logic.
- */
-async function loadNodeSchema(
-  ns: NamespaceType | undefined,
-  name: string,
-  reload = false,
-): Promise<NodeSchema | undefined> {
-  const schemaName = ns ? `${ns.name}.${name}`.replace(/^\./, '') : name;
-
-  // 1. Check namespace cache (unless reloading)
-  if (!reload) {
-    const cachedNodeSchema = ns?.getSubNodeSchema(name);
-    if (cachedNodeSchema) return cachedNodeSchema;
-  }
-
-  // 2. Try system (built-in) schema
-  let schema = getSystemSchema(schemaName);
-  if (schema) {
-    // Shallow clone so provider merges don't mutate the cached system schema
-    schema = { ...schema, schemas: schema.schemas ? [...schema.schemas] : undefined };
-  }
-
-  // 3. Try loading from providers and combine
-  const provider = getSchemaProvider();
-  if (provider) {
-    try {
-      const loadSchemas = await provider.getSchema([schemaName]);
-      for (const loadSchema of loadSchemas) {
-        loadSchema.loadState = SchemaLoadState.Service;
-
-        if (!schema) {
-          schema = loadSchema;
-          continue;
-        }
-
-        // Merge load states
-        schema.loadState = (schema.loadState ?? SchemaLoadState.None) | (loadSchema.loadState ?? SchemaLoadState.None);
-
-        // Combine properties on the schema itself
-        combineProperties(schema, loadSchema, SCHEMA_KIND_NODE);
-
-        // For namespace schemas, merge sub-schemas
-        if (loadSchema.kind === SCHEMA_KIND_NAMESPACE && loadSchema.schemas?.length) {
-          if (!schema.schemas?.length) {
-            schema.schemas = loadSchema.schemas;
-          } else {
-            // Merge sub-schemas
-            const otherSchemas: NodeSchema[] = [];
-            for (const other of loadSchema.schemas) {
-              const existingIdx = schema.schemas.findIndex(
-                s => s.name.toLowerCase() === other.name.toLowerCase(),
-              );
-              if (existingIdx >= 0) {
-                if (schema.schemas[existingIdx].kind === other.kind) {
-                  combineProperties(schema.schemas[existingIdx], other, SCHEMA_KIND_NODE);
-                }
-              } else {
-                otherSchemas.push(other);
-              }
-            }
-            if (otherSchemas.length > 0) {
-              schema.schemas = [...schema.schemas, ...otherSchemas];
-            }
-          }
-        }
-      }
-    } catch {
-      // Provider failed, continue with what we have
-    }
-  }
-
-  return schema;
-}
-
-/**
- * Split generic parameters respecting nested angle brackets.
- * Mirrors C# SpanReader.NextGenericParam().
- *
- * e.g. "system.string, system.point<system.int, system.number>"
- *   → ["system.string", "system.point<system.int, system.number>"]
- */
-function* splitGenericParams(input: string): Generator<string> {
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
-    if (ch === '<') {
-      depth++;
-    } else if (ch === '>') {
-      depth--;
-    } else if (ch === ',' && depth === 0) {
-      yield input.substring(start, i).trim();
-      start = i + 1;
-    }
-  }
-
-  // Last segment
-  const last = input.substring(start).trim();
-  if (last) yield last;
-}
-
-// #endregion
-
-// #region ── Schema Runtime Setup ─────────────────────────────────────────────
+// #region ── Schema Runtime Setup ────────────────────────────────────────────
 
 /** Scan all registered schema type to build the schema runtime, this is called to init the schema runtime */
 export function initSchemaRuntime(): void {
   // Scan schema kinds
   _schemaKindRegistry.forEach((ctor, kind) => {
-    _schemaKindHolder.set(kind, ctor);
-
-    // generator check
-    const generator = getMetaProperty(ctor, SchemaGenerator);
-    if (generator?.hasValue) {
-      _schemaGenerators.set(kind, generator.getValue<(namespace: string, name: string, target: object) => void>()!);
-    }
+    const nodeKind = (ctor as unknown as Record<string, string>).nodeKind ?? (kind === SCHEMA_KIND_NODE ? kind : '');
 
     // append properties to the schema kind registry
-    const appendProperties = getMetaProperty(ctor, Append);
-    if (appendProperties?.hasValue) {
+    const appendProperties = (ctor as unknown as Record<string, PropertyCtor[]>).append;
+    if (appendProperties?.length) {
       let existed = _schemaKindPropertyTypes.get(kind) ?? [];
-      existed.push(...appendProperties.getValue<(new () => IProperty)[]>()!);
+      existed.push(...appendProperties);
+      appendProperties.forEach(p => {
+        const t = (p as unknown as Record<string, string[]>);
+        if (t.forSchema?.includes(kind)) return;
+        t.forSchema = t.forSchema ? [...t.forSchema, kind] : [kind];
+      })
       _schemaKindPropertyTypes.set(kind, Array.from(new Set(existed)));
-    }
-
-    // node type check
-    const nodeSchemaKind = getMetaProperty(ctor, NodeSchemaKind);
-    if (nodeSchemaKind?.hasValue)
-    {
-      const nodeTypeGenerator = getMetaProperty(ctor, RuntimeNodeType);
-      if (nodeTypeGenerator)
-        _nodeTypeGenerator.set(nodeSchemaKind.getValue<string>()!, nodeTypeGenerator.getValue<Function>() as new () => NodeType)
-    }
+    } 
 
     // Prototype properties
-    const prototypeProps = getMetaProperties(ctor).filter(p => getMetaProperty(p.constructor, ForSchema)?.getValue<string[]>()?.includes(kind))
-    if (prototypeProps?.length)
+    const prototypeProps = getMetaProperties(ctor).filter(p => appendProperties?.includes(p.constructor as PropertyCtor) || (p.constructor as unknown as Record<string, string[]>).forSchema?.includes(kind))
+    if (prototypeProps?.length) {
       _schemaKindProperties.set(kind, prototypeProps);
+    }
+
+    // node type registration
+    if (nodeKind)
+    {
+      _nodeKind2SchemaKind.set(nodeKind, kind);
+      
+      // generator check
+      const generator = (ctor as unknown as Record<string, Function>).schemaGenerator;
+      if (generator)
+        _nodeSchemaGenerators.set(nodeKind, generator as (namespace: string, name: string, target: object) => void);
+
+      const nodeTypeGenerator = (ctor as unknown as Record<string, new () => INodeType>).runtimeNodeType;
+      if (nodeTypeGenerator)
+        _nodeTypeGenerator.set(nodeKind, nodeTypeGenerator as new () => INodeType)
+    }
+
+    logger.debug('[Kind]:', kind, nodeKind ? '[NodeType] Yes' : '[NodeType] No ', '[Append]', appendProperties?.length ? appendProperties.map((p) => p.name) : 'None', '[Property]', prototypeProps?.length ? prototypeProps : 'None');
   });
+
+  // Special types: system.array & system.list
+  {
+    const systemArray: NodeSchema & { display: { key: string }, array: ArraySchema } = {
+      namespace: NS_SYSTEM,
+      name: 'array',
+      kind: NODE_KIND_ARRAY,
+      display: { key: combinePaths(NS_SYSTEM, 'array') },
+      array: { element: NS_SYSTEM_OBJECT }
+    };
+    saveNodeSchema(systemArray);
+
+    const systemList: NodeSchema & { display: { key: string }, array: ArraySchema & { generics: GenericParameter[] } } = {
+      namespace: NS_SYSTEM,
+      name: 'list',
+      kind: NODE_KIND_ARRAY,
+      display: { key: combinePaths(NS_SYSTEM, 'list') },
+      array: { element: 'T', generics: [{ name: 'T' }] }
+    };
+    saveNodeSchema(systemList);
+  }
 
   // Scan registered properties
   _schemaPropertyRegistry.forEach((ctor) => {
-    const forSchema = getMetaProperty(ctor, ForSchema);
-    if (forSchema?.hasValue) {
-      const kinds = forSchema.getValue<string[]>() ?? [];
+    const forSchema = (ctor as unknown as Record<string, string[]>).forSchema;
+    if (forSchema?.length) {
+      const kinds = typeof forSchema === 'string' ? [forSchema] : forSchema;
+      logger.debug('[Property]', ctor.name, '->', kinds);
+
       for (const kind of kinds) {
         let existed = _schemaKindPropertyTypes.get(kind) ?? [];
         if (existed.some((f) => f.name === ctor.name)) continue; // avoid duplicates
-        existed.push(ctor as unknown as new () => IProperty);
+        existed.push(ctor as unknown as PropertyCtor);
         _schemaKindPropertyTypes.set(kind, existed);
       }
     }
+    else
+      logger.debug('[Property]', ctor.name, '->', 'None');
   });
 
   // Scan all registered schema type to build the schema runtime, this is called to init the schema runtime
   _schemaTypeRegistry.forEach((ctor, type) => {
-    const ofSchema = getMetaProperty(ctor, OfSchema);
-    const kind = ofSchema?.hasValue ? ofSchema.getValue<string>()! : SCHEMA_KIND_STRUCT;
-    const generator = _schemaGenerators.get(kind);
+    const ofNodeKind = (ctor as unknown as Record<string, string>).ofNodeKind;
+    const kind = ofNodeKind ?? NODE_KIND_STRUCT;
+    const generator = _nodeSchemaGenerators.get(kind);
     if (!generator) throw new Error(`No generator registered for schema kind ${kind} (class ${ctor.name})`);
 
     // Split the schema type into namespace and name
@@ -561,8 +390,23 @@ export function initSchemaRuntime(): void {
     const name = lastDot >= 0 ? type.substring(lastDot + 1) : type;
     
     // Call the generator to create the NodeSchema and register it
+    logger.debug('[Schema][Kind][Register]', type, `[${kind}]`, type);
     generator(ns, name, ctor);
   });
 }
 
 // #endregion
+
+/**
+ * Get Meta properties filtered by ForSchema kind. 
+ */
+export function getMetaPropertiesForSchema<T extends IProperty>(
+  kind: string,
+  ctor: Function,
+  propCtor?: new () => T,
+  field?: string | symbol,
+  index?: number
+): T[] {
+  return getMetaProperties(ctor, propCtor, field, index)
+    .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as PropertyCtor));
+}

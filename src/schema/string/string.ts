@@ -1,0 +1,38 @@
+import { Meta } from "../../attribute/meta";
+import { Relation } from "../../attribute/relation";
+import { Visible } from "../../property/common/visible";
+import { ForSchema } from "../../property/core/forSchema";
+import { OfNodeKind } from "../../property/core/ofNodeKind";
+import { PropertyValueType } from "../../property/core/propertyValueType";
+import { SchemaType } from "../../property/core/schemaType";
+import { buildFuncCall } from '../../schema/function/type';
+import { Property } from "../../property/property";
+import { combineProperties } from "../../property/propertyOwner";
+
+import type { IProperty } from "../../interface";
+import type { StringSchema } from "./type";
+
+import { SCHEMA_KIND_NODE, NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_STRING, NS_SYSTEM_LOGIC_EQ, NS_SYSTEM_SCHEMA_STRING, SCHEMA_KIND_NODE_STRING, NODE_KIND_STRING } from "../../utility/constant";
+
+/** The date property for node schema */
+@Meta(ForSchema, [SCHEMA_KIND_NODE])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRING}.${NODE_KIND_STRING}`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRING}.schema`)
+@Relation(Visible,'call', buildFuncCall(NS_SYSTEM_LOGIC_EQ, '@kind', NODE_KIND_STRING))
+export class StringProperty extends Property<StringSchema>
+{
+  combine(other: IProperty): boolean {
+    const otherSchema = other.getValue<StringSchema>();
+    if (!otherSchema) return false;
+    const selfSchema = this.getValue<StringSchema>();
+    if (!selfSchema)
+    {
+      this.setValue(otherSchema);
+      return true;
+    }
+    combineProperties(selfSchema, otherSchema, SCHEMA_KIND_NODE_STRING);
+    this.setValue(selfSchema);
+    return true;
+  }
+}

@@ -4,7 +4,5 @@
 
 import { Property } from '../property';
 
-/**
- * Represents the value type of a property in the schema node core.
- */
+/** Represents the value type of a property in the schema node core. */
 export class PropertyValueType extends Property<string> {}

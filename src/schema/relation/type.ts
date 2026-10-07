@@ -1,0 +1,17 @@
+/** Pure data interface. */
+export interface RelationSchema {
+  /** The target of the relation */
+  target: string;
+
+  /** The property the relation applies to */
+  property: string;
+
+  /** The relation kind */
+  kind: string;
+
+  /** The relation only works for the given schema kind(for property relation only) */
+  forSchema?: string;
+
+  /** The error message */
+  error?: string;
+}

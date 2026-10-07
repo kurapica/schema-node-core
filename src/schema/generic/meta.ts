@@ -1,0 +1,23 @@
+import { Meta } from "../../attribute/meta";
+import { SchemaType } from "../../property/core/schemaType";
+import { GenericType } from "./runtime";
+import { SchemaKind } from "../../property/record/schemaKind";
+import { RuntimeNodeType } from "../../property/core/runtimeNodeType";
+
+import { NODE_KIND_GENERIC, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_PRO_CORE, NS_SYSTEM_STRING, SCHEMA_KIND_NODE_GENERIC, SCHEMA_KIND_ORDER_GENERIC } from "../../utility/constant";
+import { NodeKind } from "../../property";
+
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_GENERIC, SCHEMA_KIND_ORDER_GENERIC])
+@Meta(NodeKind, NODE_KIND_GENERIC)
+@Meta(RuntimeNodeType, GenericType)
+class GenericKind {}
+
+/** A single generic type parameter declaration. */
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_CORE}.genericParameter`)
+class GenericParameterMeta {
+  @Meta(SchemaType, NS_SYSTEM_STRING)
+  name: string = "T";
+
+  @Meta(SchemaType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_SCHEMA_NODE}.valuetype>`)
+  compatibles?: string[];
+}

@@ -5,43 +5,50 @@
 
 import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, Generics, ArgName, Variadic } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
+import { OfNodeKind } from '../property/core/ofNodeKind';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../schema/function/property/return';
+import { Generics } from '../schema/generic/generics';
+import { ArgName } from '../schema/function/property/argName';
+import { Variadic } from '../schema/function/property/variadic';
+import { isNull } from '../utility/toolset';
 
-function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(v as BigNumber.Value); }
+import { NODE_KIND_FUNCTION, NS_SYSTEM_NUMBER, NS_SYSTEM_FLOAT, NS_SYSTEM_INT, NS_SYSTEM_MATH } from '../utility/constant';
+
+function toBN(v: unknown): BigNumber { return v instanceof BigNumber ? v : new BigNumber(isNull(v) ? 0 : v as BigNumber.Value); }
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_MATH)
 export class SystemMath {
   /** a + b + c + ... */
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static add(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') @Meta(Variadic, true) ...values: number[]): number {
     return values.reduce((acc, v) => toBN(acc).plus(toBN(v)), new BigNumber(0)).toNumber();
   }
 
   /** a - b - c - ... */
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static subtract(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') @Meta(Variadic, true) ...values: number[]): number {
     return values.slice(1).reduce((acc, v) => toBN(acc).minus(toBN(v)), toBN(values[0] ?? 0)).toNumber();
   }
 
   /** a * b * c * ... */
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static multiply(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') ...values: number[]): number {
     return values.reduce((acc, v) => toBN(acc).times(toBN(v)), new BigNumber(1)).toNumber();
   }
 
   /** a / b / c */
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static divide(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') @Meta(Variadic, true) ...values: number[]): number {
     if (values.length < 1) return 0;
     return values.slice(1).reduce((acc, v) => toBN(acc).div(toBN(v)), toBN(values[0])).toNumber();
   }
 
   /** a % b */
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static modulo(@Meta(ArgName, 'x') @Meta(SchemaType, 'T') x: number, @Meta(ArgName, 'y') @Meta(SchemaType, 'T') y: number): number {
     if (toBN(y).isZero()) return 0;
     return toBN(x).mod(toBN(y)).toNumber();
@@ -50,7 +57,7 @@ export class SystemMath {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.const`)
 export class SystemMathConstants {
   @Meta(Return, NS_SYSTEM_NUMBER)
@@ -62,10 +69,10 @@ export class SystemMathConstants {
 
 // ── Numeric ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.numeric`)
 export class SystemMathNumeric {
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static abs(@Meta(ArgName, 'x') @Meta(SchemaType, 'T') x: number): number { return toBN(x).abs().toNumber(); }
 
   @Meta(Return, NS_SYSTEM_INT)
@@ -74,20 +81,20 @@ export class SystemMathNumeric {
   @Meta(Return, NS_SYSTEM_INT)
   static floor(@Meta(ArgName, 'x') @Meta(SchemaType, NS_SYSTEM_NUMBER) x: number): number { return Math.floor(toBN(x).toNumber()); }
 
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static clamp<T>(
     @Meta(ArgName, 'x') @Meta(SchemaType, 'T') x: number,
     @Meta(ArgName, 'min') @Meta(SchemaType, 'T') min: number,
     @Meta(ArgName, 'max') @Meta(SchemaType, 'T') max: number,
   ): number { return BigNumber.max(toBN(min), BigNumber.min(toBN(x), toBN(max))).toNumber(); }
 
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static max(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') ...values: number[]): number {
     if (values.length === 0) return 0;
     return BigNumber.max(...values.map(toBN)).toNumber();
   }
 
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static min(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') ...values: number[]): number {
     if (values.length === 0) return 0;
     return BigNumber.min(...values.map(toBN)).toNumber();
@@ -103,13 +110,13 @@ export class SystemMathNumeric {
     return decimals !== undefined ? +pct.toFixed(decimals) : pct;
   }
 
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static round<T>(
     @Meta(ArgName, 'x') @Meta(SchemaType, 'T') x: number,
     @Meta(ArgName, 'decimals') @Meta(SchemaType, NS_SYSTEM_INT) decimals?: number,
   ): number { return +toBN(x).toFixed(decimals ?? 0); }
 
-  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER] }])
+  @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
   static ptnum<T>(@Meta(ArgName, 'x') @Meta(SchemaType, NS_SYSTEM_FLOAT) x: number): number { return new BigNumber(x).div(100).toNumber(); }
 
   @Meta(Return, NS_SYSTEM_NUMBER)
@@ -138,7 +145,7 @@ export class SystemMathNumeric {
 
 // ── Conversion ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.conversion`)
 export class SystemMathConversion {
   @Meta(Return, NS_SYSTEM_NUMBER)
@@ -156,7 +163,7 @@ export class SystemMathConversion {
 
 // ── Bitwise ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.bitwise`)
 export class SystemMathBitwise {
   @Meta(Return, NS_SYSTEM_INT)
@@ -180,7 +187,7 @@ export class SystemMathBitwise {
 
 // ── Trigonometry ───────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_MATH}.trigonometry`)
 export class SystemMathTrigonometry {
   

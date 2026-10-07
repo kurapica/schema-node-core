@@ -3,25 +3,34 @@
 // Mirrors C# SchemaNode.Core/Function/SystemLogic.cs
 // =============================================================================
 
-import BigNumber from 'bignumber.js';
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, Generics, ArgName, Default, Require } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER } from '../utility/constant';
-import { isNull, isEmpty } from '../utility/toolset';
+import { OfNodeKind } from '../property/core/ofNodeKind';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../schema/function/property/return';
+import { ArgName } from '../schema/function/property/argName';
+import { Generics } from '../schema/generic/generics';
+import { Default } from '../property/common/default';
+import { Require } from '../property/common/require';
+import { isNull, isEmpty, compare } from '../utility/toolset';
+
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_NUMBER, NS_SYSTEM_INT } from '../utility/constant';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function compare<T>(a: T, b: T): number {
-  if (a instanceof BigNumber && b instanceof BigNumber) return a.comparedTo(b) ?? 0;
-  if (a === b) return 0;
-  return (a as unknown as number) < (b as unknown as number) ? -1 : 1;
-}
-
 // ── Class ──────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, 'system.logic')
 export class SystemLogic {
+
+  /** always true */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  alwaysFalse(): boolean { return false; }
+
+  /** always false */
+  @Meta(Return, NS_SYSTEM_BOOL)
+  alwaysTrue(): boolean { return true; }
+
   /** a && b */
   @Meta(Return, NS_SYSTEM_BOOL)
   static and(
@@ -42,7 +51,7 @@ export class SystemLogic {
 
   /** v in [min, max] */
   @Meta(Return, NS_SYSTEM_BOOL)
-  @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER]}])
+  @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT]}])
   static between<T>(
     @Meta(ArgName, 'v') @Meta(SchemaType, 'T') @Meta(Require, true) v: T,
     @Meta(ArgName, 'min') @Meta(SchemaType, 'T') @Meta(Require, true) min: T,

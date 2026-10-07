@@ -1,0 +1,77 @@
+import { FuncCallProperty } from '../funcCallProperty';
+import { Meta } from '../../attribute/meta';
+import { OfNodeKind } from '../core/ofNodeKind';
+import { SchemaType } from '../core/schemaType';
+import { PropertyValueType } from '../core/propertyValueType';
+import { Stackable } from '../core/stackable';
+import { getNodeType } from '../../runtime/context';
+import { isEmpty, isNull } from '../../utility/toolset';
+import { Error } from '../common/error';
+import { StructNode } from '../../schema/struct/node';
+import { FunctionType } from '../../schema/function/runtime';
+import { getErrorMessage } from '../constraintProperty';
+import { logger } from '../../utility/logger';
+
+import type { IConstraintProperty, IValueAccess } from '../../interface';
+
+import { NODE_KIND_PROPERTY, NS_SYSTEM_SCHEMA_PRO_COMMON, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_FUNC_CALL } from '../../utility/constant';
+
+/** The valid constraint. Check if the node is valid. If not, return the error message. */
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_FUNC_CALL}<${NS_SYSTEM_SCHEMA_FUNC}.valid>`)
+@Meta(Stackable, true)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_COMMON}.valid.error`)
+export class Valid extends FuncCallProperty implements IConstraintProperty {
+  effect(target: IValueAccess): void {
+    this.clear(target);
+
+    if (this._value?.args?.length) {
+      const source = this.source ?? target;
+      for (let arg of this._value!.args) {
+        if (arg.source) {
+          const t = source?.getAccessValue(arg.source!, target);
+          if (t && t !== target) 
+            target.recordSubscription(t.subscribe(async () => {
+              const res = await this.validate(target) as boolean;
+              target.recordConstraint(this, res); 
+            }), this);
+        }
+      }
+    }
+  }
+
+  clear(target: IValueAccess): void {
+    target.clearSubscription(this);
+  }
+
+  async validate(node: IValueAccess): Promise<boolean | undefined> {
+    if (node.isEmpty || !this._value?.func) return undefined;
+    if (!(node instanceof StructNode) && isNull(node.getValue())) return undefined;
+    
+    const func = await getNodeType(this._value.func) as FunctionType;
+    if (!func) {
+      logger.error(`Valid property function ${this._value.func} is not a function type`);
+      return undefined;
+    }
+    const owner = this.source ?? node;
+    try
+    {
+      const res =  await func.call(this._value!.args.map(a => {
+        if (isEmpty(a.source)) return a.value;
+        const source = owner?.getAccessValue(a.source!, node);
+        return source?.getValue();
+      })) as boolean;
+      return res;
+    }
+    catch (error)
+    {
+      logger.error('[Valid]', node, this._value, error);
+      return undefined;
+    }
+  }
+
+  error(node: IValueAccess): string | undefined {
+    return getErrorMessage(this, node);
+  }
+}

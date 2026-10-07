@@ -5,8 +5,8 @@
 // ── Utility ──────────────────────────────────────────────────────────────────
 export * from './utility/index';
 
-// ── Enums ───────────────────────────────────────────────────────────────────
-export * from './enum/index';
+// ── Interface ────────────────────────────────────────────────────────────────
+export * from './interface/index';
 
 // ── Property System ─────────────────────────────────────────────────────────
 export * from './property/index';
@@ -14,17 +14,14 @@ export * from './property/index';
 // ── Attribute System ────────────────────────────────────────────────────────
 export * from './attribute/index';
 
+// ── Enums ───────────────────────────────────────────────────────────────────
+export * from './enum/index';
+
 // ── Relation System ─────────────────────────────────────────────────────────
 export * from './relation/index';
 
 // ── Schema Types ────────────────────────────────────────────────────────────
 export * from './schema/index';
-
-// ── Runtime ─────────────────────────────────────────────────────────────────
-export * from './runtime/index';
-
-// ── Node ────────────────────────────────────────────────────────────────────
-export * from './node/index';
 
 // ── Scalar Types ────────────────────────────────────────────────────────────
 export * from './scalar/index';
@@ -34,3 +31,6 @@ export * from './struct/index';
 
 // ── Function ────────────────────────────────────────────────────────────────
 export * from './function/index';
+
+// ── Runtime ─────────────────────────────────────────────────────────────────
+export * from './runtime/index';

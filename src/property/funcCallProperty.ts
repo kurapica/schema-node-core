@@ -3,20 +3,10 @@
 // Mirrors C# SchemaNode.Core/Property/FuncCallProperty.cs
 // =============================================================================
 
-import { CallArg } from '../schema/functionSchema';
 import { Property } from './property';
-import type { ITypeRefProperty } from './property';
 
-/**
- * Represents a deferred function call: func(args...).
- */
-export interface FuncCall {
-  /** Fully qualified function schema name. */
-  func: string;
-  
-  /** Call arguments. */
-  args: CallArg[];
-}
+import type { FuncCall } from '../schema/function/type';
+import type { ITypeRefProperty } from './typeRefProperty';
 
 /**
  * Property whose value is a FuncCall.
@@ -28,31 +18,5 @@ export abstract class FuncCallProperty extends Property<FuncCall> implements ITy
   *getRefTypes(): Generator<string> {
     if (this._value?.func)
       yield this._value.func;
-  }
-}
-
-/** build the function call for simple */
-export function buildFuncCall(func: string, ...args: unknown[]): FuncCall
-{
-  return {
-    func,
-    args: args.map(a => {
-      if (typeof(a) === 'string')
-      {
-        if (a.startsWith('@'))
-        {
-          if (a.startsWith('@@'))
-            return { value: a.substring(1) }
-          return { source: a.substring(1) }
-        }
-        else if (a.startsWith('$'))
-        {
-          if (a.startsWith('$$'))
-            return { value: a.substring(1) }
-          return { source: a }
-        }
-      }
-      return { value: a }
-    })
   }
 }

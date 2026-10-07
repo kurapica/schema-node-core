@@ -3,23 +3,32 @@
 // Mirrors C# SchemaNode.Core/Property/ConstraintProperty.cs
 // =============================================================================
 
-import { IValueAccess } from '../runtime/interfaces';
-import type { IProperty } from './property';
+import { formatLocaleString } from '../struct/localeString/type';
+import { Display } from './common/display';
+import { Name } from './core/name';
+import { Property } from './property';
 
-/**
- * Interface for constraint property components.
- * Each method returns:
- *   true  = valid
- *   false = invalid
- *   undefined/null = not applicable to this node type
- */
-export interface IConstraintProperty extends IProperty {
-  /** validate the data node */
-  validate(node: IValueAccess): Promise<boolean | undefined>;
+import type { LocaleString } from '../struct/localeString/type';
+import type {IValueAccess, IConstraintProperty } from '../interface';
+
+export abstract class ConstraintProperty<T> extends Property<T> implements IConstraintProperty {
+  abstract validate(node: IValueAccess): Promise<boolean | undefined>;
+
+  /** The error message if the property is invalid(for constraint properties only) */
+  error(node: IValueAccess): string | undefined {
+    return getErrorMessage(this, node);
+  }
 }
 
-/** Check if the property is constraint */
-export function isConstraintProperty(prop: IProperty): prop is IConstraintProperty {
-    // for simple
-  return typeof (prop as any).validate === 'function'
+/** Gets the default error message */
+export function getErrorMessage(prop: IConstraintProperty, node: IValueAccess)
+{
+    const ctor = prop.constructor as Function;
+    const error = (ctor as unknown as Record<string, LocaleString>).error;
+    if (error?.key)
+    {
+      const msg = formatLocaleString(error, node.getPropertyValue(Display) ?? node.getPropertyValue(Name), prop.getValue());
+      if (msg && (msg !== error?.key)) return msg
+    }
+    return formatLocaleString("VALUE_NOT_VALID", node.getPropertyValue(Display) ?? node.getPropertyValue(Name));
 }

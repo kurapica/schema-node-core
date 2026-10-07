@@ -1,20 +1,91 @@
+import { logger } from "./logger";
+import BigNumber from 'bignumber.js';
+
 /** Gets the combine name */
 export function combinePaths(...names: string[])
 {
   return names.filter(n => !isEmpty(n)).join('.')
 }
 
+/** Split the string by delimiter and filter empty strings */
+export function splitString(str: string, delimiter: string = '.', count?: number): string[]
+{
+  str ??= '';
+  if (!count)
+    return str.split(delimiter).filter(n => !isEmpty(n));
+  else
+  {
+    const res: string[] = [];
+    let startIdx = 0;
+    let dotIndex = str.indexOf(delimiter);
+    while (dotIndex >= 0 && count > 1)
+    {
+      if (dotIndex > startIdx) // skip empty delimiter
+        res.push(str.substring(startIdx, dotIndex));
+      startIdx = dotIndex + 1;
+      dotIndex = str.indexOf(delimiter, startIdx);
+      count--;
+    }
+    if (str.length > startIdx)
+      res.push(str.substring(startIdx));
+    return res;
+  }
+}
 
   /** Parse value to date */
-export function parseDate(value: unknown): Date | undefined
+export function parseDate(value: unknown, isYear: boolean = false): Date | undefined
 {
   if (value instanceof Date) return value;
 
   if (typeof (value) === "string" || typeof (value) === "number" && value > 0) {
-      const date = new Date(value)
-      if (date && !isNaN(date.getFullYear())) return date;
+    if (isYear)
+    {
+      const year = Number(value)
+      if (year && !isNaN(year) && year >= 0 && year <= 9999)
+      return new Date(year, 0, 1)
+    }
+
+    const date = new Date(value)
+    if (date && !isNaN(date.getFullYear())) return date;
   }
   return undefined;
+}
+
+/** Trim value of array, object, string, number */
+export function trimValue(value: any, seen = new WeakSet<object>()) {
+  if (Array.isArray(value)) {
+    if (seen.has(value)) {
+      console.warn("duplicate array:", value);
+      return value;
+    }
+    seen.add(value);
+
+    value = value.map((v: any) => trimValue(v, seen));
+
+    while (value.length && isEmpty(value[value.length - 1])) {
+      value.pop();
+    }
+  } 
+  else if (value && typeof value === "object") {
+    if (value instanceof Date) return value;
+
+    if (seen.has(value)) {
+      console.warn("duplicate object:", value);
+      return value;
+    }
+    seen.add(value);
+
+    for (let k in value) {
+      if (value.hasOwnProperty(k)) {
+        value[k] = trimValue(value[k], seen);
+      }
+    }
+  } 
+  else if (typeof value === "string") {
+    value = value.trim();
+  }
+
+  return value;
 }
 
 /**
@@ -25,19 +96,31 @@ export function isNull(value: any)
   return value == null || value == undefined || value === ""
 }
 
-export function isEmpty(value: any)
+export function isEmpty(value: any): boolean
 {
   if (isNull(value)) return true
-  if (Array.isArray(value)) return value.length === 0
+  if (Array.isArray(value)) return value.length === 0 || value.every((v: any) => isEmpty(v))
   if (typeof(value) === "object")
   {
+    if (value instanceof Date) return false
     for (let k in value)
     {
-      return false
+      if (!isEmpty(value[k]))
+        return false
     }
     return true
   }
   return false
+}
+
+/**
+ * Compare two values
+ */
+export function compare<T>(a: T, b: T): number {
+  if (isNull(a) || isNull(b)) return 1;
+  if (a instanceof BigNumber && b instanceof BigNumber) return a.comparedTo(b) ?? 0;
+  if (a === b) return 0;
+  return (a as unknown as number) < (b as unknown as number) ? -1 : 1;
 }
 
 /**
@@ -154,8 +237,10 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
   }
 
   // Common
-  if (a instanceof Date && b instanceof Date)
+  if (a instanceof Date || b instanceof Date)
   {
+    a = a instanceof Date ? a : parseDate(a)
+    b = b instanceof Date ? b : parseDate(b)
     return a.getTime() === b.getTime()
   }
   
@@ -172,6 +257,7 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
     {
       if (!flds.has(f)) return false
     }
+    return true
   }
 
   return false
@@ -180,7 +266,7 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
 /**
  * Wrap a function so the same query will not be executed multiple times
  */
-export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
+export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>, cacheTime?: number)
 {
   const querys: {
     [key: string]: {
@@ -205,12 +291,18 @@ export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
       querys[key].querys.forEach(q => q.resolve(querymap[key]))
       delete querys[key]
       delete process[key]
+      return
     }
 
     // Process
     queryFunc(...querys[key].args)
       .then(res => {
-        querymap[key] = res
+        if (cacheTime !== 0) {
+          querymap[key] = res
+          if (cacheTime) {
+            setTimeout(() => delete querymap[key], cacheTime)
+          }
+        }
         querys[key].querys.forEach(q => q.resolve(res))
       })
       .catch(ex => {
@@ -244,40 +336,47 @@ export function useShareQuery<T>(queryFunc: (...args:any[]) => Promise<T>)
 /**
  * Use queue to process query
  */
-export function useQueueQuery<T>(queryFunc: (...args: any[]) => Promise<T>)
-{
+export function useQueueQuery<T>(
+  queryFunc: (...args: any[]) => Promise<T>
+) {
   const queues: {
-    args: any[],
-    resolve: Function,
-    reject: Function
+    args: any[]
+    resolve: (value: T | PromiseLike<T>) => void
+    reject: (reason?: any) => void
   }[] = []
-  let processing = 0
+
+  let processing = false
 
   const processQuery = async () => {
-    // single thread - record time
-    if (processing && (new Date().getTime() - processing) < 1000) return
+    if (processing) return
 
-    // process queue
-    let task = queues.shift()
-    while (task) {
-      processing = new Date().getTime()
-      try {
-        task.resolve(await queryFunc(...task.args))
+    processing = true
+
+    try {
+      while (queues.length) {
+        const task = queues.shift()!
+
+        try {
+          task.resolve(await queryFunc(...task.args))
+        }
+        catch (ex) {
+          logger.error("useQueueQuery", ex)
+          task.reject(ex)
+        }
       }
-      catch (ex) {
-        task.reject(ex)
-      }
-      task = queues.shift()
     }
-
-    // reset
-    processing = 0
+    catch(ex){
+      logger.error("useQueueQuery", ex)
+      throw ex
+    }
+    finally {
+      processing = false
+    }
   }
 
-  return function (...args: any[])
-  {
-    setTimeout(() => processQuery(), 5)
-    return new Promise((resolve, reject) => queues.push({ args, resolve, reject })) as unknown as Promise<T>
+  return (...args: any[]) => {
+    setTimeout(processQuery, 5)
+    return new Promise<T>((resolve, reject) => queues.push({ args, resolve, reject }))
   }
 }
 
@@ -296,7 +395,7 @@ export function deepClone(value: any, noemptyarr = false): any
   }
   else if (value && typeof (value) === "object")
   {
-    if (value instanceof Date) return value
+    if (value instanceof Date) return new Date(value.getTime())
     const ret:any = {}
     for (var k in value)
     {
@@ -341,4 +440,9 @@ export function generateGuid(): string {
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16).toUpperCase()
   })
+}
+
+export function isValidGUID(guid: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(guid);
 }

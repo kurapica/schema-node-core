@@ -3,65 +3,80 @@
 // Mirrors C# SchemaNode.Core/Attribute/RelationAttribute.cs
 // =============================================================================
 
-import { RelationStage } from '../enum/relationStage';
-import { RelationKind } from '../property';
-import type { IProperty } from '../property/property';
-import { getTypeSchemaName } from '../runtime/schemaRuntime';
-import { RelationSchema } from '../schema/relationSchema';
+import type { PropertyCtor } from '../interface';
+import type { RelationSchema } from '../schema/relation/type';
+
 import { NODE_SELF } from '../utility/constant';
-import { isEmpty } from '../utility/toolset';
-import { getMetaProperty } from './meta';
+import { getPropertyName } from '../property/property';
 
 const RELATION_KEY = Symbol.for('schema-node:relation');
+const FUNC_RELATION_KEY = Symbol.for('schema-node:func-relation');
 
 /** Resolve the canonical constructor for storing metadata. */
 function getConstructor(target: object): Function {
   return typeof target === 'function' ? target : target.constructor;
 }
 
-function ensureStore(ctor: Function): RelationSchema[] {
-  const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
-  let store = rec[RELATION_KEY];
-  if (!store) {
-    store = [];
-    rec[RELATION_KEY] = store;
+function ensureStore(ctor: Function, func?: string): RelationSchema[] {
+  if (func) {
+    const rec = ctor as unknown as Record<symbol, Record<string, RelationSchema[]>>;
+    let store = rec[FUNC_RELATION_KEY];
+    if (!store) {
+      store = {};
+      rec[FUNC_RELATION_KEY] = store;
+    }
+    if (!store[func])
+      store[func] = [];
+    return store[func]!;
   }
-  return store;
+  else {
+    const rec = ctor as unknown as Record<symbol, RelationSchema[]>;
+    let store = rec[RELATION_KEY];
+    if (!store) {
+      store = [];
+      rec[RELATION_KEY] = store;
+    }
+    return store;
+  }
 }
 
-// ── @Relation(propClass, kind, data[, target][, stage]) — Call relation ──────────────────
+// ── @Relation(propClass, kind, data[, target]) — Call relation ──────────────────
 
 /**
  * Declare that a property's value is computed by calling a function.
  */
 export function Relation(
-  propClass: new () => IProperty,
-  kind: string | (new() => IProperty),
+  propClass: PropertyCtor | string,
+  kind: string | PropertyCtor,
   value: unknown,
-  target?: string,
-  stage?: RelationStage
-): ClassDecorator & PropertyDecorator {
+  target?: string
+): ClassDecorator & PropertyDecorator & ParameterDecorator {
   if (typeof kind !== 'string')
-    kind = getMetaProperty(kind, RelationKind)?.getValue<string>() ?? '';
+    kind = (kind as unknown as Record<string, string>).relationKind;
   if (!kind)
     throw new Error(`Can't figure out the relation kind of ${kind}`);
 
-  return ((tar: object, _memberKey?: string) => {
+  return ((tar: object, _memberKey?: string, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>) => {
     const ctor = getConstructor(tar);
     const schema: RelationSchema = {
-      target: target && target.toLowerCase() != NODE_SELF ? target : _memberKey ?? '',
-      property: getTypeSchemaName(propClass)!,
+      target: target && target.toLowerCase() != NODE_SELF ? target : (_memberKey ?? ''),
+      property: typeof propClass === 'string' ? propClass : getPropertyName(propClass)!,
       kind,
-      stage: stage ?? RelationStage.Load | RelationStage.Input,
       [kind]: value
     };
-    ensureStore(ctor).push(schema);
-  }) as ClassDecorator & PropertyDecorator;
+
+    // means function relation
+    if (typeof descriptorOrIndex === 'number' || descriptorOrIndex && descriptorOrIndex?.value) {
+      ensureStore(ctor, _memberKey).push(schema);
+    }
+    else
+      ensureStore(ctor).push(schema);
+  }) as ClassDecorator & PropertyDecorator & ParameterDecorator;
 }
 
 // ── Retrieval ──────────────────────────────────────────────────────────────
 
 /** Get all relation entries declared on a class constructor. */
-export function getRelationSchemas(ctor: Function): RelationSchema[] {
-  return (ctor as unknown as Record<symbol, RelationSchema[]>)[RELATION_KEY] ?? [];
+export function getRelationSchemas(ctor: Function, func?: string): RelationSchema[] {
+  return ensureStore(ctor, func);
 }

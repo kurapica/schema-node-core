@@ -5,47 +5,15 @@
 // NOTE: Does NOT import Stackable/Alias to avoid circular dependency.
 //       resolveStackable() uses string-based lookup; resolveAlias() likewise.
 // =============================================================================
-
+;
 import { getPropertyTypeSupportSchemas } from "../runtime/schemaRuntime";
+
+import type { IValueAccess, IProperty, PropertyCtor, IRelation } from "../interface";
+import { deepClone, isEqual, trimValue } from "../utility/toolset";
 
 /** Cache for property names derived from class names (PascalCase → camelCase). */
 const _nameCache = new Map<Function, string>();
 const _saveableCache = new Map<Function, boolean>();
-
-/**
- * Base interface for all property instances attached to a schema.
- */
-export interface IProperty {
-  /** Canonical property name, e.g. "upLimit", "require", "forSchema". */
-  readonly name: string;
-
-  /** Whether duplicates from different sources stack (accumulate) vs override. */
-  readonly stackable: boolean;
-
-  /** Whether the property is static, which means the property value cannot be modified by relation system. */
-  readonly static: boolean;
-
-  /** Whether the property carries a non-empty value. */
-  readonly hasValue: boolean;
-
-  /** Whether the property value is savable (persisted) in schema. */
-  readonly savable: boolean;
-
-  /** Set the raw value onto this property instance. */
-  setValue<T>(value: T): void;
-
-  /** Get the typed value. If matchType is true, returns undefined on type mismatch. */
-  getValue<T>(matchType?: boolean): T | undefined;
-
-  /** Combine the value of another property into this one. */
-  combine(other: IProperty): boolean;
-
-  /** Compare this property to another for equality, used for stackable properties. */
-  equal(other: IProperty): boolean;
-
-  /** Apply the property to the target, or register the target */
-  apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void;
-}
 
 /**
  * Abstract base for typed property value holders.
@@ -55,8 +23,12 @@ export abstract class Property<T> implements IProperty {
   protected _value: T | undefined = undefined;
   protected _hasValue = false;
 
+  constructor(source?: IValueAccess) {
+    this.source = source;
+  }
+
   get name(): string {
-    return getPropertyName(this.constructor as new () => IProperty);
+    return getPropertyName(this.constructor as PropertyCtor);
   }
 
   get stackable(): boolean {
@@ -72,7 +44,7 @@ export abstract class Property<T> implements IProperty {
   get savable(): boolean {
     const ctor = this.constructor as Function;
     if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
-    const savable = getPropertyTypeSupportSchemas(this.constructor as new () => IProperty).length > 0;
+    const savable = getPropertyTypeSupportSchemas(this.constructor as PropertyCtor).length > 0;
     _saveableCache.set(ctor, savable);
     return savable;
   }
@@ -81,15 +53,27 @@ export abstract class Property<T> implements IProperty {
     return this._hasValue;
   }
 
+  /** The source of the property value. */
+  readonly source?: IValueAccess;
+
+  /** Whether the property is applicable to the given schema kind. */
+  forSchema(...kinds: string[]): boolean {
+    const ctor = this.constructor as Function;
+    const forSchemas = (ctor as unknown as Record<string, string[]>).forSchema;
+    if (Array.isArray(forSchemas)) return forSchemas.some((k) => kinds.includes(k));
+    if (typeof(forSchemas) == 'string') return kinds.some(k => k.toLowerCase() == forSchemas);
+    return false;
+  }
+
   /** Override in subclasses for custom coercion. */
   setValue<TValue>(value: TValue): void {
     this._value = value as unknown as T;
     this._hasValue = value !== undefined && value !== null;
   }
 
-  getValue<TV>(matchType?: boolean): TV | undefined {
+  getValue<TV>(): TV | undefined {
     if (!this._hasValue) return undefined;
-    return this._value as unknown as TV;
+    return trimValue(deepClone(this._value)) as unknown as TV;
   }
 
   combine(other: IProperty): boolean {
@@ -102,32 +86,33 @@ export abstract class Property<T> implements IProperty {
   equal(other: IProperty): boolean {
     if (this.constructor !== other.constructor) return false;
     if (this.hasValue !== other.hasValue) return false;
-    return !this.hasValue || this.getValue() === other.getValue();
+    // compare raw values: getValue() returns a fresh deep clone each time, so reference equality never holds for objects
+    return !this.hasValue || isEqual(this._value, (other as Property<T>)._value);
   }
 
   // do nothing by default, subclasses can override to apply the property to the target
   apply(target: object, field?: string | symbol, descriptorOrIndex?: number | TypedPropertyDescriptor<unknown>): void {}
-}
 
-export interface ITypeRefProperty extends IProperty {
-  /** Return the referenced type name for type-reference resolution. */
-  getRefTypes(): Generator<string>;
-}
+  /** Apply the property effect to the target. */
+  effect(target: IValueAccess): void {}
 
-/** Check if the property has ref type */
-export function isTypeRefProperty(prop: IProperty)
-{
-  return typeof (prop as any).getRefTypes === 'function'
+  /** Clear the property effect from the target. */
+  clear(target: IValueAccess): void {}
+
+  /** Whether to apply the relation to the property immediately. */
+  initWithRelation(relation: IRelation, owner: IValueAccess, target: IValueAccess): boolean {
+    return true;
+  }
 }
 
 /** Get the property name of the property constructor. */
-export function getPropertyName(ctor: new () => IProperty): string {
+export function getPropertyName(ctor: PropertyCtor): string {
   let n = _nameCache.get(ctor);
   if (!n) {
     n = (ctor as unknown as Record<string, string>).alias;
     if (!n)
     {
-      let name = ctor.name;
+      let name = ctor.name ?? '';
       if (name.endsWith('Property')) name = name.slice(0, -8);
       if (name.length === 0) return name;
       n = name[0].toLowerCase() + name.slice(1);

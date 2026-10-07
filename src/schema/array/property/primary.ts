@@ -1,0 +1,72 @@
+import { Meta } from '../../../attribute/meta';
+import { OfNodeKind } from '../../../property/core/ofNodeKind';
+import { SchemaType } from '../../../property/core/schemaType';
+import { PropertyValueType } from '../../../property/core/propertyValueType';
+import { ForSchema } from '../../../property/core/forSchema';
+import { Static } from '../../../property/core/static';
+import { ConstraintProperty } from '../../../property/constraintProperty';
+import { isNull } from '../../../utility/toolset';
+import { Error } from '../../../property/common/error';
+
+import type { IValueAccess } from '../../../interface';
+
+import { NODE_KIND_PROPERTY, NS_SYSTEM_STRING, SCHEMA_KIND_NODE_ARRAY, NODE_KIND_STRUCT, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_PRO_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE, NS_SYSTEM_INTRINSIC, ARRAY_ELEMENT, ARRAY_PREVIOUS, NODE_KIND_ARRAY } from '../../../utility/constant';
+import { Relation } from '../../../attribute';
+import { BlackList } from '../../../property';
+import { buildFuncCall } from '../../function';
+
+@Meta(ForSchema, [SCHEMA_KIND_NODE_ARRAY, SCHEMA_KIND_NODE_ARRAY_DEFINE])
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary`)
+@Meta(Static, true)
+@Meta(PropertyValueType, `${NS_SYSTEM_LIST}<${NS_SYSTEM_STRING}>`)
+@Meta(Error, `${NS_SYSTEM_SCHEMA_PRO_ARRAY}.primary.error`)
+@Relation(BlackList, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, `@primary.${ARRAY_PREVIOUS}`), `primary.${ARRAY_ELEMENT}`)
+export class Primary extends ConstraintProperty<string[]> {
+  async validate(node: IValueAccess): Promise<boolean | undefined> {
+    if (node.isEmpty || !this._value?.length || node.type.kind !== NODE_KIND_ARRAY) return undefined;
+
+    const keys = new Set<string>();
+    for (const item of (node as unknown as Iterable<IValueAccess>))
+    {
+      const data = item.rawValue;
+      const key = typeof(data) === 'object' ? this.getPrimarys(data as Record<string, unknown>) : undefined;
+      if (!key || !keys.has(key)) {
+        if (key) keys.add(key);
+        this.recordViolation(item, true);
+      }
+      else {
+        this.recordViolation(item, false);
+      }
+    }
+    return undefined;
+  }
+
+  private recordViolation(node: IValueAccess, result: boolean) {
+    if (node.type.kind === NODE_KIND_STRUCT)
+    {
+      for (let i = this._value!.length; i--;) {
+        const last = node.getAccessValue(this._value![i]);
+        if (last) {
+          last.recordConstraint(this, result);
+          break;
+        }
+      }
+    }
+    else
+    {
+      node.recordConstraint(this, result);
+    }
+  }
+
+  private getPrimarys(data: Record<string, unknown>): string | undefined
+  {
+    const keys: string[] = [];
+    for (const key of this._value!)
+    {
+      if (isNull(data[key])) return undefined;
+      keys.push(`${data[key]}`);
+    }
+    return keys.join('|');
+  }
+}

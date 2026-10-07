@@ -1,4 +1,3 @@
-export * from './enumValueType';
-export * from './expType';
-export * from './relationStage';
+export * from './enumValueType/index';
+export * from './applyMode/index';
 export * from './schemaLoadState';

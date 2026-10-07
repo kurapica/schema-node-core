@@ -3,12 +3,17 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { ArgName } from '../property/function/argName';
-import { OfSchema, SchemaType, Return, Generics, Require } from '../property/index';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
+import { ArgName } from '../schema/function/property/argName';
+import { OfNodeKind } from '../property/core/ofNodeKind';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../schema/function/property/return';
+import { Require } from '../property/common/require';
+import { Generics } from '../schema/generic/generics';
 import { deepClone, isEmpty, isNull } from '../utility/toolset';
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INTRINSIC } from '../utility/constant';
+
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_INTRINSIC)
 export class SystemIntrinsic {
   /** Assign value */
@@ -51,7 +56,7 @@ export class SystemIntrinsic {
   @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
   static ifnull<T1, T2>( 
     @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
-    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1') value: T1
   ): T1 | null { return isNull(val) ? value : null; }
 
   /** if the value is empty, return the value and stop the execution */
@@ -59,6 +64,6 @@ export class SystemIntrinsic {
   @Meta(Generics, [{ name: 'T1' }, { name: 'T2' }])
   static ifempty<T1, T2>( 
     @Meta(ArgName, 'val')  @Meta(SchemaType, 'T2')  val: T2, 
-    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1')  value: T1
+    @Meta(ArgName, 'value')  @Meta(SchemaType, 'T1') value: T1
   ): T1 | null { return isEmpty(val) ? value : null; }
 }

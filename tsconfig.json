@@ -9,7 +9,9 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "experimentalDecorators": true,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["src"]
 }

@@ -5,14 +5,16 @@
 
 import { getSchemaKindPropertyTypes } from '../runtime/schemaRuntime';
 import { isNull } from '../utility/toolset';
-import { getPropertyName, ITypeRefProperty, type IProperty } from './property';
+import { getPropertyName } from './property';
+
+import type { IProperty, PropertyCtor } from '../interface';
 
 /**
  * Get a single property by its class constructor.
  * Derives the property name from the constructor, looks up in extensions, 
  * and wraps the raw value into a new property instance.
  */
-export function getProperty(owner: any, propCtor: new () => IProperty): IProperty | undefined {
+export function getProperty(owner: any, propCtor: PropertyCtor): IProperty | undefined {
   const key = getPropertyName(propCtor);
   const raw = key ? owner?.[key] : undefined;
   if (isNull(raw)) return undefined;
@@ -28,12 +30,18 @@ export function getProperty(owner: any, propCtor: new () => IProperty): IPropert
   return temp;
 }
 
+/** Gets the property value from the owner */
+export function getPropertyValue<T>(owner: any, propCtor: PropertyCtor | string): T | undefined {
+  if (typeof propCtor === 'string') return owner[propCtor] as T; // for simple now
+  return getProperty(owner, propCtor)?.getValue<T>();
+}
+
 /** Get all properties with given property types. */
-export function *getProperties(owner: any, propCtor: new () => IProperty): Generator<IProperty> {
+export function *getProperties(owner: any, propCtor: PropertyCtor): Generator<IProperty> {
   if (owner === null) return;  
 
   const key = getPropertyName(propCtor);
-  const raw = key ? owner?.[key] : undefined;
+  const raw = key ? owner[key] : undefined;
   if (isNull(raw)) return;
 
   const temp = new propCtor();
@@ -79,7 +87,7 @@ export function setProperty(owner: any, property: IProperty): any {
 }
 
 /** Sets the value of a property */
-export function setPropertyValue(owner: any, propCtor: new () => IProperty, value: unknown): any {
+export function setPropertyValue(owner: any, propCtor: PropertyCtor, value: unknown): any {
   const prop = new propCtor();
   prop.setValue(value);
   return setProperty(owner, prop);

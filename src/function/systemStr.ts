@@ -4,13 +4,28 @@
 // =============================================================================
 
 import { Meta } from '../attribute/meta';
-import { OfSchema, SchemaType, Return, ArgName, Converter } from '../property/index';
-import { LocaleString } from '../struct/localeString';
-import { SCHEMA_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR } from '../utility/constant';
+import { OfNodeKind } from '../property/core/ofNodeKind';
+import { SchemaType } from '../property/core/schemaType';
+import { Return } from '../schema/function/property/return';
+import { ArgName } from '../schema/function/property/argName';
+import { Converter } from '../schema/function/property/converter';
+
+import type { LocaleString } from '../struct/localeString/type';
+
+import { NODE_KIND_FUNCTION, NS_SYSTEM_BOOL, NS_SYSTEM_INT, NS_SYSTEM_STRING, NS_SYSTEM_LOCALE_STRING, NS_SYSTEM_STR, NS_SYSTEM_LIST, NS_SYSTEM_ENTRY_ACCESS, NS_SYSTEM_ARRAY, NS_SYSTEM_SCHEMA_REFLECT_ARRAY } from '../utility/constant';
+import type { Entry, EntryAccess } from '../struct/entry/type';
+import { _LS, isNull } from '../utility';
+import { Generics } from '../schema/generic/generics';
+import { buildFuncCall } from '../schema/function/type';
+import { Assign } from '../relation/assign/meta';
+import { EntrySource } from '../property/core/entrySource';
+import { Relation } from '../attribute/relation';
+import { setPropertyValue } from '../property/propertyOwner';
+import { Display } from '../property/common/display';
 
 // ── Main class ─────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, NS_SYSTEM_STR)
 export class SystemStr {
   // No methods on the root — all are in sub-namespaces below
@@ -18,7 +33,7 @@ export class SystemStr {
 
 // ── Logic ──────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.logic`)
 export class SystemStrLogic {
   /** str.startwith(prefix) */
@@ -66,7 +81,7 @@ export class SystemStrLogic {
 
 // ── State ──────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.state`)
 export class SystemStrState {
   /** str.length */
@@ -81,7 +96,7 @@ export class SystemStrState {
 
 // ── Convert ────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, `${NS_SYSTEM_STR}.convert`)
 export class SystemStrConvert {
   /** a..b */
@@ -150,7 +165,7 @@ export class SystemStrConvert {
 
 // ── Map ────────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.map')
 export class SystemStrMap {
   /** Converts a string to a locale string */
@@ -179,11 +194,38 @@ export class SystemStrMap {
     }
     return locale;
   }
+
+  /** Converts a list of values to an entry access */
+  @Meta(Return, `${NS_SYSTEM_LIST}<${NS_SYSTEM_ENTRY_ACCESS}<T>>`)
+  @Meta(Generics,  [{ name: 'T' }])
+  static toentryaccess<T>(
+    @Meta(ArgName, 'values') @Meta(SchemaType, NS_SYSTEM_ARRAY) values: any[],
+
+    @Meta(ArgName, 'key') @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@values.sourceType'), 'key.value')
+    key: string,
+
+    @Meta(ArgName, 'display') @Meta(SchemaType, NS_SYSTEM_STRING) 
+    @Relation(EntrySource, Assign, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_ARRAY}.getelementaccessentries`, '@values.sourceType'), 'display.value')
+    display?: string,
+  ): EntryAccess<T>[] {
+    const children: Entry<T>[] = [];
+
+    for(const v of values) {
+      const k = v[key];
+      if (isNull(k)) continue;
+      const e: Entry<T> = { value: k };
+      setPropertyValue(e, Display, _LS(display && v[display] || k));
+      children.push(e);
+    }
+
+    return [{ children }]
+  }
 }
 
 // ── Util ───────────────────────────────────────────────────────────────────
 
-@Meta(OfSchema, SCHEMA_KIND_FUNCTION)
+@Meta(OfNodeKind, NODE_KIND_FUNCTION)
 @Meta(SchemaType, 'system.str.util')
 export class SystemStrUtil {
   @Meta(Return, NS_SYSTEM_STRING)
