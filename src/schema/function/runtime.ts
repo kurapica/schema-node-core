@@ -209,6 +209,7 @@ export class FunctionType extends NodeType implements IValueTypeAccess, IRelatio
     try
     {
       let res: unknown;
+      if (!this.args) return undefined; // not loaded
 
       // arguments check
       for (let i = 0; i < this.args.length; i++) {
