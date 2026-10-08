@@ -66,6 +66,7 @@ export function *getSchemaKindSchemaProperties(kind: string): Generator<string> 
   for (const prop of props) {
     const schemaType = (prop as unknown as Record<string, string>)?.schemaType?.toLowerCase();
     if (!schemaType || temp.has(schemaType)) continue;
+    temp.add(schemaType);
     yield schemaType;
   }
 }
