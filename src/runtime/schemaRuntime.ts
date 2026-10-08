@@ -62,6 +62,7 @@ export function *getSchemaKindSchemaProperties(kind: string): Generator<string> 
   
   const temp = new Set<string>(serverProps);
   yield* serverProps;
+  console.log(kind, props.map(getPropertyName));
 
   for (const prop of props) {
     const schemaType = (prop as unknown as Record<string, string>)?.schemaType?.toLowerCase();
@@ -370,7 +371,7 @@ export function initSchemaRuntime(): void {
 
       for (const kind of kinds) {
         let existed = _schemaKindPropertyTypes.get(kind) ?? [];
-        if (existed.some((f) => f.name === propName)) continue; // avoid duplicates
+        if (existed.some((f) => getPropertyName(f) === propName)) continue; // avoid duplicates
         existed.push(ctor as unknown as PropertyCtor);
         _schemaKindPropertyTypes.set(kind, existed);
       }
