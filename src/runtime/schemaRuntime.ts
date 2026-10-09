@@ -62,7 +62,6 @@ export function *getSchemaKindSchemaProperties(kind: string): Generator<string> 
   
   const temp = new Set<string>(serverProps);
   yield* serverProps;
-  console.log(kind, props.map(getPropertyName));
 
   for (const prop of props) {
     const schemaType = (prop as unknown as Record<string, string>)?.schemaType?.toLowerCase();
