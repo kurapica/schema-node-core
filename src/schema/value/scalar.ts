@@ -30,15 +30,15 @@ export abstract class ScalarType extends ValueType {
   }
 
   override getProperty<T extends IProperty>(propCtor: PropertyCtor | string): T | undefined {
-    return super.getProperty(propCtor) ?? (this._baseType ? this._baseType.getProperty(propCtor) : getSchemaKindProperty(getSchemaKindByNodeKind(this.kind), propCtor));
+    return super.getProperty(propCtor) ?? (this._baseType && this._baseType.getProperty(propCtor)?.inheritable ? this._baseType.getProperty(propCtor) : getSchemaKindProperty(getSchemaKindByNodeKind(this.kind), propCtor));
   }
 
   override *getProperties<T extends IProperty>(propCtor: PropertyCtor | string): Generator<T> {
     // self -> base -> prototype
-    for (let prop of joinProperties(super.getProperties(propCtor), (this._baseType ? this._baseType.getProperties(propCtor) : getSchemaKindProperties(getSchemaKindByNodeKind(this.kind), propCtor)))) yield prop as T;
+    for (let prop of joinProperties(super.getProperties(propCtor), (this._baseType ? Array.from(this._baseType.getProperties(propCtor)).filter((p) => p.inheritable) : getSchemaKindProperties(getSchemaKindByNodeKind(this.kind), propCtor)))) yield prop as T;
   }
 
   override *filterProperties(predicate: (prop: IProperty) => boolean): Generator<IProperty> {
-    for (let prop of joinProperties(super.filterProperties(predicate), (this._baseType ? this._baseType.filterProperties(predicate) : filterSchemaKindProperties(getSchemaKindByNodeKind(this.kind), predicate)))) yield prop;
+    for (let prop of joinProperties(super.filterProperties(predicate), (this._baseType ? this._baseType.filterProperties(p => p.inheritable && predicate(p)) : filterSchemaKindProperties(getSchemaKindByNodeKind(this.kind), predicate)))) yield prop;
   }
 }

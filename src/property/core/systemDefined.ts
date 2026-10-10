@@ -10,6 +10,7 @@ import { ReadOnly } from "../common/readOnly";
 import { InVisible } from "../common/invisible";
 import { ForSchema } from "./forSchema";
 import { Alias } from "./alias";
+import { NoInherit } from "./noInherit";
 
 /** The system defined property. */
 @Meta(Alias, 'system')
@@ -19,5 +20,6 @@ import { Alias } from "./alias";
 @Meta(Static, true)
 @Meta(ReadOnly, true)
 @Meta(InVisible, true)
+@Meta(NoInherit, true)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
 export class SystemDefined extends Property<boolean>{}

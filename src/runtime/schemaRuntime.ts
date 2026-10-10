@@ -11,7 +11,6 @@
 // =============================================================================
 
 import { getMetaProperties } from '../attribute/meta';
-import { getPropertyName } from '../property/property';
 import { SchemaLoadState } from '../enum/schemaLoadState';
 import { combinePaths, splitString } from '../utility/toolset';
 import { getNodeSchemaName } from '../schema/node/type';
@@ -412,4 +411,10 @@ export function getMetaPropertiesForSchema<T extends IProperty>(
 ): T[] {
   return getMetaProperties(ctor, propCtor, field, index)
     .filter((p) => isSchemaKindPropertyType(kind, p.constructor as unknown as PropertyCtor));
+}
+
+
+/** Get the property name of the property constructor. */
+function getPropertyName(ctor: PropertyCtor): string {
+    return (ctor as unknown as Record<string, string>).alias;
 }

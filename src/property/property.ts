@@ -41,6 +41,11 @@ export abstract class Property<T> implements IProperty {
     return (ctor as unknown as Record<string, boolean>).static ?? false;
   }
 
+  get inheritable(): boolean {
+    const ctor = this.constructor as Function;
+    return !((ctor as unknown as Record<string, boolean>).noInherit ?? false);
+  }
+
   get savable(): boolean {
     const ctor = this.constructor as Function;
     if (_saveableCache.has(ctor)) return _saveableCache.get(ctor)!;
@@ -116,10 +121,7 @@ export function getPropertyName(ctor: PropertyCtor): string {
   if (!n) {
     n = (ctor as unknown as Record<string, string>).alias;
     if (!n)
-    {
-      console.error("[Property]", (ctor as unknown as Record<string, string>));
       throw new Error(`Property class ${ctor.name || '(anonymous)'} must declare its property name via @Meta(Alias, '...')`);
-    }
     _nameCache.set(ctor, n);
   }
   return n;

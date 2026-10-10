@@ -232,6 +232,9 @@ export interface IProperty {
   /** Whether the property value is savable (persisted) in schema. */
   readonly savable: boolean;
 
+  /** Whether the property is inheritable. */
+  readonly inheritable: boolean;
+
   /** The source of the property value. */
   readonly source?: IValueAccess;
 
