@@ -39,12 +39,14 @@ class RelationSchemaMeta implements RelationSchema {
   /** The value type of the target */
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   @Meta(AccessValueTypeResolver, 'target')
   targetType?: string;
 
   /** The kind of the target */
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   @Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getschemakind`, '@targetType'))
   targetKind?: string;
 
@@ -52,6 +54,7 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_STRING)
   @Meta(KindResolver, true)
   @Meta(DisplayOnly, true)
+  @Meta(InVisible, true)
   ownerKind?: boolean;
 
   /** The property the relation applies to */
@@ -65,7 +68,7 @@ class RelationSchemaMeta implements RelationSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(DisplayOnly, true)
   @Meta(InVisible, true)
-  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getkindpropvaluetype`, '@property', '@targetKind', '@ownerKind'))
+  @Relation(Default,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_PROPERTY}.getkindpropvaluetype`, '@property', '@targetType', '@targetKind', '@ownerKind'))
   valueType?: string;
 
   /** The relation kind */

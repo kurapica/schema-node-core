@@ -265,6 +265,9 @@ export abstract class ScalarNode extends DataNode {
     this._entrySourceInfo.validres = new Map();
     this._entrySourceInfo.allRootPassed = true;
 
+    this._entrySourceInfo.rootEntry = new EntryType<any>();
+    this._entrySourceInfo.rootEntry.value = this._entrySourceInfo.root;
+      
     try
     {
       // check root && cascade
@@ -331,9 +334,7 @@ export abstract class ScalarNode extends DataNode {
     if (!this._entrySourceInfo?.source || !this._entrySourceInfo?.args) return [];
 
     const queryRoot = value && value == this._entrySourceInfo!.root;
-
-    // call entry source function
-    const result = deepClone(await this._entrySourceInfo.source.call(this._entrySourceInfo.source.args?.map((a, i) => {
+    const callargs = this._entrySourceInfo.source.args?.map((a, i) => {
       const c = this._entrySourceInfo!.args![i];
       if (!c || isNull(c.source) && isNull(c.value)) {
         if (a.getPropertyValue(EntryRoot) && !queryRoot) return this._entrySourceInfo!.root;
@@ -341,7 +342,12 @@ export abstract class ScalarNode extends DataNode {
       }
       if (c.source) return c.source === this ? value : c.source.getValue();
       return c.value;
-    }) ?? []) as EntryAccess<any>[] ?? []) as EntryAccess<any>[];
+    }) ?? [];
+    if (this._entrySourceInfo!.args && this._entrySourceInfo!.args.length > callargs.length) 
+      callargs.push(...this._entrySourceInfo!.args.slice(callargs.length).map(a => a.source ? a.source.getValue() : a.value));
+
+    // call entry source function
+    const result = deepClone(await this._entrySourceInfo.source.call(callargs) as EntryAccess<any>[] ?? []) as EntryAccess<any>[];
 
     // valid
     if (!queryRoot && (this._entrySourceInfo.valids?.length || this._entrySourceInfo.blackList?.length || this._entrySourceInfo.valueTypeConsumer))

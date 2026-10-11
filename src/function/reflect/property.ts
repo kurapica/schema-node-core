@@ -55,6 +55,10 @@ export class SystemReflectProperty {
     @Meta(SchemaType, NS_SYSTEM_STRING)
     property: string,
 
+    @Meta(ArgName, 'ownerType')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    ownerType: string,
+
     @Meta(ArgName, 'kinds')
     @Meta(SchemaType, NS_SYSTEM_SCHEMA_KIND)
     @Meta(Variadic, true)
@@ -69,7 +73,20 @@ export class SystemReflectProperty {
       for(const p of getSchemaKindSchemaProperties(kind)){
         const ptype = await getNodeType(p) as PropertyType;
         if (!ptype) continue;
-        if (ptype && ptype.property?.toLowerCase() === property) return ptype.valueType?.name;
+        if (ptype && ptype.property?.toLowerCase() === property) {
+          if (ownerType?.length) {
+            const resolver = ptype.getPropertyValue<string>(PropertyValueTypeResolver);
+            if (resolver) {
+              const resolveType = await getNodeType(resolver) as FunctionType;
+              if (resolveType) {
+                const type = await resolveType.call([ownerType]) as string;
+                if (type) return type;
+              }
+            }
+          }
+
+          return ptype.valueType?.name === NS_SYSTEM_OBJECT && ownerType ? ownerType : ptype.valueType?.name;
+        }
       }
     }
     return undefined;
@@ -121,31 +138,6 @@ export class SystemReflectProperty {
   ): Promise<boolean>
   {
     return !await SystemReflectProperty.isstackable(type);
-  }
-
-  /** Gets the property value type */
-  @Meta(Return, NS_SYSTEM_STRING)
-  static async getvaluetype(
-    @Meta(ArgName, 'type')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_PRO_TYPE)
-    @Meta(Require, true)
-    type: string,
-
-    @Meta(ArgName, 'ownerType')
-    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
-    ownerType: string
-  ): Promise<string | undefined> {
-    const prop = !type ? undefined : await getNodeType(type) as PropertyType | undefined;
-    const resolver = prop?.getPropertyValue<string>(PropertyValueTypeResolver);
-    if (resolver) {
-      const resolveType = await getNodeType(resolver) as FunctionType;
-      const type = await resolveType.call([ownerType]) as string;
-      if (type) return type;
-    }
-
-    // default
-    const name = prop?.valueType?.name;
-    return name === NS_SYSTEM_OBJECT && ownerType ? ownerType : name;
   }
 
   /** Whether the property is for schema */
