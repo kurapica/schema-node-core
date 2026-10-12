@@ -71,7 +71,7 @@ export abstract class ScalarNode extends DataNode {
   get isNonLeafNodeSelectable(): boolean { return this._entrySourceInfo?.allRootPassed ?? false; }
 
   /** Gets the default display text for the current value */
-  async getDisplayValue(sep?: string, valuesSep?: string): Promise<string> { 
+  async getDisplayValue(sep?: string, valuesSep?: string): Promise<string> {
     if (isEmpty(this.value)) return "";
     if (!this.hasEntrySource) return `${this.value}`;
 
@@ -79,9 +79,10 @@ export abstract class ScalarNode extends DataNode {
     const res: string[] = [];
 
     for (const item of array) {
-      const access = await this.getEntryAccessList(item);
+      const v = `${item}`;
+      const access = await this.getEntryAccessList(v);
       if (!access?.length || !access[access.length - 1].entry) {
-        res.push(`${item}`);
+        res.push(v);
         continue;
       }
 
@@ -96,7 +97,7 @@ export abstract class ScalarNode extends DataNode {
       {
         const entry = access[access.length - 1].entry;
         const display = getPropertyValue<LocaleString>(entry, "display");
-        res.push(display ? _L(display) : `${item}`);
+        res.push(display ? _L(display) : v);
       }
     }
     return res.join(valuesSep ?? ', ');
@@ -493,8 +494,14 @@ export abstract class ScalarNode extends DataNode {
     const cascade = this._entrySourceInfo?.cascade ?? 9999;
     if (accessList?.length && cascade >= 1 && cascade <= accessList!.length)
     {
-      accessList = accessList.slice(0, cascade);
+      accessList = accessList.slice(0, cascade + 1);
       accessList[cascade - 1].children?.forEach(c => c.hasChildren = false);
+      if (accessList[cascade])
+      {
+        accessList[cascade].children = undefined;
+        if (accessList[cascade].entry)
+          accessList[cascade].entry.hasChildren = false;
+      }
     }
 
     // root
