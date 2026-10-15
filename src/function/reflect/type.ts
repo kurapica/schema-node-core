@@ -304,6 +304,28 @@ export class SystemReflectType {
     return false;
   }
 
+  @Meta(Return, NS_SYSTEM_BOOL)
+  static async isgenericmatch(
+    @Meta(ArgName, 'type')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    type: string,
+
+    @Meta(ArgName, 'genericType')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    genericType: string,
+
+    @Meta(ArgName, 'genericParams')
+    @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
+    ...genericParams: string[]
+  ): Promise<boolean> {
+    const checkType = !type ? undefined : await getNodeType(type) as ValueType;
+    if (!checkType) return false;
+    const genType = !genericType ? undefined : await getNodeType(genericType) as ValueType;
+    if (!genType || !genType.isGeneric || genType.generics?.length !== genericParams.length || genericParams.some(param => !param)) return false;
+    const matchType = await getNodeType(`${genType.name}<${genericParams.join(",")}>`) as ValueType;
+    return matchType ? matchType.isAssignableTo(checkType) : false;
+  }
+
   /** The value type is indexable */
   @Meta(Return, NS_SYSTEM_BOOL)
   static async isindexable(

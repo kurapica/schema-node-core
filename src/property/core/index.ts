@@ -23,3 +23,4 @@ export * from './systemDefined';
 export * from './typeProvider';
 export * from './kindProvider';
 export * from './propertyValueTypeResolver';
+export * from './accessPath';

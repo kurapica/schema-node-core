@@ -22,6 +22,7 @@ import type { CallArg, FuncCall } from "../function/type";
 import type { Entry, EntryAccess } from "../../struct/entry/type";
 import type { LocaleString } from "../../struct/localeString";
 import type { FuncCallProperty } from "../../property/funcCallProperty";
+import { LeafOnly } from "../enum/property/leafOnly";
 
 /** The data node represets the scalar types */
 export abstract class ScalarNode extends DataNode {
@@ -39,6 +40,7 @@ export abstract class ScalarNode extends DataNode {
     this.recordSubscription(this.subscribeSelfProperty(Root, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(CascadeDepth, this._refreshEntrySource));
     this.recordSubscription(this.subscribeSelfProperty(EntrySource, this._refreshEntrySource, true));
+    this.recordSubscription(this.subscribeSelfProperty(LeafOnly, this._refreshEntrySource, true));
   }
 
   override dispose() {
@@ -111,6 +113,7 @@ export abstract class ScalarNode extends DataNode {
 
     const whiteList = this.getPropertyValue<string[]>(WhiteList);
     const blackList = this.getPropertyValue<string[]>(BlackList);
+    const leafOnly = this.getPropertyValue<boolean>(LeafOnly);
 
     // entry source
     let entrySourceProp = this.getProperty(EntrySource)
@@ -170,6 +173,7 @@ export abstract class ScalarNode extends DataNode {
       if (this._entrySourceInfo.source !== entryFunc || 
           this._entrySourceInfo.cascade !== cascade || 
           this._entrySourceInfo.root !== root ||
+          this._entrySourceInfo.leafOnly !== leafOnly ||
           this._entrySourceInfo.owner !== owner ||
           !isEqual(this._entrySourceInfo.whiteList, whiteList) ||
           !isEqual(this._entrySourceInfo.blackList, blackList) ||
@@ -180,6 +184,7 @@ export abstract class ScalarNode extends DataNode {
         this._entrySourceInfo.owner = owner;
         this._entrySourceInfo.whiteList = whiteList;
         this._entrySourceInfo.blackList = blackList;
+        this._entrySourceInfo.leafOnly = leafOnly;
         this._entrySourceInfo.source = entryFunc;
         this._entrySourceInfo.cascade = cascade;
         this._entrySourceInfo.root = root;
@@ -315,7 +320,8 @@ export abstract class ScalarNode extends DataNode {
     }
     finally
     {
-      this._entrySourceInfo.initing = false;
+      if (this._entrySourceInfo)
+        this._entrySourceInfo.initing = false;
     }
   }
 
@@ -381,6 +387,14 @@ export abstract class ScalarNode extends DataNode {
             {
               if (disable) setPropertyValue(c, Disable, true); // mark as disabled
               passed.push(c);
+
+              // valid & leaf only, block children
+              if (this._entrySourceInfo.leafOnly && !disable && (this._entrySourceInfo.valids?.length || this._entrySourceInfo?.valueTypeConsumer)) {
+                c.hasChildren = false;
+                const entry = this._entrySourceInfo.rootEntry?.getEntry(c.value);
+                if (entry) entry.dropChildren();
+                continue;
+              }
             }
           }
           r.children = passed;
@@ -573,6 +587,9 @@ interface IEntrySourceInfo
 
   /** The black list */
   blackList?: string[],
+
+  /** Whether only leaf is used */
+  leafOnly?: boolean,
 
   /** The valids */
   valids?: {

@@ -227,6 +227,7 @@ class CallArgMeta implements CallArg {
 
   /** The source value */
   @Meta(SchemaType, NS_SYSTEM_STRING)
+  @Meta(LeafOnly, true)
   @Relation(InVisible,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@value'))
   source?: string;
 

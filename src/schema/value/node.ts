@@ -357,7 +357,11 @@ export class DataNode implements IValueAccess, IPropertyProvider {
       record.property.setValue(value);
       if (props) {
         props.push(record);
-        props.sort((a, b) => b.level - a.level); // keep order
+        props.sort((a, b) => {
+          const diff = b.level - a.level;
+          if (diff !== 0) return diff;
+          return (b.relation ? 1 : 0) - (a.relation ? 1 : 0);
+        }); // keep order
       }
       else
       {
