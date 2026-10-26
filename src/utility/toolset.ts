@@ -241,7 +241,7 @@ export function isEqual(a: any, b: any, t: string | null = null): boolean {
   {
     a = a instanceof Date ? a : parseDate(a)
     b = b instanceof Date ? b : parseDate(b)
-    return a.getTime() === b.getTime()
+    return a?.getTime() === b?.getTime()
   }
   
   // Object

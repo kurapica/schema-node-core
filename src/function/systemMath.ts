@@ -36,7 +36,7 @@ export class SystemMath {
 
   /** a * b * c * ... */
   @Meta(Return, 'T') @Meta(Generics, [{ name: 'T', compatibles: [NS_SYSTEM_NUMBER, NS_SYSTEM_INT] }])
-  static multiply(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') ...values: number[]): number {
+  static multiply(@Meta(ArgName, 'values') @Meta(SchemaType, 'T') @Meta(Variadic, true) ...values: number[]): number {
     return values.reduce((acc, v) => toBN(acc).times(toBN(v)), new BigNumber(1)).toNumber();
   }
 
