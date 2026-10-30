@@ -431,6 +431,13 @@ export abstract class ScalarNode extends DataNode {
           this._entrySourceInfo.allRootPassed = false;
           setTimeout(() => this._nextEntrySourceVer(), 0);
         }
+        else if (this._entrySourceInfo.leafOnly && !disable && (this._entrySourceInfo.valids?.length || this._entrySourceInfo?.valueTypeConsumer))
+        {
+          r.entry.hasChildren = false;
+          const entry = this._entrySourceInfo.rootEntry?.getEntry(r.entry.value);
+          if (entry) entry.dropChildren();
+          r.children = undefined;
+        }
       }
 
       // remove no children access
