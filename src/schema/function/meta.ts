@@ -74,7 +74,7 @@ class FunctionKind {}
 /** Meta registration class (NOT exported). */
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_FUNC}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE_FUNCTION)
-@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', `@exps.${ARRAY_PREVIOUS}`, NODE_SELF))
+@Meta(EntrySourceProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', `@exps.${ARRAY_PREVIOUS}`, false, NODE_SELF))
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessvaluetype`, '@args', `@exps.${ARRAY_PREVIOUS}`, NODE_SELF))
 @Meta(DataNodeType, FunctionNode)
 @Meta(KindProvider, SCHEMA_KIND_NODE_FUNC_ARG)
@@ -240,6 +240,7 @@ class CallArgMeta implements CallArg {
 
   /** The const value (no complex struct value) */
   @Meta(SchemaType, NS_SYSTEM_OBJECT)
+  @Relation(Require, 'assign', false)
   @Relation(OverrideType,'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getvaluetype`, '@type'))
   @Relation(InVisible,'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@source'))
   @Relation(Visible,'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, '@type', true, NODE_KIND_INT, NODE_KIND_STRING, NODE_KIND_DATE, NODE_KIND_BOOL, NODE_KIND_ENUM))

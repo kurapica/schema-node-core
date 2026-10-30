@@ -97,7 +97,7 @@ export class SystemLogic {
   static eq<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) === 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) === 0; }
 
   /** a != b */
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -105,7 +105,7 @@ export class SystemLogic {
   static neq<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) !== 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) !== 0; }
 
   /** a >= b */
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -113,7 +113,7 @@ export class SystemLogic {
   static ge<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) >= 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) >= 0; }
 
   /** a > b */
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -121,7 +121,7 @@ export class SystemLogic {
   static gt<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) > 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) > 0; }
 
   /** a <= b */
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -129,7 +129,7 @@ export class SystemLogic {
   static le<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) <= 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) <= 0; }
 
   /** a < b */
   @Meta(Return, NS_SYSTEM_BOOL)
@@ -137,5 +137,5 @@ export class SystemLogic {
   static lt<T>(
     @Meta(ArgName, 'a') @Meta(SchemaType, 'T') a: T,
     @Meta(ArgName, 'b') @Meta(SchemaType, 'T') b: T,
-  ): boolean { return compare(a, b) < 0; }
+  ): boolean { return !isEmpty(a) && !isEmpty(b) && compare(a, b) < 0; }
 }

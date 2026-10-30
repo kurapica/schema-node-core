@@ -135,8 +135,7 @@ export abstract class ValueType extends NodeType implements IValueTypeAccess {
       this.kind === NODE_KIND_OBJECT || 
       other.kind === NODE_KIND_OBJECT || 
       (this._isAssignableTo ? (
-        this._isAssignableTo.has(other) || 
-        this._isAssignableTo?.keys().some(k => k.isAssignableTo(other))
+        this._isAssignableTo.has(other)
       ) : false)
   }
 }

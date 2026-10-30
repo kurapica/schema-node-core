@@ -11,13 +11,15 @@ import { Display } from "../../../property/common/display";
 import { ReadOnly } from "../../../property/common/readOnly";
 import { AccessEntryConsumer } from "../../string/property/accessEntryConsumer";
 
-import type { IPropertyProvider, IValueAccess, ValueAccessFactory } from "../../../interface";
+import type { IPropertyProvider, IValueAccess, IValueTypeAccess, ValueAccessFactory } from "../../../interface";
 import type { LocaleString } from "../../../struct/localeString/type";
 import type { StructNode } from "../../struct/node";
 import type { StructType } from "../../struct/runtime";
 
-import { NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN, NODE_SELF, ARRAY_ELEMENT } from "../../../utility/constant";
+import { NS_SYSTEM_SCHEMA_REFLECT_TYPE, FUNC_RETURN, NODE_SELF, ARRAY_ELEMENT, NS_SYSTEM_SCHEMA_FUNC, NS_SYSTEM_SCHEMA_NODE, NS_SYSTEM_SCHEMA_REFLECT_FUNC, ARRAY_PREVIOUS } from "../../../utility/constant";
 import type { StringNode } from "../../string";
+import { EntrySourceProvider } from "../../../property/core/entrySourceProvider";
+import { EntrySource } from "../../../property/core/entrySource";
 
 /** The function expression arguments data node */
 export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
@@ -221,6 +223,8 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
     super.setValue(data);
 
     // refresh the arguments
+    let defineNode: IValueAccess | undefined = this;
+    while (defineNode && defineNode.type?.name !== `${NS_SYSTEM_SCHEMA_FUNC}.schema`) defineNode = defineNode.parent;
     for (let i = 0; i < (this._funcType.args?.length ?? 0); i++)
     {
       const arg = this._funcType.args.at(i)!;
@@ -255,6 +259,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
         else { 
           node.recordSubscription(node.subscribe(this.writeBackRawValue));
           if (this._mode !== ApplyMode.Call) {
+            if (defineNode) node.getAccessValue('source')!.setPropertyValue(EntrySource, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', `@exps.${ARRAY_PREVIOUS}`, true, NODE_SELF), defineNode);
             node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, true, `@${ARRAY_ELEMENT}.type`), node.parent);
             node.recordSubscription(node.subscribe(() => this.refreshArgTypes()));
           }
@@ -279,6 +284,9 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
   /** Refresh the argument types */
   private async refreshArgTypes() {
     let colIdx = -1;
+    let defineNode: IValueAccess | undefined = this;
+    while (defineNode && defineNode.type?.name !== `${NS_SYSTEM_SCHEMA_FUNC}.schema`) defineNode = defineNode.parent;
+
     for (let i = 0; i < this._args.length; i++) {
       const e = this._args[i];
       const type = (e.rawValue! as any)?.type;
@@ -310,6 +318,7 @@ export class FuncCallArgsNode extends DataNode implements Iterable<StructNode> {
       for (let i = 0; i < this._args.length; i++)
       {
         const node = this._args[i];
+        if (defineNode) node.getAccessValue('source')!.setPropertyValue(EntrySource, colIdx < 0 || colIdx == i ? buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_FUNC}.getaccessentries`, '@args', `@exps.${ARRAY_PREVIOUS}`, true, NODE_SELF) : undefined, defineNode);
         node.getAccessValue('source')!.setPropertyValue(AccessEntryConsumer, colIdx < 0 || colIdx == i ? buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.isassignableto`, NODE_SELF, true, `@${ARRAY_ELEMENT}.type`) : undefined, node.parent);
       }
       this._preColIdx = colIdx;

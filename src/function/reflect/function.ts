@@ -99,6 +99,10 @@ export class SystemReflectFunction {
     @Meta(Require, true)
     exps?: FuncExp[],
 
+    @Meta(ArgName, 'isCollection')
+    @Meta(SchemaType, NS_SYSTEM_BOOL)
+    isCollection?: boolean,
+
     @Meta(ArgName, 'path')
     @Meta(SchemaType, NS_SYSTEM_STRING)
     path?: string,
@@ -106,7 +110,7 @@ export class SystemReflectFunction {
     @Meta(ArgName, 'root')
     @Meta(SchemaType, NS_SYSTEM_STRING)
     @Meta(EntryRoot, true)
-    root?: string
+    root?: string,
   ): Promise<EntryAccess<string>[]> {
     path = path?.toLowerCase() ?? '';
     root = root?.toLowerCase() ?? '';
@@ -123,12 +127,13 @@ export class SystemReflectFunction {
       if (!a.name || !a.type) continue;
       const ftype = await getNodeType(a.type) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: a.name, hasChildren: ftype.kind !== NODE_KIND_ARRAY && ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: a.name, hasChildren: (isCollection || ftype.kind !== NODE_KIND_ARRAY) && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(a, Display) ?? _LS(a.name));
       first.push(entry);
       if (!curr && path && (path === a.name.toLowerCase() || path.startsWith(`${a.name.toLowerCase()}.`))) {
         curr = entry;
         valueType = ftype;
+        if (isCollection && ftype instanceof ArrayType) valueType = ftype.element;
       }
     }
 
@@ -138,12 +143,13 @@ export class SystemReflectFunction {
       if (!e.name || !e.return) continue;
       const ftype = await getNodeType(e.return) as ValueType;
       if (!ftype) continue;
-      const entry: Entry<string> = { value: e.name, hasChildren: ftype.kind !== NODE_KIND_ARRAY && ftype.hasAccessEntries };
+      const entry: Entry<string> = { value: e.name, hasChildren: (isCollection || ftype.kind !== NODE_KIND_ARRAY) && ftype.hasAccessEntries };
       setPropertyValue(entry, Display, getPropertyValue(e, Display) ?? _LS(e.name));
       first.push(entry);
       if (!curr && path && (path === e.name.toLowerCase() || path.startsWith(`${e.name.toLowerCase()}.`))) {
         curr = entry;
         valueType = ftype;
+        if (isCollection && ftype instanceof ArrayType) valueType = ftype.element;
       }
     }
 
@@ -151,7 +157,7 @@ export class SystemReflectFunction {
     while (valueType)
     {
       const accessEntry: EntryAccess<string> = {};
-      const accesses = valueType.kind !== NODE_KIND_ARRAY ? valueType.getAccessEntries() : [];
+      const accesses = curr!.hasChildren ? valueType.getAccessEntries() : [];
       if (curr)
       {
         accessEntry.entry = setPropertyValue(
@@ -182,6 +188,8 @@ export class SystemReflectFunction {
       curr = nextcurr;
     }
 
+    console.log("getaccessentries", args, exps, result);
+
     // cut
     return root ? result.filter(e => (e.entry?.value?.length ?? 0) >= root.length) : result;
   }
@@ -205,11 +213,17 @@ export class SystemReflectFunction {
   ): Promise<string | undefined> {
     path = path?.toLowerCase();
     if (!path) return undefined;
-    const dotIndex = path.indexOf('.');
-    const fieldName = dotIndex === -1 ? path : path.substring(0, dotIndex);
+    const paths = path.split('.');
+    const fieldName = paths[0];
     const type = args?.find(a => a.name.toLowerCase() === fieldName)?.type ?? exps?.find(e => e.name.toLowerCase() === fieldName)?.return;
-    const valueType = type ? await getNodeType(type) as ValueType : undefined;
-    return dotIndex === -1 ? valueType?.name : valueType?.getAccessValueType(path.substring(dotIndex + 1))?.name;
+    let valueType = type ? await getNodeType(type) as ValueType : undefined;
+    for (let i = 1; i < paths.length; i++)
+    {
+      if (!valueType) return undefined;
+      if (valueType instanceof ArrayType) valueType = valueType.element;
+      valueType = valueType?.getAccessValueType(paths[i]) as ValueType;
+    }
+    return valueType?.name;
   }
 
   /** Get the apply modes for the given retunr type */
