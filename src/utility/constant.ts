@@ -31,6 +31,7 @@ export const SCHEMA_KIND_NODE_STRUCT = "node.struct";
 export const SCHEMA_KIND_NODE_STRUCT_DEFINE = "node.struct.define";
 export const SCHEMA_KIND_NODE_STRUCT_USAGE = "node.struct.usage";
 export const SCHEMA_KIND_NODE_STRUCT_FIELD = "node.struct.field";
+export const SCHEMA_KIND_NODE_STRUCT_FIELD_USAGE = "node.struct.field.usage";
 export const SCHEMA_KIND_NODE_ARRAY = "node.array";
 export const SCHEMA_KIND_NODE_ARRAY_DEFINE = "node.array.define";
 export const SCHEMA_KIND_NODE_ARRAY_USAGE = "node.array.usage";

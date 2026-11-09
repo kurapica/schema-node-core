@@ -55,7 +55,8 @@ import type { NodeSchema } from '../node/type';
 import type { ArraySchema } from '../array/type';
 import type { LocaleString } from '../../struct/localeString/type';
 
-import { SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, SCHEMA_KIND_NODE_STRUCT_USAGE, SCHEMA_KIND_NODE_STRUCT_DEFINE, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC, NODE_KIND_INT, NODE_KIND_DECIMAL, NODE_KIND_DATE, NS_SYSTEM_INTRINSIC, NODE_KIND_STRING, NODE_KIND_STRUCT } from '../../utility/constant';
+import { SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_STRUCT, SCHEMA_KIND_ORDER_STRUCT, SCHEMA_KIND_ORDER_STRUCT_FIELD, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NODE_KIND_ARRAY, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NS_SYSTEM_SCHEMA_REFLECT_STRUCT, NS_SYSTEM_SCHEMA_REFLECT_TYPE, SCHEMA_KIND_NODE_STRUCT_USAGE, SCHEMA_KIND_NODE_STRUCT_DEFINE, TYPE_PROVIDER, NS_SYSTEM_SCHEMA_ARRAY, NS_SYSTEM_OBJECT, NS_SYSTEM_LOGIC, NODE_KIND_INT, NODE_KIND_DECIMAL, NODE_KIND_DATE, NS_SYSTEM_INTRINSIC, NODE_KIND_STRING, NODE_KIND_STRUCT, SCHEMA_KIND_NODE_STRUCT_FIELD_USAGE, NODE_KIND_PROPERTY } from '../../utility/constant';
+import { Alias, Property, PropertyValueType } from '../../property';
 
 /** The struct schema kind */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE_STRUCT, SCHEMA_KIND_ORDER_STRUCT])
@@ -89,17 +90,11 @@ class StructSchemaMeta implements StructSchema {
 @Meta(AccessValueTypeProvider, buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getaccessvaluetype`, TYPE_PROVIDER, NODE_SELF))
 class StructUsage {}
 
-@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_ORDER_STRUCT_FIELD])
-@Meta(Append, [Disable, Display, Description, Visible, InVisible, Immutable, ReadOnly, Require, OverrideType, Init])
-@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
-@Meta(Attach, SCHEMA_KIND_NODE_STRUCT_FIELD)
-class StructFieldDefine {}
-
 /** The struct field schema meta */
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRUCT_FIELD_USAGE, SCHEMA_KIND_ORDER_STRUCT_FIELD])
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.field`)
 @Meta(TypeProvider, 'type')
-@Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, "@type", false, NODE_KIND_STRING, NODE_KIND_INT, NODE_KIND_DECIMAL, NODE_KIND_DATE), 'fieldDefine.init')
-@Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'), 'fieldDefine.init.return')
+@Meta(Attach, SCHEMA_KIND_NODE_STRUCT_FIELD_USAGE)
 class StructFieldSchemaMeta implements StructFieldSchema {
   /** The field name */
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)
@@ -112,22 +107,39 @@ class StructFieldSchemaMeta implements StructFieldSchema {
   @Meta(SchemaType, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE)
   @Meta(Require, true)
   type!: string;
-
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
-  @Meta(Unpack, true)
-  fieldDefine?: {};
-
-  @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
-  @Meta(Unpack, true)
-  @Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, "@type", false, NODE_KIND_ARRAY))
-  arrayDefine?: {};
-
-  @Meta(SchemaType, NS_SYSTEM_OBJECT)
-  @Meta(Unpack, true)
-  @Relation(Visible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, "@type"))
-  @Relation(OverrideType, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getusagetype`, "@type", true))
-  valueDefine?: {};
 }
+
+@Meta(SchemaKind, [SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_ORDER_STRUCT_FIELD])
+@Meta(Append, [Disable, Display, Description, Visible, InVisible, Immutable, ReadOnly, Require, OverrideType, Init])
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
+@Meta(Attach, SCHEMA_KIND_NODE_STRUCT_FIELD)
+class StructFieldDefine {}
+
+@Meta(Alias, 'fieldDefine')
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefineprop`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_STRUCT}.fielddefine`)
+@Meta(Unpack, true)
+@Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, "@type", false, NODE_KIND_STRING, NODE_KIND_INT, NODE_KIND_DECIMAL, NODE_KIND_DATE), 'fieldDefine.init')
+@Relation(Default, 'call', buildFuncCall(`${NS_SYSTEM_INTRINSIC}.assign`, '@type'), 'fieldDefine.init.return')
+class FieldDefineProp extends Property<StructFieldDefine> {}
+
+@Meta(Alias, 'arrayDefine')
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.arraydefineprop`)
+@Meta(PropertyValueType, `${NS_SYSTEM_SCHEMA_ARRAY}.usage`)
+@Meta(Unpack, true)
+@Relation(Visible, 'call', buildFuncCall(NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, "@type", false, NODE_KIND_ARRAY))
+class ArrayDefineProp extends Property<any> {}
+
+@Meta(Alias, 'valueDefine')
+@Meta(OfNodeKind, NODE_KIND_PROPERTY)
+@Meta(SchemaType, `${NS_SYSTEM_SCHEMA_STRUCT}.valuedefineprop`)
+@Meta(PropertyValueType, NS_SYSTEM_OBJECT)
+@Meta(Unpack, true)
+@Relation(Visible, 'call', buildFuncCall(`${NS_SYSTEM_LOGIC}.notempty`, '@type'))
+@Relation(OverrideType, 'call', buildFuncCall(`${NS_SYSTEM_SCHEMA_REFLECT_TYPE}.getusagetype`, '@type', true))
+class valueDefineProp extends Property<any> {}
 
 /** Represents the struct value type */
 @Meta(OfNodeKind, NODE_KIND_STRING)

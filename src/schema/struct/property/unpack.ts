@@ -12,14 +12,14 @@ import { PropertyValueType } from '../../../property/core/propertyValueType';
 import { Relation } from '../../../attribute/relation';
 import { buildFuncCall } from '../../../schema/function/type';
 
-import { NODE_KIND_PROPERTY, SCHEMA_KIND_NODE_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NS_SYSTEM_SCHEMA_PRO_STRUCT, TYPE_PROVIDER, NODE_KIND_OBJECT, NODE_KIND_STRUCT } from '../../../utility/constant';
+import { NODE_KIND_PROPERTY, SCHEMA_KIND_NODE_STRUCT_FIELD, NS_SYSTEM_BOOL, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NS_SYSTEM_SCHEMA_PRO_STRUCT, TYPE_PROVIDER, NODE_KIND_OBJECT, NODE_KIND_STRUCT, SCHEMA_KIND_NODE_PROPERTY } from '../../../utility/constant';
 import { Property } from '../../../property/property';
 
 /**
  * Declare the struct field is used for pack all non-struct fields data into it
  */
 @Meta(Alias, 'unpack')
-@Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT_FIELD])
+@Meta(ForSchema, [SCHEMA_KIND_NODE_STRUCT_FIELD, SCHEMA_KIND_NODE_PROPERTY])
 @Meta(OfNodeKind, NODE_KIND_PROPERTY)
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO_STRUCT}.unpack`)
 @Meta(PropertyValueType, NS_SYSTEM_BOOL)
