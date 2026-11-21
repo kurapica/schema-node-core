@@ -32,6 +32,7 @@ import type { PropertySchema } from './type';
 import type { NodeSchema } from '../node/type';
 
 import { SCHEMA_KIND_NODE_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PRO, NS_SYSTEM_IDENTIFIER, NS_SYSTEM_SCHEMA_NODE_VALUE_TYPE, NS_SYSTEM_LIST, NS_SYSTEM_SCHEMA_KIND, SCHEMA_KIND_ORDER_PROP, NS_SYSTEM_SCHEMA_PRO_TYPE, NODE_SELF, NS_SYSTEM_SCHEMA_REFLECT_IS_NODE_KIND, NODE_KIND_STRING, NS_SYSTEM_SCHEMA_NODE_TYPE, NODE_KIND_PROPERTY } from '../../utility/constant';
+import { TypeProvider } from '../../property';
 
 /** Meta registration class (NOT exported). */
 @Meta(SchemaKind, [SCHEMA_KIND_NODE_PROPERTY, SCHEMA_KIND_ORDER_PROP])
@@ -41,6 +42,7 @@ import { SCHEMA_KIND_NODE_PROPERTY, SCHEMA_KIND_NODE, NS_SYSTEM_SCHEMA_PRO, NS_S
 @Meta(SchemaType, `${NS_SYSTEM_SCHEMA_PRO}.schema`)
 @Meta(Attach, SCHEMA_KIND_NODE_PROPERTY)
 @Meta(Append, [Relations])
+@Meta(TypeProvider, 'type')
 class PropertySchemaMeta implements PropertySchema {
   /** The property name, such as 'upLimit' */
   @Meta(SchemaType, NS_SYSTEM_IDENTIFIER)

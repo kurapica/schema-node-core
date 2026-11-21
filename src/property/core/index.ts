@@ -10,6 +10,7 @@ export * from './forSchema';
 export * from './fromEnum';
 export * from './indexes';
 export * from './name';
+export * from './noInherit';
 export * from './ofNodeKind';
 export * from './overrideType';
 export * from './propertyValueType';

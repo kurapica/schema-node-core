@@ -188,8 +188,6 @@ export class SystemReflectFunction {
       curr = nextcurr;
     }
 
-    console.log("getaccessentries", args, exps, result);
-
     // cut
     return root ? result.filter(e => (e.entry?.value?.length ?? 0) >= root.length) : result;
   }
