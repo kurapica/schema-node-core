@@ -29,7 +29,7 @@ jobs:
           node -v
           npm -v
 
-      - run: npm ci
+      - run: npm install
 
       - run: npm run build
 
